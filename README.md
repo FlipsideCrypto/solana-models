@@ -4,10 +4,10 @@
 ----
 
 ```yml
-bi_analytics:
-  target: solana_dev
+solana:
+  target: dev
   outputs:
-    eth_dev:
+    dev:
       type: snowflake
       account: <ACCOUNT>
       role: <ROLE>
