@@ -1,6 +1,5 @@
 {{ config (
-    materialized = 'view', 
-    tags = ['snowflake', 'solana', 'bronze_solana', 'solana_blocks']
+    materialized = 'view'
 ) }}
 
 SELECT 
