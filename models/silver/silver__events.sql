@@ -39,9 +39,9 @@ base_ii AS (
 
 SELECT
   i.block_timestamp,
-  i.block_id :: INTEGER AS block_id,
-  i.tx_id :: STRING AS tx_id,
-  i.index :: INTEGER AS INDEX,
+  i.block_id,
+  i.tx_id,
+  i.index,
   i.event_type :: STRING AS event_type,
   i.program_id :: STRING AS program_id, 
   i.value AS instruction,
