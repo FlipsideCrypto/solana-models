@@ -38,7 +38,7 @@ base_ii AS (
 ) 
 
 SELECT
-  i.block_timestamp :: TIMESTAMP AS block_timestamp,
+  i.block_timestamp,
   i.block_id :: INTEGER AS block_id,
   i.tx_id :: STRING AS tx_id,
   i.index :: INTEGER AS INDEX,
@@ -46,7 +46,7 @@ SELECT
   i.program_id :: STRING AS program_id, 
   i.value AS instruction,
   ii.value AS inner_instruction,
-  i.ingested_at :: TIMESTAMP AS ingested_at
+  i.ingested_at
 FROM
   base_i
   i
