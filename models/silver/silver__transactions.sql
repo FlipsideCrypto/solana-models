@@ -26,24 +26,21 @@ WITH base AS (
         tx :meta :innerInstructions AS inner_instructions,
         ingested_at
     FROM
-        {{ ref('bronze_solana__transactions') }}
+        {{ ref('bronze__transactions') }}
         t
     WHERE
         COALESCE(
             tx :transaction :message :instructions [0] :programId :: STRING,
             ''
         ) <> 'Vote111111111111111111111111111111111111111'
-
-{% if is_incremental() %}
-AND ingested_at >= getdate() - INTERVAL '2 days'
-{% endif %}
+        AND ingested_at :: DATE >= getdate() - INTERVAL '2 days'
 ),
 signers_flattened AS (
     SELECT
         b.tx_id,
         A.value :pubkey :: STRING AS acct,
         ROW_NUMBER() over (
-            PARTITION BY t.tx_id
+            PARTITION BY b.tx_id
             ORDER BY
                 A.index DESC
         ) AS rn
@@ -58,20 +55,20 @@ signers_arr AS (
         tx_id,
         ARRAY_AGG(acct) AS signers
     FROM
-        signers
+        signers_flattened
     GROUP BY
         1
 )
 SELECT
     block_timestamp,
     block_id,
-    tx_id,
+    b.tx_id,
     recent_block_hash,
     s.signers AS signers,
     sf.acct AS requestor,
     fee,
     succeeded,
-    ccount_keys,
+    account_keys,
     pre_balances,
     post_balances,
     pre_token_balances,
@@ -85,6 +82,6 @@ FROM
     ON b.tx_id = s.tx_id
     LEFT OUTER JOIN signers_flattened sf
     ON b.tx_id = sf.tx_id
-    AND sf.rn = 1 qualify(ROW_NUMBER() over(PARTITION BY block_id, tx_id
+    AND sf.rn = 1 qualify(ROW_NUMBER() over(PARTITION BY b.block_id, b.tx_id
 ORDER BY
-    ingested_at DESC)) = 1
+    b.ingested_at DESC)) = 1

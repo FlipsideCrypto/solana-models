@@ -10,11 +10,10 @@ SELECT
     block_id,
     tx_id,
     e.index,
-    e.value :parsed :type :: STRING AS event_type,
     e.value,
     ingested_at
 FROM
-    {{ ref('dbt_solana__transactions') }}
+    {{ ref('silver__transactions') }}
     t,
     TABLE(FLATTEN(instructions)) AS e
 WHERE
@@ -22,10 +21,11 @@ WHERE
         e.value :programId :: STRING,
         ''
     ) NOT IN (
+        -- exclude Pyth Oracle programs
         'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH',
         'DtmE9D2CSB4L5D6A15mraeEjrGMm6auWVzgaD8hK2tZM'
     )
 
 {% if is_incremental() %}
-AND ingested_at >= getdate() - INTERVAL '2 days'
+AND ingested_at :: DATE >= getdate() - INTERVAL '2 days'
 {% endif %}

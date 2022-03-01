@@ -19,11 +19,11 @@ SELECT
     b.value :uiTokenAmount :uiAmountString AS uiAmountString,
     ingested_at
 FROM
-    {{ ref('dbt_solana__transactions') }}
+    {{ ref('silver__transactions') }}
     t,
-    TABLE(FLATTEN(postTokenBalances)) b
+    TABLE(FLATTEN(post_token_balances)) b
 
 {% if is_incremental() %}
 WHERE
-    ingested_at >= getdate() - INTERVAL '2 days'
+    ingested_at :: DATE >= getdate() - INTERVAL '2 days'
 {% endif %}
