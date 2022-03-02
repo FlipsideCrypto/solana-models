@@ -1,0 +1,54 @@
+version: 2
+models:
+  - name: silver__votes
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+            - TX_ID
+          where: block_timestamp::date >= current_date - 2
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: RECENT_BLOCK_HASH
+        description: Previous block's hash value
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: FEE
+        description: Transaction fee (in lamports)
+        tests: 
+          - not_null
+      - name: SUCCEEDED
+        description: True when a transaction is successful, otherwise false. 
+        tests: 
+          - not_null
+      - name: VOTE_ACCOUNT
+        description: Account belonging to the voting delegator
+        tests: 
+          - not_null
+      - name: VOTE_AUTHORITY
+        description: Authority for the voting delegator
+        tests: 
+          - not_null: 
+              enabled: false # Vote authority not always available
+      - name: VOTE_HASH
+        description: Unique hash representing this set of votes(?)
+      - name: VOTE_SLOTS
+        description: Slots being voted on
+      - name: INGESTED_AT
+        description: "{{ doc('ingested_at') }}"
+        tests: 
+          - not_null
