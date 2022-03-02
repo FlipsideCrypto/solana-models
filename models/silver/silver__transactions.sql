@@ -11,7 +11,7 @@ WITH base AS (
         block_timestamp,
         block_id,
         tx_id,
-        tx :transaction :messag :recentBlockhash AS recent_block_hash,
+        tx :transaction :message :recentBlockhash AS recent_block_hash,
         tx :meta :fee AS fee,
         CASE
             WHEN tx :meta :err IS NULL THEN TRUE
