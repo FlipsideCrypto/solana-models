@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "CONCAT_WS('-', block_id, tx_id, index)",
     incremental_strategy = 'delete+insert',
-    cluster_by = ['block_timestamp::DATE'],
+    cluster_by = ['ingested_at::DATE'],
 ) }}
 
 SELECT
