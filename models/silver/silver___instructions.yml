@@ -1,0 +1,31 @@
+version: 2
+models:
+  - name: silver___instructions
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: INDEX
+        description: Location of the instruction within the instructions of a transaction
+        tests: 
+          - not_null 
+      - name: VALUE
+        description: json object that contains the instruction
+        tests: 
+          - not_null
+      - name: INGESTED_AT
+        description: "{{ doc('ingested_at') }}"
+        tests: 
+          - not_null
