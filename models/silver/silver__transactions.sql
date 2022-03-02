@@ -76,4 +76,6 @@ SELECT
 FROM
     base b
     LEFT OUTER JOIN signers_arr s
-    ON b.tx_id = s.tx_id
+    ON b.tx_id = s.tx_id qualify(ROW_NUMBER() over(PARTITION BY b.block_id, b.tx_id
+ORDER BY
+    b.ingested_at DESC)) = 1
