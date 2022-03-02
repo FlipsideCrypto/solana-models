@@ -33,17 +33,15 @@ WITH base AS (
             tx :transaction :message :instructions [0] :programId :: STRING,
             ''
         ) <> 'Vote111111111111111111111111111111111111111'
-        AND ingested_at :: DATE >= getdate() - INTERVAL '2 days'
+
+{% if is_incremental() %}
+AND ingested_at :: DATE >= getdate() - INTERVAL '2 days'
+{% endif %}
 ),
 signers_flattened AS (
     SELECT
         b.tx_id,
-        A.value :pubkey :: STRING AS acct,
-        ROW_NUMBER() over (
-            PARTITION BY b.tx_id
-            ORDER BY
-                A.index DESC
-        ) AS rn
+        A.value :pubkey :: STRING AS acct
     FROM
         base b,
         TABLE(FLATTEN(b.account_keys)) A
@@ -65,7 +63,6 @@ SELECT
     b.tx_id,
     recent_block_hash,
     s.signers AS signers,
-    sf.acct AS requestor,
     fee,
     succeeded,
     account_keys,
@@ -80,8 +77,3 @@ FROM
     base b
     LEFT OUTER JOIN signers_arr s
     ON b.tx_id = s.tx_id
-    LEFT OUTER JOIN signers_flattened sf
-    ON b.tx_id = sf.tx_id
-    AND sf.rn = 1 qualify(ROW_NUMBER() over(PARTITION BY b.block_id, b.tx_id
-ORDER BY
-    b.ingested_at DESC)) = 1
