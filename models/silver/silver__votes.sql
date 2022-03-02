@@ -28,7 +28,10 @@ WITH base AS (
     WHERE
         tx :transaction :message :instructions [0] :parsed :type :: STRING IS NOT NULL
         AND tx :transaction :message :instructions [0] :programId :: STRING = 'Vote111111111111111111111111111111111111111'
-        AND ingested_at :: DATE >= getdate() - INTERVAL '2 days'
+
+{% if is_incremental() %}
+AND ingested_at :: DATE >= getdate() - INTERVAL '2 days'
+{% endif %}
 )
 SELECT
     block_timestamp,
