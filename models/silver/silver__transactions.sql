@@ -24,6 +24,7 @@ WITH base AS (
         tx :meta :postTokenBalances AS post_token_balances,
         tx :transaction :message :instructions AS instructions,
         tx :meta :innerInstructions AS inner_instructions,
+        tx :meta :logMessages :: ARRAY AS log_messages,
         ingested_at
     FROM
         {{ ref('bronze__transactions') }}
