@@ -10,6 +10,7 @@ $$
     try {
         snowflake.execute({sqlText: `DROP DATABASE IF EXISTS ${DESTINATION_DB_NAME}`});
         snowflake.execute({sqlText: `CREATE DATABASE ${DESTINATION_DB_NAME} CLONE ${SOURCE_DB_NAME}`});
+        snowflake.execute({sqlText: `DROP SCHEMA ${DESTINATION_DB_NAME}._INTERNAL`}); /* this only needs to be in prod */
 
         var existing_schemas = snowflake.execute({sqlText: `SELECT table_schema
             FROM ${DESTINATION_DB_NAME}.INFORMATION_SCHEMA.TABLE_PRIVILEGES
