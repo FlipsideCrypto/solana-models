@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "CONCAT_WS('-', block_id, tx_id)",
     incremental_strategy = 'delete+insert',
-    cluster_by = ['ingested_at::DATE'],
+    cluster_by = ['ingested_at::DATE']
 ) }}
 
 WITH base AS (
@@ -11,19 +11,19 @@ WITH base AS (
         block_timestamp,
         block_id,
         tx_id,
-        tx :transaction :message :recentBlockhash AS recent_block_hash,
-        tx :meta :fee AS fee,
+        tx :transaction :message :recentBlockhash :: STRING AS recent_block_hash,
+        tx :meta :fee :: NUMBER AS fee,
         CASE
             WHEN tx :meta :err IS NULL THEN TRUE
             ELSE FALSE
         END AS succeeded,
-        tx :transaction :message :accountKeys AS account_keys,
-        tx :meta :preBalances AS pre_balances,
-        tx :meta :postBalances AS post_balances,
-        tx :meta :preTokenBalances AS pre_token_balances,
-        tx :meta :postTokenBalances AS post_token_balances,
-        tx :transaction :message :instructions AS instructions,
-        tx :meta :innerInstructions AS inner_instructions,
+        tx :transaction :message :accountKeys :: ARRAY AS account_keys,
+        tx :meta :preBalances :: ARRAY AS pre_balances,
+        tx :meta :postBalances :: ARRAY AS post_balances,
+        tx :meta :preTokenBalances :: ARRAY AS pre_token_balances,
+        tx :meta :postTokenBalances :: ARRAY AS post_token_balances,
+        tx :transaction :message :instructions :: ARRAY AS instructions,
+        tx :meta :innerInstructions :: ARRAY AS inner_instructions,
         tx :meta :logMessages :: ARRAY AS log_messages,
         ingested_at
     FROM
