@@ -9,18 +9,18 @@ models:
             - INDEX
     columns:
       - name: BLOCK_TIMESTAMP
-        description: The time the block began
+        description: "{{ doc('block_timestamp') }}"
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 2
       - name: BLOCK_ID
-        description: Unique sequential number that identifies the current block
+        description: "{{ doc('block_id') }}"
         tests:
           - not_null
       - name: TX_ID
-        description: A unique key that identifies a transaction
+        description: "{{ doc('tx_id') }}"
         tests:
           - not_null
       - name: INDEX
@@ -36,6 +36,6 @@ models:
       - name: INNER_INSTRUCTION
         description: A call from one smart contract program to another. 
       - name: INGESTED_AT
-        description: Time the record was sent to the table
+        description: "{{ doc('ingested_at') }}"
         tests: 
           - not_null
