@@ -30,7 +30,10 @@ models:
       - name: FEE
         description: Transaction fee (in lamports)
         tests: 
-          - not_null
+          - null_threshold:
+              threshold_percent: 0.99 # some older transactions have valid null fees
+          - not_null:
+              where: ingested_at::date >= current_date - 2
       - name: SUCCEEDED
         description: True when a transaction is successful, otherwise false. 
         tests: 

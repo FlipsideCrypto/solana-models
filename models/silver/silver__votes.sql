@@ -34,7 +34,8 @@ AND ingested_at :: DATE >= getdate() - INTERVAL '2 days'
 {% endif %}
 )
 SELECT
-    block_timestamp,ß block_id,
+    block_timestamp,
+    block_id,
     tx_id,
     recent_block_hash,
     fee,
