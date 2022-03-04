@@ -35,10 +35,8 @@ on-run-start:
 # using the `{{ config(...) }}` macro.
 models:
   +copy_grants: true
-  sql_models:
-    solana:
-      materialized: incremental
-      +schema: bronze_solana
+  +persist_docs:
+    columns: true
 
 vars:
   "dbt_date:time_zone": America/Los_Angeles
