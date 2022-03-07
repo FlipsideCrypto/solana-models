@@ -28,7 +28,9 @@ models:
         tests:  
           - not_null
       - name: PROGRAM_ID
-        description: An address that identifies the program that is being interacted with. I.E. which DEX for a swap or marketplace for an NFT sale. 
+        description: "{{ doc('program_id') }}"
+      - name: EVENT_TYPE
+        description: "{{ doc('event_type') }}"
       - name: INSTRUCTION
         description: An instruction specifies which program it is calling, which accounts it wants to read or modify, and additional data that serves as auxiliary input to the program
         tests: 
