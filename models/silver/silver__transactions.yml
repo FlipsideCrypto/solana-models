@@ -34,9 +34,11 @@ models:
           - not_null:
               where: ingested_at::date >= current_date - 2
       - name: SUCCEEDED
-        description: True when a transaction is successful, otherwise false. 
+        description: "{{ doc('tx_succeeded') }}"
         tests: 
           - not_null
+      - name: SIGNERS
+        description: List of accounts that signed the transaction
       - name: ACCOUNT_KEYS
         description: List of accounts that are referenced by pre/post sol/token balances objects
         tests: 
