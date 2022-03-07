@@ -14,7 +14,9 @@ WITH base AS (
         tx :transaction :message :recentBlockhash :: STRING AS recent_block_hash,
         tx :meta :fee :: NUMBER AS fee,
         CASE
-            WHEN is_null_value(tx :meta :err) THEN TRUE
+            WHEN IS_NULL_VALUE(
+                tx :meta :err
+            ) THEN TRUE
             ELSE FALSE
         END AS succeeded,
         tx :transaction :message :accountKeys :: ARRAY AS account_keys,
@@ -42,6 +44,7 @@ AND ingested_at :: DATE >= getdate() - INTERVAL '2 days'
 signers_flattened AS (
     SELECT
         b.tx_id,
+        A.index AS signer_index,
         A.value :pubkey :: STRING AS acct
     FROM
         base b,
@@ -52,7 +55,10 @@ signers_flattened AS (
 signers_arr AS (
     SELECT
         tx_id,
-        ARRAY_AGG(acct) AS signers
+        ARRAY_AGG(acct) within GROUP (
+            ORDER BY
+                signer_index
+        ) AS signers
     FROM
         signers_flattened
     GROUP BY
