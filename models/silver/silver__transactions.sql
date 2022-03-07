@@ -14,7 +14,7 @@ WITH base AS (
         tx :transaction :message :recentBlockhash :: STRING AS recent_block_hash,
         tx :meta :fee :: NUMBER AS fee,
         CASE
-            WHEN tx :meta :err IS NULL THEN TRUE
+            WHEN is_null_value(tx :meta :err) THEN TRUE
             ELSE FALSE
         END AS succeeded,
         tx :transaction :message :accountKeys :: ARRAY AS account_keys,
