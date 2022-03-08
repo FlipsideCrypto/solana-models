@@ -11,6 +11,7 @@ SELECT
     tx_id,
     b.index,
     b.value :accountIndex :: INTEGER AS account_index,
+    t.account_keys [account_index] :pubkey :: STRING AS account,
     b.value :mint :: STRING AS mint,
     b.value :owner :: STRING AS owner,
     b.value :uiTokenAmount :amount :: INTEGER AS amount,
@@ -22,7 +23,6 @@ FROM
     {{ ref('silver__transactions') }}
     t,
     TABLE(FLATTEN(post_token_balances)) b
-
 {% if is_incremental() %}
 WHERE
     ingested_at :: DATE >= getdate() - INTERVAL '2 days'
