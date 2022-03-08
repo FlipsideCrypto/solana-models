@@ -74,8 +74,10 @@ sender AS (
     SELECT 
         tx_id, 
         account_index, 
-        CASE WHEN owner = authority THEN owner
-        ELSE authority END AS tx_from 
+        CASE 
+            WHEN owner = authority THEN owner
+            ELSE authority 
+        END AS tx_from 
     FROM base_spl t       
 ), 
 
