@@ -33,17 +33,17 @@ signers AS (
     SELECT
         t.tx_id,
         s.value::STRING AS acct,
-        A.index
+        s.index
     FROM
         jupiter_dex_txs t,
         TABLE(FLATTEN(t.signers)) s qualify(ROW_NUMBER() over (PARTITION BY t.tx_id
     ORDER BY
-        A.index DESC)) = 1
+        s.index DESC)) = 1
 ),
 post_balances_acct_map AS (
     SELECT
-        t.tx_id,
-        t.account_keys [b.account_index] :pubkey :: STRING AS middle_acct,
+        b.tx_id,
+        b.account AS middle_acct,
         b.owner,
         b.mint,
         b.decimal,
@@ -64,7 +64,7 @@ destinations AS (
         e.block_id,
         e.block_timestamp,
         e.tx_id,
-        e.succeeded,
+        t.succeeded,
         e.index,
         ii.index AS inner_index,
         ii.value :parsed :info :destination :: STRING AS destination,
@@ -72,9 +72,9 @@ destinations AS (
         ii.value :parsed :info :source :: STRING AS source,
         ii.value :parsed :info :amount AS amount,
         ROW_NUMBER() over (
-            PARTITION BY i.tx_id
+            PARTITION BY e.tx_id
             ORDER BY
-                i.index,
+                e.index,
                 inner_index
         ) AS rn
     FROM
