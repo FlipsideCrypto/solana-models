@@ -12,7 +12,6 @@ WITH jupiter_dex_txs AS (
         i.block_timestamp,
         i.tx_id,
         t.fee,
-        t.account_keys,
         t.succeeded,
         t.signers
     FROM
