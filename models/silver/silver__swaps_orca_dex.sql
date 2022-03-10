@@ -5,7 +5,20 @@
     cluster_by = ['block_timestamp::DATE'],
 ) }}
 
-WITH jupiter_dex_txs AS (
+WITH base_i AS (
+
+    SELECT
+        *
+    FROM
+        {{ ref('silver___instructions') }}
+        i
+
+{% if is_incremental() %}
+WHERE
+    i.ingested_at :: DATE >= CURRENT_DATE - 2
+{% endif %}
+)
+, orca_dex_txs AS (
 
     SELECT
         DISTINCT i.block_id,
@@ -15,29 +28,62 @@ WITH jupiter_dex_txs AS (
         t.succeeded,
         t.signers
     FROM
-        {{ ref('silver___instructions') }}
+        base_i
         i
         INNER JOIN {{ ref('silver__transactions') }}
         t
         ON t.tx_id = i.tx_id
     WHERE
-        i.value :programId :: STRING = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo' -- jupiter aggregator v2
+        i.value :programId :: STRING IN (
+            -- unknown orca swaps version, seems related to v2
+            'MEV1HDn99aybER3U3oa9MySSXqoEZNDEQ4miAimTjaW',
+            -- orca swaps v2
+            '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
+            -- orca swaps v1
+            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1'
+        )
 
 {% if is_incremental() %}
-AND i.ingested_at :: DATE >= CURRENT_DATE - 2
 AND t.ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
-signers AS (
+delegates_map_tmp AS (
+    SELECT
+        i.tx_id,
+        VALUE :parsed :info :delegate :: STRING AS delegate,
+        VALUE :parsed :info :owner :: STRING AS owner
+    FROM
+        base_i i
+    INNER JOIN orca_dex_txs t on t.tx_id = i.tx_id
+    WHERE
+        delegate IS NOT NULL
+),
+delegates_map as (
+    select
+        tx_id,
+        delegate,
+        owner
+    from delegates_map_tmp
+    group by 1,2,3
+),
+signers_tmp AS (
     SELECT
         t.tx_id,
-        s.value::STRING AS acct,
+        s.value :: STRING AS acct,
         s.index
     FROM
-        jupiter_dex_txs t,
-        TABLE(FLATTEN(t.signers)) s qualify(ROW_NUMBER() over (PARTITION BY t.tx_id
-    ORDER BY
-        s.index DESC)) = 1
+        orca_dex_txs t,
+        TABLE(FLATTEN(t.signers)) s 
+),
+signers as (
+    select 
+        s.tx_id,
+        s.acct,
+        dm.owner AS delegate_owner
+    from signers_tmp s
+    LEFT OUTER JOIN delegates_map dm
+    ON dm.tx_id = s.tx_id
+    AND s.acct = dm.delegate
 ),
 post_balances_acct_map AS (
     SELECT
@@ -50,7 +96,7 @@ post_balances_acct_map AS (
     FROM
         {{ ref('silver___post_token_balances') }}
         b
-        INNER JOIN jupiter_dex_txs t
+        INNER JOIN orca_dex_txs t
         ON t.tx_id = b.tx_id
 
 {% if is_incremental() %}
@@ -79,7 +125,7 @@ destinations AS (
     FROM
         {{ ref('silver__events') }}
         e
-        INNER JOIN jupiter_dex_txs t
+        INNER JOIN orca_dex_txs t
         ON t.tx_id = e.tx_id
         LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
     WHERE
@@ -88,7 +134,14 @@ destinations AS (
             ii.value :programId :: STRING,
             ''
         ) <> '11111111111111111111111111111111'
-        AND e.program_id = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo'
+        AND e.program_id IN (
+            -- unknown orca swaps version, seems related to v2
+            'MEV1HDn99aybER3U3oa9MySSXqoEZNDEQ4miAimTjaW',
+            -- orca swaps v2
+            '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
+            -- orca swaps v1
+            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1'
+        )
 
 {% if is_incremental() %}
 AND e.ingested_at :: DATE >= CURRENT_DATE - 2
@@ -108,7 +161,10 @@ destination_acct_map AS (
 ),
 swaps_tmp_1 AS (
     SELECT
-        s.acct AS swapper,
+        COALESCE(
+            s.delegate_owner,
+            s.acct
+        ) AS swapper,
         COALESCE(
             p1.owner,
             d2.authority
