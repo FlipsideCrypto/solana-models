@@ -10,7 +10,7 @@ WITH txs AS (
         tx_id, 
         count(tx_id) AS ct
     FROM {{ ref('silver__events') }}
-    WHERE program_id = 'M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K'
+    WHERE program_id = 'M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K' -- Magic Eden V2 Program ID
     
     {% if is_incremental() %}
       AND ingested_at >= getdate() - interval '2 days'
