@@ -1,0 +1,36 @@
+version: 2
+models:
+  - name: core__fact_transfers
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: INDEX
+        description: "{{ doc('index') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_FROM
+        description: "{{ doc('tx_from') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_TO 
+        description: "{{ doc('tx_to') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: AMOUNT 
+        description: "{{ doc('amount') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
