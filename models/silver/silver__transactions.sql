@@ -80,6 +80,7 @@ SELECT
     post_token_balances,
     instructions,
     inner_instructions,
+    log_messages
     ingested_at
 FROM
     base b
