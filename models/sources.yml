@@ -7,3 +7,8 @@ sources:
     tables:
       - name: solana_blocks
       - name: solana_txs
+  - name: legacy_bronze
+    database: flipside_prod_db
+    schema: bronze
+    tables: 
+      - name: prod_nft_metadata_uploads_1828572827
