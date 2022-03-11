@@ -7,3 +7,13 @@ sources:
     tables:
       - name: solana_blocks
       - name: solana_txs
+  - name: crosschain
+    database: flipside_prod_db
+    schema: silver_crosschain
+    tables:
+      - name: address_labels
+  - name: shared
+    database: flipside_prod_db
+    schema: silver
+    tables:
+      - name: prices_v2
