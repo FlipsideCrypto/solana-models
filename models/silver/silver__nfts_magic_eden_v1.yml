@@ -32,7 +32,7 @@ models:
       - name: NFT
         tests: 
           - not_null
-      - name: SALE_AMOUNT
+      - name: SALES_AMOUNT
         tests: 
           - not_null
       - name: INGESTED_AT
