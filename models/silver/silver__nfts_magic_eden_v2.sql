@@ -5,102 +5,52 @@
     cluster_by = ['block_timestamp::DATE'],
 ) }}
 
+
 WITH txs AS (
     SELECT 
-        tx_id, 
-        count(tx_id) AS ct
+        tx_id
     FROM {{ ref('silver__events') }}
     WHERE program_id = 'M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K' -- Magic Eden V2 Program ID
-    
+
     {% if is_incremental() %}
       AND ingested_at::date >= getdate() - interval '2 days'
     {% endif %}
 
-    GROUP BY tx_id HAVING count(tx_id) >= 2
-),  
-
-last_index AS (
-  SELECT
-      e.block_timestamp, 
-      e.block_id, 
-      e.tx_id,
-      t.ct, 
-      e.index, 
-      e.program_id,
-      instruction, 
-      inner_instruction, 
-      e.ingested_at
-  FROM txs t
-
-  INNER JOIN {{ ref('silver__events') }} e
-  ON t.tx_id = e.tx_id
-
-  WHERE e.index = t.ct - 1
-
-  {% if is_incremental() %}
-      AND ingested_at::date >= getdate() - interval '2 days'
-  {% endif %}
-),  
-
+    GROUP BY tx_id HAVING count(tx_id) = 3
+),    
+ 
 amounts_agg AS (
   SELECT
       block_timestamp, 
       block_id, 
       tx_id,
-      i.index AS index, 
+      e.index AS event_index, 
+      i.index AS inner_index, 
       program_id,
       i.value :parsed :info :lamports / POW(10,9) as amount, 
       i.value :parsed :info :mint :: STRING AS NFT, 
-      i.value :parsed :info :wallet :: STRING AS wallet, 
+      i.value :parsed :info :wallet :: STRING AS wallet,
+      max(inner_index) over (partition by tx_id) as max_inner_index, 
       ingested_at
-  FROM last_index, 
+  FROM {{ ref('silver__events') }} e, 
   table(flatten(inner_instruction:instructions)) i 
   
   WHERE amount IS NOT NULL 
+
+  {% if is_incremental() %}
+      AND ingested_at::date >= getdate() - interval '2 days'
+  {% endif %}
+
   OR wallet IS NOT NULL
-),  
-
-max_index_remove AS (
-  SELECT
-        tx_id, 
-        max(index) AS max_index
-  FROM amounts_agg
-  GROUP BY tx_id
-), 
-
-NFT AS (
-    SELECT 
-        tx_id, 
-        NFT, 
-        wallet
-    FROM amounts_agg
-    WHERE NFT IS NOT NULL 
-    AND wallet IS NOT NULL
-), 
-
-amounts AS (
-    SELECT 
-      block_timestamp, 
-      block_id, 
-      a.tx_id,
-      index,
-      program_id,
-      amount,  
-      ingested_at
-    FROM amounts_agg a
-    
-    INNER JOIN max_index_remove m
-    ON m.tx_id = a.tx_id
-  
-    WHERE index <> m.max_index   
-),  
+),   
 
 sales_amount AS (
     SELECT 
-        tx_id, 
-        sum(amount) AS sales_amount
-    FROM amounts
-    GROUP BY tx_id
+        tx_id,
+        event_index, 
+        amount
+    FROM amounts_agg
+    WHERE event_index = 0 
 )
 
 SELECT 
@@ -108,16 +58,15 @@ SELECT
     block_id, 
     a.tx_id, 
     program_id,
-    s.sales_amount, 
-    n.NFT, 
-    n.wallet AS purchaser, 
+    s.amount as sales_amount, 
+    NFT as mint, 
+    wallet AS purchaser, 
     ingested_at
-FROM amounts a
-
-INNER JOIN NFT n
-ON n.tx_id = a.tx_id
+FROM amounts_agg a
 
 INNER JOIN sales_amount s
 ON s.tx_id = a.tx_id
 
-WHERE index = 0
+WHERE program_id = 'M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K' 
+AND NFT IS NOT NULL 
+AND purchaser IS NOT NULL

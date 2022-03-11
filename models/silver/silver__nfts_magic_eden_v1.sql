@@ -1,8 +1,8 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "CONCAT_WS('-', tx_id, NFT)",
+    unique_key = "CONCAT_WS('-', tx_id, mint)",
     incremental_strategy = 'delete+insert',
-    cluster_by = ['block_timestamp::DATE'],
+    cluster_by = ['block_timestamp::DATE'], 
 ) }}
 
 WITH txs AS (
@@ -10,13 +10,14 @@ WITH txs AS (
         block_timestamp, 
         block_id, 
         tx_id, 
-        program_id,  
+        program_id, 
+        inner_instruction :index AS inner_index, 
+        max(inner_index) over (partition by tx_id) as max_inner_index,  
         i.value :parsed :info :lamports / POW(10,9) AS amount, 
         i.value :parsed :info :account :: STRING AS account, 
         i.value :parsed :info :newAuthority :: STRING as owner, 
-        inner_instruction, 
         ingested_at
-    FROM "SOLANA_DEV"."SILVER"."EVENTS", 
+    FROM {{ ref('silver__events') }}, 
     table(flatten(inner_instruction:instructions)) i
    
     WHERE program_id = 'MEisE1HzehtrDpAAT8PnLHjpSSkRYakotTuJRPjTpo8' -- Magic Eden V1 Program ID 
@@ -31,9 +32,10 @@ WITH txs AS (
 sales_amount AS (
   SELECT 
     tx_id, 
-    sum(amount) AS sales_amount
+    max_inner_index, 
+    sum(amount) / (max_inner_index + 1) AS sales_amount
   FROM txs 
-  GROUP BY tx_id
+  GROUP BY tx_id, max_inner_index
 ) 
 
 SELECT 
@@ -42,7 +44,7 @@ SELECT
     t.tx_id, 
     t.program_id, 
     s.sales_amount,
-    p.mint AS NFT, 
+    p.mint AS mint, 
     t.owner AS purchaser, 
     t.ingested_at
 FROM txs t
@@ -50,7 +52,7 @@ FROM txs t
 INNER JOIN sales_amount s
 ON s.tx_id = t.tx_id
 
-INNER JOIN "SOLANA_DEV"."SILVER"."_POST_TOKEN_BALANCES" p
+INNER JOIN {{ ref('silver___post_token_balances') }} p
 ON p.tx_id = t.tx_id AND p.account = t.account
 
 WHERE t.account IS NOT NULL 

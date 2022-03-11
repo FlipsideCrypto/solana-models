@@ -26,12 +26,15 @@ models:
         tests: 
           - not_null
       - name: PURCHASER
+        description: "{{ doc('purchaser') }}"
         tests: 
           - not_null
-      - name: NFT
+      - name: MINT
+        description: "{{ doc('mint') }}"
         tests: 
           - not_null
       - name: SALES_AMOUNT
+        description: "{{ doc('sales_amount') }}"
         tests: 
           - not_null
       - name: INGESTED_AT
