@@ -17,3 +17,8 @@ sources:
     schema: silver
     tables:
       - name: prices_v2
+  - name: legacy_bronze
+    database: flipside_prod_db
+    schema: bronze
+    tables: 
+      - name: prod_nft_metadata_uploads_1828572827
