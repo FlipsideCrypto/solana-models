@@ -18,7 +18,7 @@ FROM {{ ref('silver__events') }} e
   
 INNER JOIN {{ ref('silver___post_token_balances') }} p
 ON e.tx_id = p.tx_id 
-AND inner_instruction :instructions[0] :parsed :info :authority :: STRING = p.account
+--AND inner_instruction :instructions[0] :parsed :info :authority :: STRING = p.account
     
 WHERE program_id = 'cndyAnrLdpjq1Ssp1z8xxDsB8dxe7u4HL5Nxi2K5WXZ' 
 AND e.index = 4
