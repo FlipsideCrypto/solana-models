@@ -31,7 +31,7 @@ amounts_agg AS (
       COALESCE(
           i.value :parsed :info :lamports, 
           0
-      ) as amount, -- COALESCE TO ZERO
+      ) as amount, 
       i.value :parsed :info :mint :: STRING AS NFT, 
       i.value :parsed :info :wallet :: STRING AS wallet,
       max(inner_index) over (partition by e.tx_id, event_index, NFT) as max_inner_index, 
