@@ -8,7 +8,8 @@
 
 WITH txs AS (
     SELECT 
-        tx_id
+        tx_id, 
+        max(index) AS max_event_index
     FROM {{ ref('silver__events') }}
     WHERE program_id = 'M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K' -- Magic Eden V2 Program ID
 
@@ -16,41 +17,49 @@ WITH txs AS (
       AND ingested_at::date >= getdate() - interval '2 days'
     {% endif %}
 
-    GROUP BY tx_id HAVING count(tx_id) = 3
+    GROUP BY tx_id HAVING count(tx_id) >= 2
 ),    
  
 amounts_agg AS (
   SELECT
       block_timestamp, 
       block_id, 
-      tx_id,
+      e.tx_id,
       e.index AS event_index, 
       i.index AS inner_index, 
       program_id,
-      i.value :parsed :info :lamports / POW(10,9) as amount, 
+      COALESCE(
+          i.value :parsed :info :lamports, 
+          0
+      ) as amount, -- COALESCE TO ZERO
       i.value :parsed :info :mint :: STRING AS NFT, 
       i.value :parsed :info :wallet :: STRING AS wallet,
-      max(inner_index) over (partition by tx_id) as max_inner_index, 
+      max(inner_index) over (partition by e.tx_id, event_index, NFT) as max_inner_index, 
       ingested_at
-  FROM {{ ref('silver__events') }} e, 
-  table(flatten(inner_instruction:instructions)) i 
+  FROM {{ ref('silver__events') }} e
+
+    INNER JOIN txs t
+    ON t.tx_id = e.tx_id AND e.index = t.max_event_index 
+
+    LEFT OUTER JOIN table(flatten(inner_instruction:instructions)) i 
   
-  WHERE amount IS NOT NULL 
+  WHERE amount IS NOT NULL
+  AND NFT IS NOT NULL
 
   {% if is_incremental() %}
       AND ingested_at::date >= getdate() - interval '2 days'
   {% endif %}
-
-  OR wallet IS NOT NULL
 ),   
 
 sales_amount AS (
     SELECT 
         tx_id,
-        event_index, 
-        amount
-    FROM amounts_agg
-    WHERE event_index = 0 
+        sum(amount) AS amount
+    FROM amounts_agg a
+    WHERE inner_index <> max_inner_index
+    AND NFT IS NULL
+
+    GROUP BY tx_id
 )
 
 SELECT 
@@ -58,7 +67,7 @@ SELECT
     block_id, 
     a.tx_id, 
     program_id,
-    s.amount as sales_amount, 
+    s.amount / POW(10,9) as sales_amount, 
     NFT as mint, 
     wallet AS purchaser, 
     ingested_at
@@ -67,6 +76,4 @@ FROM amounts_agg a
 INNER JOIN sales_amount s
 ON s.tx_id = a.tx_id
 
-WHERE program_id = 'M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K' 
-AND NFT IS NOT NULL 
-AND purchaser IS NOT NULL
+WHERE NFT IS NOT NULL 

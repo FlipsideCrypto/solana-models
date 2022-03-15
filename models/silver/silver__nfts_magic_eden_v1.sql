@@ -11,13 +11,15 @@ WITH txs AS (
         block_id, 
         tx_id, 
         program_id, 
-        inner_instruction :index AS inner_index, 
-        max(inner_index) over (partition by tx_id) as max_inner_index,  
-        i.value :parsed :info :lamports / POW(10,9) AS amount, 
-        i.value :parsed :info :account :: STRING AS account, 
-        i.value :parsed :info :newAuthority :: STRING as owner, 
+        e.index, 
+        COALESCE(
+          i.value :parsed :info :lamports, 
+          0
+         ) AS amount, 
+        instruction :accounts[1] :: STRING AS account, 
+        instruction :accounts[0] :: STRING as owner, 
         ingested_at
-    FROM {{ ref('silver__events') }}, 
+    FROM {{ ref('silver__events') }} e, 
     table(flatten(inner_instruction:instructions)) i
    
     WHERE program_id = 'MEisE1HzehtrDpAAT8PnLHjpSSkRYakotTuJRPjTpo8' -- Magic Eden V1 Program ID 
@@ -27,32 +29,36 @@ WITH txs AS (
       AND ingested_at::date >= getdate() - interval '2 days'
     {% endif %}
     
-),   
+),    
 
-sales_amount AS (
+post_token_balances AS (
   SELECT 
-    tx_id, 
-    max_inner_index, 
-    sum(amount) / (max_inner_index + 1) AS sales_amount
-  FROM txs 
-  GROUP BY tx_id, max_inner_index
+    DISTINCT
+      t.tx_id, 
+      t.account, 
+      p.mint
+  FROM {{ ref('silver___post_token_balances') }} p
+
+  INNER JOIN txs t
+  ON p.tx_id = t.tx_id AND p.account = t.account
+
+  {% if is_incremental() %}
+    WHERE t.ingested_at::date >= getdate() - interval '2 days'
+  {% endif %}
 ) 
 
 SELECT 
     t.block_timestamp, 
     t.block_id, 
     t.tx_id, 
-    t.program_id, 
-    s.sales_amount,
+    t.program_id,
+    sum(t.amount) / POW(10, 9) AS sales_amount, 
     p.mint AS mint, 
     t.owner AS purchaser, 
     t.ingested_at
 FROM txs t
 
-INNER JOIN sales_amount s
-ON s.tx_id = t.tx_id
+INNER JOIN post_token_balances p
+ON p.tx_id = t.tx_id
 
-INNER JOIN {{ ref('silver___post_token_balances') }} p
-ON p.tx_id = t.tx_id AND p.account = t.account
-
-WHERE t.account IS NOT NULL 
+GROUP BY t.block_timestamp, t.block_id, t.tx_id, t.program_id, p.mint, t.owner, t.ingested_at
