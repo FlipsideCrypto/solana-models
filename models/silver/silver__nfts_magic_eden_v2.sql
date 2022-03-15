@@ -5,77 +5,142 @@
     cluster_by = ['block_timestamp::DATE'],
 ) }}
 
-
 WITH txs AS (
-    SELECT 
-        tx_id, 
-        max(index) AS max_event_index
-    FROM {{ ref('silver__events') }}
-    WHERE program_id = 'M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K' -- Magic Eden V2 Program ID
 
-    {% if is_incremental() %}
-      AND ingested_at::date >= getdate() - interval '2 days'
-    {% endif %}
+    SELECT
+        e.tx_id,
+        t.succeeded,
+        MAX(INDEX) AS max_event_index
+    FROM
+        {{ ref('silver__events') }}
+        e
+        INNER JOIN {{ ref('silver__transactions') }}
+        t
+        ON t.tx_id = e.tx_id
+    WHERE
+        program_id = 'M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K' -- Magic Eden V2 Program ID
 
-    GROUP BY tx_id HAVING count(tx_id) >= 2
-),    
- 
-amounts_agg AS (
-  SELECT
-      block_timestamp, 
-      block_id, 
-      e.tx_id,
-      e.index AS event_index, 
-      i.index AS inner_index, 
-      program_id,
-      COALESCE(
-          i.value :parsed :info :lamports, 
-          0
-      ) as amount, 
-      i.value :parsed :info :mint :: STRING AS NFT, 
-      i.value :parsed :info :wallet :: STRING AS wallet,
-      max(inner_index) over (partition by e.tx_id) as max_inner_index,  
-      ingested_at
-  FROM {{ ref('silver__events') }} e
+{% if is_incremental() %}
+AND ingested_at :: DATE >= CURRENT_DATE - 2
+{% endif %}
+GROUP BY
+    1,
+    2
+HAVING
+    COUNT(
+        e.tx_id
+    ) >= 2
+),
+base_tmp AS (
+    SELECT
+        e.block_timestamp,
+        e.block_id,
+        e.tx_id,
+        t.succeeded,
+        e.index AS event_index,
+        i.index AS inner_index,
+        e.program_id,
+        COALESCE(
+            i.value :parsed :info :lamports :: NUMBER,
+            0
+        ) AS amount,
+        instruction :accounts [7] :: STRING AS nft_account,
+        instruction :accounts [0] :: STRING AS purchaser,
+        i.value :parsed :type :: STRING AS inner_instruction_type,
+        LAG(inner_instruction_type) over (
+            PARTITION BY e.tx_id
+            ORDER BY
+                inner_index
+        ) AS preceding_inner_instruction_type,
+        -- some mints do not map to a token account because of post purchase transfers within same transaction...need to use this when it is available
+        LAST_VALUE(
+            i.value :parsed :info :mint :: STRING ignore nulls
+        ) over (
+            PARTITION BY e.tx_id
+            ORDER BY
+                inner_index
+        ) AS nft_account_mint,
+        ingested_at
+    FROM
+        {{ ref('silver__events') }}
+        e
+        INNER JOIN txs t
+        ON t.tx_id = e.tx_id
+        AND t.max_event_index = e.index
+        AND ARRAY_SIZE(
+            e.inner_instruction :instructions
+        ) > 1
+        LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
+    WHERE
+        (
+            (
+                amount <> 0
+                AND inner_instruction_type = 'transfer'
+            )
+            OR inner_instruction_type = 'create'
+        )
 
-    INNER JOIN txs t
-    ON t.tx_id = e.tx_id AND e.index = max_event_index 
+{% if is_incremental() %}
+AND ingested_at :: DATE >= CURRENT_DATE - 2
+{% endif %}
+),
+base AS (
+    SELECT
+        *
+    FROM
+        base_tmp
+    WHERE
+        inner_instruction_type = 'transfer'
+        AND COALESCE(
+            preceding_inner_instruction_type,
+            ''
+        ) <> 'create'
+),
+post_token_balances AS (
+    SELECT
+        DISTINCT tx_id,
+        account,
+        mint
+    FROM
+        {{ ref('silver___post_token_balances') }}
 
-    LEFT OUTER JOIN table(flatten(inner_instruction:instructions)) i 
-  
-  WHERE (amount IS NOT NULL
-  OR NFT IS NOT NULL)
-
-  {% if is_incremental() %}
-      AND ingested_at::date >= getdate() - interval '2 days'
-  {% endif %}
-),   
-
-sales_amount AS (
-    SELECT 
-        tx_id,
-        sum(amount) AS amount
-    FROM amounts_agg a
-    WHERE inner_index <> max_inner_index
-    AND NFT IS NULL
-
-    GROUP BY tx_id
+{% if is_incremental() %}
+WHERE
+    ingested_at :: DATE >= CURRENT_DATE - 2
+{% endif %}
 )
-
-SELECT 
-    block_timestamp, 
-    block_id, 
-    a.tx_id, 
-    program_id,
-    event_index, 
-    s.amount / POW(10,9) as sales_amount, 
-    NFT as mint, 
-    wallet AS purchaser, 
-    ingested_at
-FROM amounts_agg a
-
-INNER JOIN sales_amount s
-ON s.tx_id = a.tx_id
-
-WHERE WALLET IS NOT NULL 
-AND NFT IS NOT NULL
+SELECT
+    b.block_timestamp,
+    b.block_id,
+    b.tx_id,
+    b.succeeded,
+    b.program_id,
+    COALESCE(
+        b.nft_account_mint,
+        p.mint
+    ) AS mint,
+    b.purchaser,
+    SUM(
+        b.amount
+    ) / pow(
+        10,
+        9
+    ) AS sales_amount,
+    b.ingested_at
+FROM
+    base b
+    LEFT OUTER JOIN post_token_balances p
+    ON p.tx_id = b.tx_id
+    AND p.account = b.nft_account
+GROUP BY
+    b.block_timestamp,
+    b.block_id,
+    b.tx_id,
+    b.succeeded,
+    b.program_id,
+    COALESCE(
+        b.nft_account_mint,
+        p.mint
+    ),
+    b.purchaser,
+    b.ingested_at
