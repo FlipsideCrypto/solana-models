@@ -34,17 +34,17 @@ amounts_agg AS (
       ) as amount, 
       i.value :parsed :info :mint :: STRING AS NFT, 
       i.value :parsed :info :wallet :: STRING AS wallet,
-      max(inner_index) over (partition by e.tx_id, event_index, NFT) as max_inner_index, 
+      max(inner_index) over (partition by e.tx_id) as max_inner_index,  
       ingested_at
   FROM {{ ref('silver__events') }} e
 
     INNER JOIN txs t
-    ON t.tx_id = e.tx_id AND e.index = t.max_event_index 
+    ON t.tx_id = e.tx_id AND e.index = max_event_index 
 
     LEFT OUTER JOIN table(flatten(inner_instruction:instructions)) i 
   
-  WHERE amount IS NOT NULL
-  AND NFT IS NOT NULL
+  WHERE (amount IS NOT NULL
+  OR NFT IS NOT NULL)
 
   {% if is_incremental() %}
       AND ingested_at::date >= getdate() - interval '2 days'
@@ -67,6 +67,7 @@ SELECT
     block_id, 
     a.tx_id, 
     program_id,
+    event_index, 
     s.amount / POW(10,9) as sales_amount, 
     NFT as mint, 
     wallet AS purchaser, 
@@ -76,4 +77,5 @@ FROM amounts_agg a
 INNER JOIN sales_amount s
 ON s.tx_id = a.tx_id
 
-WHERE NFT IS NOT NULL 
+WHERE WALLET IS NOT NULL 
+AND NFT IS NOT NULL
