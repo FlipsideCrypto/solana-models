@@ -45,7 +45,7 @@ post_token_balances AS (
 
 {% if is_incremental() %}
 WHERE
-  t.ingested_at :: DATE >= getdate() - INTERVAL '2 days'
+  p.ingested_at :: DATE >= getdate() - INTERVAL '2 days'
 {% endif %}
 )
 SELECT
