@@ -36,15 +36,12 @@ AND ingested_at :: DATE >= getdate() - INTERVAL '2 days'
 ),
 post_token_balances AS (
   SELECT
-    DISTINCT t.tx_id,
-    t.account,
-    p.mint
+    DISTINCT tx_id,
+    account,
+    mint
   FROM
     {{ ref('silver___post_token_balances') }}
     p
-    INNER JOIN txs t
-    ON p.tx_id = t.tx_id
-    AND p.account = t.account
 
 {% if is_incremental() %}
 WHERE
@@ -69,6 +66,7 @@ FROM
   txs t
   INNER JOIN post_token_balances p
   ON p.tx_id = t.tx_id
+  AND p.account = t.account
 GROUP BY
   t.block_timestamp,
   t.block_id,
