@@ -21,7 +21,8 @@ WITH txs AS (
         program_id = 'M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K' -- Magic Eden V2 Program ID
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 2
+AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND t.ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 GROUP BY
     1,
