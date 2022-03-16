@@ -8,23 +8,26 @@
 WITH sales_inner_instructions AS (
 
   SELECT
-    block_timestamp,
-    block_id,
-    tx_id,
-    program_id,
+    e.block_timestamp,
+    e.block_id,
+    e.tx_id,
+    t.succeeded,
+    e.program_id,
     e.index,
     COALESCE(
       i.value :parsed :info :lamports :: NUMBER,
       0
     ) AS amount,
-    instruction :accounts [0] :: STRING AS purchaser,
+    e.instruction :accounts [0] :: STRING AS purchaser,
     e.instruction :accounts [1] :: STRING AS nft_account,
     e.instruction :accounts [2] :: STRING AS nft_account_2,
-    ingested_at
+    e.ingested_at
   FROM
-    {{ ref('silver__events') }}
-    e,
-    TABLE(FLATTEN(inner_instruction :instructions)) i
+    {{ ref('silver__events') }} e
+    INNER JOIN {{ ref('silver__transactions') }}
+        t
+        ON t.tx_id = e.tx_id
+    LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
   WHERE
     program_id = 'MEisE1HzehtrDpAAT8PnLHjpSSkRYakotTuJRPjTpo8' -- Magic Eden V1 Program ID
     AND ARRAY_SIZE(
@@ -32,7 +35,8 @@ WITH sales_inner_instructions AS (
     ) > 2
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= getdate() - INTERVAL '2 days'
+AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND t.ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 post_token_balances AS (
@@ -46,13 +50,14 @@ post_token_balances AS (
 
 {% if is_incremental() %}
 WHERE
-  p.ingested_at :: DATE >= getdate() - INTERVAL '2 days'
+  p.ingested_at :: DATE >= current_date - 2
 {% endif %}
 )
 SELECT
   s.block_timestamp,
   s.block_id,
   s.tx_id,
+  s.succeeded,
   s.program_id,
   COALESCE(
     p.mint,
@@ -78,6 +83,7 @@ GROUP BY
   s.block_timestamp,
   s.block_id,
   s.tx_id,
+  s.succeeded,
   s.program_id,
   COALESCE(
     p.mint,
