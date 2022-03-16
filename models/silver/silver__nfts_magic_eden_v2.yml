@@ -21,6 +21,10 @@ models:
         description: "{{ doc('tx_id') }}"
         tests:
           - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - not_null
       - name: PROGRAM_ID 
         description: "{{ doc('program_id') }}"
         tests: 
