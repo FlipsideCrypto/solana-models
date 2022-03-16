@@ -5,7 +5,7 @@
   cluster_by = ['block_timestamp::DATE'],
 ) }}
 
-WITH txs AS (
+WITH sales_inner_instructions AS (
 
   SELECT
     block_timestamp,
@@ -17,8 +17,9 @@ WITH txs AS (
       i.value :parsed :info :lamports :: NUMBER,
       0
     ) AS amount,
-    instruction :accounts [1] :: STRING AS account,
-    instruction :accounts [0] :: STRING AS owner,
+    instruction :accounts [0] :: STRING AS purchaser,
+    e.instruction :accounts [1] :: STRING AS nft_account,
+    e.instruction :accounts [2] :: STRING AS nft_account_2,
     ingested_at
   FROM
     {{ ref('silver__events') }}
@@ -49,29 +50,38 @@ WHERE
 {% endif %}
 )
 SELECT
-  t.block_timestamp,
-  t.block_id,
-  t.tx_id,
-  t.program_id,
-  p.mint AS mint,
-  t.owner AS purchaser,
+  s.block_timestamp,
+  s.block_id,
+  s.tx_id,
+  s.program_id,
+  COALESCE(
+    p.mint,
+    p2.mint
+  ) AS mint,
+  s.purchaser,
   SUM(
-    t.amount
+    s.amount
   ) / pow(
     10,
     9
   ) AS sales_amount,
-  t.ingested_at
+  s.ingested_at
 FROM
-  txs t
-  INNER JOIN post_token_balances p
-  ON p.tx_id = t.tx_id
-  AND p.account = t.account
+  sales_inner_instructions s
+  LEFT OUTER JOIN post_token_balances p
+  ON p.tx_id = s.tx_id
+  AND p.account = s.nft_account
+  LEFT OUTER JOIN solana_dev.silver._post_token_balances p2
+  ON p2.tx_id = s.tx_id
+  AND p2.account = s.nft_account_2
 GROUP BY
-  t.block_timestamp,
-  t.block_id,
-  t.tx_id,
-  t.program_id,
-  p.mint,
-  t.owner,
-  t.ingested_at
+  s.block_timestamp,
+  s.block_id,
+  s.tx_id,
+  s.program_id,
+  COALESCE(
+    p.mint,
+    p2.mint
+  ),
+  s.purchaser,
+  s.ingested_at
