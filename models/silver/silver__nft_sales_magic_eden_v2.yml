@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__nfts_magic_eden_v2
+  - name: silver__nft_sales_magic_eden_v2
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
