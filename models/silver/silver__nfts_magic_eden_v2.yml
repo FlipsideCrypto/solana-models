@@ -32,7 +32,8 @@ models:
       - name: MINT
         description: "{{ doc('mint') }}"
         tests: 
-          - not_null
+          - not_null:
+              where: succeeded = TRUE
       - name: SALES_AMOUNT
         description: "{{ doc('sales_amount') }}"
         tests: 
