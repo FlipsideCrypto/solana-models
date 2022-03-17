@@ -42,13 +42,36 @@ WITH base AS (
 AND ingested_at :: DATE >= getdate() - INTERVAL '2 days'
 {% endif %}
 ),
+trans_tmp AS (
+    SELECT
+        block_timestamp,
+        block_id,
+        b.tx_id,
+        recent_block_hash,
+        fee,
+        succeeded,
+        account_keys,
+        pre_balances,
+        post_balances,
+        pre_token_balances,
+        post_token_balances,
+        instructions,
+        inner_instructions,
+        log_messages,
+        ingested_at
+    FROM
+        base b 
+        qualify(ROW_NUMBER() over(PARTITION BY b.block_id, b.tx_id
+    ORDER BY
+        b.ingested_at DESC)) = 1
+),
 signers_flattened AS (
     SELECT
         b.tx_id,
         A.index AS signer_index,
         A.value :pubkey :: STRING AS acct
     FROM
-        base b,
+        trans_tmp b,
         TABLE(FLATTEN(b.account_keys)) A
     WHERE
         A.value :signer = TRUE
@@ -80,11 +103,9 @@ SELECT
     post_token_balances,
     instructions,
     inner_instructions,
-    log_messages
+    log_messages,
     ingested_at
 FROM
-    base b
+    trans_tmp b
     LEFT OUTER JOIN signers_arr s
-    ON b.tx_id = s.tx_id qualify(ROW_NUMBER() over(PARTITION BY b.block_id, b.tx_id
-ORDER BY
-    b.ingested_at DESC)) = 1
+    ON b.tx_id = s.tx_id
