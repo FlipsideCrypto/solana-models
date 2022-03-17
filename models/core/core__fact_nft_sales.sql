@@ -10,6 +10,7 @@ SELECT
     succeeded,
     program_id,
     purchaser,
+    mint,
     sales_amount
 FROM
     {{ ref('silver__nft_sales_magic_eden_v1') }}
@@ -22,6 +23,7 @@ SELECT
     succeeded,
     program_id,
     purchaser,
+    mint,
     sales_amount
 FROM
     {{ ref('silver__nft_sales_magic_eden_v2') }}
