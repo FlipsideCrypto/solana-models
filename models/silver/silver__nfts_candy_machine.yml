@@ -40,7 +40,7 @@ models:
         tests: 
           - not_null: 
               enabled: FALSE
-      - name: SALES_AMOUNT
+      - name: MINT_PRICE
         description: "{{ doc('sales_amount') }}"
         tests: 
           - not_null: 

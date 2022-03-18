@@ -39,6 +39,7 @@ WITH txs AS (
 
    {% if is_incremental() %}
     AND e.ingested_at :: DATE >= current_date - 2
+    AND t.ingested_at :: DATE >= current_date - 2
    {% endif %}
 ),   
 
@@ -66,9 +67,8 @@ SELECT
     block_id, 
     t.tx_id, 
     program_id,
-    succeeded, 
     max(wallet) AS purchaser,  
-    max(sales_amount / POW(10, COALESCE(p.decimal, 9))) AS sales_amount,
+    max(sales_amount / POW(10, COALESCE(p.decimal, 9))) AS mint_price,
     COALESCE(
       p.mint,
       'So11111111111111111111111111111111111111111'
