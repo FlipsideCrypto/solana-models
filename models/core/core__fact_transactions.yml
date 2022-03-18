@@ -1,0 +1,56 @@
+version: 2
+models:
+  - name: core__fact_transactions
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: RECENT_BLOCK_HASH
+        description: Previous block's hash value
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: FEE
+        description: Transaction fee (in lamports)
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SIGNERS
+        description: List of accounts that signed the transaction
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: ACCOUNT_KEYS
+        description: List of accounts that are referenced by pre/post sol/token balances objects
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: PRE_BALANCES
+        description: List of pre-transaction balances for different accounts
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: POST_BALANCES
+        description: List of post-transaction balances for different accounts
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: PRE_TOKEN_BALANCES
+        description: List of pre-transaction token balances for different token accounts
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: POST_TOKEN_BALANCES
+        description: List of post-transaction token balances for different token accounts
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: LOG_MESSAGES
+        description: Array of log messages written by the program for this transaction
+        tests:
+          - dbt_expectations.expect_column_to_exist

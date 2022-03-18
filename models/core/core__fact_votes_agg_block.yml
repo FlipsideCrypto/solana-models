@@ -1,0 +1,16 @@
+version: 2
+models:
+  - name: core__fact_votes_agg_block
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: NUM_VOTES
+        description: The number of vote events that occurred within the block
+        tests:
+          - dbt_expectations.expect_column_to_exist

@@ -1,11 +1,7 @@
 version: 2
 models:
-  - name: core__fact_swaps
+  - name: core__fact_nft_sales
     columns:
-      - name: SWAP_PROGRAM
-        description: name of decentralized exchange used to perform the swap
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
@@ -19,26 +15,22 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: SUCCEEDED
-        description: "{{ doc('tx_succeeded') }}" 
+        description: "{{ doc('tx_succeeded') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: SWAPPER
-        description: Address that initiated the swap 
+      - name: PROGRAM_ID 
+        description: "{{ doc('program_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: SWAP_FROM_AMOUNT
-        description: Total amount of the token sent in to initiate the swap 
+      - name: PURCHASER
+        description: "{{ doc('purchaser') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: SWAP_FROM_MINT
-        description: Token being sent or swapped from
+      - name: MINT
+        description: "{{ doc('mint') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: SWAP_TO_AMOUNT
-        description: Total amount of the token received in the swap
-        tests:
-          - dbt_expectations.expect_column_to_exist
-      - name: SWAP_TO_MINT
-        description: Token being received or swapped for 
+      - name: SALES_AMOUNT
+        description: "{{ doc('sales_amount') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
