@@ -29,18 +29,22 @@ models:
       - name: PURCHASER
         description: "{{ doc('purchaser') }}"
         tests: 
-          - not_null
+          - not_null: 
+              enabled: FALSE
       - name: MINT_CURRENCY
         description: "{{ doc('mint') }}"
         tests: 
           - not_null
       - name: NFT 
+        description: "{{ doc('mint') }}"
         tests: 
-          - not_null
+          - not_null: 
+              enabled: FALSE
       - name: SALES_AMOUNT
         description: "{{ doc('sales_amount') }}"
         tests: 
-          - not_null
+          - not_null: 
+              enabled: FALSE
       - name: INGESTED_AT
         description: " {{ doc('ingested_at') }} "
         tests: 
