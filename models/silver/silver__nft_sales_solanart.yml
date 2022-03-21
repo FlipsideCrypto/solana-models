@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__nft_solanart
+  - name: silver__nft_sales_solanart
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
