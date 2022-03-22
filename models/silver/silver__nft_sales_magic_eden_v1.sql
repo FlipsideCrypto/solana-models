@@ -76,7 +76,7 @@ FROM
   LEFT OUTER JOIN post_token_balances p
   ON p.tx_id = s.tx_id
   AND p.account = s.nft_account
-  LEFT OUTER JOIN solana_dev.silver._post_token_balances p2
+  LEFT OUTER JOIN post_token_balances p2
   ON p2.tx_id = s.tx_id
   AND p2.account = s.nft_account_2
 GROUP BY
