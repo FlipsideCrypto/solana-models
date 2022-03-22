@@ -79,3 +79,5 @@ ON b.tx_id = p.tx_id
 
 INNER JOIN monke m
 ON b.tx_id = m.tx_id 
+
+WHERE amount <> 0 -- To ignore internal wallet transfers on the marketplace
