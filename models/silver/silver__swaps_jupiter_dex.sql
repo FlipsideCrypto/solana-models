@@ -22,6 +22,7 @@ WITH jupiter_dex_txs AS (
         ON t.tx_id = i.tx_id
     WHERE
         i.value :programId :: STRING = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo' -- jupiter aggregator v2
+        AND i.block_id > 111442741
 
 {% if is_incremental() %}
 AND i.ingested_at :: DATE >= CURRENT_DATE - 2
@@ -31,7 +32,7 @@ AND t.ingested_at :: DATE >= CURRENT_DATE - 2
 signers AS (
     SELECT
         t.tx_id,
-        s.value::STRING AS acct,
+        s.value :: STRING AS acct,
         s.index
     FROM
         jupiter_dex_txs t,
