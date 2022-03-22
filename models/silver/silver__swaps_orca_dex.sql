@@ -12,14 +12,14 @@ WITH base_i AS (
     FROM
         {{ ref('silver___instructions') }}
         i
+    WHERE
+        i.block_id > 111442741 -- token balances owner field not guaranteed to populated bofore this slot
 
 {% if is_incremental() %}
-WHERE
-    i.ingested_at :: DATE >= CURRENT_DATE - 2
+AND i.ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
-)
-, orca_dex_txs AS (
-
+),
+orca_dex_txs AS (
     SELECT
         DISTINCT i.block_id,
         i.block_timestamp,
@@ -28,8 +28,7 @@ WHERE
         t.succeeded,
         t.signers
     FROM
-        base_i
-        i
+        base_i i
         INNER JOIN {{ ref('silver__transactions') }}
         t
         ON t.tx_id = i.tx_id
@@ -54,17 +53,22 @@ delegates_map_tmp AS (
         VALUE :parsed :info :owner :: STRING AS owner
     FROM
         base_i i
-    INNER JOIN orca_dex_txs t on t.tx_id = i.tx_id
+        INNER JOIN orca_dex_txs t
+        ON t.tx_id = i.tx_id
     WHERE
         delegate IS NOT NULL
 ),
-delegates_map as (
-    select
+delegates_map AS (
+    SELECT
         tx_id,
         delegate,
         owner
-    from delegates_map_tmp
-    group by 1,2,3
+    FROM
+        delegates_map_tmp
+    GROUP BY
+        1,
+        2,
+        3
 ),
 signers_tmp AS (
     SELECT
@@ -73,17 +77,18 @@ signers_tmp AS (
         s.index
     FROM
         orca_dex_txs t,
-        TABLE(FLATTEN(t.signers)) s 
+        TABLE(FLATTEN(t.signers)) s
 ),
-signers as (
-    select 
+signers AS (
+    SELECT
         s.tx_id,
         s.acct,
         dm.owner AS delegate_owner
-    from signers_tmp s
-    LEFT OUTER JOIN delegates_map dm
-    ON dm.tx_id = s.tx_id
-    AND s.acct = dm.delegate
+    FROM
+        signers_tmp s
+        LEFT OUTER JOIN delegates_map dm
+        ON dm.tx_id = s.tx_id
+        AND s.acct = dm.delegate
 ),
 post_balances_acct_map AS (
     SELECT
