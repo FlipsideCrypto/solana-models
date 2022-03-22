@@ -13,7 +13,7 @@ WITH base_i AS (
         {{ ref('silver___instructions') }}
         i
     WHERE
-        i.block_id > 111442741
+        i.block_id > 111442741 -- token balances owner field not guaranteed to populated bofore this slot
 
 {% if is_incremental() %}
 AND i.ingested_at :: DATE >= CURRENT_DATE - 2
