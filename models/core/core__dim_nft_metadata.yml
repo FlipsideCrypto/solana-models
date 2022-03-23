@@ -1,62 +1,56 @@
 version: 2
 models:
   - name: core__dim_nft_metadata
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - CONTRACT_ADDRESS
-            - TOKEN_ID
     columns:
       - name: BLOCKCHAIN
-        description: The name of the blockchain the NFT is minted on. 
+        description: "{{ doc('blockchain') }}"
         tests:
-          - not_null
+          - dbt_expectations.expect_column_to_exist
       - name: CONTRACT_ADDRESS
-        description: Address unique to an NFT series
+        description: "{{ doc('contract_address') }}"
         tests:
-          - not_null
+          - dbt_expectations.expect_column_to_exist
       - name: CONTRACT_NAME
-        description: Name of the contract that identifies an NFT series. Example - tcgdragons
+        description: "{{ doc('contract_name') }}"
         tests:
-          - not_null
+          - dbt_expectations.expect_column_to_exist
       - name: CREATED_AT_TIMESTAMP
-        description: timestamp in UTC that the NFT was minted at
+        description: "{{ doc('created_at_timestamp') }}"
         tests:
-          - not_null
+          - dbt_expectations.expect_column_to_exist
       - name: MINT
-        description: Address that is unique to each individual token. For SOL NFTs, this is how to join NFT table
+        description: "{{ doc('mint') }}"
         tests:
-          - not_null: 
-              enabled: False # Data is not yet in  bronze
+          - dbt_expectations.expect_column_to_exist
       - name: CREATOR_ADDRESS
-        description: address provided by the creator of the project where mint payments and secondary market royalties are sent
+        description: "{{ doc('creator_address') }}"
         tests:  
-          - not_null
+          - dbt_expectations.expect_column_to_exist
       - name: CREATOR_NAME
-        description: name of the project creator - this can be an individual or a company name
+        description: "{{ doc('creator_name') }}"
         tests:
-          - not_null
+          - dbt_expectations.expect_column_to_exist
       - name: IMAGE_URL
-        description: URL that links to the image on the ipfs service
+        description: "{{ doc('image_url') }}"
         tests:
-          - not_null
+          - dbt_expectations.expect_column_to_exist
       - name: PROJECT_NAME
-        description: Name of the project the NFT token belongs to
+        description: "{{ doc('project_name') }}"
         tests:
-          - not_null
+          - dbt_expectations.expect_column_to_exist
       - name: TOKEN_ID
-        description: Numeric value that identifies the NFT within it's series
+        description: "{{ doc('token_id') }}"
         tests:
-          - not_null
+          - dbt_expectations.expect_column_to_exist
       - name: TOKEN_METADATA
-        description: a block of json that describes the traits of an NFT
+        description: "{{ doc('token_metadata') }}"
         tests:
-          - not_null
+          - dbt_expectations.expect_column_to_exist
       - name: TOKEN_METADATA_URI
-        description: URL that links to the token metadata on the ipfs service
+        description: "{{ doc('token_metadata_uri') }}"
         tests:
-          - not_null
+          - dbt_expectations.expect_column_to_exist
       - name: TOKEN_NAME
-        description: Name of the NFT token - this is unique to token. Example BAYC 7894
+        description: "{{ doc('token_name') }}"
         tests:
-          - not_null
+          - dbt_expectations.expect_column_to_exist
