@@ -36,6 +36,7 @@ on-run-start:
 models:
   +copy_grants: true
   +persist_docs:
+    relation: true
     columns: true
 
 vars:
