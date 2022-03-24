@@ -55,3 +55,17 @@ SELECT
     sales_amount
 FROM
     {{ ref('silver__nft_sales_smb') }}
+
+UNION
+SELECT
+    'solport',
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    purchaser,
+    mint,
+    sales_amount
+FROM
+    {{ ref('silver__nft_sales_solport') }}
