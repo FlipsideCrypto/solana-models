@@ -30,7 +30,8 @@ WITH txs AS (
 
    LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
 
-   WHERE program_id = 'cndyAnrLdpjq1Ssp1z8xxDsB8dxe7u4HL5Nxi2K5WXZ' 
+   WHERE (program_id = 'cndyAnrLdpjq1Ssp1z8xxDsB8dxe7u4HL5Nxi2K5WXZ' 
+   OR program_id = 'cndy3Z4yapfJBmL3ShUp5exZKqR3z33thTzeNMm2gRZ')
    AND e.index > 0
    AND (authority IS NOT NULL 
    OR NFT IS NOT NULL
