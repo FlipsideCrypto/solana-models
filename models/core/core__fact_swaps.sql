@@ -29,3 +29,17 @@ SELECT
     to_mint
 FROM
     {{ ref('silver__swaps_orca_dex') }}
+UNION
+SELECT
+    'raydium v4' AS swap_program,
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    swapper,
+    from_amt,
+    from_mint,
+    to_amt,
+    to_mint
+FROM
+    {{ ref('silver__swaps_raydium_dex') }}
