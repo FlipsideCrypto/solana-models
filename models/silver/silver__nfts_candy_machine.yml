@@ -6,6 +6,7 @@ models:
           combination_of_columns:
             - TX_ID
             - NFT
+            - MINT
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
