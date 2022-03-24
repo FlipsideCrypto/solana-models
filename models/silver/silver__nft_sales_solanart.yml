@@ -1,0 +1,49 @@
+version: 2
+models:
+  - name: silver__nft_sales_solanart
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - MINT
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - not_null
+      - name: PROGRAM_ID 
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null
+      - name: PURCHASER
+        description: "{{ doc('purchaser') }}"
+        tests: 
+          - not_null
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        tests: 
+          - not_null:
+              where: succeeded = TRUE
+      - name: SALES_AMOUNT
+        description: "{{ doc('sales_amount') }}"
+        tests: 
+          - not_null
+      - name: INGESTED_AT
+        description: " {{ doc('ingested_at') }} "
+        tests: 
+          - not_null

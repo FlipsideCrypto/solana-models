@@ -1,0 +1,44 @@
+version: 2
+models:
+  - name: core__fact_gov_actions
+    columns:
+      - name: PROGRAM_NAME
+        description: "name of solana program"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SIGNER
+        description: Address initiating the LOCK or EXIT action
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: LOCKER_ACCOUNT
+        description: Account holding tokens for LOCK or EXIT
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: MINT
+        description: Mint being locked
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: ACTION
+        description: LOCK or EXIT action
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: AMOUNT
+        description: Amount being locked or exited
+        tests:
+          - dbt_expectations.expect_column_to_exist

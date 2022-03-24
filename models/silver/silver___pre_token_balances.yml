@@ -38,7 +38,8 @@ models:
       - name: OWNER
         description: Address of the owner of the token account
         tests: 
-          - not_null 
+          - not_null:
+              where: block_id > 111442741 # before this we don't have owner from figment
       - name: DECIMAL 
         description: Number of decimals in the token value, need to divide amount by 10^decimal
         tests: 
