@@ -5,7 +5,8 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
-            - NFT
+            - INDEX
+            - MINT
             - MINT_CURRENCY
     columns:
       - name: BLOCK_TIMESTAMP
@@ -40,7 +41,7 @@ models:
         description: "{{ doc('mint_currency') }}"
         tests: 
           - not_null
-      - name: NFT 
+      - name: MINT 
         description: "{{ doc('mint') }}"
         tests: 
           - not_null: 
