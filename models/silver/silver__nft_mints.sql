@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "tx_id",
+    unique_key = "CONCAT_WS('-', tx_id, NFT, mint_currency)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'], 
 ) }}
@@ -15,6 +15,11 @@ WITH mint_tx AS (
     ON t.tx_id = e.tx_id 
 
     WHERE event_type = 'mintTo'
+
+    {% if is_incremental() %}
+        AND e.ingested_at :: DATE >= current_date - 2
+        AND t.ingested_at :: DATE >= current_date - 2
+    {% endif %}
 ), 
 
 txs AS (
@@ -46,10 +51,9 @@ txs AS (
    AND array_contains('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'::variant, e.instruction:accounts::ARRAY)
    AND t.succeeded = TRUE
 
-   {% if is_incremental() %}
-    AND e.ingested_at :: DATE >= current_date - 2
-    AND t.ingested_at :: DATE >= current_date - 2
-   {% endif %}
+    {% if is_incremental() %}
+        AND e.ingested_at :: DATE >= current_date - 2
+    {% endif %}
 ),   
 
 mint_currency AS (
