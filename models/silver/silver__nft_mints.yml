@@ -1,12 +1,12 @@
 version: 2
 models:
-  - name: silver__nfts_candy_machine
+  - name: silver__nft_mints
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
             - NFT
-            - MINT
+            - MINT_CURRENCY
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -23,6 +23,10 @@ models:
         description: "{{ doc('tx_id') }}"
         tests:
           - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: PROGRAM_ID 
         description: "{{ doc('program_id') }}"
         tests: 
@@ -33,7 +37,7 @@ models:
           - not_null: 
               enabled: FALSE
       - name: MINT_CURRENCY
-        description: "{{ doc('mint') }}"
+        description: "{{ doc('mint_currency') }}"
         tests: 
           - not_null
       - name: NFT 
@@ -42,7 +46,7 @@ models:
           - not_null: 
               enabled: FALSE
       - name: MINT_PRICE
-        description: "{{ doc('sales_amount') }}"
+        description: "{{ doc('mint_price') }}"
         tests: 
           - not_null: 
               enabled: FALSE
