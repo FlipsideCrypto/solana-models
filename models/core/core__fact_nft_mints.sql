@@ -11,6 +11,6 @@ SELECT
     purchaser,  
     mint_price,
     mint_currency, 
-    NFT 
+    mint 
 FROM 
     {{ ref('silver__nft_mints') }}

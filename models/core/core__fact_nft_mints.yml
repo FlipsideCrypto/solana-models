@@ -34,7 +34,7 @@ models:
         description: "{{ doc('mint_currency') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: NFT
+      - name: MINT
         description: "{{ doc('mint') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
