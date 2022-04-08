@@ -27,7 +27,6 @@ SELECT
     sales_amount
 FROM
     {{ ref('silver__nft_sales_magic_eden_v2') }}
-
 UNION
 SELECT
     'solanart',
@@ -41,7 +40,6 @@ SELECT
     sales_amount
 FROM
     {{ ref('silver__nft_sales_solanart') }}
-
 UNION
 SELECT
     'solana monkey business marketplace',
@@ -55,7 +53,6 @@ SELECT
     sales_amount
 FROM
     {{ ref('silver__nft_sales_smb') }}
-
 UNION
 SELECT
     'solport',
@@ -69,3 +66,16 @@ SELECT
     sales_amount
 FROM
     {{ ref('silver__nft_sales_solport') }}
+UNION
+SELECT
+    'opensea',
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    purchaser,
+    mint,
+    sales_amount
+FROM
+    {{ ref('silver__nft_sales_opensea') }}
