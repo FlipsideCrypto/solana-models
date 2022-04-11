@@ -37,11 +37,11 @@ WITH sales_inner_instructions AS (
         AND e.instruction :accounts [5] :: STRING = 'So11111111111111111111111111111111111111112'
         AND (
             ARRAY_CONTAINS(
-                'pAHAKoTJsAAe2ZcvTZUxoYzuygVAFAmbYmJYdWT886r' :: variant,
+                'pAHAKoTJsAAe2ZcvTZUxoYzuygVAFAmbYmJYdWT886r' :: variant,  -- This is definitely an opensea signer
                 t.signers
             )
             OR ARRAY_CONTAINS(
-                '71kwsvqZ5hTzQUB8piTRUBbCaoUWGMyN5Gb8vAtt9ZYV' :: variant,
+                '71kwsvqZ5hTzQUB8piTRUBbCaoUWGMyN5Gb8vAtt9ZYV' :: variant,  -- This seems like it is an opensea signer?
                 t.signers
             )
         )
