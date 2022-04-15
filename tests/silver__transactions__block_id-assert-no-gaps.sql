@@ -1,4 +1,4 @@
-{{ config(error_if = '>5000', warn_if = '>5000') }}
+{{ config(error_if = '>6000', warn_if = '>6000') }}
 
 SELECT 
     block_id AS slot
@@ -7,4 +7,10 @@ WHERE block_id NOT IN (
     SELECT 
         block_id 
     FROM {{ ref('silver__transactions') }}
+)
+
+AND block_id NOT IN (
+    SELECT 
+        block_id 
+    FROM {{ ref('silver__votes') }}
 )
