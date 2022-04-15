@@ -1,4 +1,4 @@
-{{ config(error_if = '>6000', warn_if = '>6000') }}
+{{ config(error_if = '>500', warn_if = '>500') }}
 
 SELECT 
     block_id AS slot
@@ -14,3 +14,5 @@ AND block_id NOT IN (
         block_id 
     FROM {{ ref('silver__votes') }}
 )
+
+AND tx_count > 0
