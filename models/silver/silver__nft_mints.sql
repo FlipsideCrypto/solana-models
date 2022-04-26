@@ -8,13 +8,14 @@
 WITH mint_tx AS (
 
     SELECT
-        DISTINCT t.tx_id, 
-        t.signers[0]::string as signer,
-        case when array_size(t.signers) > 1 then
-            t.signers[1]::string
-        else 
-            null
-        end as potential_nft_mint,
+        DISTINCT t.tx_id,
+        t.signers [0] :: STRING AS signer,
+        CASE
+            WHEN ARRAY_SIZE(
+                t.signers
+            ) > 1 THEN t.signers [1] :: STRING
+            ELSE NULL
+        END AS potential_nft_mint,
         t.succeeded
     FROM
         {{ ref('silver__events') }}
@@ -23,7 +24,7 @@ WITH mint_tx AS (
         t
         ON t.tx_id = e.tx_id
     WHERE
-        event_type = 'mintTo'
+        event_type IN ('mintTo', 'initializeMint')
 
 {% if is_incremental() %}
 AND e.ingested_at :: DATE >= CURRENT_DATE - 2
@@ -64,6 +65,12 @@ txs AS (
         i.value :parsed :info :authority :: STRING AS authority,
         i.value :parsed :info :source :: STRING AS source,
         i.value: parsed :info :destination :: STRING AS destination,
+        case -- marindate specific
+            when e.inner_instruction :instructions [0] :programId :: STRING = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s' then
+                e.instruction:accounts[3]::string
+            else 
+                null
+        end as update_authority,
         e.ingested_at
     FROM
         {{ ref('silver__events') }}
@@ -73,9 +80,12 @@ txs AS (
         LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
     WHERE
         e.event_type IS NULL
-        AND ARRAY_CONTAINS(
-            'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s' :: variant,
-            e.instruction :accounts :: ARRAY
+        AND (
+            ARRAY_CONTAINS(
+                'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s' :: variant,
+                e.instruction :accounts :: ARRAY
+            )
+            OR e.inner_instruction :instructions [0] :programId :: STRING = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
         )
         AND t.succeeded = TRUE
 
@@ -86,7 +96,7 @@ AND e.ingested_at :: DATE >= CURRENT_DATE - 2
 mint_currency AS (
     SELECT
         DISTINCT t.tx_id,
-        p.mint as mint_paid,
+        p.mint AS mint_paid,
         p.account,
         p.decimal
     FROM
@@ -108,13 +118,24 @@ SELECT
     succeeded,
     program_id,
     INDEX,
-    coalesce(wallet,signer) as purchaser,  
-    SUM(sales_amount / pow(10, COALESCE(p.decimal, 9))) AS mint_price,
+    COALESCE(
+        wallet,
+        signer
+    ) AS purchaser,
+    case
+        when update_authority = '6jG2QcwaJPFS8Y9SzgH2kfKPj6ERhLi9RVtH8kRahj4j' then -- marinade nfts are "free"
+            0
+        else 
+            SUM(sales_amount / pow(10, COALESCE(p.decimal, 9))) 
+    end AS mint_price,
     COALESCE(
         p.mint_paid,
         'So11111111111111111111111111111111111111111'
     ) AS mint_currency,
-    coalesce(potential_nft_mint, NFT) as mint,
+    COALESCE(
+        potential_nft_mint,
+        nft
+    ) AS mint,
     ingested_at
 FROM
     txs t
@@ -122,9 +143,8 @@ FROM
     ON p.tx_id = t.tx_id
     AND p.account = t.source
 WHERE
-    sales_amount is not null
-AND
-    destination is not null
+    sales_amount IS NOT NULL
+    AND destination IS NOT NULL
 GROUP BY
     block_timestamp,
     block_id,
@@ -135,4 +155,5 @@ GROUP BY
     succeeded,
     mint_currency,
     mint,
+    update_authority,
     ingested_at
