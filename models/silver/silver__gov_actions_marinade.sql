@@ -109,7 +109,7 @@ tx_logs AS (
         CASE
             WHEN C.log_message = 'Program log: Instruction: CreateSimpleNftEscrow' THEN 'MINT LOCK'
             WHEN C.log_message = 'Program log: Instruction: UpdateLockAmount' THEN 'UPDATE LOCK'
-            WHEN C.log_message = 'Program log: Instruction: StartUnlocking' THEN 'UNLOCK'
+            WHEN C.log_message = 'Program log: Instruction: StartUnlocking' THEN 'START UNLOCK'
             WHEN C.log_message = 'Program log: Instruction: CancelUnlocking' THEN 'CANCEL UNLOCK'
             ELSE NULL
         END AS action,
@@ -213,10 +213,7 @@ SELECT
         a2.locker_nft
     ) AS locker_nft,
     b.mint,
-    CASE
-        WHEN a1.main_action LIKE '% LOCK' THEN 'LOCK'
-        ELSE a1.main_action
-    END AS action,
+    a1.main_action AS action,
     COALESCE(
         a1.lock_amount,
         a2.lock_amount
