@@ -18,15 +18,21 @@ WITH post_token_balances AS (
 
 {% if is_incremental() %}
 AND ingested_at :: DATE >= CURRENT_DATE - 2
+{% else %}
+    AND ingested_at :: DATE >= '2022-04-01' -- no marinade gov before this date
 {% endif %}
 ),
 marinade_lock_txs AS (
     SELECT
-        DISTINCT tx_id
+        DISTINCT e.tx_id,
+        succeeded
     FROM
         {{ ref('silver__events') }}
-        e,
-        TABLE(
+        e
+        INNER JOIN {{ ref('silver__transactions') }}
+        t
+        ON e.tx_id = t.tx_id
+        LEFT OUTER JOIN TABLE(
             FLATTEN(
                 input => inner_instruction :instructions,
                 outer => TRUE
@@ -37,30 +43,47 @@ marinade_lock_txs AS (
 
 {% if is_incremental() %}
 AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND t.ingested_at :: DATE >= CURRENT_DATE - 2
+{% else %}
+    AND e.ingested_at :: DATE >= '2022-04-01'
+    AND t.ingested_at :: DATE >= '2022-04-01'
 {% endif %}
 EXCEPT
 SELECT
-    DISTINCT tx_id
+    DISTINCT e.tx_id,
+    succeeded
 FROM
     {{ ref('silver__events') }}
-    e,
-    TABLE(
+    e
+    INNER JOIN {{ ref('silver__transactions') }}
+    t
+    ON e.tx_id = t.tx_id
+    LEFT OUTER JOIN TABLE(
         FLATTEN(
             input => inner_instruction :instructions,
             outer => TRUE
         )
     ) ii
 WHERE
-    program_id = 'Govz1VyoyLD5BL6CSCxUJLVLsQHRwjfFj1prNsdNg5Jw' -- ignore votes
+    (
+        program_id = 'Govz1VyoyLD5BL6CSCxUJLVLsQHRwjfFj1prNsdNg5Jw' -- ignore votes
+        OR COALESCE(
+            ii.value :programId :: STRING,
+            ''
+        ) = 'Govz1VyoyLD5BL6CSCxUJLVLsQHRwjfFj1prNsdNg5Jw'
+    )
 
 {% if is_incremental() %}
 AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND t.ingested_at :: DATE >= CURRENT_DATE - 2
+{% else %}
+    AND e.ingested_at :: DATE >= '2022-04-01'
+    AND t.ingested_at :: DATE >= '2022-04-01'
 {% endif %}
 ),
 b AS (
     SELECT
         t.tx_id,
-        t.succeeded,
         l.index,
         l.value :: STRING AS log_message,
         CASE
@@ -84,6 +107,9 @@ b AS (
 {% if is_incremental() %}
 WHERE
     t.ingested_at :: DATE >= CURRENT_DATE - 2
+{% else %}
+WHERE
+    t.ingested_at :: DATE >= '2022-04-01'
 {% endif %}
 ),
 C AS (
@@ -103,7 +129,6 @@ C AS (
 tx_logs AS (
     SELECT
         C.tx_id,
-        C.succeeded,
         C.index AS log_index,
         C.log_message,
         CASE
@@ -128,7 +153,7 @@ actions_tmp AS (
         e.block_timestamp,
         e.block_id,
         e.tx_id,
-        l.succeeded,
+        m.succeeded,
         e.index,
         e.instruction :parsed :info :amount * pow(
             10,
@@ -190,16 +215,15 @@ actions_tmp AS (
 
 {% if is_incremental() %}
 AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+{% else %}
+    AND e.ingested_at :: DATE >= '2022-04-01'
 {% endif %}
 )
 SELECT
     a1.block_timestamp,
     a1.block_id,
     a1.tx_id,
-    COALESCE(
-        a1.succeeded,
-        a2.succeeded
-    ) AS succeeded,
+    a1.succeeded,
     COALESCE(
         a1.locker,
         a2.locker
