@@ -115,7 +115,7 @@ SELECT
     e.instruction :accounts [3] :: STRING AS voter,
     e.instruction :accounts [1] :: STRING AS voter_nft,
     e.instruction :accounts [5] :: STRING AS voter_account,
-    NULL AS proposal_id
+    e.instruction :accounts [6] :: STRING AS proposal
 FROM
     {{ ref('silver__events') }} e
     INNER JOIN marinade_vote_txs m
