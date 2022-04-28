@@ -14,4 +14,4 @@ SELECT
     action,
     amount
 FROM
-    {{ ref('silver__saber_gov_actions') }}
+    {{ ref('silver__gov_actions_saber') }}

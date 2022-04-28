@@ -1,12 +1,10 @@
 version: 2
 models:
-  - name: silver__saber_gauges_votes
+  - name: silver__gov_actions_saber
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
-            - VOTER
-            - GAUGE
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -27,19 +25,23 @@ models:
         description: "{{ doc('tx_succeeded') }}"
         tests: 
           - not_null
-      - name: VOTER
-        description: Address performing the vote
+      - name: SIGNER
+        description: Address initiating the LOCK or EXIT action
         tests: 
           - not_null
-      - name: GAUGE
-        description: Gauge that is being voted on
+      - name: LOCKER_ACCOUNT
+        description: Account holding tokens for LOCK or EXIT
         tests: 
           - not_null
-      - name: DELEGATED_SHARES
-        description: Number of shares delegated to vote for this Gauge
+      - name: MINT
+        description: Mint being locked
         tests: 
           - not_null
-      - name: POWER
-        description: Total voting power of the voter
+      - name: ACTION
+        description: LOCK or EXIT action
+        tests: 
+          - not_null
+      - name: AMOUNT
+        description: Amount being locked or exited
         tests: 
           - not_null

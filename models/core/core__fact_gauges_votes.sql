@@ -13,4 +13,4 @@ SELECT
     power,
     delegated_shares
 FROM
-    {{ ref('silver__saber_gauges_votes') }}
+    {{ ref('silver__gauges_votes_saber') }}
