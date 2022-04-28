@@ -147,7 +147,7 @@ actions_tmp AS (
                 e.instruction :parsed :info :authority :: STRING
             )
             WHEN main_action IN (
-                'UNLOCK',
+                'START UNLOCK',
                 'CANCEL UNLOCK'
             ) THEN e.instruction :accounts [4] :: STRING
         END AS locker,
@@ -168,7 +168,7 @@ actions_tmp AS (
         CASE
             WHEN main_action = 'MINT LOCK' THEN e.instruction :accounts [2] :: STRING
             WHEN main_action IN (
-                'UNLOCK',
+                'START UNLOCK',
                 'CANCEL UNLOCK'
             ) THEN e.instruction :accounts [1] :: STRING
             ELSE NULL
