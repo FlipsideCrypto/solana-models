@@ -1,0 +1,45 @@
+version: 2
+models:
+  - name: silver__proposal_votes_marinade
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - VOTER_NFT
+            - PROPOSAL
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          # - dbt_expectations.expect_row_values_to_have_recent_data:
+          #     datepart: day
+          #     interval: 2 # just an initial proposal so far
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: VOTER
+        description: Address voting on the proposal
+        tests: 
+          - not_null
+      - name: VOTER_NFT
+        description: NFT mint used in this vote
+        tests: 
+          - not_null
+      - name: VOTER_ACCOUNT
+        description: Account with locked tokens linked to the NFT (determines voting power)
+        tests: 
+          - not_null
+      - name: PROPOSAL
+        description: Address representing the proposal being voted on
+        tests: 
+          - not_null
