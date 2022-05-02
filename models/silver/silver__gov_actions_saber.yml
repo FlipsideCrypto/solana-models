@@ -26,22 +26,22 @@ models:
         tests: 
           - not_null
       - name: SIGNER
-        description: Address initiating the LOCK or EXIT action
+        description: "{{ doc('gov_action_signer') }}"
         tests: 
           - not_null
       - name: LOCKER_ACCOUNT
-        description: Account holding tokens for LOCK or EXIT
+        description: "{{ doc('gov_action_locker_account') }}"
         tests: 
           - not_null
       - name: MINT
-        description: Mint being locked
+        description: "{{ doc('gov_action_mint') }}"
         tests: 
           - not_null
       - name: ACTION
-        description: LOCK or EXIT action
+        description: "{{ doc('gov_action_action') }}"
         tests: 
           - not_null
       - name: AMOUNT
-        description: Amount being locked or exited
+        description: "{{ doc('gov_action_amount') }}"
         tests: 
           - not_null

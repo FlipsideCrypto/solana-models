@@ -26,32 +26,32 @@ models:
         tests: 
           - not_null
       - name: SIGNER
-        description: Address initiating the LOCK or EXIT action
+        description: "{{ doc('gov_action_signer') }}"
         tests: 
           - not_null:
               where: succeeded
       - name: LOCKER_ACCOUNT
-        description: Account holding tokens for LOCK or EXIT
+        description: "{{ doc('gov_action_locker_account') }}"
         tests: 
           - not_null:
               where: action not in ('START UNLOCK','CANCEL UNLOCK') and succeeded
       - name: LOCKER_NFT
-        description: NFT mint associated with the lock
+        description: "{{ doc('gov_action_locker_nft') }}"
         tests: 
           - not_null:
               where: action <> 'UPDATE LOCK' and succeeded
       - name: MINT
-        description: Mint being locked
+        description: "{{ doc('gov_action_mint') }}"
         tests: 
           - not_null:
               where: action not in ('START UNLOCK','CANCEL UNLOCK') and succeeded
       - name: ACTION
-        description: LOCKING or UNLOCKING type action
+        description: "{{ doc('gov_action_action') }}"
         tests: 
           - not_null:
               where: succeeded
       - name: AMOUNT
-        description: Amount being locked or exited
+        description: "{{ doc('gov_action_amount') }}"
         tests: 
           - not_null:
               where: action not in ('START UNLOCK','CANCEL UNLOCK') and succeeded

@@ -23,22 +23,26 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: SIGNER
-        description: Address initiating the LOCK or EXIT action
+        description: "{{ doc('gov_action_signer') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: LOCKER_ACCOUNT
-        description: Account holding tokens for LOCK or EXIT
+        description: "{{ doc('gov_action_locker_account') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: LOCKER_NFT
+        description: "{{ doc('gov_action_locker_nft') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: MINT
-        description: Mint being locked
+        description: "{{ doc('gov_action_mint') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: ACTION
-        description: LOCK or EXIT action
+        description: "{{ doc('gov_action_action') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: AMOUNT
-        description: Amount being locked or exited
+        description: "{{ doc('gov_action_amount') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
