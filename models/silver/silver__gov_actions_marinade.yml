@@ -46,7 +46,7 @@ models:
           - not_null:
               where: action not in ('START UNLOCK','CANCEL UNLOCK') and succeeded
       - name: ACTION
-        description: LOCK or EXIT action
+        description: LOCKING or UNLOCKING type action
         tests: 
           - not_null:
               where: succeeded
@@ -54,4 +54,4 @@ models:
         description: Amount being locked or exited
         tests: 
           - not_null:
-              where: succeeded
+              where: action not in ('START UNLOCK','CANCEL UNLOCK') and succeeded
