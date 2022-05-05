@@ -5,7 +5,7 @@
     cluster_by = ['ingested_at::DATE'],
 ) }}
 
-WITH post_token_balances AS (
+WITH token_balances AS (
 
     SELECT
         tx_id,
@@ -17,11 +17,27 @@ WITH post_token_balances AS (
     WHERE
         mint = 'MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey'
 
-{% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 2
-{% else %}
-    AND ingested_at :: DATE >= '2022-04-01' -- no marinade gov before this date
-{% endif %}
+    {% if is_incremental() %}
+    AND ingested_at :: DATE >= CURRENT_DATE - 2
+    {% else %}
+        AND ingested_at :: DATE >= '2022-04-01' -- no marinade gov before this date
+    {% endif %}
+    UNION
+    SELECT
+        tx_id,
+        account,
+        mint,
+        DECIMAL
+    FROM
+        {{ ref('silver___pre_token_balances') }}
+    WHERE
+        mint = 'MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey'
+
+    {% if is_incremental() %}
+    AND ingested_at :: DATE >= CURRENT_DATE - 2
+    {% else %}
+        AND ingested_at :: DATE >= '2022-04-01' -- no marinade gov before this date
+    {% endif %}
 ),
 marinade_lock_txs AS (
     SELECT
@@ -137,6 +153,7 @@ tx_logs AS (
             WHEN C.log_message = 'Program log: Instruction: UpdateLockAmount' THEN 'UPDATE LOCK'
             WHEN C.log_message = 'Program log: Instruction: StartUnlocking' THEN 'START UNLOCK'
             WHEN C.log_message = 'Program log: Instruction: CancelUnlocking' THEN 'CANCEL UNLOCK'
+            WHEN C.log_message = 'Program log: Instruction: ExitEscrow' THEN 'EXIT'
             ELSE NULL
         END AS action,
         conditional_true_event(
@@ -156,10 +173,6 @@ actions_tmp AS (
         e.tx_id,
         m.succeeded,
         e.index,
-        e.instruction :parsed :info :amount * pow(
-            10,
-            -9
-        ) :: FLOAT AS lock_amount,
         LAST_VALUE(
             action ignore nulls
         ) over (
@@ -168,7 +181,18 @@ actions_tmp AS (
                 e.index
         ) AS main_action,
         CASE
-            WHEN main_action LIKE '% LOCK' THEN COALESCE(
+            WHEN main_action LIKE '% LOCK' THEN e.instruction :parsed :info :amount * pow(
+                10,
+                -9
+            ) :: FLOAT
+            WHEN main_action = 'EXIT' THEN e.inner_instruction :instructions [0] :parsed :info :amount * pow(
+                10,
+                -9
+            ) :: FLOAT
+        END AS lock_amount,
+        CASE
+            WHEN main_action LIKE '% LOCK'
+            OR main_action = 'EXIT' THEN COALESCE(
                 e.instruction :accounts [5] :: STRING,
                 e.instruction :parsed :info :authority :: STRING
             )
@@ -178,7 +202,8 @@ actions_tmp AS (
             ) THEN e.instruction :accounts [4] :: STRING
         END AS locker,
         CASE
-            WHEN main_action LIKE '% LOCK' THEN COALESCE(
+            WHEN main_action LIKE '% LOCK'
+            OR main_action = 'EXIT' THEN COALESCE(
                 e.instruction :accounts [6] :: STRING,
                 e.instruction :parsed :info :destination :: STRING
             )
@@ -192,7 +217,10 @@ actions_tmp AS (
                 e.index
         ) AS min_index,
         CASE
-            WHEN main_action = 'MINT LOCK' THEN e.instruction :accounts [2] :: STRING
+            WHEN main_action IN (
+                'MINT LOCK',
+                'EXIT'
+            ) THEN e.instruction :accounts [2] :: STRING
             WHEN main_action IN (
                 'START UNLOCK',
                 'CANCEL UNLOCK'
@@ -250,7 +278,7 @@ FROM
     LEFT OUTER JOIN actions_tmp a2
     ON a1.tx_id = a2.tx_id
     AND a1.index <> a2.index
-    LEFT OUTER JOIN post_token_balances b
+    LEFT OUTER JOIN token_balances b
     ON a1.tx_id = b.tx_id
     AND COALESCE(
         a1.locker_account_tmp,
