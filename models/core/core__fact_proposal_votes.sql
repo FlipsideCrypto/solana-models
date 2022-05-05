@@ -3,14 +3,14 @@
 ) }}
 
 SELECT 
-    'saber' as program_name,
+    'marinade' as program_name,
     block_timestamp,
     block_id,
     tx_id,
     succeeded,
     voter,
-    gauge,
-    power,
-    delegated_shares
+    voter_account,
+    voter_nft,
+    proposal
 FROM
-    {{ ref('silver__gauges_votes_saber') }}
+    {{ ref('silver__proposal_votes_marinade') }}
