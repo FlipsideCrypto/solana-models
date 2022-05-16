@@ -27,11 +27,11 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: VOTER_ACCOUNT
-        description: NFT mint used in this vote
+        description: Account with locked tokens linked to the NFT (determines voting power)
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: VOTER_NFT
-        description: Account with locked tokens linked to the NFT (determines voting power)
+        description: NFT mint used in this vote
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: PROPOSAL
