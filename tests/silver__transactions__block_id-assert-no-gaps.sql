@@ -3,7 +3,8 @@
 SELECT 
     block_id AS slot
 FROM {{ ref('silver__blocks') }}
-WHERE block_id NOT IN (
+WHERE block_timestamp::date <= current_date - 1
+AND block_id NOT IN (
     SELECT 
         block_id 
     FROM {{ ref('silver__transactions') }}
