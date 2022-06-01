@@ -10,12 +10,29 @@ WITH post_token_balances AS (
         tx_id,
         account,
         mint,
-        DECIMAL
+        DECIMAL,
+        owner
     FROM
         {{ ref('silver___post_token_balances') }}
     WHERE
         mint = 'Saber2gLauYim4Mvftnrasomsv6NvAuncvMEZwcLpD1'
 
+{% if is_incremental() %}
+AND ingested_at :: DATE >= CURRENT_DATE - 2
+{% endif %}
+),
+third_party_programs as (
+    SELECT
+            distinct tx_id
+        FROM
+            {{ ref('silver__events') }}
+            e,
+            TABLE(FLATTEN(inner_instruction :instructions)) ii
+        WHERE
+            COALESCE(
+                ii.value :programId :: STRING,
+                ''
+            ) = 'LocktDzaV1W2Bm9DeZeiyz4J9zs4fRqNiYqQyracRXw'
 {% if is_incremental() %}
 AND ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
@@ -26,6 +43,7 @@ saber_gov_lock_events AS (
         e.block_id,
         e.tx_id,
         e.index,
+        e.program_id,
         e.instruction :accounts [3] :: STRING AS lock_signer,
         e.instruction :accounts [2] :: STRING AS exit_signer,
         ii.value :parsed :info :destination :: STRING AS destination,
@@ -36,7 +54,10 @@ saber_gov_lock_events AS (
         e,
         TABLE(FLATTEN(inner_instruction :instructions)) ii
     WHERE
-        program_id = 'LocktDzaV1W2Bm9DeZeiyz4J9zs4fRqNiYqQyracRXw'
+        (
+            program_id = 'LocktDzaV1W2Bm9DeZeiyz4J9zs4fRqNiYqQyracRXw'
+            OR e.tx_id in (select tx_id from third_party_programs)
+        )
 
 {% if is_incremental() %}
 AND ingested_at :: DATE >= CURRENT_DATE - 2
@@ -47,9 +68,11 @@ tx_logs AS (
         t.tx_id,
         t.succeeded,
         l.value :: STRING AS message,
+        signers,
         CASE
             WHEN l.value LIKE 'Program log: Instruction: Exit%' THEN 'EXIT'
-            WHEN l.value LIKE 'Program log: Instruction: Lock%' THEN 'LOCK'
+            WHEN l.value LIKE 'Program log: Instruction: Lock%'
+            OR l.value LIKE 'Program log: Instruction: RefreshLock%' THEN 'LOCK'
             ELSE NULL
         END AS action,
         conditional_true_event(
@@ -83,6 +106,7 @@ SELECT
     e.tx_id,
     l.succeeded,
     CASE
+        WHEN e.program_id in ('DeLockyVe4ShduKranroxPUDLQYHxz4jgWnUqa1YpNTd','GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw') THEN l.signers[0]::string
         WHEN l.action = 'EXIT' THEN e.exit_signer
         ELSE e.lock_signer
     END AS signer,
@@ -90,6 +114,7 @@ SELECT
         WHEN l.action = 'EXIT' THEN e.source
         ELSE e.destination
     END AS locker_account,
+    p.owner as escrow_account,
     p.mint,
     l.action,
     e.amount / pow(
@@ -104,3 +129,5 @@ FROM
     LEFT OUTER JOIN tx_logs l
     ON l.tx_id = e.tx_id
     AND l.event_index = e.index
+WHERE  
+    action is not null

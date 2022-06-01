@@ -33,6 +33,10 @@ models:
         description: "{{ doc('gov_action_locker_account') }}"
         tests: 
           - not_null
+      - name: ESCROW_ACCOUNT
+        description: "{{ doc('gov_action_escrow_account') }}"
+        tests: 
+          - not_null
       - name: MINT
         description: "{{ doc('gov_action_mint') }}"
         tests: 
