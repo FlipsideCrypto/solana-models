@@ -1,0 +1,57 @@
+version: 2
+models:
+  - name: silver__gov_actions_marinade
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: SIGNER
+        description: "{{ doc('gov_action_signer') }}"
+        tests: 
+          - not_null:
+              where: succeeded
+      - name: LOCKER_ACCOUNT
+        description: "{{ doc('gov_action_locker_account') }}"
+        tests: 
+          - not_null:
+              where: action not in ('START UNLOCK','CANCEL UNLOCK') and succeeded
+      - name: LOCKER_NFT
+        description: "{{ doc('gov_action_locker_nft') }}"
+        tests: 
+          - not_null:
+              where: action <> 'UPDATE LOCK' and succeeded
+      - name: MINT
+        description: "{{ doc('gov_action_mint') }}"
+        tests: 
+          - not_null:
+              where: action not in ('START UNLOCK','CANCEL UNLOCK') and succeeded
+      - name: ACTION
+        description: "{{ doc('gov_action_action') }}"
+        tests: 
+          - not_null:
+              where: succeeded
+      - name: AMOUNT
+        description: "{{ doc('gov_action_amount') }}"
+        tests: 
+          - not_null:
+              where: action not in ('START UNLOCK','CANCEL UNLOCK') and succeeded

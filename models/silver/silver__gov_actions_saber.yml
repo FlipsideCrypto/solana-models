@@ -1,19 +1,18 @@
 version: 2
 models:
-  - name: silver__nft_sales_solport
+  - name: silver__gov_actions_saber
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
-            - MINT
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
           - not_null
-          # - dbt_expectations.expect_row_values_to_have_recent_data:
-          #     datepart: day
-          #     interval: 2
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 7
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
@@ -24,26 +23,29 @@ models:
           - not_null
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
-        tests:
-          - not_null
-      - name: PROGRAM_ID 
-        description: "{{ doc('program_id') }}"
         tests: 
           - not_null
-      - name: PURCHASER
-        description: "{{ doc('purchaser') }}"
+      - name: SIGNER
+        description: "{{ doc('gov_action_signer') }}"
+        tests: 
+          - not_null
+      - name: LOCKER_ACCOUNT
+        description: "{{ doc('gov_action_locker_account') }}"
+        tests: 
+          - not_null
+      - name: ESCROW_ACCOUNT
+        description: "{{ doc('gov_action_escrow_account') }}"
         tests: 
           - not_null
       - name: MINT
-        description: "{{ doc('mint') }}"
-        tests: 
-          - not_null:
-              where: succeeded = TRUE
-      - name: SALES_AMOUNT
-        description: "{{ doc('sales_amount') }}"
+        description: "{{ doc('gov_action_mint') }}"
         tests: 
           - not_null
-      - name: INGESTED_AT
-        description: " {{ doc('ingested_at') }} "
+      - name: ACTION
+        description: "{{ doc('gov_action_action') }}"
+        tests: 
+          - not_null
+      - name: AMOUNT
+        description: "{{ doc('gov_action_amount') }}"
         tests: 
           - not_null

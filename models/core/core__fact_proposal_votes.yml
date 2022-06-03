@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__fact_gov_actions
+  - name: core__fact_proposal_votes
     columns:
       - name: PROGRAM_NAME
         description: "name of solana program"
@@ -22,27 +22,19 @@ models:
         description: "{{ doc('tx_succeeded') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: SIGNER
-        description: "{{ doc('gov_action_signer') }}"
+      - name: VOTER
+        description: Address voting on the proposal
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: LOCKER_ACCOUNT
-        description: "{{ doc('gov_action_locker_account') }}"
+      - name: VOTER_ACCOUNT
+        description: Account with locked tokens linked to the NFT (determines voting power)
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: LOCKER_NFT
-        description: "{{ doc('gov_action_locker_nft') }}"
+      - name: VOTER_NFT
+        description: NFT mint used in this vote
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: MINT
-        description: "{{ doc('gov_action_mint') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
-      - name: ACTION
-        description: "{{ doc('gov_action_action') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
-      - name: AMOUNT
-        description: "{{ doc('gov_action_amount') }}"
+      - name: PROPOSAL
+        description: Address representing the proposal being voted on
         tests:
           - dbt_expectations.expect_column_to_exist

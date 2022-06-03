@@ -1,20 +1,20 @@
 version: 2
 models:
-  - name: silver__saber_gauges_votes
+  - name: silver__proposal_votes_marinade
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
-            - VOTER
-            - GAUGE
+            - VOTER_NFT
+            - PROPOSAL
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
           - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 2
+          # - dbt_expectations.expect_row_values_to_have_recent_data:
+          #     datepart: day
+          #     interval: 2 # just an initial proposal so far
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
@@ -28,18 +28,18 @@ models:
         tests: 
           - not_null
       - name: VOTER
-        description: Address performing the vote
+        description: Address voting on the proposal
         tests: 
           - not_null
-      - name: GAUGE
-        description: Gauge that is being voted on
+      - name: VOTER_NFT
+        description: NFT mint used in this vote
         tests: 
           - not_null
-      - name: DELEGATED_SHARES
-        description: Number of shares delegated to vote for this Gauge
+      - name: VOTER_ACCOUNT
+        description: Account with locked tokens linked to the NFT (determines voting power)
         tests: 
           - not_null
-      - name: POWER
-        description: Total voting power of the voter
+      - name: PROPOSAL
+        description: Address representing the proposal being voted on
         tests: 
           - not_null

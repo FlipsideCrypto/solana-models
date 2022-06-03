@@ -52,7 +52,7 @@ FROM
     LATERAL FLATTEN(
         input => record_content: results
     ) t
-WHERE
-    blockchain = 'solana' qualify(ROW_NUMBER() over(PARTITION BY contract_address, token_id
+WHERE t.value :mint_address :: STRING IS NOT NULL
+AND blockchain = 'solana' qualify(ROW_NUMBER() over(PARTITION BY contract_address, token_id
 ORDER BY
     created_at_timestamp DESC)) = 1

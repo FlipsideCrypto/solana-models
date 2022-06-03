@@ -11,7 +11,7 @@ WITH all_saber_gauges_events AS (
         block_timestamp,
         block_id,
         tx_id,
-        index,
+        INDEX,
         instruction
     FROM
         {{ ref('silver__events') }}
@@ -87,3 +87,5 @@ FROM
     AND e.index = l.event_index
 WHERE
     l.log_type = 'vote'
+AND 
+    e.instruction :accounts [0] :: STRING = '28ZDtf6d2wsYhBvabTxUHTRT6MDxqjmqR7RMCp348tyU' -- this is saber gaugemeister
