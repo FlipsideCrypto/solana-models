@@ -1,3 +1,5 @@
+{{ config(error_if = '>1000', warn_if = '>1000') }}
+
 SELECT 
     DISTINCT 
         block_timestamp::date, 
