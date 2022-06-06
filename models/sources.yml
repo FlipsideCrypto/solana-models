@@ -22,3 +22,29 @@ sources:
     schema: bronze
     tables: 
       - name: prod_nft_metadata_uploads_1828572827
+  - name: solana_external
+    schema: bronze
+    loader: S3
+    tables:
+      - name: decoded_instructions_data_api
+        description: "External table of solana decoded instructions data"
+        external:
+          location: "@solana.bronze.analytics_external_tables/{{target.database}}/DECODED_INSTRUCTIONS_DATA_API"
+          file_format: "( type = json, strip_outer_array = TRUE )"
+          auto_refresh: true
+        columns:
+          - name: tx_id
+            data_type: string
+            description: ""
+          - name: event_index
+            data_type: number
+            description: ""
+          - name: program_id
+            data_type: string
+            description: ""
+          - name: instruction_type
+            data_type: string
+            description: ""
+          - name: data
+            data_type: variant
+            description: ""
