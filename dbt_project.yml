@@ -26,7 +26,10 @@ clean-targets: # directories to be removed by `dbt clean`
 
 on-run-start:
   - '{{create_sps()}}'
+  - '{{create_udfs()}}'
   - '{{create_tasks()}}'
+  - '{{sp_create_bulk_get_decoded_instructions_data()}}'
+
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models
