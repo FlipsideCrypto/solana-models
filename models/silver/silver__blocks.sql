@@ -13,7 +13,7 @@ WITH base_tables AS (
     {{ ref('bronze__blocks') }}
 
 {% if is_incremental() %}
-     WHERE ingested_at :: DATE >= CURRENT_DATE - 5
+     WHERE ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 )
 

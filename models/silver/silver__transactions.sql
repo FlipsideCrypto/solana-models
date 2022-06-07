@@ -39,7 +39,7 @@ WITH base AS (
         ) <> 'Vote111111111111111111111111111111111111111'
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 5
+AND ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 trans_tmp AS (

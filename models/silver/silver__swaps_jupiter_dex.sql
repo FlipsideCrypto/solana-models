@@ -25,8 +25,8 @@ WITH jupiter_dex_txs AS (
         AND i.block_id > 111442741 -- token balances owner field not guaranteed to populated bofore this slot
 
 {% if is_incremental() %}
-AND i.ingested_at :: DATE >= CURRENT_DATE - 5
-AND t.ingested_at :: DATE >= CURRENT_DATE - 5
+AND i.ingested_at :: DATE >= CURRENT_DATE - 2
+AND t.ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 signers AS (
@@ -56,7 +56,7 @@ post_balances_acct_map AS (
 
 {% if is_incremental() %}
 WHERE
-    b.ingested_at :: DATE >= CURRENT_DATE - 5
+    b.ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 destinations AS (
@@ -92,7 +92,7 @@ destinations AS (
         AND e.program_id = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo'
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 5
+AND e.ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 destination_acct_map AS (

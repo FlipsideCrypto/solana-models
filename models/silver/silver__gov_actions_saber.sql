@@ -18,7 +18,7 @@ WITH post_token_balances AS (
         mint = 'Saber2gLauYim4Mvftnrasomsv6NvAuncvMEZwcLpD1'
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 5
+AND ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 third_party_programs as (
@@ -34,7 +34,7 @@ third_party_programs as (
                 ''
             ) = 'LocktDzaV1W2Bm9DeZeiyz4J9zs4fRqNiYqQyracRXw'
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 5
+AND ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 saber_gov_lock_events AS (
@@ -60,7 +60,7 @@ saber_gov_lock_events AS (
         )
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 5
+AND ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 tx_logs AS (
@@ -97,7 +97,7 @@ tx_logs AS (
         l.value :: STRING LIKE 'Program log: Instruction: %'
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 5
+AND ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 )
 SELECT
