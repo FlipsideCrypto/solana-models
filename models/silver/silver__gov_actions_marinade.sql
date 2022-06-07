@@ -53,7 +53,7 @@ WHERE
     AND signer IS NOT NULL
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 2
+AND ingested_at :: DATE >= CURRENT_DATE - 5
 {% endif %}
 UNION ALL
 SELECT
@@ -83,8 +83,8 @@ FROM
 
 {% if is_incremental() %}
 WHERE
-    e.ingested_at :: DATE >= CURRENT_DATE - 2
-    AND t.ingested_at :: DATE >= CURRENT_DATE - 2
+    e.ingested_at :: DATE >= CURRENT_DATE - 5
+    AND t.ingested_at :: DATE >= CURRENT_DATE - 5
 {% else %}
 WHERE
     e.ingested_at :: DATE >= '2022-04-01'

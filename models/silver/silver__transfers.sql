@@ -22,7 +22,7 @@ WITH base_transfers AS (
         ON t.tx_id = e.tx_id
 
 {% if is_incremental() %}
-AND t.ingested_at >= CURRENT_DATE - 2
+AND t.ingested_at :: DATE >= CURRENT_DATE - 5
 {% endif %}
 WHERE
     e.event_type IN (
@@ -32,7 +32,7 @@ WHERE
     AND t.succeeded = TRUE
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e.ingested_at :: DATE >= CURRENT_DATE - 5
 {% endif %}
 ),
 base_post_token_balances AS (
@@ -47,7 +47,7 @@ base_post_token_balances AS (
 
 {% if is_incremental() %}
 WHERE
-    ingested_at :: DATE >= CURRENT_DATE - 2
+    ingested_at :: DATE >= CURRENT_DATE - 5
 {% endif %}
 ),
 base_pre_token_balances AS (
@@ -62,7 +62,7 @@ base_pre_token_balances AS (
 
 {% if is_incremental() %}
 WHERE
-    ingested_at :: DATE >= CURRENT_DATE - 2
+    ingested_at :: DATE >= CURRENT_DATE - 5
 {% endif %}
 ),
 spl_transfers AS (

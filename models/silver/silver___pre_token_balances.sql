@@ -25,5 +25,5 @@ FROM
     TABLE(FLATTEN(pre_token_balances)) b
 {% if is_incremental() %}
 WHERE
-    ingested_at :: DATE >= getdate() - INTERVAL '2 days'
+    ingested_at :: DATE >= CURRENT_DATE - 5
 {% endif %}
