@@ -19,7 +19,7 @@ WITH base_i AS (
   FROM {{ ref('silver___instructions') }} 
 
 {% if is_incremental() %}
-  WHERE ingested_at >= getdate() - interval '2 days'
+  WHERE ingested_at :: DATE >= CURRENT_DATE - 5
 {% endif %}
 ), 
 
@@ -33,7 +33,7 @@ base_ii AS (
   FROM {{ ref('silver___inner_instructions') }}
 
 {% if is_incremental() %}
-  WHERE ingested_at >= getdate() - interval '2 days'
+  WHERE ingested_at :: DATE >= CURRENT_DATE - 5
 {% endif %}
 ) 
 

@@ -26,8 +26,8 @@ WITH marinade_vote_txs AS (
         program_id = 'tovt1VkTE2T4caWoeFP6a2xSFoew5mNpd7FWidyyMuk'
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
-AND t.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e.ingested_at :: DATE >= CURRENT_DATE - 5
+AND t.ingested_at :: DATE >= CURRENT_DATE - 5
 {% else %}
     AND e.ingested_at :: DATE >= '2022-04-01'
     AND t.ingested_at :: DATE >= '2022-04-01'
@@ -58,8 +58,8 @@ WHERE
     )
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
-AND t.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e.ingested_at :: DATE >= CURRENT_DATE - 5
+AND t.ingested_at :: DATE >= CURRENT_DATE - 5
 {% else %}
     AND e.ingested_at :: DATE >= '2022-04-01'
     AND t.ingested_at :: DATE >= '2022-04-01'
@@ -90,7 +90,7 @@ b AS (
 
 {% if is_incremental() %}
 WHERE
-    t.ingested_at :: DATE >= CURRENT_DATE - 2
+    t.ingested_at :: DATE >= CURRENT_DATE - 5
 {% else %}
 WHERE
     t.ingested_at :: DATE >= '2022-04-01'
@@ -151,7 +151,7 @@ WHERE
     l.action IS NOT NULL
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e.ingested_at :: DATE >= CURRENT_DATE - 5
 {% else %}
     AND e.ingested_at :: DATE >= '2022-04-01'
 {% endif %}

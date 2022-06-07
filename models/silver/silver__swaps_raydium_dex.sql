@@ -37,8 +37,8 @@ WITH raydium_dex_txs AS (
         )
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
-AND t.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e.ingested_at :: DATE >= CURRENT_DATE - 5
+AND t.ingested_at :: DATE >= CURRENT_DATE - 5
 {% endif %}
 ),
 signers AS (
@@ -68,7 +68,7 @@ post_balances_acct_map AS (
 
 {% if is_incremental() %}
 WHERE
-    b.ingested_at :: DATE >= CURRENT_DATE - 2
+    b.ingested_at :: DATE >= CURRENT_DATE - 5
 {% endif %}
 ),
 destinations AS (
@@ -105,7 +105,7 @@ destinations AS (
         )
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e.ingested_at :: DATE >= CURRENT_DATE - 5
 {% endif %}
 ),
 destination_acct_map AS (

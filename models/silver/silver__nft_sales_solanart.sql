@@ -29,8 +29,8 @@ WITH sales_inner_instructions AS (
     WHERE e.program_id = 'CJsLwbP1iu5DuUikHEJnLfANgKy6stB2uFgvBBHoyxwz' -- Solanart Program ID 
 
     {% if is_incremental() %}
-        AND e.ingested_at :: DATE >= current_date - 2
-        AND t.ingested_at :: DATE >= current_date - 2
+        AND e.ingested_at :: DATE >= CURRENT_DATE - 5
+        AND t.ingested_at :: DATE >= CURRENT_DATE - 5
     {% endif %}
    
 ), 
@@ -44,7 +44,7 @@ post_token_balances AS (
     WHERE amount <> 0 -- Removes random account transfers with no NFT 
 
     {% if is_incremental() %}
-        AND p.ingested_at :: DATE >= current_date - 2
+        AND p.ingested_at :: DATE >= CURRENT_DATE - 5
     {% endif %}
 )
 

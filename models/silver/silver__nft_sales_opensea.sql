@@ -57,8 +57,8 @@ WITH sales_inner_instructions AS (
         )
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
-AND t.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e.ingested_at :: DATE >= CURRENT_DATE - 5
+AND t.ingested_at :: DATE >= CURRENT_DATE - 5
 {% endif %}
 ),
 post_token_balances AS (
@@ -72,7 +72,7 @@ post_token_balances AS (
 
 {% if is_incremental() %}
 WHERE
-    p.ingested_at :: DATE >= CURRENT_DATE - 2
+    p.ingested_at :: DATE >= CURRENT_DATE - 5
 {% endif %}
 )
 SELECT

@@ -22,7 +22,7 @@ WITH base_e AS (
          program_id = 'Stake11111111111111111111111111111111111111'
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 2
+AND ingested_at :: DATE >= CURRENT_DATE - 5
 {% endif %}
 ),
 base_t AS (
@@ -41,7 +41,7 @@ base_t AS (
 
 {% if is_incremental() %}
 WHERE
-    ingested_at :: DATE >= CURRENT_DATE - 2
+    ingested_at :: DATE >= CURRENT_DATE - 5
 {% endif %}
 )
 SELECT
