@@ -22,7 +22,7 @@ WITH base_transfers AS (
         ON t.tx_id = e.tx_id
 
 {% if is_incremental() %}
-AND t.ingested_at >= CURRENT_DATE - 2
+AND t.ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 WHERE
     e.event_type IN (

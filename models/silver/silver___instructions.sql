@@ -27,5 +27,5 @@ WHERE
     )
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= getdate() - INTERVAL '2 days'
+AND ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}

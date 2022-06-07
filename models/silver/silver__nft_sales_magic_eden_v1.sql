@@ -50,7 +50,7 @@ post_token_balances AS (
 
 {% if is_incremental() %}
 WHERE
-  p.ingested_at :: DATE >= current_date - 2
+  p.ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 )
 SELECT
