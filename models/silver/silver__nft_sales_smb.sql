@@ -23,8 +23,8 @@ WITH base_table AS (
     WHERE program_id = 'J7RagMKwSD5zJSbRQZU56ypHUtux8LRDkUpAPSKH4WPp' -- solana monke business marketplace
 
     {% if is_incremental() %}
-        AND e.ingested_at :: DATE >= CURRENT_DATE - 5
-        AND t.ingested_at :: DATE >= CURRENT_DATE - 5
+        AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+        AND t.ingested_at :: DATE >= CURRENT_DATE - 2
     {% endif %}
 ), 
 
@@ -40,7 +40,7 @@ price AS (
     WHERE e.event_type = 'transfer'
 
     {% if is_incremental() %}
-        AND b.ingested_at :: DATE >= CURRENT_DATE - 5
+        AND b.ingested_at :: DATE >= CURRENT_DATE - 2
     {% endif %}
 ) 
 

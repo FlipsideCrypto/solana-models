@@ -18,7 +18,7 @@ WITH token_balances AS (
         mint = 'MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey'
 
     {% if is_incremental() %}
-    AND ingested_at :: DATE >= CURRENT_DATE - 5
+    AND ingested_at :: DATE >= CURRENT_DATE - 2
     {% else %}
         AND ingested_at :: DATE >= '2022-04-01' -- no marinade gov before this date
     {% endif %}
@@ -34,7 +34,7 @@ WITH token_balances AS (
         mint = 'MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey'
 
     {% if is_incremental() %}
-    AND ingested_at :: DATE >= CURRENT_DATE - 5
+    AND ingested_at :: DATE >= CURRENT_DATE - 2
     {% else %}
         AND ingested_at :: DATE >= '2022-04-01' -- no marinade gov before this date
     {% endif %}
@@ -59,8 +59,8 @@ marinade_lock_txs AS (
         program_id = 'tovt1VkTE2T4caWoeFP6a2xSFoew5mNpd7FWidyyMuk'
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 5
-AND t.ingested_at :: DATE >= CURRENT_DATE - 5
+AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND t.ingested_at :: DATE >= CURRENT_DATE - 2
 {% else %}
     AND e.ingested_at :: DATE >= '2022-04-01'
     AND t.ingested_at :: DATE >= '2022-04-01'
@@ -91,8 +91,8 @@ WHERE
     )
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 5
-AND t.ingested_at :: DATE >= CURRENT_DATE - 5
+AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND t.ingested_at :: DATE >= CURRENT_DATE - 2
 {% else %}
     AND e.ingested_at :: DATE >= '2022-04-01'
     AND t.ingested_at :: DATE >= '2022-04-01'
@@ -123,7 +123,7 @@ b AS (
 
 {% if is_incremental() %}
 WHERE
-    t.ingested_at :: DATE >= CURRENT_DATE - 5
+    t.ingested_at :: DATE >= CURRENT_DATE - 2
 {% else %}
 WHERE
     t.ingested_at :: DATE >= '2022-04-01'
@@ -244,7 +244,7 @@ actions_tmp AS (
         )
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 5
+AND e.ingested_at :: DATE >= CURRENT_DATE - 2
 {% else %}
     AND e.ingested_at :: DATE >= '2022-04-01'
 {% endif %}

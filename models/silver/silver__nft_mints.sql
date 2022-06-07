@@ -27,8 +27,8 @@ WITH mint_tx AS (
         event_type IN ('mintTo', 'initializeMint')
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 5
-AND t.ingested_at :: DATE >= CURRENT_DATE - 5
+AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND t.ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 txs AS (
@@ -90,7 +90,7 @@ txs AS (
         AND t.succeeded = TRUE
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 5
+AND e.ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 mint_currency AS (
@@ -108,7 +108,7 @@ mint_currency AS (
         source = p.account
 
 {% if is_incremental() %}
-AND p.ingested_at :: DATE >= CURRENT_DATE - 5
+AND p.ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 )
 SELECT
