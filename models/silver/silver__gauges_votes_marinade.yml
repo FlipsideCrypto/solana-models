@@ -1,0 +1,47 @@
+version: 2
+models:
+  - name: silver__gauges_votes_marinade
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - VOTER
+            - VOTER_NFT
+            - GAUGE
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: VOTER
+        description: Address performing the vote
+        tests: 
+          - not_null
+      - name: VOTER_NFT
+        description: Total voting power of the voter
+        tests: 
+          - not_null
+      - name: GAUGE
+        description: Gauge that is being voted on
+        tests: 
+          - not_null
+      - name: DELEGATED_SHARES
+        description: Number of shares delegated to vote for this Gauge
+        tests: 
+          - not_null
+      

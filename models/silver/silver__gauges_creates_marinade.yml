@@ -1,0 +1,41 @@
+version: 2
+models:
+  - name: silver__gauges_creates_marinade
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - INDEX
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: SIGNER
+        description: Address performing the vote
+        tests: 
+          - not_null
+      - name: GAUGE
+        description: Total voting power of the voter
+        tests: 
+          - not_null
+      - name: GAUGEMEISTER
+        description: Gauge that is being voted on
+        tests: 
+          - not_null
+      - name: VALIDATOR_ACCOUNT
+        description: Number of shares delegated to vote for this Gauge
+        tests: 
+          - not_null
