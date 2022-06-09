@@ -22,7 +22,7 @@ FROM
     ) }}
 
 {% if is_incremental() %}
-_inserted_timestamp >= (
+WHERE _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM

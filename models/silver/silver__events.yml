@@ -24,7 +24,7 @@ models:
         tests:
           - not_null
       - name: INDEX
-        description: Location of the event within the instructions of a transaction
+        description: "{{ doc('event_index') }}"
         tests:  
           - not_null
       - name: PROGRAM_ID

@@ -12,7 +12,7 @@ models:
         tests:
           - not_null
       - name: EVENT_INDEX
-        description: ""
+        description: "{{ doc('event_index') }}"
         tests:
           - not_null
       - name: PROGRAM_ID
