@@ -197,6 +197,7 @@ swap_actions AS (
         s1.block_id,
         s1.block_timestamp,
         s1.tx_id,
+        s1.index,
         s1.succeeded,
         s1.swapper,
         s1.destination_owner,
@@ -244,18 +245,43 @@ swap_actions_with_refund AS (
         ON s1.tx_id = s3.tx_id
         AND s3.rn = 1
 ),
+lifinity_swap_extra_fee AS (
+    SELECT
+        tx_id,
+        INDEX,
+        instruction :accounts [14] :: STRING AS fee_collector
+    FROM
+        {{ ref('silver__events') }}
+    WHERE
+        program_id = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo'
+        AND instruction :accounts [0] :: STRING = 'EewxydAPCCVuNEyrVN68PuSYdQ7wKn27V9Gjeoi8dy3S'
+        AND instruction :data :: STRING LIKE '1M6zJqvfqkr%'
+        AND ARRAY_SIZE(instruction :accounts) > 14
+
+{% if is_incremental() %}
+AND ingested_at :: DATE >= CURRENT_DATE - 2
+{% endif %}
+),
 swap_actions_final AS (
     SELECT
-        *
+        s.*,
+        f.fee_collector
     FROM
-        swap_actions_with_refund
+        swap_actions_with_refund s
+        LEFT OUTER JOIN lifinity_swap_extra_fee f
+        ON s.tx_id = f.tx_id
+        AND s.index = f.index
+        AND s.destination = f.fee_collector
     WHERE
-        swapper IS NOT NULL
-        OR mint <> originating_mint
-        OR (
-            originating_mint = mint
-            AND max_refund IS NULL
-        ) -- need to do this for situations where it appears the user swaps back to the same mint...
+        (
+            swapper IS NOT NULL
+            OR mint <> originating_mint
+            OR (
+                originating_mint = mint
+                AND max_refund IS NULL
+            ) -- need to do this for situations where it appears the user swaps back to the same mint...
+        )
+        AND fee_collector IS NULL
 ),
 agg_tmp AS (
     SELECT
