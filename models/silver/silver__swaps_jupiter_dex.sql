@@ -240,22 +240,48 @@ swap_actions_with_refund AS (
         AND s1.swapper = s2.destination_owner
         AND s1.mint = s2.mint
         AND s1.rn = 1
+        AND s2.amount <> 0
         LEFT OUTER JOIN swap_actions s3
         ON s1.tx_id = s3.tx_id
         AND s3.rn = 1
 ),
-swap_actions_final AS (
+swap_actions_filtered AS (
     SELECT
-        *
+        *,
+        MAX(rn) over (
+            PARTITION BY tx_id
+        ) AS max_rn
     FROM
         swap_actions_with_refund
     WHERE
         swapper IS NOT NULL
-        OR mint <> originating_mint
+        OR (mint <> originating_mint)
         OR (
             originating_mint = mint
             AND max_refund IS NULL
         ) -- need to do this for situations where it appears the user swaps back to the same mint...
+),
+swap_actions_final AS (
+    SELECT
+        s1.block_id,
+        s1.block_timestamp,
+        s1.tx_id,
+        s1.succeeded, 
+        s1.swapper,
+        s1.destination_owner,
+        s1.destination,
+        s1.source, 
+        s1.mint, 
+        s1.decimal, 
+        s1.final_amt-coalesce(s2.final_amt,0) as final_amt,
+        s1.rn
+    FROM
+        swap_actions_filtered s1
+    LEFT OUTER JOIN swap_actions_filtered s2 on s1.tx_id = s2.tx_id and s1.mint = s2.mint and s1.rn = s1.max_rn-1 and s2.rn = s2.max_rn and s2.swapper is not null
+    WHERE
+        s1.rn <> s1.max_rn
+        or (s1.rn = s1.max_rn AND s1.swapper is null)
+        or s1.succeeded = FALSE
 ),
 agg_tmp AS (
     SELECT
@@ -270,6 +296,8 @@ agg_tmp AS (
         MIN(rn) AS rn
     FROM
         swap_actions_final
+    WHERE
+        final_amt <> 0
     GROUP BY
         1,
         2,
