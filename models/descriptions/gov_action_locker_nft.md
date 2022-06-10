@@ -1,5 +1,5 @@
 {% docs gov_action_locker_nft %}
 
-Mint being locked or exited
+NFT representing tokens for governance.  This is only available for certain types of governance.
 
 {% enddocs %}

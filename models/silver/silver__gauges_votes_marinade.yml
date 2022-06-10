@@ -29,19 +29,19 @@ models:
         tests: 
           - not_null
       - name: VOTER
-        description: Address performing the vote
+        description: "{{ doc('tribeca_gauge_voter') }}"
         tests: 
           - not_null
       - name: VOTER_NFT
-        description: Total voting power of the voter
+        description: "{{ doc('gov_action_locker_nft') }}"
         tests: 
           - not_null
       - name: GAUGE
-        description: Gauge that is being voted on
+        description: "{{ doc('tribeca_gauge') }}"
         tests: 
           - not_null
       - name: DELEGATED_SHARES
-        description: Number of shares delegated to vote for this Gauge
+        description:  "{{ doc('tribeca_gauge_delegated_shares') }}"
         tests: 
           - not_null
       

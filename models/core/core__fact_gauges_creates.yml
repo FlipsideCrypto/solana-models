@@ -1,41 +1,40 @@
 version: 2
 models:
-  - name: silver__gauges_creates_marinade
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - TX_ID
-            - INDEX
+  - name: core__fact_gauges_creates
     columns:
+      - name: PROGRAM_NAME
+        description: "name of solana program"
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
-          - not_null
+          - dbt_expectations.expect_column_to_exist
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
-          - not_null
+          - dbt_expectations.expect_column_to_exist
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
         tests:
-          - not_null
+          - dbt_expectations.expect_column_to_exist
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
-        tests: 
-          - not_null
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: SIGNER
         description: "{{ doc('gov_action_signer') }}"
-        tests: 
-          - not_null
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: GAUGE
         description: "{{ doc('tribeca_gauge') }}"
-        tests: 
-          - not_null
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: GAUGEMEISTER
         description: "{{ doc('tribeca_gaugemeister') }}"
-        tests: 
-          - not_null
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: VALIDATOR_ACCOUNT
         description: "{{ doc('tribeca_gauge_validator_account') }}"
-        tests: 
-          - not_null
+        tests:
+          - dbt_expectations.expect_column_to_exist

@@ -16,18 +16,18 @@ models:
         tests:
           - not_null
       - name: PROGRAM_ID
-        description: ""
+        description: "{{ doc('program_id') }}"
         tests: 
           - not_null
       - name: INSTRUCTION_TYPE
-        description: "" 
+        description: "Type of instruction being decoded for the specific program" 
         tests: 
           - not_null
       - name: DATA
-        description: ""
+        description: "JSON object with decoded instructions data"
         tests: 
           - not_null
       - name: _INSERTED_TIMESTAMP
-        description: ""
+        description: "{{ doc('ingested_at') }}"
         tests: 
           - not_null

@@ -23,18 +23,22 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: VOTER
-        description: Address performing the vote
+        description: "{{ doc('tribeca_gauge_voter') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: VOTER_NFT
+        description: "{{ doc('gov_action_locker_nft') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: GAUGE
-        description: Gauge that is being voted on
+        description: "{{ doc('tribeca_gauge') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: DELEGATED_SHARES
-        description: Number of shares delegated to vote for this Gauge
+        description: "{{ doc('tribeca_gauge_delegated_shares') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: POWER
-        description: Total voting power of the voter
+        description: "{{ doc('tribeca_gauge_power') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
