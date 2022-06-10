@@ -1,5 +1,5 @@
 {% docs tribeca_gauge %}
 
-Gauge address representing an underlying resource
+Address that determines the rewards share to give to a liquidity pool, or in the case of Marinade, the amount of SOL that should be delegated to a given validator
 
 {% enddocs %}
