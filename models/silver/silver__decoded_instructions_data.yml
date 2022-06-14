@@ -1,0 +1,33 @@
+version: 2
+models:
+  - name: silver__decoded_instructions_data
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - EVENT_INDEX
+    columns:
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: EVENT_INDEX
+        description: "{{ doc('event_index') }}"
+        tests:
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null
+      - name: INSTRUCTION_TYPE
+        description: "Type of instruction being decoded for the specific program" 
+        tests: 
+          - not_null
+      - name: DATA
+        description: "JSON object with decoded instructions data"
+        tests: 
+          - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('ingested_at') }}"
+        tests: 
+          - not_null

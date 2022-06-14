@@ -1,11 +1,12 @@
 version: 2
 models:
-  - name: silver__gauges_votes_saber
+  - name: silver__gauges_votes_marinade
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
             - VOTER
+            - VOTER_NFT
             - GAUGE
     columns:
       - name: BLOCK_TIMESTAMP
@@ -31,15 +32,16 @@ models:
         description: "{{ doc('tribeca_gauge_voter') }}"
         tests: 
           - not_null
+      - name: VOTER_NFT
+        description: "{{ doc('gov_action_locker_nft') }}"
+        tests: 
+          - not_null
       - name: GAUGE
         description: "{{ doc('tribeca_gauge') }}"
         tests: 
           - not_null
       - name: DELEGATED_SHARES
-        description: "{{ doc('tribeca_gauge_delegated_shares') }}"
+        description:  "{{ doc('tribeca_gauge_delegated_shares') }}"
         tests: 
           - not_null
-      - name: POWER
-        description: "{{ doc('tribeca_gauge_power') }}"
-        tests: 
-          - not_null
+      
