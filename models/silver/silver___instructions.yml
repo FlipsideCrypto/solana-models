@@ -17,6 +17,10 @@ models:
         description: "{{ doc('tx_id') }}"
         tests:
           - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
       - name: INDEX
         description: Location of the instruction within the instructions of a transaction
         tests: 
