@@ -1,20 +1,16 @@
 version: 2
 models:
-  - name: silver__gauges_votes_saber
+  - name: silver__gauges_creates_marinade
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
-            - VOTER
-            - GAUGE
+            - INDEX
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
           - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 2
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
@@ -27,19 +23,19 @@ models:
         description: "{{ doc('tx_succeeded') }}"
         tests: 
           - not_null
-      - name: VOTER
-        description: "{{ doc('tribeca_gauge_voter') }}"
+      - name: SIGNER
+        description: "{{ doc('gov_action_signer') }}"
         tests: 
           - not_null
       - name: GAUGE
         description: "{{ doc('tribeca_gauge') }}"
         tests: 
           - not_null
-      - name: DELEGATED_SHARES
-        description: "{{ doc('tribeca_gauge_delegated_shares') }}"
+      - name: GAUGEMEISTER
+        description: "{{ doc('tribeca_gaugemeister') }}"
         tests: 
           - not_null
-      - name: POWER
-        description: "{{ doc('tribeca_gauge_power') }}"
+      - name: VALIDATOR_ACCOUNT
+        description: "{{ doc('tribeca_gauge_validator_account') }}"
         tests: 
           - not_null
