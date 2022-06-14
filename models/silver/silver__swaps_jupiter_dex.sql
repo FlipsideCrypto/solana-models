@@ -249,14 +249,20 @@ lifinity_swap_extra_fee AS (
     SELECT
         tx_id,
         INDEX,
-        instruction :accounts [14] :: STRING AS fee_collector
+        instruction :accounts [14] :: STRING AS fee_collector,
+        instruction :accounts [15] :: STRING AS fee_collector2
     FROM
         {{ ref('silver__events') }}
     WHERE
         program_id = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo'
         AND instruction :accounts [0] :: STRING = 'EewxydAPCCVuNEyrVN68PuSYdQ7wKn27V9Gjeoi8dy3S'
-        AND instruction :data :: STRING LIKE '1M6zJqvfqkr%'
-        AND ARRAY_SIZE(instruction :accounts) > 14
+        AND (
+            instruction :data :: STRING LIKE '1M6zJqvfqkr%'
+            OR instruction :data :: STRING LIKE '1UEN8S1i2c%'
+        )
+        AND ARRAY_SIZE(
+            instruction :accounts
+        ) > 14
 
 {% if is_incremental() %}
 AND ingested_at :: DATE >= CURRENT_DATE - 2
@@ -265,13 +271,18 @@ AND ingested_at :: DATE >= CURRENT_DATE - 2
 swap_actions_final AS (
     SELECT
         s.*,
-        f.fee_collector
+        f.fee_collector,
+        f2.fee_collector2
     FROM
         swap_actions_with_refund s
         LEFT OUTER JOIN lifinity_swap_extra_fee f
         ON s.tx_id = f.tx_id
         AND s.index = f.index
         AND s.destination = f.fee_collector
+        LEFT OUTER JOIN lifinity_swap_extra_fee f2
+        ON s.tx_id = f2.tx_id
+        AND s.index = f2.index
+        AND s.destination = f2.fee_collector2
     WHERE
         (
             swapper IS NOT NULL
@@ -281,7 +292,8 @@ swap_actions_final AS (
                 AND max_refund IS NULL
             ) -- need to do this for situations where it appears the user swaps back to the same mint...
         )
-        AND fee_collector IS NULL
+        AND f.fee_collector IS NULL
+        AND f2.fee_collector2 IS NULL
 ),
 agg_tmp AS (
     SELECT
