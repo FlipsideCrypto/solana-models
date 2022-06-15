@@ -42,13 +42,10 @@ WITH token_balances AS (
 marinade_lock_txs AS (
     SELECT
         DISTINCT e.tx_id,
-        succeeded
+        e.succeeded
     FROM
         {{ ref('silver__events') }}
         e
-        INNER JOIN {{ ref('silver__transactions') }}
-        t
-        ON e.tx_id = t.tx_id
         LEFT OUTER JOIN TABLE(
             FLATTEN(
                 input => inner_instruction :instructions,
@@ -60,21 +57,16 @@ marinade_lock_txs AS (
 
 {% if is_incremental() %}
 AND e.ingested_at :: DATE >= CURRENT_DATE - 2
-AND t.ingested_at :: DATE >= CURRENT_DATE - 2
 {% else %}
     AND e.ingested_at :: DATE >= '2022-04-01'
-    AND t.ingested_at :: DATE >= '2022-04-01'
 {% endif %}
 EXCEPT
 SELECT
     DISTINCT e.tx_id,
-    succeeded
+    e.succeeded
 FROM
     {{ ref('silver__events') }}
     e
-    INNER JOIN {{ ref('silver__transactions') }}
-    t
-    ON e.tx_id = t.tx_id
     LEFT OUTER JOIN TABLE(
         FLATTEN(
             input => inner_instruction :instructions,
@@ -92,10 +84,8 @@ WHERE
 
 {% if is_incremental() %}
 AND e.ingested_at :: DATE >= CURRENT_DATE - 2
-AND t.ingested_at :: DATE >= CURRENT_DATE - 2
 {% else %}
     AND e.ingested_at :: DATE >= '2022-04-01'
-    AND t.ingested_at :: DATE >= '2022-04-01'
 {% endif %}
 ),
 b AS (
