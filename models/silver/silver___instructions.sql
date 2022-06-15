@@ -9,6 +9,7 @@ SELECT
     block_timestamp,
     block_id,
     tx_id,
+    succeeded,
     e.index,
     e.value,
     ingested_at
