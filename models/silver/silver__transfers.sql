@@ -3,6 +3,7 @@
     unique_key = "CONCAT_WS('-', block_id, tx_id, index)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['ingested_at::DATE'],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
 WITH base_transfers AS (

@@ -4,6 +4,9 @@
     {{ create_udf_ordered_signers(
         schema = "silver"
     ) }}
+    {{ create_udf_get_all_inner_instruction_events(
+        schema = "silver"
+    ) }}
     {% endset %}
     {% do run_query(sql) %}
 {% endmacro %}
