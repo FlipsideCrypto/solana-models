@@ -14,6 +14,10 @@ models:
         description: "{{ doc('tx_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
       - name: INDEX
         description: Location of the event within the instructions of a transaction
         tests:
