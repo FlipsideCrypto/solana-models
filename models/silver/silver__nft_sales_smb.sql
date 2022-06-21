@@ -14,7 +14,8 @@ WITH base_table AS (
         e.program_id, 
         instruction :accounts[0] :: STRING AS acct_1, 
         instruction :accounts[1] :: STRING AS mint, 
-        e.ingested_at
+        e.ingested_at,
+        e._inserted_timestamp
     FROM {{ ref('silver__events') }} e
     
     INNER JOIN {{ ref('silver__transactions') }} t
@@ -53,7 +54,8 @@ SELECT
      b.mint, 
      b.acct_1 AS purchaser, 
      p.amount / POW(10,9) AS sales_amount, 
-     b.ingested_at
+     b.ingested_at,
+     b._inserted_timestamp
 FROM base_table b
 
 INNER JOIN price p

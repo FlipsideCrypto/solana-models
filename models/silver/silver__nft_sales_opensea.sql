@@ -20,7 +20,8 @@ WITH sales_inner_instructions AS (
         ) AS amount,
         e.instruction :accounts [0] :: STRING AS purchaser,
         e.instruction :accounts [2] :: STRING AS nft_account,
-        e.ingested_at
+        e.ingested_at,
+        e._inserted_timestamp
     FROM
         {{ ref('silver__events') }}
         e
@@ -89,7 +90,8 @@ SELECT
         10,
         9
     ) AS sales_amount,
-    s.ingested_at
+    s.ingested_at,
+    s._inserted_timestamp
 FROM
     sales_inner_instructions s
     LEFT OUTER JOIN post_token_balances p
@@ -105,4 +107,5 @@ GROUP BY
     s.program_id,
     p.mint,
     s.purchaser,
-    s.ingested_at
+    s.ingested_at,
+    s._inserted_timestamp

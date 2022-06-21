@@ -3,7 +3,7 @@
     unique_key = "CONCAT_WS('-', block_id, tx_id)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['ingested_at::DATE'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
 ) }}
 
 WITH base AS (
@@ -28,7 +28,8 @@ WITH base AS (
         tx :transaction :message :instructions :: ARRAY AS instructions,
         tx :meta :innerInstructions :: ARRAY AS inner_instructions,
         tx :meta :logMessages :: ARRAY AS log_messages,
-        ingested_at
+        ingested_at,
+        _inserted_timestamp
     FROM
         {{ ref('bronze__transactions') }}
         t
@@ -58,7 +59,8 @@ SELECT
     instructions,
     inner_instructions,
     log_messages,
-    ingested_at
+    ingested_at,
+    _inserted_timestamp
 FROM
     base b 
     qualify(ROW_NUMBER() over(PARTITION BY b.block_id, b.tx_id

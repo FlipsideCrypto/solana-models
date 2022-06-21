@@ -12,7 +12,8 @@ SELECT
     e.index,
     e.value :index :: NUMBER AS mapped_instruction_index,
     e.value,
-    ingested_at
+    ingested_at,
+    _inserted_timestamp
 FROM
     {{ ref('silver__transactions') }}
     t,

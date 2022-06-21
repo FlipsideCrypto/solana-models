@@ -85,7 +85,8 @@ txs_tmp AS (
             WHEN e.inner_instruction :instructions [0] :programId :: STRING = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s' THEN e.instruction :accounts [3] :: STRING
             ELSE NULL
         END AS update_authority,
-        e.ingested_at
+        e.ingested_at,
+        e._inserted_timestamp
     FROM
         {{ ref('silver__events') }}
         e
@@ -193,7 +194,8 @@ pre_final AS (
             nft,
             potential_nft_mint
         ) AS mint,
-        ingested_at
+        ingested_at,
+        _inserted_timestamp
     FROM
         txs t
         LEFT OUTER JOIN mint_currency p
@@ -212,7 +214,8 @@ pre_final AS (
         mint_currency,
         mint,
         update_authority,
-        ingested_at
+        ingested_at,
+        _inserted_timestamp
 ),
 pre_pre_final AS (
     SELECT
@@ -229,7 +232,8 @@ pre_pre_final AS (
         END AS mint_price,
         pf.mint_currency,
         pf.mint,
-        pf.ingested_at
+        pf.ingested_at,
+        pf._inserted_timestamp
     FROM
         pre_final pf
         LEFT OUTER JOIN transfers tr
@@ -259,7 +263,8 @@ SELECT
     ) AS mint_price,
     mint_currency,
     mint,
-    ingested_at
+    ingested_at,
+    _inserted_timestamp
 FROM
     pre_pre_final
 WHERE
