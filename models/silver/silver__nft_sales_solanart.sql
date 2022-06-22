@@ -18,6 +18,7 @@ WITH sales_inner_instructions AS (
             0
         ) AS amount, 
         e.instruction :accounts [0] :: STRING AS purchaser, 
+        e.instruction :accounts [3] :: STRING AS seller, 
         e.instruction :accounts [1] :: STRING AS nft_account, 
         e.ingested_at 
     FROM {{ ref('silver__events') }} e
@@ -56,6 +57,7 @@ SELECT
     s.program_id, 
     p.mint AS mint, 
     s.purchaser, 
+    s.seller, 
     SUM(s.amount) / POW(10,9) AS sales_amount, 
     s.ingested_at
 FROM sales_inner_instructions s
@@ -63,6 +65,6 @@ FROM sales_inner_instructions s
 INNER JOIN post_token_balances p
 ON s.tx_id = p.tx_id AND s.nft_account = p.account
 
-GROUP BY s.block_timestamp, s.block_id, s.tx_id, s.succeeded, s.program_id, p.mint, s.purchaser, s.ingested_at
+GROUP BY s.block_timestamp, s.block_id, s.tx_id, s.succeeded, s.program_id, p.mint, s.purchaser, s.seller, s.ingested_at
 
 HAVING SUM(s.amount) > 0 -- Removes transfers
