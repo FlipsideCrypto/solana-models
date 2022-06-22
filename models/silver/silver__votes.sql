@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "CONCAT_WS('-', block_id, tx_id)",
     incremental_strategy = 'delete+insert',
-    cluster_by = ['ingested_at::DATE'],
+    cluster_by = ['_inserted_timestamp::DATE'],
 ) }}
 
 WITH base AS (
@@ -14,7 +14,9 @@ WITH base AS (
         tx :transaction :message :recentBlockhash :: STRING AS recent_block_hash,
         tx :meta :fee :: NUMBER AS fee,
         CASE
-            WHEN is_null_value(tx :meta :err) THEN TRUE
+            WHEN IS_NULL_VALUE(
+                tx :meta :err
+            ) THEN TRUE
             ELSE FALSE
         END AS succeeded,
         tx :transaction :message :instructions [0] :parsed :info :voteAccount :: STRING AS vote_account,
@@ -31,7 +33,12 @@ WITH base AS (
         AND tx :transaction :message :instructions [0] :programId :: STRING = 'Vote111111111111111111111111111111111111111'
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 2
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 )
 SELECT
@@ -50,4 +57,4 @@ SELECT
 FROM
     base qualify(ROW_NUMBER() over(PARTITION BY block_id, tx_id
 ORDER BY
-    ingested_at DESC)) = 1
+    _inserted_timestamp DESC)) = 1

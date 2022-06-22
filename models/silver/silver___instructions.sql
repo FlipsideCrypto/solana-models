@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "CONCAT_WS('-', block_id, tx_id, index)",
     incremental_strategy = 'delete+insert',
-    cluster_by = ['ingested_at::DATE'],
+    cluster_by = ['_inserted_timestamp::DATE'],
 ) }}
 
 SELECT
@@ -29,5 +29,10 @@ WHERE
     )
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 2
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}

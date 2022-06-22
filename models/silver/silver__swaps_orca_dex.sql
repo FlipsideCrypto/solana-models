@@ -16,7 +16,12 @@ WITH base_i AS (
         i.block_id > 111442741 -- token balances owner field not guaranteed to populated bofore this slot
 
 {% if is_incremental() %}
-AND i.ingested_at :: DATE >= CURRENT_DATE - 2
+AND i._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 orca_dex_txs AS (
@@ -43,7 +48,12 @@ orca_dex_txs AS (
         )
 
 {% if is_incremental() %}
-AND t.ingested_at :: DATE >= CURRENT_DATE - 2
+AND t._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 delegates_map_tmp AS (
@@ -106,7 +116,12 @@ post_balances_acct_map AS (
 
 {% if is_incremental() %}
 WHERE
-    b.ingested_at :: DATE >= CURRENT_DATE - 2
+    b._inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% endif %}
 ),
 destinations AS (
@@ -149,7 +164,12 @@ destinations AS (
         )
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 destination_acct_map AS (

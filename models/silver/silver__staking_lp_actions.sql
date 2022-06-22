@@ -19,10 +19,15 @@ WITH base_e AS (
     FROM
         {{ ref('silver__events') }}
     WHERE
-         program_id = 'Stake11111111111111111111111111111111111111'
+        program_id = 'Stake11111111111111111111111111111111111111'
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 2
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 base_t AS (
@@ -41,7 +46,12 @@ base_t AS (
 
 {% if is_incremental() %}
 WHERE
-    ingested_at :: DATE >= CURRENT_DATE - 2
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% endif %}
 )
 SELECT

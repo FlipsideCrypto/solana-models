@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "tx_id",
     incremental_strategy = 'delete+insert',
-    cluster_by = ['ingested_at::DATE'],
+    cluster_by = ['_inserted_timestamp::DATE'],
 ) }}
 
 WITH token_balances AS (
@@ -17,27 +17,37 @@ WITH token_balances AS (
     WHERE
         mint = 'MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey'
 
-    {% if is_incremental() %}
-    AND ingested_at :: DATE >= CURRENT_DATE - 2
-    {% else %}
-        AND ingested_at :: DATE >= '2022-04-01' -- no marinade gov before this date
-    {% endif %}
-    UNION
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
     SELECT
-        tx_id,
-        account,
-        mint,
-        DECIMAL
+        MAX(_inserted_timestamp)
     FROM
-        {{ ref('silver___pre_token_balances') }}
-    WHERE
-        mint = 'MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey'
+        {{ this }}
+)
+{% else %}
+    AND _inserted_timestamp :: DATE >= '2022-04-01' -- no marinade gov before this date
+{% endif %}
+UNION
+SELECT
+    tx_id,
+    account,
+    mint,
+    DECIMAL
+FROM
+    {{ ref('silver___pre_token_balances') }}
+WHERE
+    mint = 'MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey'
 
-    {% if is_incremental() %}
-    AND ingested_at :: DATE >= CURRENT_DATE - 2
-    {% else %}
-        AND ingested_at :: DATE >= '2022-04-01' -- no marinade gov before this date
-    {% endif %}
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% else %}
+    AND _inserted_timestamp :: DATE >= '2022-04-01' -- no marinade gov before this date
+{% endif %}
 ),
 marinade_lock_txs AS (
     SELECT
@@ -56,9 +66,14 @@ marinade_lock_txs AS (
         program_id = 'tovt1VkTE2T4caWoeFP6a2xSFoew5mNpd7FWidyyMuk'
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% else %}
-    AND e.ingested_at :: DATE >= '2022-04-01'
+    AND e._inserted_timestamp :: DATE >= '2022-04-01'
 {% endif %}
 EXCEPT
 SELECT
@@ -83,9 +98,14 @@ WHERE
     )
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% else %}
-    AND e.ingested_at :: DATE >= '2022-04-01'
+    AND e._inserted_timestamp :: DATE >= '2022-04-01'
 {% endif %}
 ),
 b AS (
@@ -113,10 +133,15 @@ b AS (
 
 {% if is_incremental() %}
 WHERE
-    t.ingested_at :: DATE >= CURRENT_DATE - 2
+    t._inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% else %}
 WHERE
-    t.ingested_at :: DATE >= '2022-04-01'
+    t._inserted_timestamp :: DATE >= '2022-04-01'
 {% endif %}
 ),
 C AS (
@@ -235,9 +260,14 @@ actions_tmp AS (
         )
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% else %}
-    AND e.ingested_at :: DATE >= '2022-04-01'
+    AND e._inserted_timestamp :: DATE >= '2022-04-01'
 {% endif %}
 )
 SELECT

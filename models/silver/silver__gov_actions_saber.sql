@@ -18,23 +18,34 @@ WITH post_token_balances AS (
         mint = 'Saber2gLauYim4Mvftnrasomsv6NvAuncvMEZwcLpD1'
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 2
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
-third_party_programs as (
+third_party_programs AS (
     SELECT
-            distinct tx_id
-        FROM
-            {{ ref('silver__events') }}
-            e,
-            TABLE(FLATTEN(inner_instruction :instructions)) ii
-        WHERE
-            COALESCE(
-                ii.value :programId :: STRING,
-                ''
-            ) = 'LocktDzaV1W2Bm9DeZeiyz4J9zs4fRqNiYqQyracRXw'
+        DISTINCT tx_id
+    FROM
+        {{ ref('silver__events') }}
+        e,
+        TABLE(FLATTEN(inner_instruction :instructions)) ii
+    WHERE
+        COALESCE(
+            ii.value :programId :: STRING,
+            ''
+        ) = 'LocktDzaV1W2Bm9DeZeiyz4J9zs4fRqNiYqQyracRXw'
+
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 2
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 saber_gov_lock_events AS (
@@ -56,11 +67,21 @@ saber_gov_lock_events AS (
     WHERE
         (
             program_id = 'LocktDzaV1W2Bm9DeZeiyz4J9zs4fRqNiYqQyracRXw'
-            OR e.tx_id in (select tx_id from third_party_programs)
+            OR e.tx_id IN (
+                SELECT
+                    tx_id
+                FROM
+                    third_party_programs
+            )
         )
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 2
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 tx_logs AS (
@@ -97,7 +118,12 @@ tx_logs AS (
         l.value :: STRING LIKE 'Program log: Instruction: %'
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 2
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 )
 SELECT
@@ -106,7 +132,10 @@ SELECT
     e.tx_id,
     l.succeeded,
     CASE
-        WHEN e.program_id in ('DeLockyVe4ShduKranroxPUDLQYHxz4jgWnUqa1YpNTd','GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw') THEN l.signers[0]::string
+        WHEN e.program_id IN (
+            'DeLockyVe4ShduKranroxPUDLQYHxz4jgWnUqa1YpNTd',
+            'GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw'
+        ) THEN l.signers [0] :: STRING
         WHEN l.action = 'EXIT' THEN e.exit_signer
         ELSE e.lock_signer
     END AS signer,
@@ -114,7 +143,7 @@ SELECT
         WHEN l.action = 'EXIT' THEN e.source
         ELSE e.destination
     END AS locker_account,
-    p.owner as escrow_account,
+    p.owner AS escrow_account,
     p.mint,
     l.action,
     e.amount / pow(
@@ -129,5 +158,5 @@ FROM
     LEFT OUTER JOIN tx_logs l
     ON l.tx_id = e.tx_id
     AND l.event_index = e.index
-WHERE  
-    action is not null
+WHERE
+    action IS NOT NULL

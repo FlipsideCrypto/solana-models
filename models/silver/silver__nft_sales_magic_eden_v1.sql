@@ -24,10 +24,11 @@ WITH sales_inner_instructions AS (
     e.ingested_at,
     e._inserted_timestamp
   FROM
-    {{ ref('silver__events') }} e
+    {{ ref('silver__events') }}
+    e
     INNER JOIN {{ ref('silver__transactions') }}
-        t
-        ON t.tx_id = e.tx_id
+    t
+    ON t.tx_id = e.tx_id
     LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
   WHERE
     program_id = 'MEisE1HzehtrDpAAT8PnLHjpSSkRYakotTuJRPjTpo8' -- Magic Eden V1 Program ID
@@ -36,8 +37,18 @@ WITH sales_inner_instructions AS (
     ) > 2
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
-AND t.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e._inserted_timestamp >= (
+  SELECT
+    MAX(_inserted_timestamp)
+  FROM
+    {{ this }}
+)
+AND t._inserted_timestamp >= (
+  SELECT
+    MAX(_inserted_timestamp)
+  FROM
+    {{ this }}
+)
 {% endif %}
 ),
 post_token_balances AS (
@@ -51,7 +62,12 @@ post_token_balances AS (
 
 {% if is_incremental() %}
 WHERE
-  p.ingested_at :: DATE >= CURRENT_DATE - 2
+  p._inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp)
+    FROM
+      {{ this }}
+  )
 {% endif %}
 )
 SELECT

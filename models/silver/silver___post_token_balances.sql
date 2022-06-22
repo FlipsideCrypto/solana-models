@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "CONCAT_WS('-', block_id, tx_id, index)",
     incremental_strategy = 'delete+insert',
-    cluster_by = ['ingested_at::DATE'],
+    cluster_by = ['_inserted_timestamp::DATE'],
 ) }}
 
 SELECT
@@ -24,7 +24,13 @@ FROM
     {{ ref('silver__transactions') }}
     t,
     TABLE(FLATTEN(post_token_balances)) b
+
 {% if is_incremental() %}
 WHERE
-    ingested_at :: DATE >= CURRENT_DATE - 2
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% endif %}

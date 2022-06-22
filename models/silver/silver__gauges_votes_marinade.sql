@@ -17,10 +17,15 @@ WITH all_marinade_gov_events AS (
         {{ ref('silver__events') }}
     WHERE
         program_id = 'tovt1VkTE2T4caWoeFP6a2xSFoew5mNpd7FWidyyMuk'
-        AND ingested_at :: DATE >= '2022-05-17'
+        AND _inserted_timestamp :: DATE >= '2022-05-17'
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 2
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 b AS (
@@ -52,10 +57,15 @@ b AS (
         ON t.tx_id = g.tx_id
         LEFT OUTER JOIN TABLE(FLATTEN(t.log_messages)) l
     WHERE
-        ingested_at :: DATE >= '2022-05-17'
+        _inserted_timestamp :: DATE >= '2022-05-17'
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 2
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 C AS (
