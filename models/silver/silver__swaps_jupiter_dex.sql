@@ -172,7 +172,7 @@ swaps_tmp AS (
             ORDER BY
                 s.index,
                 s.inner_index
-        ) AS rn,
+        ) AS rn
     FROM
         swaps_tmp_1 s
         INNER JOIN swapper_min_rn m
