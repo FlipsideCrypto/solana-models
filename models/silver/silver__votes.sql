@@ -21,7 +21,8 @@ WITH base AS (
         tx :transaction :message :instructions [0] :parsed :info :voteAuthority :: STRING AS vote_authority,
         tx :transaction :message :instructions [0] :parsed :info :vote :hash :: STRING AS vote_hash,
         tx :transaction :message :instructions [0] :parsed :info :vote :slots :: ARRAY AS vote_slots,
-        ingested_at
+        ingested_at,
+        _inserted_timestamp
     FROM
         {{ ref('bronze__transactions') }}
         t
@@ -44,7 +45,8 @@ SELECT
     vote_authority,
     vote_hash,
     vote_slots,
-    ingested_at
+    ingested_at,
+    _inserted_timestamp
 FROM
     base qualify(ROW_NUMBER() over(PARTITION BY block_id, tx_id
 ORDER BY

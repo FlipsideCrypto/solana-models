@@ -217,7 +217,8 @@ actions_tmp AS (
             ) THEN e.instruction :accounts [1] :: STRING
             ELSE NULL
         END AS locker_nft,
-        e.ingested_at
+        e.ingested_at,
+        e._inserted_timestamp
     FROM
         {{ ref('silver__events') }}
         e
@@ -262,7 +263,8 @@ SELECT
         a1.lock_amount,
         a2.lock_amount
     ) AS amount,
-    a1.ingested_at
+    a1.ingested_at,
+    a1._inserted_timestamp
 FROM
     actions_tmp a1
     LEFT OUTER JOIN actions_tmp a2

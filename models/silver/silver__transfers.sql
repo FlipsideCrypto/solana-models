@@ -14,7 +14,8 @@ WITH base_transfers AS (
         e.tx_id,
         e.index,
         e.instruction,
-        e.ingested_at
+        e.ingested_at,
+        e._inserted_timestamp
     FROM
         {{ ref('silver__events') }}
         e
@@ -100,7 +101,8 @@ spl_transfers AS (
             p3.mint,
             p4.mint
         ) AS mint,
-        e.ingested_at
+        e.ingested_at,
+        e._inserted_timestamp
     FROM
         base_transfers e
         LEFT OUTER JOIN base_pre_token_balances p
@@ -131,7 +133,8 @@ sol_transfers AS (
             9
         ) AS amount,
         'So11111111111111111111111111111111111111112' AS mint,
-        e.ingested_at
+        e.ingested_at,
+        e._inserted_timestamp
     FROM
         base_transfers e
     WHERE
@@ -146,7 +149,8 @@ SELECT
     tx_to,
     amount,
     mint,
-    ingested_at
+    ingested_at,
+    _inserted_timestamp
 FROM
     spl_transfers
 UNION
@@ -159,6 +163,7 @@ SELECT
     tx_to,
     amount,
     mint,
-    ingested_at
+    ingested_at,
+    _inserted_timestamp
 FROM
     sol_transfers

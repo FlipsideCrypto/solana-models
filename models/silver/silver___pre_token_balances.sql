@@ -18,7 +18,8 @@ SELECT
     b.value :uiTokenAmount :decimals AS DECIMAL,
     b.value :uiTokenAmount :uiAmount AS uiAmount,
     b.value :uiTokenAmount :uiAmountString AS uiAmountString,
-    ingested_at
+    ingested_at,
+    _inserted_timestamp
 FROM
     {{ ref('silver__transactions') }}
     t,

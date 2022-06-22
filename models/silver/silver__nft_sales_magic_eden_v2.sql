@@ -61,7 +61,8 @@ base_tmp AS (
             ORDER BY
                 inner_index
         ) AS nft_account_mint,
-        ingested_at
+        ingested_at,
+        _inserted_timestamp
     FROM
         {{ ref('silver__events') }}
         e
@@ -127,7 +128,8 @@ SELECT
         10,
         9
     ) AS sales_amount,
-    b.ingested_at
+    b.ingested_at,
+    b._inserted_timestamp
 FROM
     base b
     LEFT OUTER JOIN post_token_balances p
@@ -144,4 +146,5 @@ GROUP BY
         p.mint
     ),
     b.purchaser,
-    b.ingested_at
+    b.ingested_at,
+    b._inserted_timestamp

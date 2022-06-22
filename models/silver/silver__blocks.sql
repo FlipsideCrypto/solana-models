@@ -27,7 +27,8 @@ SELECT
     header :blockhash :: VARCHAR AS block_hash, 
     header :parentSlot :: INTEGER AS previous_block_id, 
     header :previousBlockhash :: VARCHAR AS previous_block_hash,  
-    ingested_at
+    ingested_at,
+    _inserted_timestamp
 FROM 
    base_tables 
 

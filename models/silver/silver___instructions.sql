@@ -12,7 +12,8 @@ SELECT
     succeeded,
     e.index,
     e.value,
-    ingested_at
+    ingested_at,
+    _inserted_timestamp
 FROM
     {{ ref('silver__transactions') }}
     t,
