@@ -13,6 +13,7 @@ WITH base_table AS (
         t.succeeded, 
         e.program_id, 
         instruction :accounts[0] :: STRING AS acct_1, 
+        instruction :accounts[3] :: STRING AS seller, 
         instruction :accounts[1] :: STRING AS mint, 
         e.ingested_at
     FROM {{ ref('silver__events') }} e
@@ -52,6 +53,7 @@ SELECT
      b.program_id, 
      b.mint, 
      b.acct_1 AS purchaser, 
+     b.seller, 
      p.amount / POW(10,9) AS sales_amount, 
      b.ingested_at
 FROM base_table b
