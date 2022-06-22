@@ -47,6 +47,7 @@ base_tmp AS (
         ) AS amount,
         instruction :accounts [7] :: STRING AS nft_account,
         instruction :accounts [0] :: STRING AS purchaser,
+        instruction :accounts [6] :: STRING AS seller, 
         i.value :parsed :type :: STRING AS inner_instruction_type,
         LAG(inner_instruction_type) over (
             PARTITION BY e.tx_id
@@ -121,6 +122,7 @@ SELECT
         p.mint
     ) AS mint,
     b.purchaser,
+    b.seller, 
     SUM(
         b.amount
     ) / pow(
@@ -144,4 +146,5 @@ GROUP BY
         p.mint
     ),
     b.purchaser,
+    b.seller, 
     b.ingested_at

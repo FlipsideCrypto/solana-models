@@ -64,6 +64,7 @@ SELECT
     p2.mint
   ) AS mint,
   s.purchaser,
+  s.nft_account_2 AS seller, 
   SUM(
     s.amount
   ) / pow(
@@ -90,4 +91,5 @@ GROUP BY
     p2.mint
   ),
   s.purchaser,
+  s.nft_account_2, 
   s.ingested_at
