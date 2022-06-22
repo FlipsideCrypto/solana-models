@@ -21,6 +21,9 @@ WITH sales_inner_instructions AS (
     e.instruction :accounts [0] :: STRING AS purchaser,
     e.instruction :accounts [1] :: STRING AS nft_account,
     e.instruction :accounts [2] :: STRING AS nft_account_2,
+    e.instruction :accounts [4] :: STRING AS nft_account_3, 
+    t.signers[0] :: STRING as signer, 
+    i.value :parsed :info :newAuthority :: STRING AS new_authority,
     e.ingested_at
   FROM
     {{ ref('silver__events') }} e
@@ -39,6 +42,19 @@ AND e.ingested_at :: DATE >= CURRENT_DATE - 2
 AND t.ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
+sellers AS (
+    SELECT 
+       tx_id, 
+       CASE WHEN new_authority <> signer THEN 
+        nft_account_3
+      ELSE nft_account_2 END AS seller, 
+      CASE WHEN new_authority <> signer THEN 
+        signer
+      ELSE purchaser END AS purchaser 
+    FROM sales_inner_instructions 
+    WHERE new_authority IS NOT NULL
+), 
+
 post_token_balances AS (
   SELECT
     DISTINCT tx_id,
@@ -63,8 +79,8 @@ SELECT
     p.mint,
     p2.mint
   ) AS mint,
-  s.purchaser,
-  s.nft_account_2 AS seller, 
+  ss.purchaser,
+  ss.seller, 
   SUM(
     s.amount
   ) / pow(
@@ -80,6 +96,8 @@ FROM
   LEFT OUTER JOIN post_token_balances p2
   ON p2.tx_id = s.tx_id
   AND p2.account = s.nft_account_2
+  LEFT OUTER JOIN sellers ss
+  ON ss.tx_id = s.tx_id
 GROUP BY
   s.block_timestamp,
   s.block_id,
@@ -90,6 +108,6 @@ GROUP BY
     p.mint,
     p2.mint
   ),
-  s.purchaser,
-  s.nft_account_2, 
+  ss.seller,
+  ss.purchaser,  
   s.ingested_at
