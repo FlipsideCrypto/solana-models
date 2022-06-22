@@ -45,7 +45,8 @@ SELECT
     locker_nft,
     mint,
     action,
-    amount
+    amount,
+    _inserted_timestamp
 FROM
     {{ ref ('silver__gov_actions_marinade_tmp') }}
 WHERE
@@ -53,12 +54,7 @@ WHERE
     AND signer IS NOT NULL
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+AND ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 UNION ALL
 SELECT
@@ -76,7 +72,8 @@ SELECT
             10,
             -9
         )
-    ) :: FLOAT AS amount
+    ) :: FLOAT AS amount,
+    e._inserted_timestamp
 FROM
     {{ ref ('silver__events') }}
     e
@@ -88,20 +85,10 @@ FROM
 
 {% if is_incremental() %}
 WHERE
-    e._inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
-    AND t._inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
+    e.ingested_at :: DATE >= CURRENT_DATE - 2
+    AND t.ingested_at :: DATE >= CURRENT_DATE - 2
 {% else %}
 WHERE
-    e._inserted_timestamp :: DATE >= '2022-04-01'
-    AND t._inserted_timestamp :: DATE >= '2022-04-01'
+    e.ingested_at :: DATE >= '2022-04-01'
+    AND t.ingested_at :: DATE >= '2022-04-01'
 {% endif %}

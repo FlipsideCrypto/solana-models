@@ -12,20 +12,16 @@ WITH all_marinade_gov_events AS (
         block_id,
         tx_id,
         INDEX,
-        instruction
+        instruction,
+        _inserted_timestamp
     FROM
         {{ ref('silver__events') }}
     WHERE
         program_id = 'tovt1VkTE2T4caWoeFP6a2xSFoew5mNpd7FWidyyMuk'
-        AND _inserted_timestamp :: DATE >= '2022-05-17'
+        AND ingested_at :: DATE >= '2022-05-17'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+AND ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 b AS (
@@ -57,15 +53,10 @@ b AS (
         ON t.tx_id = g.tx_id
         LEFT OUTER JOIN TABLE(FLATTEN(t.log_messages)) l
     WHERE
-        _inserted_timestamp :: DATE >= '2022-05-17'
+        ingested_at :: DATE >= '2022-05-17'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+AND ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 C AS (
@@ -115,7 +106,8 @@ SELECT
     e.instruction :accounts [5] :: STRING AS voter,
     e.instruction :accounts [3] :: STRING AS voter_nft,
     e.instruction :accounts [6] :: STRING AS gauge,
-    d.data :new_weight :: NUMBER AS delegated_shares
+    d.data :new_weight :: NUMBER AS delegated_shares,
+    e._inserted_timestamp
 FROM
     all_marinade_gov_events e
     INNER JOIN filtered_logs l

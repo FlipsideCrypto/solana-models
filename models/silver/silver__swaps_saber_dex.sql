@@ -24,18 +24,8 @@ WITH saber_dex_txs AS (
         program_id = 'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t'
 
 {% if is_incremental() %}
-AND e._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-AND t._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND t.ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 signers AS (
@@ -65,12 +55,7 @@ post_balances_acct_map AS (
 
 {% if is_incremental() %}
 WHERE
-    b._inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
+    b.ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 destinations AS (
@@ -90,7 +75,8 @@ destinations AS (
             ORDER BY
                 e.index,
                 inner_index
-        ) AS rn
+        ) AS rn,
+        e._inserted_timestamp
     FROM
         {{ ref('silver__events') }}
         e
@@ -102,12 +88,7 @@ destinations AS (
         AND e.program_id = 'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t'
 
 {% if is_incremental() %}
-AND e._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+AND e.ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 destination_acct_map AS (
@@ -180,6 +161,7 @@ swaps_tmp AS (
         s.authority,
         s.source,
         s.amount,
+        s._inserted_timestamp,
         ROW_NUMBER() over (
             PARTITION BY s.tx_id
             ORDER BY
@@ -226,7 +208,8 @@ swap_actions AS (
             s2.decimal
         ) AS DECIMAL,
         s1.amount :: bigint AS amount,
-        s1.rn
+        s1.rn,
+        s1._inserted_timestamp
     FROM
         swaps_tmp s1
         LEFT OUTER JOIN mint_acct_map s2
@@ -281,6 +264,7 @@ agg_tmp AS (
         swapper,
         mint,
         DECIMAL,
+        _inserted_timestamp,
         SUM(final_amt) AS amt,
         MIN(rn) AS rn
     FROM
@@ -292,7 +276,8 @@ agg_tmp AS (
         4,
         5,
         6,
-        7
+        7,
+        8
 ),
 agg AS (
     SELECT
@@ -324,7 +309,8 @@ SELECT
             10,- a2.decimal
         )
         ELSE 0
-    END AS to_amt
+    END AS to_amt,
+    a1._inserted_timestamp
 FROM
     agg a1
     LEFT OUTER JOIN agg a2

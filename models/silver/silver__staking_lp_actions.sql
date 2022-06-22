@@ -15,19 +15,15 @@ WITH base_e AS (
         event_type,
         program_id,
         instruction,
-        inner_instruction
+        inner_instruction,
+        _inserted_timestamp
     FROM
         {{ ref('silver__events') }}
     WHERE
-        program_id = 'Stake11111111111111111111111111111111111111'
+         program_id = 'Stake11111111111111111111111111111111111111'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+AND ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 base_t AS (
@@ -46,12 +42,7 @@ base_t AS (
 
 {% if is_incremental() %}
 WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
+    ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 )
 SELECT
@@ -69,7 +60,8 @@ SELECT
     t.pre_balances,
     t.post_balances,
     t.pre_token_balances,
-    t.post_token_balances
+    t.post_token_balances,
+    e._inserted_timestamp
 FROM
     base_e e
     LEFT OUTER JOIN base_t t

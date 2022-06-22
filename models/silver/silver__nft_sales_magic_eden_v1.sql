@@ -38,16 +38,16 @@ WITH sales_inner_instructions AS (
 
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
-  SELECT
-    MAX(_inserted_timestamp)
-  FROM
-    {{ this }}
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
 )
 AND t._inserted_timestamp >= (
-  SELECT
-    MAX(_inserted_timestamp)
-  FROM
-    {{ this }}
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
 )
 {% endif %}
 ),
@@ -64,10 +64,10 @@ post_token_balances AS (
 WHERE
   p._inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp)
+        MAX(_inserted_timestamp)
     FROM
-      {{ this }}
-  )
+        {{ this }}
+)
 {% endif %}
 )
 SELECT

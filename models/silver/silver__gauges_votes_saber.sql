@@ -12,19 +12,15 @@ WITH all_saber_gauges_events AS (
         block_id,
         tx_id,
         INDEX,
-        instruction
+        instruction,
+        _inserted_timestamp
     FROM
         {{ ref('silver__events') }}
     WHERE
         program_id = 'GaugesLJrnVjNNWLReiw3Q7xQhycSBRgeHGTMDUaX231'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+AND ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 tx_logs AS (
@@ -61,12 +57,7 @@ tx_logs AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+AND ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 )
 SELECT
@@ -89,7 +80,8 @@ SELECT
             'shares: \\d+'
         ),
         'shares: '
-    ) :: NUMBER AS delegated_shares
+    ) :: NUMBER AS delegated_shares,
+    e._inserted_timestamp
 FROM
     all_saber_gauges_events e
     LEFT OUTER JOIN tx_logs l
@@ -97,4 +89,5 @@ FROM
     AND e.index = l.event_index
 WHERE
     l.log_type = 'vote'
-    AND e.instruction :accounts [0] :: STRING = '28ZDtf6d2wsYhBvabTxUHTRT6MDxqjmqR7RMCp348tyU' -- this is saber gaugemeister
+AND 
+    e.instruction :accounts [0] :: STRING = '28ZDtf6d2wsYhBvabTxUHTRT6MDxqjmqR7RMCp348tyU' -- this is saber gaugemeister

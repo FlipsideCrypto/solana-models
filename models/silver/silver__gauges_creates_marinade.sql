@@ -13,20 +13,16 @@ WITH create_validator_gauge_events AS (
         tx_id,
         INDEX,
         instruction,
-        inner_instruction
+        inner_instruction,
+        _inserted_timestamp
     FROM
         {{ ref('silver__events') }}
     WHERE
         program_id = 'va12L6Z9fa5aGJ7gxtJuQZ928nySAk5UetjcGPve3Nu' -- validator gauge creation program id
-        AND _inserted_timestamp :: DATE >= '2022-05-17'
+        AND ingested_at :: DATE >= '2022-05-17'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+AND ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 b AS (
@@ -47,8 +43,7 @@ b AS (
                 AND CURRENT ROW
         ) AS event_cumsum
     FROM
-        {{ ref('silver__transactions') }}
-        t
+        {{ ref('silver__transactions') }} t
         INNER JOIN (
             SELECT
                 DISTINCT tx_id
@@ -58,15 +53,10 @@ b AS (
         ON t.tx_id = g.tx_id
         LEFT OUTER JOIN TABLE(FLATTEN(t.log_messages)) l
     WHERE
-        _inserted_timestamp :: DATE >= '2022-05-17'
+        ingested_at :: DATE >= '2022-05-17'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+AND ingested_at :: DATE >= CURRENT_DATE - 2
 {% endif %}
 ),
 C AS (
@@ -116,7 +106,8 @@ SELECT
     e.instruction :accounts [0] :: STRING AS signer,
     e.instruction :accounts [3] :: STRING AS gauge,
     e.instruction :accounts [4] :: STRING AS gaugemeister,
-    d.data :validator_account :: STRING AS validator_account
+    d.data :validator_account :: STRING AS validator_account,
+    e._inserted_timestamp
 FROM
     create_validator_gauge_events e
     INNER JOIN create_validator_logs l
