@@ -19,6 +19,7 @@ WITH sales_inner_instructions AS (
             0
         ) AS amount,
         e.instruction :accounts [0] :: STRING AS purchaser,
+        e.instruction :accounts [1] :: STRING AS seller, 
         e.instruction :accounts [2] :: STRING AS nft_account,
         e.ingested_at
     FROM
@@ -83,6 +84,7 @@ SELECT
     s.program_id,
     p.mint,
     s.purchaser,
+    s.seller, 
     SUM(
         s.amount
     ) / pow(
@@ -105,4 +107,5 @@ GROUP BY
     s.program_id,
     p.mint,
     s.purchaser,
+    s.seller, 
     s.ingested_at
