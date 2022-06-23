@@ -33,8 +33,18 @@ WITH mint_tx_tmp AS (
         OR ARRAY_CONTAINS('initializeMint' :: variant, inner_instruction_events))))
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
-AND t.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+AND t._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 mint_tx AS (
@@ -109,7 +119,12 @@ txs_tmp AS (
         AND t.succeeded = TRUE
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 txs AS (
@@ -143,7 +158,12 @@ transfers AS (
 
 {% if is_incremental() %}
 WHERE
-    tr.ingested_at :: DATE >= CURRENT_DATE - 2
+    tr._inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% endif %}
 ),
 mint_currency AS (
@@ -161,7 +181,12 @@ mint_currency AS (
         source = p.account
 
 {% if is_incremental() %}
-AND p.ingested_at :: DATE >= CURRENT_DATE - 2
+AND p._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 pre_final AS (
@@ -276,6 +301,7 @@ WHERE
             pre_pre_final
         WHERE
             program_id <> 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
-    ) qualify(ROW_NUMBER() over (PARTITION BY tx_id, purchaser, mint, mint_currency
+    )
+    AND mint IS NOT NULL qualify(ROW_NUMBER() over (PARTITION BY tx_id, purchaser, mint, mint_currency
 ORDER BY
     block_id)) = 1

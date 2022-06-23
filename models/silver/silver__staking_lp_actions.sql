@@ -15,7 +15,8 @@ WITH base_e AS (
         event_type,
         program_id,
         instruction,
-        inner_instruction
+        inner_instruction,
+        _inserted_timestamp
     FROM
         {{ ref('silver__events') }}
     WHERE
@@ -59,7 +60,8 @@ SELECT
     t.pre_balances,
     t.post_balances,
     t.pre_token_balances,
-    t.post_token_balances
+    t.post_token_balances,
+    e._inserted_timestamp
 FROM
     base_e e
     LEFT OUTER JOIN base_t t

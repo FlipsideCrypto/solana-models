@@ -38,11 +38,13 @@ WITH sales_inner_instructions AS (
         AND e.instruction :accounts [5] :: STRING = 'So11111111111111111111111111111111111111112'
         AND (
             ARRAY_CONTAINS(
-                'pAHAKoTJsAAe2ZcvTZUxoYzuygVAFAmbYmJYdWT886r' :: variant,  -- This is definitely an opensea signer
+                'pAHAKoTJsAAe2ZcvTZUxoYzuygVAFAmbYmJYdWT886r' :: variant,
+                -- This is definitely an opensea signer
                 t.signers
             )
             OR ARRAY_CONTAINS(
-                '71kwsvqZ5hTzQUB8piTRUBbCaoUWGMyN5Gb8vAtt9ZYV' :: variant,  -- This seems like it is an opensea signer?
+                '71kwsvqZ5hTzQUB8piTRUBbCaoUWGMyN5Gb8vAtt9ZYV' :: variant,
+                -- This seems like it is an opensea signer?
                 t.signers
             )
         )
@@ -58,8 +60,18 @@ WITH sales_inner_instructions AS (
         )
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
-AND t.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+AND t._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 post_token_balances AS (
@@ -73,7 +85,12 @@ post_token_balances AS (
 
 {% if is_incremental() %}
 WHERE
-    p.ingested_at :: DATE >= CURRENT_DATE - 2
+    p._inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% endif %}
 )
 SELECT

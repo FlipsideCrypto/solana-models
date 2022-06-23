@@ -13,7 +13,8 @@ WITH create_validator_gauge_events AS (
         tx_id,
         INDEX,
         instruction,
-        inner_instruction
+        inner_instruction,
+        _inserted_timestamp
     FROM
         {{ ref('silver__events') }}
     WHERE
@@ -105,7 +106,8 @@ SELECT
     e.instruction :accounts [0] :: STRING AS signer,
     e.instruction :accounts [3] :: STRING AS gauge,
     e.instruction :accounts [4] :: STRING AS gaugemeister,
-    d.data :validator_account :: STRING AS validator_account
+    d.data :validator_account :: STRING AS validator_account,
+    e._inserted_timestamp
 FROM
     create_validator_gauge_events e
     INNER JOIN create_validator_logs l

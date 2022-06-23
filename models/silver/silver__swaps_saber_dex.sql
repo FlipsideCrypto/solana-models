@@ -75,7 +75,8 @@ destinations AS (
             ORDER BY
                 e.index,
                 inner_index
-        ) AS rn
+        ) AS rn,
+        e._inserted_timestamp
     FROM
         {{ ref('silver__events') }}
         e
@@ -160,6 +161,7 @@ swaps_tmp AS (
         s.authority,
         s.source,
         s.amount,
+        s._inserted_timestamp,
         ROW_NUMBER() over (
             PARTITION BY s.tx_id
             ORDER BY
@@ -206,7 +208,8 @@ swap_actions AS (
             s2.decimal
         ) AS DECIMAL,
         s1.amount :: bigint AS amount,
-        s1.rn
+        s1.rn,
+        s1._inserted_timestamp
     FROM
         swaps_tmp s1
         LEFT OUTER JOIN mint_acct_map s2
@@ -261,6 +264,7 @@ agg_tmp AS (
         swapper,
         mint,
         DECIMAL,
+        _inserted_timestamp,
         SUM(final_amt) AS amt,
         MIN(rn) AS rn
     FROM
@@ -272,7 +276,8 @@ agg_tmp AS (
         4,
         5,
         6,
-        7
+        7,
+        8
 ),
 agg AS (
     SELECT
@@ -304,7 +309,8 @@ SELECT
             10,- a2.decimal
         )
         ELSE 0
-    END AS to_amt
+    END AS to_amt,
+    a1._inserted_timestamp
 FROM
     agg a1
     LEFT OUTER JOIN agg a2

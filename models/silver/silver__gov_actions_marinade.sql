@@ -45,7 +45,8 @@ SELECT
     locker_nft,
     mint,
     action,
-    amount
+    amount,
+    _inserted_timestamp
 FROM
     {{ ref ('silver__gov_actions_marinade_tmp') }}
 WHERE
@@ -71,7 +72,8 @@ SELECT
             10,
             -9
         )
-    ) :: FLOAT AS amount
+    ) :: FLOAT AS amount,
+    e._inserted_timestamp
 FROM
     {{ ref ('silver__events') }}
     e

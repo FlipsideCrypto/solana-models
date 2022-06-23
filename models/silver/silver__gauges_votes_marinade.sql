@@ -12,7 +12,8 @@ WITH all_marinade_gov_events AS (
         block_id,
         tx_id,
         INDEX,
-        instruction
+        instruction,
+        _inserted_timestamp
     FROM
         {{ ref('silver__events') }}
     WHERE
@@ -105,7 +106,8 @@ SELECT
     e.instruction :accounts [5] :: STRING AS voter,
     e.instruction :accounts [3] :: STRING AS voter_nft,
     e.instruction :accounts [6] :: STRING AS gauge,
-    d.data :new_weight :: NUMBER AS delegated_shares
+    d.data :new_weight :: NUMBER AS delegated_shares,
+    e._inserted_timestamp
 FROM
     all_marinade_gov_events e
     INNER JOIN filtered_logs l

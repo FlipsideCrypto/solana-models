@@ -2,7 +2,7 @@
   materialized = 'incremental',
   unique_key = "CONCAT_WS('-', block_id, tx_id, index)",
   incremental_strategy = 'delete+insert',
-  cluster_by = ['ingested_at::DATE','program_id'],
+  cluster_by = ['_inserted_timestamp::DATE','program_id'],
   post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
@@ -21,7 +21,12 @@ WITH base_i AS (
   FROM {{ ref('silver___instructions') }} 
 
 {% if is_incremental() %}
-  WHERE ingested_at :: DATE >= CURRENT_DATE - 2
+  WHERE _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ), 
 
@@ -36,7 +41,12 @@ base_ii AS (
   FROM {{ ref('silver___inner_instructions') }}
 
 {% if is_incremental() %}
-  WHERE ingested_at :: DATE >= CURRENT_DATE - 2
+  WHERE _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ) 
 
