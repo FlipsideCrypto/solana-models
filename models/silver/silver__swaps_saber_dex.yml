@@ -49,4 +49,5 @@ models:
               where: succeeded = TRUE
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
           - not null

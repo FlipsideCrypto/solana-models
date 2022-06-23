@@ -57,4 +57,5 @@ models:
               where: action not in ('START UNLOCK','CANCEL UNLOCK') and succeeded
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
           - not null
