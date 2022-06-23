@@ -301,6 +301,7 @@ WHERE
             pre_pre_final
         WHERE
             program_id <> 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
-    ) qualify(ROW_NUMBER() over (PARTITION BY tx_id, purchaser, mint, mint_currency
+    )
+    AND mint IS NOT NULL qualify(ROW_NUMBER() over (PARTITION BY tx_id, purchaser, mint, mint_currency
 ORDER BY
     block_id)) = 1
