@@ -46,11 +46,11 @@ sellers AS (
     SELECT 
        tx_id, 
        CASE WHEN new_authority <> signer THEN 
-        nft_account_2
-      ELSE nft_account_3 END AS seller, 
+        signer
+      ELSE nft_account_2 END AS seller, 
       CASE WHEN new_authority <> signer THEN 
-        purchaser
-      ELSE signer END AS purchaser 
+        nft_account_2
+      ELSE purchaser END AS purchaser 
     FROM sales_inner_instructions 
     WHERE new_authority IS NOT NULL
 ), 
