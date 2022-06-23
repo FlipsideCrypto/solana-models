@@ -19,10 +19,15 @@ WITH create_validator_gauge_events AS (
         {{ ref('silver__events') }}
     WHERE
         program_id = 'va12L6Z9fa5aGJ7gxtJuQZ928nySAk5UetjcGPve3Nu' -- validator gauge creation program id
-        AND ingested_at :: DATE >= '2022-05-17'
+        AND _inserted_timestamp :: DATE >= '2022-05-17'
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 2
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 b AS (
@@ -43,7 +48,8 @@ b AS (
                 AND CURRENT ROW
         ) AS event_cumsum
     FROM
-        {{ ref('silver__transactions') }} t
+        {{ ref('silver__transactions') }}
+        t
         INNER JOIN (
             SELECT
                 DISTINCT tx_id
@@ -53,10 +59,15 @@ b AS (
         ON t.tx_id = g.tx_id
         LEFT OUTER JOIN TABLE(FLATTEN(t.log_messages)) l
     WHERE
-        ingested_at :: DATE >= '2022-05-17'
+        _inserted_timestamp :: DATE >= '2022-05-17'
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 2
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 C AS (

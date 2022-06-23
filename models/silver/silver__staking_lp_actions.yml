@@ -57,3 +57,6 @@ models:
         description: List of pre-transaction token balances for different token accounts
       - name: POST_TOKEN_BALANCES
         description: List of post-transaction token balances for different token accounts
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+          - not null

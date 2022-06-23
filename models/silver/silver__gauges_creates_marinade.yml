@@ -39,3 +39,6 @@ models:
         description: "{{ doc('tribeca_gauge_validator_account') }}"
         tests: 
           - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+          - not null

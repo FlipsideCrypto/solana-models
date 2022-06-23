@@ -44,4 +44,7 @@ models:
         description:  "{{ doc('tribeca_gauge_delegated_shares') }}"
         tests: 
           - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+          - not null
       

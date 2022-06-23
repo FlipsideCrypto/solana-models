@@ -28,6 +28,6 @@ models:
         tests: 
           - not_null
       - name: _INSERTED_TIMESTAMP
-        description: "{{ doc('ingested_at') }}"
+        description: "{{ doc('_inserted_timestamp') }}"
         tests: 
           - not_null

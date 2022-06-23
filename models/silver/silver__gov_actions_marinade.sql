@@ -54,7 +54,12 @@ WHERE
     AND signer IS NOT NULL
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 2
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 UNION ALL
 SELECT
@@ -85,10 +90,20 @@ FROM
 
 {% if is_incremental() %}
 WHERE
-    e.ingested_at :: DATE >= CURRENT_DATE - 2
-    AND t.ingested_at :: DATE >= CURRENT_DATE - 2
+    e._inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+    AND t._inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% else %}
 WHERE
-    e.ingested_at :: DATE >= '2022-04-01'
-    AND t.ingested_at :: DATE >= '2022-04-01'
+    e._inserted_timestamp :: DATE >= '2022-04-01'
+    AND t._inserted_timestamp :: DATE >= '2022-04-01'
 {% endif %}
