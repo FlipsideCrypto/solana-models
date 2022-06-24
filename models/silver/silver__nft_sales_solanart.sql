@@ -76,6 +76,7 @@ SELECT
     s.program_id,
     p.mint AS mint,
     s.purchaser,
+    s.seller, 
     SUM(
         s.amount
     ) / pow(
@@ -97,6 +98,7 @@ GROUP BY
     s.program_id,
     p.mint,
     s.purchaser,
+    s.seller, 
     s.ingested_at,
     s._inserted_timestamp
 HAVING
