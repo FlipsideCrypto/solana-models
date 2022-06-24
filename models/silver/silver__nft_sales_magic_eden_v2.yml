@@ -36,7 +36,8 @@ models:
       - name: SELLER
         description: "{{ doc('seller') }}"
         tests: 
-          - not_null
+          - not_null: 
+              where: succeeded = TRUE
       - name: MINT
         description: "{{ doc('mint') }}"
         tests: 

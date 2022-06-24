@@ -36,6 +36,7 @@ WITH sales_inner_instructions AS (
     AND ARRAY_SIZE(
       inner_instruction :instructions
     ) > 2
+    AND i.value :parsed :info :newAuthority :: STRING IS NOT NULL -- Removes token burns
 
 {% if is_incremental() %}
 AND e.ingested_at :: DATE >= CURRENT_DATE - 2
@@ -49,7 +50,7 @@ sellers AS (
         signer
       ELSE nft_account_2 END AS seller, 
       CASE WHEN new_authority <> signer THEN 
-        nft_account_1
+        nft_account
       ELSE purchaser END AS purchaser 
     FROM sales_inner_instructions 
     WHERE new_authority IS NOT NULL
