@@ -24,12 +24,14 @@ WITH sales_inner_instructions AS (
     e.instruction :accounts [4] :: STRING AS nft_account_3, 
     t.signers[0] :: STRING as signer, 
     i.value :parsed :info :newAuthority :: STRING AS new_authority,
-    e.ingested_at
+    e.ingested_at, 
+    e._inserted_timestamp
   FROM
-    {{ ref('silver__events') }} e
+    {{ ref('silver__events') }}
+    e
     INNER JOIN {{ ref('silver__transactions') }}
-        t
-        ON t.tx_id = e.tx_id
+    t
+    ON t.tx_id = e.tx_id
     LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
   WHERE
     program_id = 'MEisE1HzehtrDpAAT8PnLHjpSSkRYakotTuJRPjTpo8' -- Magic Eden V1 Program ID
@@ -39,8 +41,18 @@ WITH sales_inner_instructions AS (
     AND i.value :parsed :info :newAuthority :: STRING IS NOT NULL -- Removes token burns
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
-AND t.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+AND t._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 sellers AS (
@@ -67,7 +79,12 @@ post_token_balances AS (
 
 {% if is_incremental() %}
 WHERE
-  p.ingested_at :: DATE >= CURRENT_DATE - 2
+  p._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 )
 SELECT
@@ -88,7 +105,8 @@ SELECT
     10,
     9
   ) AS sales_amount,
-  s.ingested_at
+  s.ingested_at,
+  s._inserted_timestamp
 FROM
   sales_inner_instructions s
   LEFT OUTER JOIN post_token_balances p
@@ -111,4 +129,5 @@ GROUP BY
   ),
   ss.seller,
   ss.purchaser,  
-  s.ingested_at
+  s.ingested_at, 
+  s._inserted_timestamp

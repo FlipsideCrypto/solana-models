@@ -12,7 +12,7 @@ WITH v AS (
   FROM {{ ref('silver__votes') }}
   
   {% if is_incremental() %}
-     WHERE ingested_at :: DATE >= CURRENT_DATE - 2
+     WHERE _inserted_timestamp::date >= current_date - 1
   {% endif %}
 
   GROUP BY block_id

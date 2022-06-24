@@ -127,7 +127,8 @@ SELECT
     e.instruction :accounts [3] :: STRING AS voter,
     e.instruction :accounts [1] :: STRING AS voter_nft,
     e.instruction :accounts [5] :: STRING AS voter_account,
-    e.instruction :accounts [6] :: STRING AS proposal
+    e.instruction :accounts [6] :: STRING AS proposal,
+    e._inserted_timestamp
 FROM
     {{ ref('silver__events') }}
     e

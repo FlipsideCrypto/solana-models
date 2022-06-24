@@ -33,8 +33,18 @@ WITH mint_tx_tmp AS (
         OR ARRAY_CONTAINS('initializeMint' :: variant, inner_instruction_events))))
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
-AND t.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+AND t._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 mint_tx AS (
@@ -85,7 +95,8 @@ txs_tmp AS (
             WHEN e.inner_instruction :instructions [0] :programId :: STRING = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s' THEN e.instruction :accounts [3] :: STRING
             ELSE NULL
         END AS update_authority,
-        e.ingested_at
+        e.ingested_at,
+        e._inserted_timestamp
     FROM
         {{ ref('silver__events') }}
         e
@@ -108,7 +119,12 @@ txs_tmp AS (
         AND t.succeeded = TRUE
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 txs AS (
@@ -142,7 +158,12 @@ transfers AS (
 
 {% if is_incremental() %}
 WHERE
-    tr.ingested_at :: DATE >= CURRENT_DATE - 2
+    tr._inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% endif %}
 ),
 mint_currency AS (
@@ -160,7 +181,12 @@ mint_currency AS (
         source = p.account
 
 {% if is_incremental() %}
-AND p.ingested_at :: DATE >= CURRENT_DATE - 2
+AND p._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 pre_final AS (
@@ -193,7 +219,8 @@ pre_final AS (
             nft,
             potential_nft_mint
         ) AS mint,
-        ingested_at
+        ingested_at,
+        _inserted_timestamp
     FROM
         txs t
         LEFT OUTER JOIN mint_currency p
@@ -212,7 +239,8 @@ pre_final AS (
         mint_currency,
         mint,
         update_authority,
-        ingested_at
+        ingested_at,
+        _inserted_timestamp
 ),
 pre_pre_final AS (
     SELECT
@@ -229,7 +257,8 @@ pre_pre_final AS (
         END AS mint_price,
         pf.mint_currency,
         pf.mint,
-        pf.ingested_at
+        pf.ingested_at,
+        pf._inserted_timestamp
     FROM
         pre_final pf
         LEFT OUTER JOIN transfers tr
@@ -259,7 +288,8 @@ SELECT
     ) AS mint_price,
     mint_currency,
     mint,
-    ingested_at
+    ingested_at,
+    _inserted_timestamp
 FROM
     pre_pre_final
 WHERE
@@ -271,6 +301,7 @@ WHERE
             pre_pre_final
         WHERE
             program_id <> 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
-    ) qualify(ROW_NUMBER() over (PARTITION BY tx_id, purchaser, mint, mint_currency
+    )
+    AND mint IS NOT NULL qualify(ROW_NUMBER() over (PARTITION BY tx_id, purchaser, mint, mint_currency
 ORDER BY
     block_id)) = 1

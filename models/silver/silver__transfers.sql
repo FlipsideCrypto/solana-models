@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "CONCAT_WS('-', block_id, tx_id, index)",
     incremental_strategy = 'delete+insert',
-    cluster_by = ['ingested_at::DATE'],
+    cluster_by = ['_inserted_timestamp::DATE'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
@@ -14,7 +14,8 @@ WITH base_transfers AS (
         e.tx_id,
         e.index,
         e.instruction,
-        e.ingested_at
+        e.ingested_at,
+        e._inserted_timestamp
     FROM
         {{ ref('silver__events') }}
         e
@@ -23,7 +24,12 @@ WITH base_transfers AS (
         ON t.tx_id = e.tx_id
 
 {% if is_incremental() %}
-AND t.ingested_at :: DATE >= CURRENT_DATE - 2
+AND t._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 WHERE
     e.event_type IN (
@@ -33,7 +39,12 @@ WHERE
     AND t.succeeded = TRUE
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 base_post_token_balances AS (
@@ -48,7 +59,12 @@ base_post_token_balances AS (
 
 {% if is_incremental() %}
 WHERE
-    ingested_at :: DATE >= CURRENT_DATE - 2
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% endif %}
 ),
 base_pre_token_balances AS (
@@ -63,7 +79,12 @@ base_pre_token_balances AS (
 
 {% if is_incremental() %}
 WHERE
-    ingested_at :: DATE >= CURRENT_DATE - 2
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% endif %}
 ),
 spl_transfers AS (
@@ -100,7 +121,8 @@ spl_transfers AS (
             p3.mint,
             p4.mint
         ) AS mint,
-        e.ingested_at
+        e.ingested_at,
+        e._inserted_timestamp
     FROM
         base_transfers e
         LEFT OUTER JOIN base_pre_token_balances p
@@ -131,7 +153,8 @@ sol_transfers AS (
             9
         ) AS amount,
         'So11111111111111111111111111111111111111112' AS mint,
-        e.ingested_at
+        e.ingested_at,
+        e._inserted_timestamp
     FROM
         base_transfers e
     WHERE
@@ -146,7 +169,8 @@ SELECT
     tx_to,
     amount,
     mint,
-    ingested_at
+    ingested_at,
+    _inserted_timestamp
 FROM
     spl_transfers
 UNION
@@ -159,6 +183,7 @@ SELECT
     tx_to,
     amount,
     mint,
-    ingested_at
+    ingested_at,
+    _inserted_timestamp
 FROM
     sol_transfers

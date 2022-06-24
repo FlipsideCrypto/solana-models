@@ -48,7 +48,8 @@ saber_gov_lock_events AS (
         e.instruction :accounts [2] :: STRING AS exit_signer,
         ii.value :parsed :info :destination :: STRING AS destination,
         ii.value :parsed :info :source :: STRING AS source,
-        ii.value :parsed :info :amount :: NUMBER AS amount
+        ii.value :parsed :info :amount :: NUMBER AS amount,
+        e._inserted_timestamp
     FROM
         {{ ref('silver__events') }}
         e,
@@ -120,7 +121,8 @@ SELECT
     e.amount / pow(
         10,
         p.decimal
-    ) AS amount
+    ) AS amount,
+    e._inserted_timestamp
 FROM
     saber_gov_lock_events e
     INNER JOIN post_token_balances p

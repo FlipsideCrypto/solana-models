@@ -12,7 +12,8 @@ WITH all_saber_gauges_events AS (
         block_id,
         tx_id,
         INDEX,
-        instruction
+        instruction,
+        _inserted_timestamp
     FROM
         {{ ref('silver__events') }}
     WHERE
@@ -79,7 +80,8 @@ SELECT
             'shares: \\d+'
         ),
         'shares: '
-    ) :: NUMBER AS delegated_shares
+    ) :: NUMBER AS delegated_shares,
+    e._inserted_timestamp
 FROM
     all_saber_gauges_events e
     LEFT OUTER JOIN tx_logs l

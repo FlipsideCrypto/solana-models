@@ -47,3 +47,5 @@ models:
         description: "{{ doc('ingested_at') }}"
         tests: 
           - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
