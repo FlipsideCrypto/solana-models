@@ -24,25 +24,6 @@ WITH base_table AS (
   
     WHERE program_id = 'J7RagMKwSD5zJSbRQZU56ypHUtux8LRDkUpAPSKH4WPp' -- solana monke business marketplace
 
-    SELECT
-        e.block_timestamp,
-        e.block_id,
-        e.tx_id,
-        t.succeeded,
-        e.program_id,
-        instruction :accounts [0] :: STRING AS acct_1,
-        instruction :accounts [1] :: STRING AS mint,
-        e.ingested_at,
-        e._inserted_timestamp
-    FROM
-        {{ ref('silver__events') }}
-        e
-        INNER JOIN {{ ref('silver__transactions') }}
-        t
-        ON t.tx_id = e.tx_id
-    WHERE
-        program_id = 'J7RagMKwSD5zJSbRQZU56ypHUtux8LRDkUpAPSKH4WPp' -- solana monke business marketplace
-
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
     SELECT
