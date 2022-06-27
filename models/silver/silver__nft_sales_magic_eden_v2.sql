@@ -10,6 +10,7 @@ WITH txs AS (
     SELECT
         e.tx_id,
         t.succeeded,
+        t.signers[0] :: STRING as signer, 
         MAX(INDEX) AS max_event_index
     FROM
         {{ ref('silver__events') }}
@@ -36,7 +37,8 @@ AND t._inserted_timestamp >= (
 {% endif %}
 GROUP BY
     1,
-    2
+    2, 
+    3
 HAVING
     COUNT(
         e.tx_id
@@ -101,6 +103,33 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
+sellers AS (
+     SELECT
+        e.tx_id,
+        CASE WHEN signer <> instruction :accounts [1] :: STRING THEN 
+            instruction :accounts [6] :: STRING
+        ELSE 
+            instruction :accounts [1] :: STRING END AS seller
+    FROM
+        {{ ref('silver__events') }}
+        e
+        INNER JOIN txs t
+        ON t.tx_id = e.tx_id
+        AND t.max_event_index = e.index
+        AND ARRAY_SIZE(
+            e.inner_instruction :instructions
+        ) > 1
+        LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
+    WHERE 
+        i.value :program :: STRING = 'spl-token'
+    AND i.value :programId :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+    AND i.value :parsed :type :: STRING = 'transfer'
+
+{% if is_incremental() %}
+AND ingested_at :: DATE >= CURRENT_DATE - 2
+{% endif %}
+
+),
 base AS (
     SELECT
         *
@@ -142,6 +171,7 @@ SELECT
         p.mint
     ) AS mint,
     b.purchaser,
+    ss.seller, 
     SUM(
         b.amount
     ) / pow(
@@ -155,6 +185,8 @@ FROM
     LEFT OUTER JOIN post_token_balances p
     ON p.tx_id = b.tx_id
     AND p.account = b.nft_account
+    LEFT OUTER JOIN sellers ss
+    ON ss.tx_id = b.tx_id
 GROUP BY
     b.block_timestamp,
     b.block_id,
@@ -166,5 +198,6 @@ GROUP BY
         p.mint
     ),
     b.purchaser,
-    b.ingested_at,
+    ss.seller, 
+    b.ingested_at, 
     b._inserted_timestamp

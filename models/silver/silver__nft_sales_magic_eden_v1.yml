@@ -6,6 +6,7 @@ models:
           combination_of_columns:
             - TX_ID
             - MINT
+            - SELLER
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -32,6 +33,10 @@ models:
           - not_null
       - name: PURCHASER
         description: "{{ doc('purchaser') }}"
+        tests: 
+          - not_null
+      - name: SELLER
+        description: "{{ doc('seller') }}"
         tests: 
           - not_null
       - name: MINT

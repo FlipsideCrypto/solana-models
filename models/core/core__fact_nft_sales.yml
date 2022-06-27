@@ -26,6 +26,10 @@ models:
         description: "{{ doc('purchaser') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: SELLER
+        description: "{{ doc('seller') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
       - name: MINT
         description: "{{ doc('mint') }}"
         tests:
