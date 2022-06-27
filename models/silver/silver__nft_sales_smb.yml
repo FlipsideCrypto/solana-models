@@ -33,6 +33,10 @@ models:
         description: "{{ doc('purchaser') }}"
         tests: 
           - not_null
+      - name: SELLER
+        description: "{{ doc('seller') }}"
+        tests: 
+          - not_null
       - name: MINT
         description: "{{ doc('mint') }}"
         tests: 

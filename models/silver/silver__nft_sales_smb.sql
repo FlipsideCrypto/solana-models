@@ -6,25 +6,23 @@
 ) }}
 
 WITH base_table AS (
-
-    SELECT
-        e.block_timestamp,
-        e.block_id,
-        e.tx_id,
-        t.succeeded,
-        e.program_id,
-        instruction :accounts [0] :: STRING AS acct_1,
-        instruction :accounts [1] :: STRING AS mint,
-        e.ingested_at,
+    SELECT 
+        e.block_timestamp, 
+        e.block_id, 
+        e.tx_id, 
+        t.succeeded, 
+        e.program_id, 
+        instruction :accounts[0] :: STRING AS acct_1, 
+        instruction :accounts[3] :: STRING AS seller, 
+        instruction :accounts[1] :: STRING AS mint, 
+        e.ingested_at, 
         e._inserted_timestamp
-    FROM
-        {{ ref('silver__events') }}
-        e
-        INNER JOIN {{ ref('silver__transactions') }}
-        t
-        ON t.tx_id = e.tx_id
-    WHERE
-        program_id = 'J7RagMKwSD5zJSbRQZU56ypHUtux8LRDkUpAPSKH4WPp' -- solana monke business marketplace
+    FROM {{ ref('silver__events') }} e
+    
+    INNER JOIN {{ ref('silver__transactions') }} t
+    ON t.tx_id = e.tx_id 
+  
+    WHERE program_id = 'J7RagMKwSD5zJSbRQZU56ypHUtux8LRDkUpAPSKH4WPp' -- solana monke business marketplace
 
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
@@ -53,7 +51,7 @@ price AS (
     WHERE
         e.event_type = 'transfer'
 
-{% if is_incremental() %}
+   {% if is_incremental() %}
 AND b._inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
@@ -61,25 +59,24 @@ AND b._inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-)
-SELECT
-    b.block_timestamp,
-    b.block_id,
-    b.tx_id,
-    b.succeeded,
-    b.program_id,
-    b.mint,
-    b.acct_1 AS purchaser,
-    p.amount / pow(
-        10,
-        9
-    ) AS sales_amount,
-    b.ingested_at,
-    b._inserted_timestamp
-FROM
-    base_table b
-    INNER JOIN price p
-    ON b.tx_id = p.tx_id
-WHERE
-    p.amount <> 0 -- To ignore internal wallet transfers on the marketplace
-    AND b.mint <> 'So11111111111111111111111111111111111111112'
+) 
+
+SELECT 
+     b.block_timestamp, 
+     b.block_id, 
+     b.tx_id, 
+     b.succeeded, 
+     b.program_id, 
+     b.mint, 
+     b.acct_1 AS purchaser, 
+     b.seller, 
+     p.amount / POW(10,9) AS sales_amount, 
+     b.ingested_at, 
+     b._inserted_timestamp
+FROM base_table b
+
+INNER JOIN price p
+ON b.tx_id = p.tx_id
+
+WHERE p.amount <> 0 -- To ignore internal wallet transfers on the marketplace
+AND b.mint <> 'So11111111111111111111111111111111111111112'

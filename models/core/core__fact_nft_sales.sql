@@ -10,6 +10,7 @@ SELECT
     succeeded,
     program_id,
     purchaser,
+    seller, 
     mint,
     sales_amount
 FROM
@@ -23,6 +24,7 @@ SELECT
     succeeded,
     program_id,
     purchaser,
+    seller, 
     mint,
     sales_amount
 FROM
@@ -36,6 +38,7 @@ SELECT
     succeeded,
     program_id,
     purchaser,
+    seller, 
     mint,
     sales_amount
 FROM
@@ -49,6 +52,7 @@ SELECT
     succeeded,
     program_id,
     purchaser,
+    seller, 
     mint,
     sales_amount
 FROM
@@ -62,6 +66,7 @@ SELECT
     succeeded,
     program_id,
     purchaser,
+    seller, 
     mint,
     sales_amount
 FROM
@@ -75,6 +80,7 @@ SELECT
     succeeded,
     program_id,
     purchaser,
+    seller, 
     mint,
     sales_amount
 FROM
