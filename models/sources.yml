@@ -48,3 +48,10 @@ sources:
           - name: data
             data_type: variant
             description: ""
+      - name: validator_metadata_api
+        description: "External table of solana validator metadata"
+        external:
+          location: "@solana.bronze.analytics_external_tables/{{target.database}}/VALIDATOR_METADATA_API"
+          file_format: "( type = json, strip_outer_array = TRUE )"
+          auto_refresh: true
+  
