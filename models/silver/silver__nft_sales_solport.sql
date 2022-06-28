@@ -19,7 +19,7 @@ WITH sales_inner_instructions AS (
       0
     ) AS amount,
     e.instruction :accounts [0] :: STRING AS purchaser,
-    e.instruction :accounts [6] :: STRING AS seller, 
+    e.instruction :accounts [2] :: STRING AS seller, 
     e.instruction :accounts [3] :: STRING AS nft_account,
     e.ingested_at,
     e._inserted_timestamp
