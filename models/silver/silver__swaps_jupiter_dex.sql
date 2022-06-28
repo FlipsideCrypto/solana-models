@@ -25,8 +25,18 @@ WITH jupiter_dex_txs AS (
         AND i.block_id > 111442741 -- token balances owner field not guaranteed to populated bofore this slot
 
 {% if is_incremental() %}
-AND i.ingested_at :: DATE >= CURRENT_DATE - 2
-AND t.ingested_at :: DATE >= CURRENT_DATE - 2
+AND i._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+AND t._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 signers AS (
@@ -56,7 +66,12 @@ post_balances_acct_map AS (
 
 {% if is_incremental() %}
 WHERE
-    b.ingested_at :: DATE >= CURRENT_DATE - 2
+    b._inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% endif %}
 ),
 destinations AS (
@@ -93,7 +108,12 @@ destinations AS (
         AND e.program_id = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo'
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 destination_acct_map AS (
@@ -268,7 +288,12 @@ lifinity_swap_extra_fee AS (
         ) > 14
 
 {% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 2
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 swap_actions_final AS (

@@ -23,9 +23,14 @@ WITH marinade_vote_txs AS (
         program_id = 'tovt1VkTE2T4caWoeFP6a2xSFoew5mNpd7FWidyyMuk'
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% else %}
-    AND e.ingested_at :: DATE >= '2022-04-01'
+    AND e._inserted_timestamp :: DATE >= '2022-04-01'
 {% endif %}
 INTERSECT
 SELECT
@@ -50,9 +55,14 @@ WHERE
     )
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% else %}
-    AND e.ingested_at :: DATE >= '2022-04-01'
+    AND e._inserted_timestamp :: DATE >= '2022-04-01'
 {% endif %}
 ),
 b AS (
@@ -80,10 +90,15 @@ b AS (
 
 {% if is_incremental() %}
 WHERE
-    t.ingested_at :: DATE >= CURRENT_DATE - 2
+    t._inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% else %}
 WHERE
-    t.ingested_at :: DATE >= '2022-04-01'
+    t._inserted_timestamp :: DATE >= '2022-04-01'
 {% endif %}
 ),
 C AS (
@@ -142,7 +157,12 @@ WHERE
     l.action IS NOT NULL
 
 {% if is_incremental() %}
-AND e.ingested_at :: DATE >= CURRENT_DATE - 2
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% else %}
-    AND e.ingested_at :: DATE >= '2022-04-01'
+    AND e._inserted_timestamp :: DATE >= '2022-04-01'
 {% endif %}
