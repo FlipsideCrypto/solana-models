@@ -53,10 +53,18 @@ remove_nulls AS (
         event_type, 
         signers, 
         stake_authority,
-        LAST_VALUE(stake_acct) IGNORE NULLS OVER (PARTITION BY signers[0] :: STRING ORDER BY block_timestamp) AS stake_account, 
+        CASE WHEN stake_acct IS NULL THEN 
+            LAST_VALUE(stake_acct) IGNORE NULLS OVER (PARTITION BY signers[0] :: STRING ORDER BY block_timestamp) 
+        ELSE 
+            stake_acct
+        END AS stake_account, 
         pre_staked_balance, 
         post_staked_balance,
-        LAST_VALUE(vote_acct) IGNORE NULLS OVER (PARTITION BY signers[0] :: STRING ORDER BY block_timestamp) AS vote_account 
+        CASE WHEN vote_acct IS NULL THEN 
+            LAST_VALUE(vote_acct) IGNORE NULLS OVER (PARTITION BY signers[0] :: STRING ORDER BY block_timestamp) 
+        ELSE 
+            vote_acct
+        END AS vote_account 
     FROM tx_base
 )
 
@@ -79,4 +87,4 @@ SELECT
 FROM remove_nulls 
 
 LEFT OUTER JOIN validators v
-ON vote_acct = vote_pubkey
+ON vote_account = vote_pubkey
