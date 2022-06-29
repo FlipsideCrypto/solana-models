@@ -41,6 +41,23 @@ validators AS (
       'validator_metadata_api'
     ) }} 
     
+), 
+
+remove_nulls AS (
+    SELECT 
+        block_id, 
+        block_timestamp, 
+        tx_id,
+        succeeded, 
+        index, 
+        event_type, 
+        signers, 
+        stake_authority,
+        LAST_VALUE(stake_acct) IGNORE NULLS OVER (PARTITION BY signers[0] :: STRING ORDER BY block_timestamp) AS stake_account, 
+        pre_staked_balance, 
+        post_staked_balance,
+        LAST_VALUE(vote_acct) IGNORE NULLS OVER (PARTITION BY signers[0] :: STRING ORDER BY block_timestamp) AS vote_account 
+    FROM tx_base
 )
 
 SELECT 
@@ -52,14 +69,14 @@ SELECT
     event_type, 
     signers, 
     stake_authority,
-    LAST_VALUE(stake_acct) IGNORE NULLS OVER (PARTITION BY signers[0] :: STRING ORDER BY block_timestamp) AS stake_account, 
+    stake_account, 
     pre_staked_balance, 
     post_staked_balance,
-    LAST_VALUE(vote_acct) IGNORE NULLS OVER (PARTITION BY signers[0] :: STRING ORDER BY block_timestamp) AS vote_account, 
+    vote_account, 
     node_pubkey,
     validator_rank, 
     commission 
-FROM tx_base
+FROM remove_nulls 
 
 LEFT OUTER JOIN validators v
 ON vote_acct = vote_pubkey
