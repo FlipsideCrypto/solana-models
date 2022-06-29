@@ -1,6 +1,7 @@
 {% macro create_udfs() %}
     {% set sql %}
     {{ udf_bulk_get_decoded_instructions_data() }};
+    {{ udf_bulk_get_validator_metadata() }};
     {{ create_udf_ordered_signers(
         schema = "silver"
     ) }}

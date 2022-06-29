@@ -29,6 +29,7 @@ on-run-start:
   - '{{create_udfs()}}'
   - '{{create_tasks()}}'
   - '{{sp_create_bulk_get_decoded_instructions_data()}}'
+  - '{{sp_create_bulk_get_validator_metadata()}}'
 
 
 # Configuring models
