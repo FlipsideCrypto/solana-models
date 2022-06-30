@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__nft_mints
+  - name: silver__nft_mints_tmp
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -38,8 +38,7 @@ models:
       - name: MINT_CURRENCY
         description: "{{ doc('mint_currency') }}"
         tests: 
-          - not_null:
-              enabled: FALSE
+          - not_null
       - name: MINT 
         description: "{{ doc('mint') }}"
         tests: 
@@ -47,8 +46,7 @@ models:
       - name: MINT_PRICE
         description: "{{ doc('mint_price') }}"
         tests: 
-          - not_null: 
-              enabled: FALSE
+          - not_null
       - name: INGESTED_AT
         description: " {{ doc('ingested_at') }} "
         tests: 
