@@ -35,7 +35,7 @@ FROM
     m
 
 {% if is_incremental() %}
-AND m._inserted_timestamp >= (
+WHERE m._inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
