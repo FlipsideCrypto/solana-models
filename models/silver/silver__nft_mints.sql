@@ -59,7 +59,7 @@ FROM
     {{ ref('silver__nft_mints_tmp') }}
     e
 {% if is_incremental() %}
-WHERE m._inserted_timestamp >= (
+WHERE e._inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
