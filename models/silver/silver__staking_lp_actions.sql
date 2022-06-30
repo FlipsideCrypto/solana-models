@@ -30,6 +30,36 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+    UNION
+    SELECT
+        i.block_id,
+        i.block_timestamp,
+        i.tx_id,
+        CONCAT(
+            i.mapped_instruction_index,
+            '.',
+            ii.index
+        ) AS INDEX,
+        ii.value :parsed :type :: STRING AS event_type,
+        ii.value :programId :: STRING AS program_id,
+        ii.value AS instruction,
+        NULL AS inner_instruction,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver___inner_instructions') }}
+        i,
+        TABLE(FLATTEN(i.value :instructions)) ii
+    WHERE
+        ii.value :programId :: STRING = 'Stake11111111111111111111111111111111111111'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 base_t AS (
     SELECT
