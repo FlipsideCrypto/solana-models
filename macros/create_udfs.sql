@@ -8,6 +8,9 @@
     {{ create_udf_get_all_inner_instruction_events(
         schema = "silver"
     ) }}
+    {{ create_udf_get_account_balances_index(
+        schema = "silver"
+    ) }}
     {% endset %}
     {% do run_query(sql) %}
 {% endmacro %}

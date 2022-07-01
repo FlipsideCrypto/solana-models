@@ -36,3 +36,20 @@ def get_all_inner_instruction_events(inner_instruction) -> list:
     return event_types
 $$;
 {% endmacro %}
+
+{% macro create_udf_get_account_balances_index(schema) %}
+create or replace function {{ schema }}.udf_get_account_balances_index(account string, account_keys array)
+returns int
+language python
+runtime_version = '3.8'
+handler = 'get_account_balances_index'
+as
+$$
+def get_account_balances_index(account, account_keys) -> int:
+    for i,a in enumerate(account_keys):
+        if a and a.get("pubkey") == account:
+            return i
+
+    return None
+$$;
+{% endmacro %}
