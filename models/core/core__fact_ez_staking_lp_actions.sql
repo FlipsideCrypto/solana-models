@@ -129,6 +129,15 @@ tx_base AS (
         succeeded,
         INDEX,
         event_type,
+        LEAD(
+            event_type,
+            1
+        ) over (
+            PARTITION BY stake_account
+            ORDER BY
+                block_id,
+                INDEX
+        ) AS next_event_type,
         signers,
         CASE
             WHEN event_type = 'initialize' THEN instruction :parsed :info :authorized :staker :: STRING
@@ -145,6 +154,8 @@ tx_base AS (
         stake_account,
         CASE
             WHEN event_type = 'delegate' THEN TRUE
+            WHEN next_event_type = 'delegate' THEN FALSE
+            WHEN next_event_type = 'deactivate' THEN TRUE
             WHEN event_type IN (
                 'deactivate',
                 'merge_source'
