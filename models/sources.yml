@@ -54,4 +54,19 @@ sources:
           location: "@solana.bronze.analytics_external_tables/{{target.database}}/VALIDATOR_METADATA_API"
           file_format: "( type = json, strip_outer_array = TRUE )"
           auto_refresh: true
+      - name: stake_account_tx_ids_api
+        description: "External table of solana stake account tx ids"
+        external:
+          location: "@solana.bronze.analytics_external_tables/{{target.database}}/STAKE_ACCOUNT_TX_IDS_API"
+          file_format: "( type = json, strip_outer_array = TRUE )"
+          auto_refresh: true
+        columns:
+          - name: account
+            data_type: string
+          - name: slot
+            data_type: number
+          - name: blockTime
+            data_type: number
+          - name: signature
+            data_type: string
   
