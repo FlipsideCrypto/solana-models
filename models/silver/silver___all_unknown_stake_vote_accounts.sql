@@ -13,6 +13,7 @@ WHERE
         'merge_destination',
         'merge_source'
     )
+    AND stake_account is not null
 EXCEPT
 SELECT
     account
