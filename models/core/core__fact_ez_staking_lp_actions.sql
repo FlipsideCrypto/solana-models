@@ -307,11 +307,12 @@ SELECT
     ) AS validator_name
 FROM
     fill_vote_acct b 
-    LEFT OUTER JOIN validators v
-    ON b.vote_account = vote_pubkey
-    INNER JOIN vote_acct_joins va
+    LEFT OUTER JOIN vote_acct_joins va
     ON b.tx_id = va.tx_id
     AND b.index = va.index
+    LEFT OUTER JOIN validators v
+    ON (b.vote_account = vote_pubkey
+    OR va.vote_account = vote_pubkey)
     LEFT OUTER JOIN {{ ref('core__dim_labels') }}
     ON b.vote_account = address
    
