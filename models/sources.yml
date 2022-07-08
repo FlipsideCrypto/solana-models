@@ -69,4 +69,17 @@ sources:
             data_type: number
           - name: signature
             data_type: string
+      - name: txs_api
+        description: "External table of solana stake account tx ids"
+        external:
+          location: "@solana.bronze.analytics_external_tables/{{target.database}}/TXS_API"
+          file_format: "( type = json, strip_outer_array = TRUE )"
+          auto_refresh: true
+        columns:
+          - name: metadata
+            data_type: variant
+          - name: tx_id
+            data_type: string
+          - name: data
+            data_type: variant
   
