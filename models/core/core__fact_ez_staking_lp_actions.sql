@@ -20,6 +20,13 @@ WHERE
             {{ this }}
     )
 {% endif %}
+
+UNION ALL 
+
+    SELECT
+        * 
+    FROM 
+        {{ ref('silver___historical_staking_lp_actions') }}
 ),
 merges_and_splits AS (
     SELECT
@@ -244,62 +251,10 @@ fill_vote_acct AS (
         END AS vote_account
     FROM
         tx_base
-) -- ,
--- balance_adjust_tx AS (
---     SELECT
---         tx_id
---     FROM
---         base_staking_lp_actions
---     GROUP BY
---         tx_id
---     HAVING
---         COUNT(tx_id) > 1
--- ),
--- balance_adjust_index AS (
---     SELECT
---         A.tx_id,
---         INDEX,
---         event_type,
---         pre_staked_balance,
---         post_staked_balance
---     FROM
---         balance_adjust_tx A
---         INNER JOIN tx_base b
---         ON A.tx_id = b.tx_id
---     WHERE
---         event_type in ('split_source','split_destination','initialize')
--- ),
--- new_bal AS (
---     SELECT
---         b.tx_id,
---         b.index,
---         b.event_type,
---         CASE
---             WHEN b.index > ai.index THEN ai.post_staked_balance
---             WHEN ai.event_type = 'initialize' THEN 0
---             ELSE b.pre_staked_balance
---         END AS pre_staked_balance,
---         CASE
---             WHEN b.event_type = 'deactivate' THEN 0
---             WHEN ai.event_type = 'initialize' THEN 0
---             ELSE b.post_staked_balance
---         END AS post_staked_balance
---     FROM
---         tx_base b
---         LEFT OUTER JOIN balance_adjust_index ai
---         ON b.tx_id = ai.tx_id
---     WHERE
---         ai.event_type in ('split_source','split_destination','initialize')
---         AND b.tx_id IN (
---             SELECT
---                 tx_id
---             FROM
---                 balance_adjust_tx
---         )
--- )
+) 
 SELECT
-    block_id,
-    block_timestamp,
+    b.block_id,
+    b.block_timestamp,
     b.tx_id,
     succeeded,
     b.index,
@@ -313,7 +268,7 @@ SELECT
     post_tx_staked_balance,
     withdraw_amount,
     withdraw_destination,
-    vote_account,
+    vote_account, 
     node_pubkey,
     validator_rank,
     commission,
@@ -322,11 +277,11 @@ SELECT
         vote_account
     ) AS validator_name
 FROM
-    fill_vote_acct b -- LEFT OUTER JOIN new_bal n
-    -- ON b.tx_id = n.tx_id
-    -- AND b.index = n.index
-    -- AND b.event_type = n.event_type
+    fill_vote_acct b 
     LEFT OUTER JOIN validators v
     ON vote_account = vote_pubkey
     LEFT OUTER JOIN {{ ref('core__dim_labels') }}
     ON vote_account = address
+WHERE 
+    block_id >= 109547725
+   
