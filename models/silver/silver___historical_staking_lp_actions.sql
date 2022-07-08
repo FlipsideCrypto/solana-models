@@ -5,11 +5,24 @@
     cluster_by = ['block_timestamp::DATE'],
 ) }}
 
-WITH tx_base AS (
+WITH txs AS (
+    SELECT
+        tx_id, 
+        i.value :programId :: STRING AS program_id
+    FROM 
+        {{ source(
+            'solana_external', 
+            'txs_api') 
+        }}, 
+    LATERAL FLATTEN (input => data :result :transaction :message :instructions) i  
+    WHERE i.value :programId :: STRING = 'Stake11111111111111111111111111111111111111'
+), 
+
+tx_base AS (
     SELECT 
         data :result :slot AS block_id, 
         TO_TIMESTAMP_NTZ(data :result :blockTime) AS block_timestamp, 
-        tx_id, 
+        i.tx_id, 
         CASE WHEN data :result :meta :err :: STRING IS NULL 
             THEN true
         ELSE 
@@ -27,7 +40,10 @@ WITH tx_base AS (
         {{ source(
             'solana_external', 
             'txs_api') 
-        }} 
+        }} t
+
+    INNER JOIN txs i 
+    ON i.tx_id = t.tx_id
 ), 
 
 instructs AS (
@@ -40,8 +56,8 @@ instructs AS (
         {{ source(
             'solana_external', 
             'txs_api') 
-        }}, 
-    LATERAL FLATTEN (input => data :result :transaction :message :instructions) i
+        }} ii, 
+    TABLE(FLATTEN (data :result :transaction :message :instructions)) i  
 
 )
 
@@ -62,7 +78,7 @@ SELECT
     pre_token_balances, 
     post_token_balances, 
     NULL AS _inserted_timestamp
-FROM instructs i
+FROM tx_base b
 
-LEFT OUTER JOIN tx_base b
+LEFT OUTER JOIN instructs i
 ON i.tx_id = b.tx_id
