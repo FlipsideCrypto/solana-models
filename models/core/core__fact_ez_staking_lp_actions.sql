@@ -21,12 +21,14 @@ WHERE
     )
 {% endif %}
 
-UNION ALL 
+UNION
 
     SELECT
         * 
     FROM 
         {{ ref('silver___historical_staking_lp_actions') }}
+
+    WHERE block_id <= 109547725
 ),
 merges_and_splits AS (
     SELECT
@@ -251,6 +253,29 @@ fill_vote_acct AS (
         END AS vote_account
     FROM
         tx_base
+), 
+vote_acct_splits AS (
+    SELECT 
+        tx_id, 
+        index, 
+        vote_account
+    FROM fill_vote_acct 
+    WHERE 
+        vote_account IS NOT NULL 
+    AND (event_type = 'split_source' 
+    OR event_type = 'split_destination')
+), 
+vote_acct_joins AS (
+    SELECT
+        v.tx_id, 
+        v.index, 
+        a.event_type, 
+        v.vote_account
+    FROM {{ ref('silver__staking_lp_actions') }} a
+
+    INNER JOIN vote_acct_splits v
+    ON v.tx_id = a.tx_id
+    AND v.index = a.index
 ) 
 SELECT
     b.block_id,
@@ -268,20 +293,25 @@ SELECT
     post_tx_staked_balance,
     withdraw_amount,
     withdraw_destination,
-    vote_account, 
+    COALESCE(
+        b.vote_account,
+        va.vote_account
+    ) AS vote_account,  
     node_pubkey,
     validator_rank,
     commission,
     COALESCE(
         label,
-        vote_account
+        b.vote_account, 
+        va.vote_account
     ) AS validator_name
 FROM
     fill_vote_acct b 
     LEFT OUTER JOIN validators v
-    ON vote_account = vote_pubkey
+    ON b.vote_account = vote_pubkey
+    INNER JOIN vote_acct_joins va
+    ON b.tx_id = va.tx_id
+    AND b.index = va.index
     LEFT OUTER JOIN {{ ref('core__dim_labels') }}
-    ON vote_account = address
-WHERE 
-    block_id >= 109547725
+    ON b.vote_account = address
    

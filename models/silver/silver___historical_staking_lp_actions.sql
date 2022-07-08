@@ -7,7 +7,7 @@
 
 WITH txs AS (
     SELECT
-        tx_id, 
+        DISTINCT tx_id, 
         i.value :programId :: STRING AS program_id
     FROM 
         {{ source(
@@ -28,7 +28,6 @@ tx_base AS (
         ELSE 
             false
         END AS succeeded,     
-        data :result :transaction :signatures :: ARRAY AS signers, 
         data :result :transaction :message :accountKeys AS account_keys,
         data :result :transaction :message :instructions AS instruction, 
         data :result :meta :innerInstructions AS inner_instruction, 
@@ -69,7 +68,7 @@ SELECT
     index, 
     event_type, 
     program_id, 
-    signers, 
+    NULL AS signers, 
     account_keys, 
     instruction, 
     inner_instruction, 
