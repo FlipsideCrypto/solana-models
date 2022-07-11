@@ -68,14 +68,14 @@ SELECT
     index, 
     event_type, 
     program_id, 
-    NULL AS signers, 
-    account_keys, 
-    instruction, 
-    inner_instruction, 
-    pre_balances, 
-    post_balances, 
-    pre_token_balances, 
-    post_token_balances, 
+    [] :: ARRAY AS signers, 
+    account_keys :: ARRAY AS account_keys, 
+    instruction[0] AS instruction, 
+    inner_instruction :: VARIANT AS inner_instruction, 
+    pre_balances :: ARRAY AS pre_balances, 
+    post_balances :: ARRAY AS post_balances, 
+    pre_token_balances :: ARRAY AS pre_token_balances, 
+    post_token_balances :: ARRAY AS post_token_balances, 
     NULL AS _inserted_timestamp
 FROM tx_base b
 
