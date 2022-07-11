@@ -63,7 +63,7 @@ instructs AS (
 SELECT 
     block_id, 
     block_timestamp, 
-    i.tx_id, 
+    b.tx_id, 
     succeeded, 
     index, 
     event_type, 
@@ -80,4 +80,4 @@ SELECT
 FROM tx_base b
 
 LEFT OUTER JOIN instructs i
-ON i.tx_id = b.tx_id
+ON b.tx_id = i.tx_id
