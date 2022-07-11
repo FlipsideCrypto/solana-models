@@ -27,8 +27,8 @@ UNION
         * 
     FROM 
         {{ ref('silver___historical_staking_lp_actions') }}
+    WHERE block_id < 109547725
 
-    WHERE block_id <= 109547725
 ),
 merges_and_splits AS (
     SELECT
@@ -315,4 +315,5 @@ FROM
     OR va.vote_account = vote_pubkey)
     LEFT OUTER JOIN {{ ref('core__dim_labels') }}
     ON b.vote_account = address
+WHERE block_id >= 109547725
    
