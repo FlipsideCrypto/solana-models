@@ -257,21 +257,54 @@ fill_vote_acct AS (
 fill_vote_acct2 AS (
     SELECT
         tx_id, 
-        index,
-        event_type,  
+        index, 
+        event_type, 
         stake_account, 
         CASE    
             WHEN vote_acct IS NULL THEN FIRST_VALUE(vote_acct) ignore nulls over (
                 PARTITION BY stake_account
                 ORDER BY
                     block_id,
-                    INDEX
+                    INDEX rows unbounded preceding
             )
             ELSE vote_acct
         END AS vote_account
     FROM tx_base
-)
+) 
+{# vote_acct_splits AS (
+    SELECT 
+        v.tx_id, 
+        v.index, 
+        v.event_type, 
+        COALESCE(
+            v.vote_account, 
+            a.vote_account
+        ) AS vote_account
+    FROM fill_vote_acct v
 
+    INNER JOIN fill_vote_acct2 a
+    ON v.tx_id = a.tx_id 
+    AND v.index = a.index
+    AND v.event_type = a.event_type
+    WHERE COALESCE(
+            v.vote_account, 
+            a.vote_account
+        ) IS NOT NULL 
+    AND (v.event_type = 'split_source' 
+    OR v.event_type = 'split_destination')
+), 
+vote_acct_joins AS (
+    SELECT
+        a.tx_id, 
+        v.index, 
+        a.event_type, 
+        v.vote_account
+    FROM {{ ref('silver__staking_lp_actions') }} a
+
+    INNER JOIN vote_acct_splits v
+    ON v.tx_id = a.tx_id
+    AND v.index = a.index
+)  #} 
 SELECT
     b.block_id,
     b.block_timestamp,
@@ -305,10 +338,14 @@ FROM
     LEFT OUTER JOIN fill_vote_acct2 a
     ON b.tx_id = a.tx_id
     AND b.index = a.index
-    AND b.event_type = a.event_type
+    
+    {# LEFT OUTER JOIN vote_acct_joins va
+    ON b.tx_id = va.tx_id
+    AND b.index = va.index
+    AND b.event_type = va.event_type #}
     LEFT OUTER JOIN validators v
     ON (b.vote_account = vote_pubkey
-    OR a.vote_account = vote_pubkey)
+    OR a.vote_account = vote_pubkey) 
     LEFT OUTER JOIN {{ ref('core__dim_labels') }}
     ON b.vote_account = address
 WHERE block_id >= 109547725
