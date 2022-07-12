@@ -254,29 +254,24 @@ fill_vote_acct AS (
     FROM
         tx_base
 ), 
-vote_acct_splits AS (
-    SELECT 
-        tx_id, 
-        index, 
-        vote_account
-    FROM fill_vote_acct 
-    WHERE 
-        vote_account IS NOT NULL 
-    AND (event_type = 'split_source' 
-    OR event_type = 'split_destination')
-), 
-vote_acct_joins AS (
+fill_vote_acct2 AS (
     SELECT
-        v.tx_id, 
-        v.index, 
-        a.event_type, 
-        v.vote_account
-    FROM {{ ref('silver__staking_lp_actions') }} a
+        tx_id, 
+        index,
+        event_type,  
+        stake_account, 
+        CASE    
+            WHEN vote_acct IS NULL THEN FIRST_VALUE(vote_acct) ignore nulls over (
+                PARTITION BY stake_account
+                ORDER BY
+                    block_id,
+                    INDEX
+            )
+            ELSE vote_acct
+        END AS vote_account
+    FROM tx_base
+)
 
-    INNER JOIN vote_acct_splits v
-    ON v.tx_id = a.tx_id
-    AND v.index = a.index
-) 
 SELECT
     b.block_id,
     b.block_timestamp,
@@ -287,7 +282,7 @@ SELECT
     signers,
     stake_authority,
     withdraw_authority,
-    stake_account,
+    b.stake_account,
     stake_active,
     pre_tx_staked_balance,
     post_tx_staked_balance,
@@ -295,7 +290,7 @@ SELECT
     withdraw_destination,
     COALESCE(
         b.vote_account,
-        va.vote_account
+        a.vote_account
     ) AS vote_account,  
     node_pubkey,
     validator_rank,
@@ -303,16 +298,17 @@ SELECT
     COALESCE(
         label,
         b.vote_account, 
-        va.vote_account
+        a.vote_account
     ) AS validator_name
 FROM
     fill_vote_acct b 
-    LEFT OUTER JOIN vote_acct_joins va
-    ON b.tx_id = va.tx_id
-    AND b.index = va.index
+    LEFT OUTER JOIN fill_vote_acct2 a
+    ON b.tx_id = a.tx_id
+    AND b.index = a.index
+    AND b.event_type = a.event_type
     LEFT OUTER JOIN validators v
     ON (b.vote_account = vote_pubkey
-    OR va.vote_account = vote_pubkey)
+    OR a.vote_account = vote_pubkey)
     LEFT OUTER JOIN {{ ref('core__dim_labels') }}
     ON b.vote_account = address
 WHERE block_id >= 109547725
