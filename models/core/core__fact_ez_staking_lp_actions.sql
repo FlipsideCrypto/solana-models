@@ -270,8 +270,8 @@ fill_vote_acct2 AS (
             ELSE vote_acct
         END AS vote_account
     FROM tx_base
-) 
-{# vote_acct_splits AS (
+),  
+vote_acct_splits AS (
     SELECT 
         v.tx_id, 
         v.index, 
@@ -285,7 +285,7 @@ fill_vote_acct2 AS (
     INNER JOIN fill_vote_acct2 a
     ON v.tx_id = a.tx_id 
     AND v.index = a.index
-    AND v.event_type = a.event_type
+    --AND v.event_type = a.event_type
     WHERE COALESCE(
             v.vote_account, 
             a.vote_account
@@ -304,7 +304,7 @@ vote_acct_joins AS (
     INNER JOIN vote_acct_splits v
     ON v.tx_id = a.tx_id
     AND v.index = a.index
-)  #} 
+)  
 SELECT
     b.block_id,
     b.block_timestamp,
@@ -338,11 +338,11 @@ FROM
     LEFT OUTER JOIN fill_vote_acct2 a
     ON b.tx_id = a.tx_id
     AND b.index = a.index
-    
-    {# LEFT OUTER JOIN vote_acct_joins va
+    --AND b.event_type = a.event_type
+    LEFT OUTER JOIN vote_acct_joins va
     ON b.tx_id = va.tx_id
     AND b.index = va.index
-    AND b.event_type = va.event_type #}
+    AND b.event_type = va.event_type
     LEFT OUTER JOIN validators v
     ON (b.vote_account = vote_pubkey
     OR a.vote_account = vote_pubkey) 
