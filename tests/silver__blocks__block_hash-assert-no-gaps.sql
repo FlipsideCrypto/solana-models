@@ -18,5 +18,5 @@ hash AS (
 ) 
 
 SELECT 
-    count(*) AS num_missing 
+    *
 FROM hash
