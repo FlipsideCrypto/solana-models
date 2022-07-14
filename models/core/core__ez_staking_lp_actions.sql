@@ -11,11 +11,6 @@ WITH base_staking_lp_actions AS (
     FROM
         {{ ref('silver__staking_lp_actions') }}
 
-{% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= CURRENT_DATE - 2
-{% endif %}
-
 UNION
 
     SELECT
