@@ -24,16 +24,17 @@ WITH instructs AS (
     UNION 
     SELECT
         tx_id, 
-        index, 
-        ii.value :parsed :type :: STRING AS event_type, 
-        ii.value :programId :: STRING AS program_id,
-        ii.value AS instruction
+        CONCAT( b.value:index, '.', c.index ) AS INDEX, 
+        c.value :parsed :type :: STRING AS event_type, 
+        c.value :programId :: STRING AS program_id, 
+        c.value AS instruction 
     FROM 
         {{ source(
             'solana_external', 
             'txs_api') 
-        }}, 
-    TABLE(FLATTEN (data :result :meta :innerInstructions[0] :instructions)) ii 
+        }} a, 
+    TABLE(FLATTEN (data :result :meta :innerInstructions)) b, 
+    TABLE(FLATTEN(b.value:instructions)) c
 
     WHERE program_id = 'Stake11111111111111111111111111111111111111'
 ),
