@@ -13,12 +13,7 @@ WITH base_staking_lp_actions AS (
 
 {% if is_incremental() %}
 WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
+    _inserted_timestamp >= CURRENT_DATE - 2
 {% endif %}
 
 UNION
@@ -256,97 +251,118 @@ fill_vote_acct AS (
 ), 
 fill_vote_acct2 AS (
     SELECT
-        tx_id, 
-        index, 
-        event_type, 
-        stake_account, 
+        block_id,
+        block_timestamp,
+        tx_id,
+        succeeded,
+        INDEX,
+        event_type,
+        signers,
+        stake_authority, 
+        withdraw_authority, 
+        stake_account,
+        stake_active,
+        pre_tx_staked_balance,
+        post_tx_staked_balance,
+        withdraw_amount,
+        withdraw_destination, 
         CASE    
-            WHEN vote_acct IS NULL THEN FIRST_VALUE(vote_acct) ignore nulls over (
+            WHEN vote_account IS NULL THEN FIRST_VALUE(vote_account) ignore nulls over (
                 PARTITION BY stake_account
                 ORDER BY
                     block_id,
                     INDEX rows unbounded preceding
             )
-            ELSE vote_acct
+            ELSE vote_account
         END AS vote_account
-    FROM tx_base
-),  
-vote_acct_splits AS (
-    SELECT 
-        v.tx_id, 
-        v.index, 
-        v.event_type, 
-        COALESCE(
-            v.vote_account, 
-            a.vote_account
-        ) AS vote_account
-    FROM fill_vote_acct v
-
-    INNER JOIN fill_vote_acct2 a
-    ON v.tx_id = a.tx_id 
-    AND v.index = a.index
-    --AND v.event_type = a.event_type
-    WHERE COALESCE(
-            v.vote_account, 
-            a.vote_account
-        ) IS NOT NULL 
-    AND (v.event_type = 'split_source' 
-    OR v.event_type = 'split_destination')
+    FROM fill_vote_acct
 ), 
-vote_acct_joins AS (
+temp AS (
     SELECT
-        a.tx_id, 
-        v.index, 
-        a.event_type, 
-        v.vote_account
-    FROM {{ ref('silver__staking_lp_actions') }} a
-
-    INNER JOIN vote_acct_splits v
-    ON v.tx_id = a.tx_id
-    AND v.index = a.index
-)  
+        b.block_id,
+        b.block_timestamp,
+        b.tx_id,
+        b.succeeded,
+        b.index,
+        b.event_type,
+        b.signers,
+        b.stake_authority,
+        b.withdraw_authority,
+        b.stake_account,
+        b.stake_active,
+        b.pre_tx_staked_balance,
+        b.post_tx_staked_balance,
+        b.withdraw_amount,
+        b.withdraw_destination,
+        COALESCE(
+            b.vote_account,
+            a.vote_account
+        ) AS vote_account  
+    FROM
+        fill_vote_acct2 b 
+        LEFT OUTER JOIN fill_vote_acct2 a
+        ON b.tx_id = a.tx_id 
+        AND b.index = a.index
+        AND b.event_type = 'split_destination'
+        AND a.event_type = 'split_source'   
+), 
+temp2 AS (
+    SELECT
+        block_id,
+        block_timestamp,
+        tx_id,
+        succeeded,
+        INDEX,
+        event_type,
+        signers,
+        stake_authority, 
+        withdraw_authority, 
+        stake_account,
+        stake_active,
+        pre_tx_staked_balance,
+        post_tx_staked_balance,
+        withdraw_amount,
+        withdraw_destination, 
+        CASE    
+            WHEN vote_account IS NULL THEN FIRST_VALUE(vote_account) ignore nulls over (
+                PARTITION BY stake_account
+                ORDER BY
+                    block_id,
+                    INDEX rows unbounded preceding
+            )
+            ELSE vote_account
+        END AS vote_account
+    FROM temp
+) 
 SELECT
-    b.block_id,
-    b.block_timestamp,
-    b.tx_id,
+    block_id,
+    block_timestamp,
+    tx_id,
     succeeded,
-    b.index,
-    b.event_type,
+    INDEX,
+    event_type,
     signers,
-    stake_authority,
-    withdraw_authority,
-    b.stake_account,
+    stake_authority, 
+    withdraw_authority, 
+    stake_account,
     stake_active,
     pre_tx_staked_balance,
     post_tx_staked_balance,
     withdraw_amount,
-    withdraw_destination,
-    COALESCE(
-        b.vote_account,
-        a.vote_account
-    ) AS vote_account,  
+    withdraw_destination, 
+    vote_account, 
     node_pubkey,
     validator_rank,
-    commission,
+    commission, 
     COALESCE(
         label,
-        b.vote_account, 
-        a.vote_account
+        vote_account
     ) AS validator_name
-FROM
-    fill_vote_acct b 
-    LEFT OUTER JOIN fill_vote_acct2 a
-    ON b.tx_id = a.tx_id
-    AND b.index = a.index
-    --AND b.event_type = a.event_type
-    LEFT OUTER JOIN vote_acct_joins va
-    ON b.tx_id = va.tx_id
-    AND b.index = va.index
-    AND b.event_type = va.event_type
-    LEFT OUTER JOIN validators v
-    ON (b.vote_account = vote_pubkey
-    OR a.vote_account = vote_pubkey) 
-    LEFT OUTER JOIN {{ ref('core__dim_labels') }}
-    ON b.vote_account = address
-WHERE block_id >= 109547725
+FROM temp2
+LEFT OUTER JOIN validators v
+ON vote_account = vote_pubkey
+LEFT OUTER JOIN {{ ref('core__dim_labels') }}
+ON vote_account = address
+WHERE 
+    block_id >= 109547725
    
