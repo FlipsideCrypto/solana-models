@@ -13,13 +13,17 @@ WITH base_staking_lp_actions AS (
 
 {% if is_incremental() %}
 WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
+    _inserted_timestamp >= CURRENT_DATE - 2
 {% endif %}
+
+UNION
+
+    SELECT
+        * 
+    FROM 
+        {{ ref('silver___historical_staking_lp_actions') }}
+    WHERE block_id < 109547725
+
 ),
 merges_and_splits AS (
     SELECT
@@ -244,89 +248,121 @@ fill_vote_acct AS (
         END AS vote_account
     FROM
         tx_base
-) -- ,
--- balance_adjust_tx AS (
---     SELECT
---         tx_id
---     FROM
---         base_staking_lp_actions
---     GROUP BY
---         tx_id
---     HAVING
---         COUNT(tx_id) > 1
--- ),
--- balance_adjust_index AS (
---     SELECT
---         A.tx_id,
---         INDEX,
---         event_type,
---         pre_staked_balance,
---         post_staked_balance
---     FROM
---         balance_adjust_tx A
---         INNER JOIN tx_base b
---         ON A.tx_id = b.tx_id
---     WHERE
---         event_type in ('split_source','split_destination','initialize')
--- ),
--- new_bal AS (
---     SELECT
---         b.tx_id,
---         b.index,
---         b.event_type,
---         CASE
---             WHEN b.index > ai.index THEN ai.post_staked_balance
---             WHEN ai.event_type = 'initialize' THEN 0
---             ELSE b.pre_staked_balance
---         END AS pre_staked_balance,
---         CASE
---             WHEN b.event_type = 'deactivate' THEN 0
---             WHEN ai.event_type = 'initialize' THEN 0
---             ELSE b.post_staked_balance
---         END AS post_staked_balance
---     FROM
---         tx_base b
---         LEFT OUTER JOIN balance_adjust_index ai
---         ON b.tx_id = ai.tx_id
---     WHERE
---         ai.event_type in ('split_source','split_destination','initialize')
---         AND b.tx_id IN (
---             SELECT
---                 tx_id
---             FROM
---                 balance_adjust_tx
---         )
--- )
+), 
+fill_vote_acct2 AS (
+    SELECT
+        block_id,
+        block_timestamp,
+        tx_id,
+        succeeded,
+        INDEX,
+        event_type,
+        signers,
+        stake_authority, 
+        withdraw_authority, 
+        stake_account,
+        stake_active,
+        pre_tx_staked_balance,
+        post_tx_staked_balance,
+        withdraw_amount,
+        withdraw_destination, 
+        CASE    
+            WHEN vote_account IS NULL THEN FIRST_VALUE(vote_account) ignore nulls over (
+                PARTITION BY stake_account
+                ORDER BY
+                    block_id,
+                    INDEX rows unbounded preceding
+            )
+            ELSE vote_account
+        END AS vote_account
+    FROM fill_vote_acct
+), 
+temp AS (
+    SELECT
+        b.block_id,
+        b.block_timestamp,
+        b.tx_id,
+        b.succeeded,
+        b.index,
+        b.event_type,
+        b.signers,
+        b.stake_authority,
+        b.withdraw_authority,
+        b.stake_account,
+        b.stake_active,
+        b.pre_tx_staked_balance,
+        b.post_tx_staked_balance,
+        b.withdraw_amount,
+        b.withdraw_destination,
+        COALESCE(
+            b.vote_account,
+            a.vote_account
+        ) AS vote_account  
+    FROM
+        fill_vote_acct2 b 
+        LEFT OUTER JOIN fill_vote_acct2 a
+        ON b.tx_id = a.tx_id 
+        AND b.index = a.index
+        AND b.event_type = 'split_destination'
+        AND a.event_type = 'split_source'   
+), 
+temp2 AS (
+    SELECT
+        block_id,
+        block_timestamp,
+        tx_id,
+        succeeded,
+        INDEX,
+        event_type,
+        signers,
+        stake_authority, 
+        withdraw_authority, 
+        stake_account,
+        stake_active,
+        pre_tx_staked_balance,
+        post_tx_staked_balance,
+        withdraw_amount,
+        withdraw_destination, 
+        CASE    
+            WHEN vote_account IS NULL THEN FIRST_VALUE(vote_account) ignore nulls over (
+                PARTITION BY stake_account
+                ORDER BY
+                    block_id,
+                    INDEX rows unbounded preceding
+            )
+            ELSE vote_account
+        END AS vote_account
+    FROM temp
+) 
 SELECT
     block_id,
     block_timestamp,
-    b.tx_id,
+    tx_id,
     succeeded,
-    b.index,
-    b.event_type,
+    INDEX,
+    event_type,
     signers,
-    stake_authority,
-    withdraw_authority,
+    stake_authority, 
+    withdraw_authority, 
     stake_account,
     stake_active,
     pre_tx_staked_balance,
     post_tx_staked_balance,
     withdraw_amount,
-    withdraw_destination,
-    vote_account,
+    withdraw_destination, 
+    vote_account, 
     node_pubkey,
     validator_rank,
-    commission,
+    commission, 
     COALESCE(
         label,
         vote_account
     ) AS validator_name
-FROM
-    fill_vote_acct b -- LEFT OUTER JOIN new_bal n
-    -- ON b.tx_id = n.tx_id
-    -- AND b.index = n.index
-    -- AND b.event_type = n.event_type
-    LEFT OUTER JOIN validators v
-    ON vote_account = vote_pubkey
-    LEFT OUTER JOIN {{ ref('core__dim_labels') }}
-    ON vote_account = address
+FROM temp2
+LEFT OUTER JOIN validators v
+ON vote_account = vote_pubkey
+LEFT OUTER JOIN {{ ref('core__dim_labels') }}
+ON vote_account = address
+WHERE 
+    block_id >= 109547725
+   
