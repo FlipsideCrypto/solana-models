@@ -1,0 +1,65 @@
+version: 2
+models:
+  - name: core__ez_staking_lp_actions
+    description: An easy table for staking & LP actions that contains additional information about the validator. 
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: INDEX
+        description: Location of the event within the instructions of a transaction
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: EVENT_TYPE
+        description: "{{ doc('event_type') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SIGNERS
+        description: List of accounts that signed the transaction
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: STAKE_AUTHORITY
+        description: The wallet address of the user who initialized the transaction. 
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: STAKE_ACCOUNT
+        description: An account address containing balances of staked SOL that belongs to the stake authority. 
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: PRE_TX_STAKED_BALANCE
+        description: The amount of Solana belonging to the stake account before the transaction.
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: POST_TX_STAKED_BALANCE
+        description: The amount of Solana belonging to the stake account after the transaction.
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: VOTE_ACCOUNT
+        description: A voting account belonging to the validator. 
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: NODE_PUBKEY
+        description: A unique key belonging to the validator node. 
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: VALIDATOR_RANK
+        description: The rank of the validator by amount of delegated SOL. 
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: COMMISSION
+        description: The percentage of staked earnings given to the validator. 
+        tests:
+          - dbt_expectations.expect_column_to_exist
