@@ -34,11 +34,13 @@ models:
       - name: PURCHASER
         description: "{{ doc('purchaser') }}"
         tests: 
-          - not_null
+          - not_null:
+              where: succeeded = TRUE
       - name: SELLER
         description: "{{ doc('seller') }}"
         tests: 
-          - not_null
+          - not_null:
+              where: succeeded = TRUE
       - name: MINT
         description: "{{ doc('mint') }}"
         tests: 
