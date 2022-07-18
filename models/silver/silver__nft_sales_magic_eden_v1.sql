@@ -21,10 +21,10 @@ WITH sales_inner_instructions AS (
     e.instruction :accounts [0] :: STRING AS purchaser,
     e.instruction :accounts [1] :: STRING AS nft_account,
     e.instruction :accounts [2] :: STRING AS nft_account_2,
-    e.instruction :accounts [4] :: STRING AS nft_account_3, 
-    t.signers[0] :: STRING as signer, 
+    e.instruction :accounts [4] :: STRING AS nft_account_3,
+    t.signers [0] :: STRING AS signer,
     i.value :parsed :info :newAuthority :: STRING AS new_authority,
-    e.ingested_at, 
+    e.ingested_at,
     e._inserted_timestamp
   FROM
     {{ ref('silver__events') }}
@@ -38,36 +38,39 @@ WITH sales_inner_instructions AS (
     AND ARRAY_SIZE(
       inner_instruction :instructions
     ) > 2
-    AND i.value :parsed :info :newAuthority :: STRING IS NOT NULL -- Removes token burns
 
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
+  SELECT
+    MAX(_inserted_timestamp)
+  FROM
+    {{ this }}
 )
 AND t._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
+  SELECT
+    MAX(_inserted_timestamp)
+  FROM
+    {{ this }}
 )
 {% endif %}
 ),
 sellers AS (
-    SELECT 
-       tx_id, 
-       CASE WHEN new_authority <> signer THEN 
-        signer
-      ELSE nft_account_2 END AS seller, 
-      CASE WHEN new_authority <> signer THEN 
-        nft_account
-      ELSE purchaser END AS purchaser 
-    FROM sales_inner_instructions 
-    WHERE new_authority IS NOT NULL
-), 
-
+  SELECT
+    tx_id,
+    index,
+    CASE
+      WHEN new_authority <> signer THEN signer
+      ELSE nft_account_2
+    END AS seller,
+    CASE
+      WHEN new_authority <> signer THEN nft_account
+      ELSE purchaser
+    END AS purchaser
+  FROM
+    sales_inner_instructions
+  WHERE
+    new_authority IS NOT NULL
+),
 post_token_balances AS (
   SELECT
     DISTINCT tx_id,
@@ -81,10 +84,10 @@ post_token_balances AS (
 WHERE
   p._inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp)
+      MAX(_inserted_timestamp)
     FROM
-        {{ this }}
-)
+      {{ this }}
+  )
 {% endif %}
 )
 SELECT
@@ -98,7 +101,7 @@ SELECT
     p2.mint
   ) AS mint,
   ss.purchaser,
-  ss.seller, 
+  ss.seller,
   SUM(
     s.amount
   ) / pow(
@@ -117,6 +120,7 @@ FROM
   AND p2.account = s.nft_account_2
   LEFT OUTER JOIN sellers ss
   ON ss.tx_id = s.tx_id
+  AND ss.index = s.index
 GROUP BY
   s.block_timestamp,
   s.block_id,
@@ -128,6 +132,6 @@ GROUP BY
     p2.mint
   ),
   ss.seller,
-  ss.purchaser,  
-  s.ingested_at, 
+  ss.purchaser,
+  s.ingested_at,
   s._inserted_timestamp
