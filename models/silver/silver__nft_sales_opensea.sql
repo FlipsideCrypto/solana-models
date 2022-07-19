@@ -32,33 +32,7 @@ WITH sales_inner_instructions AS (
         LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
     WHERE
         program_id = 'hausS13jsjafwWwGqZTUQRmWyvyxn9EQpqMwV1PBBmk' -- Programid used by OpenSea to execute sale, other non-opensea markets also use this
-        AND ARRAY_SIZE(
-            inner_instruction :instructions
-        ) >= 3 -- at least 3 inner_instruction on a sale...1) nft itself 2) sale instruction 3) royalty instruction
-        AND event_type IS NULL
-        AND e.instruction :accounts [5] :: STRING = 'So11111111111111111111111111111111111111112'
-        AND (
-            ARRAY_CONTAINS(
-                'pAHAKoTJsAAe2ZcvTZUxoYzuygVAFAmbYmJYdWT886r' :: variant,
-                -- This is definitely an opensea signer
-                t.signers
-            )
-            OR ARRAY_CONTAINS(
-                '71kwsvqZ5hTzQUB8piTRUBbCaoUWGMyN5Gb8vAtt9ZYV' :: variant,
-                -- This seems like it is an opensea signer?
-                t.signers
-            )
-        )
-        AND (
-            ARRAY_POSITION(
-                'pAHAKoTJsAAe2ZcvTZUxoYzuygVAFAmbYmJYdWT886r' :: variant,
-                t.signers
-            ) > 0
-            OR ARRAY_POSITION(
-                '71kwsvqZ5hTzQUB8piTRUBbCaoUWGMyN5Gb8vAtt9ZYV' :: variant,
-                t.signers
-            ) > 0
-        )
+        AND instruction:data::string like '63LNsZWnP5%'
 
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
