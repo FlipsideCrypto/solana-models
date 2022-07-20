@@ -19,7 +19,7 @@ WITH sales_inner_instructions AS (
             0
         ) AS amount,
         e.instruction :accounts [0] :: STRING AS purchaser,
-        e.instruction :accounts [1] :: STRING AS seller, 
+        e.instruction :accounts [1] :: STRING AS seller,
         e.instruction :accounts [2] :: STRING AS nft_account,
         e.ingested_at,
         e._inserted_timestamp
@@ -32,7 +32,7 @@ WITH sales_inner_instructions AS (
         LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
     WHERE
         program_id = 'hausS13jsjafwWwGqZTUQRmWyvyxn9EQpqMwV1PBBmk' -- Programid used by OpenSea to execute sale, other non-opensea markets also use this
-        AND instruction:data::string like '63LNsZWnP5%'
+        AND instruction :data :: STRING LIKE '63LNsZWnP5%'
 
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
@@ -67,39 +67,47 @@ WHERE
             {{ this }}
     )
 {% endif %}
+),
+pre_final AS (
+    SELECT
+        s.block_timestamp,
+        s.block_id,
+        s.tx_id,
+        s.succeeded,
+        s.program_id,
+        p.mint,
+        s.purchaser,
+        s.seller,
+        SUM(
+            s.amount
+        ) / pow(
+            10,
+            9
+        ) AS sales_amount,
+        s.ingested_at,
+        s._inserted_timestamp
+    FROM
+        sales_inner_instructions s
+        LEFT OUTER JOIN post_token_balances p
+        ON p.tx_id = s.tx_id
+        AND p.account = s.nft_account
+    WHERE
+        s.block_timestamp :: DATE >= '2022-04-03' -- transactions before this time are not opensea
+    GROUP BY
+        s.block_timestamp,
+        s.block_id,
+        s.tx_id,
+        s.succeeded,
+        s.program_id,
+        p.mint,
+        s.purchaser,
+        s.seller,
+        s.ingested_at,
+        s._inserted_timestamp
 )
 SELECT
-    s.block_timestamp,
-    s.block_id,
-    s.tx_id,
-    s.succeeded,
-    s.program_id,
-    p.mint,
-    s.purchaser,
-    s.seller, 
-    SUM(
-        s.amount
-    ) / pow(
-        10,
-        9
-    ) AS sales_amount,
-    s.ingested_at,
-    s._inserted_timestamp
+    *
 FROM
-    sales_inner_instructions s
-    LEFT OUTER JOIN post_token_balances p
-    ON p.tx_id = s.tx_id
-    AND p.account = s.nft_account
+    pre_final
 WHERE
-    s.block_timestamp :: DATE >= '2022-04-03' -- transactions before this time are not opensea
-GROUP BY
-    s.block_timestamp,
-    s.block_id,
-    s.tx_id,
-    s.succeeded,
-    s.program_id,
-    p.mint,
-    s.purchaser,
-    s.seller, 
-    s.ingested_at, 
-    s._inserted_timestamp
+    sales_amount > 0 -- ignore very small amount of txs are actual 0 sales or not sold in SOL (~100 out of >360k)
