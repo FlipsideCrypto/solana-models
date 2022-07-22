@@ -24,6 +24,9 @@ clean-targets: # directories to be removed by `dbt clean`
   - "dbt_modules"
   - "dbt_packages"
 
+tests:
+  +store_failures: true # all tests
+
 on-run-start:
   - '{{ create_sps() }}'
   - '{{ create_udfs() }}'
