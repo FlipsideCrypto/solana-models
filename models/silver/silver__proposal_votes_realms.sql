@@ -45,15 +45,15 @@ SELECT
     realms_id, 
     proposal, 
     voter, 
-    split_part(split_part(split_part(split_part(l.value :: STRING, '{', 3), '}', 1), ',', 1), ':', 2) :: INTEGER AS vote_choice, 
-    split_part(split_part(split_part(split_part(l.value :: STRING, '{', 3), '}', 1), ',', 2), ':', 2) :: INTEGER AS vote_weight, 
+    split_part(split_part(split_part(split_part(l.value :: STRING, '{', 3), '}', 1), ',', 1), ':', 2) AS vote_choice, 
+    split_part(split_part(split_part(split_part(l.value :: STRING, '{', 3), '}', 1), ',', 2), ':', 2) AS vote_weight, 
     t._inserted_timestamp
-FROM {{ ref('silver__transactions') }} t
+FROM vote_txs v 
     
-LEFT OUTER JOIN TABLE(FLATTEN(t.log_messages)) l
-    
-LEFT OUTER JOIN vote_txs v
+LEFT OUTER JOIN {{ ref('silver__transactions') }} t
 ON v.tx_id = t.tx_id
+
+LEFT OUTER JOIN TABLE(FLATTEN(t.log_messages)) l
     
 WHERE 
     v.block_timestamp :: date = '2022-07-19' 
