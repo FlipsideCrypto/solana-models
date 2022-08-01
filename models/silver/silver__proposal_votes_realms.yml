@@ -31,11 +31,6 @@ models:
         description: "{{ doc('index') }}"
         tests: 
           - not_null
-      - name: _INDEX
-        description: An internal column that corresponds to the vote's position in the transaction log. 
-        tests: 
-          - not_null:
-              store_failures: FALSE # Can only store failures for one internal column
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
         tests: 

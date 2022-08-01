@@ -16,7 +16,6 @@ WITH vote_programs AS (
         blockchain = 'solana'
         AND project_name = 'realms'
 ),  
-
 vote_txs AS (
     SELECT
         block_timestamp, 
@@ -27,7 +26,7 @@ vote_txs AS (
         program_id, 
         instruction :accounts[0] :: STRING AS realms_id, 
         instruction :accounts[2] :: STRING AS proposal, 
-        i.value :parsed :info :source :: STRING AS voter, 
+        instruction :accounts[2] :: STRING AS voter, 
         instruction :accounts[6] :: STRING AS vote_account, 
         _inserted_timestamp
     FROM 
@@ -35,8 +34,6 @@ vote_txs AS (
   
     INNER JOIN vote_programs v
     ON e.program_id = v.address
-
-    LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
 
     WHERE 
         instruction :data :: STRING <> 'Q'
@@ -49,6 +46,82 @@ vote_txs AS (
         {{ this }}
     )
     {% endif %}
+), 
+b AS (
+    SELECT
+        t.tx_id,
+        t.succeeded,
+        l.index,
+        l.value :: STRING AS log_message,
+        CASE
+            WHEN l.value :: STRING LIKE '%invoke%' THEN 1
+            WHEN l.value :: STRING LIKE '%success' THEN -1
+            ELSE 0
+        END AS cnt,
+        SUM(cnt) over (
+            PARTITION BY t.tx_id
+            ORDER BY
+                l.index rows BETWEEN unbounded preceding
+                AND CURRENT ROW
+        ) AS event_cumsum
+    FROM
+        {{ ref('silver__transactions') }}
+        t
+        INNER JOIN (
+            SELECT
+                DISTINCT tx_id
+            FROM
+                vote_txs 
+        ) v
+        ON t.tx_id = v.tx_id
+        LEFT OUTER JOIN TABLE(FLATTEN(t.log_messages)) l
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+C AS (
+    SELECT
+        b.*,
+        LAG(
+            event_cumsum,
+            1
+        ) over (
+            PARTITION BY tx_id
+            ORDER BY
+                INDEX
+        ) AS prev_event_cumsum
+    FROM
+        b
+),
+tx_logs AS (
+    SELECT
+        C.tx_id,
+        C.succeeded,
+        C.index AS log_index,
+        C.log_message,
+        conditional_true_event(
+            prev_event_cumsum = 0
+        ) over (
+            PARTITION BY tx_id
+            ORDER BY
+                INDEX
+        ) AS event_index
+    FROM
+        C
+), 
+create_vote_logs AS (
+    SELECT 
+        * 
+    FROM 
+        tx_logs
+    WHERE 
+        log_message LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote %'
 )
 
 SELECT 
@@ -57,56 +130,37 @@ SELECT
     v.tx_id, 
     v.succeeded,
     v.index, 
-    l.index AS _index, 
     v.program_id, 
     realms_id, 
     proposal, 
     voter, 
     vote_account, 
-    CASE WHEN (l.value :: STRING LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote { vote: Deny }')
-    OR (l.value :: STRING LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote { vote: No }') THEN 
+    CASE WHEN (log_message LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote { vote: Deny }')
+    OR (log_message LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote { vote: No }') THEN 
         'NO'
-    WHEN (l.value :: STRING LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote { vote: Approve%') 
-    OR (l.value :: STRING LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote { vote: Yes }') THEN 
+    WHEN (log_message LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote { vote: Approve%') 
+    OR (log_message LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote { vote: Yes }') THEN 
         'YES'
     ELSE 
         'ABSTAIN'
     END AS vote_choice,
-    CASE WHEN l.value :: STRING LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote { vote: Approve%' THEN 
-        split_part(split_part(split_part(split_part(l.value :: STRING, '{', 3), '}', 1), ',', 1), ':', 2)
+    CASE WHEN log_message LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote { vote: Approve%' THEN 
+        split_part(split_part(split_part(split_part(log_message :: STRING, '{', 3), '}', 1), ',', 1), ':', 2)
     ELSE 
         0
     END AS vote_rank, 
-    CASE WHEN l.value :: STRING LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote { vote: Approve%' THEN 
-        split_part(split_part(split_part(split_part(l.value :: STRING, '{', 3), '}', 1), ',', 2), ':', 2) :: INTEGER
-    WHEN l.value :: STRING LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote { vote: Yes }' THEN 
+    CASE WHEN log_message LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote { vote: Approve%' THEN 
+        split_part(split_part(split_part(split_part(log_message:: STRING, '{', 3), '}', 1), ',', 2), ':', 2) :: INTEGER
+    WHEN log_message LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote { vote: Yes }' THEN 
         100
     ELSE 
         0
     END AS vote_weight,
-    t._inserted_timestamp
+    _inserted_timestamp
 FROM vote_txs v 
 
-INNER JOIN {{ ref('silver__transactions') }} t
-ON v.tx_id = t.tx_id
+INNER JOIN create_vote_logs l 
+ON l.tx_id = v.tx_id
+AND l.event_index = v.index
 
-INNER JOIN TABLE(FLATTEN(t.log_messages)) l
-    
-WHERE 
-    (l.value :: STRING LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote %' 
-    AND v.index = 0 
-    AND _index <= 6)
-    OR (
-    l.value :: STRING LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote %'
-    AND v.index = 1 
-    AND _index >= 7) 
-
-{% if is_incremental() %}
-AND t._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-{% endif %}
     
