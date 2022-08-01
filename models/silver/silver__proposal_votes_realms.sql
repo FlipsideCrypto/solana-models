@@ -77,7 +77,7 @@ b AS (
         LEFT OUTER JOIN TABLE(FLATTEN(t.log_messages)) l
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+WHERE _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
