@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: silver__proposal_votes_realms
+    description: An EZ view of all vote transactions on Realms DAO governance spaces. A space serves as a voting group for an organization, dAPP, or DAO.  
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -13,7 +14,7 @@ models:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
-              interval: 2 # just an initial proposal so far
+              interval: 2 
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
@@ -30,6 +31,11 @@ models:
         description: "{{ doc('index') }}"
         tests: 
           - not_null
+      - name: _INDEX
+        description: An internal column that corresponds to the vote's position in the transaction log. 
+        tests: 
+          - not_null:
+              store_failures: FALSE # Can only store failures for one internal column
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
         tests: 
@@ -46,8 +52,16 @@ models:
         description: Address voting on the proposal
         tests: 
           - not_null
+      - name: VOTE_ACCOUNT 
+        description: An account belonging to the voting wallet that is opened on a vote. Used to transfer the voting tx fee. 
+        tests: 
+          - not_null
       - name: VOTE_CHOICE
         description: How the user voted on the proposal
+        tests: 
+          - not_null
+      - name: VOTE_RANK
+        description: The order of a user's preferred choices when more than one vote option is available
         tests: 
           - not_null
       - name: VOTE_WEIGHT
