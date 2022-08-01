@@ -26,7 +26,7 @@ vote_txs AS (
         program_id, 
         instruction :accounts[0] :: STRING AS realms_id, 
         instruction :accounts[2] :: STRING AS proposal, 
-        instruction :accounts[2] :: STRING AS voter, 
+        instruction :accounts[5] :: STRING AS voter, 
         instruction :accounts[6] :: STRING AS vote_account, 
         _inserted_timestamp
     FROM 
