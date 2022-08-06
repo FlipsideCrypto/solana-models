@@ -31,10 +31,26 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: VOTER_NFT
-        description: NFT mint used in this vote
+        description: NFT mint used in this vote on Marinade
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: PROPOSAL
         description: Address representing the proposal being voted on
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: REALMS_ID
+        description: Address representing the voting group within Realms
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: VOTE_CHOICE
+        description: The voting option selected by the user on a Realms proposal
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: VOTE_RANK
+        description: The order which a user ranks their choices on a ranked vote on Realms
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: VOTE_WEIGHT
+        description: Percentage of voting power put towards a voting option on Realms
         tests:
           - dbt_expectations.expect_column_to_exist
