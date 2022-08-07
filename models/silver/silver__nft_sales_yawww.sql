@@ -16,13 +16,22 @@ WITH base_table AS (
             instruction :accounts[1] :: STRING 
         ELSE
             instruction :accounts[0] :: STRING 
-        END AS purchaser,  
+        END AS purchaser, 
+        CASE WHEN t.log_messages[1] :: STRING LIKE 'Program log: Instruction: Accept bid' THEN 
+            NULL
+        ELSE
+            instruction :accounts[1] :: STRING 
+        END AS seller,  
         CASE WHEN t.log_messages[1] :: STRING LIKE 'Program log: Instruction: Accept bid' THEN
             instruction :accounts[10] :: STRING 
         ELSE 
             instruction :accounts[9] :: STRING
-        END AS acct_1, 
-        instruction :accounts[8] :: STRING AS mint, 
+        END AS acct_1,
+        CASE WHEN t.log_messages[1] :: STRING LIKE 'Program log: Instruction: Accept bid' THEN 
+            instruction :accounts[8] :: STRING 
+        ELSE 
+            instruction :accounts[7] :: STRING 
+        END AS mint, 
         CASE WHEN t.log_messages[1] :: STRING LIKE 'Program log: Instruction: Accept bid' THEN
             'bid'
         ELSE
@@ -38,6 +47,8 @@ WITH base_table AS (
   
     WHERE 
         program_id = '5SKmrbAxnHV2sgqyDXkGrLrokZYtWWVEEk5Soed7VLVN' -- yawww program ID
+        AND (t.log_messages[1] :: STRING LIKE 'Program log: Instruction: Accept bid'
+        OR t.log_messages[1] :: STRING LIKE 'Program log: Instruction: Buy listed item')
 
     {% if is_incremental() %}
     AND e._inserted_timestamp >= (
@@ -104,6 +115,7 @@ sellers AS (
 price_bids AS (
     SELECT 
         signers[0] :: STRING AS purchaser,
+        instructions[0] :accounts[1] :: STRING AS acct_1, 
         index, 
         i.value :parsed :info :lamports / POW(10, 9) AS bid_amount
     FROM {{ ref('silver__transactions') }} 
@@ -133,7 +145,10 @@ SELECT
      b.program_id, 
      b.mint, 
      b.purchaser, 
-     s.seller, 
+     COALESCE(
+        b.seller, 
+        s.seller
+     ) AS seller,  
      COALESCE(
        sales_amount,
        bid_amount
@@ -142,7 +157,7 @@ SELECT
      b._inserted_timestamp
 FROM base_table b
 
-LEFT OUTER JOIN price_buys p
+INNER JOIN price_buys p
 ON b.tx_id = p.tx_id
 
 LEFT OUTER JOIN sellers s
@@ -150,3 +165,4 @@ ON b.acct_1 = s.acct_1
 
 LEFT OUTER JOIN price_bids bd
 ON b.purchaser = bd.purchaser
+AND b.acct_1 = bd.acct_1
