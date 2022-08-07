@@ -83,7 +83,7 @@ price_buys AS (
         AND i.value :program :: STRING = 'system'
 
     {% if is_incremental() %}
-    AND _inserted_timestamp >= (
+    AND e._inserted_timestamp >= (
         SELECT
             MAX(_inserted_timestamp)
         FROM
