@@ -3,6 +3,7 @@
 ) }}
 
 SELECT 
+    'tribeca' as governance_platform, 
     'marinade' as program_name,
     block_timestamp,
     block_id,
@@ -23,7 +24,8 @@ FROM
 UNION ALL 
 
 SELECT 
-    'realms' as program_name, 
+    'realms' as governance_platform, 
+    program_id as program_name, 
     block_timestamp, 
     block_id, 
     tx_id, 

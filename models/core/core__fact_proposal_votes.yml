@@ -2,6 +2,10 @@ version: 2
 models:
   - name: core__fact_proposal_votes
     columns:
+      - name: GOVERNANCE_PLATFORM
+        description: "platform used for governance space"
+        tests:  
+          - dbt_expectations.expect_column_to_exist
       - name: PROGRAM_NAME
         description: "name of solana program"
         tests:
