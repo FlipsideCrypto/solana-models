@@ -350,7 +350,7 @@ SELECT
     validator_rank,
     commission, 
     COALESCE(
-        label,
+        address_name,
         vote_account
     ) AS validator_name
 FROM temp2
