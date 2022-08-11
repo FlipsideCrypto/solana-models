@@ -11,7 +11,7 @@ WITH base_table AS (
         e.block_id, 
         e.tx_id, 
         t.succeeded, 
-        e.program_id, 
+        e.program_id,
         CASE WHEN t.log_messages[1] :: STRING LIKE 'Program log: Instruction: Accept bid' THEN 
             instruction :accounts[1] :: STRING 
         ELSE
@@ -27,6 +27,7 @@ WITH base_table AS (
         ELSE 
             instruction :accounts[9] :: STRING
         END AS acct_1,
+        instruction :accounts[2] :: STRING as acct_2, 
         CASE WHEN t.log_messages[1] :: STRING LIKE 'Program log: Instruction: Accept bid' THEN 
             instruction :accounts[8] :: STRING 
         ELSE 
@@ -37,18 +38,20 @@ WITH base_table AS (
         ELSE
             'direct buy'
         END AS sale_type, 
-        e._inserted_timestamp, 
-        t.log_messages AS _log_messages
+        l.value :: STRING as log_messages,
+        e._inserted_timestamp
     FROM {{ ref('silver__events') }} 
     e
     
-    INNER JOIN {{ ref('silver__transactions') }} t
+    INNER JOIN "SOLANA_DEV"."SILVER"."TRANSACTIONS" t
     ON t.tx_id = e.tx_id 
+  
+    LEFT JOIN TABLE(FLATTEN(t.log_messages)) l
   
     WHERE 
         program_id = '5SKmrbAxnHV2sgqyDXkGrLrokZYtWWVEEk5Soed7VLVN' -- yawww program ID
-        AND (t.log_messages[1] :: STRING LIKE 'Program log: Instruction: Accept bid'
-        OR t.log_messages[1] :: STRING LIKE 'Program log: Instruction: Buy listed item')
+        AND (l.value :: STRING ilike 'Program log: Instruction: Accept bid'
+        OR l.value :: STRING ilike 'Program log: Instruction: Buy listed item')
 
     {% if is_incremental() %}
     AND e._inserted_timestamp >= (
@@ -66,7 +69,7 @@ WITH base_table AS (
     {% endif %}
 ),  
 price_buys AS (
-    SELECT
+     SELECT
         b.tx_id,
         SUM(i.value :parsed :info :lamports) / POW(10, 9) :: NUMBER AS sales_amount -- sales amount, but only for buys
     FROM
@@ -99,9 +102,12 @@ sellers AS (
     FROM {{ ref('silver__transactions') }} 
     t
     LEFT JOIN TABLE(FLATTEN(instructions)) i
+  
+    LEFT JOIN TABLE (FLATTEN(log_messages)) l
+    
     WHERE 
         i.value :programId = '5SKmrbAxnHV2sgqyDXkGrLrokZYtWWVEEk5Soed7VLVN' -- yawww program ID
-        AND log_messages[3] :: STRING LIKE 'Program log: Instruction: List item'
+        AND l.value :: STRING ilike 'Program log: Transferring user token to listing escrow...'
     
     {% if is_incremental() %}
     AND _inserted_timestamp >= (
@@ -115,17 +121,18 @@ sellers AS (
 price_bids AS (
     SELECT 
         signers[0] :: STRING AS purchaser,
-        instructions[0] :accounts[1] :: STRING AS acct_1, 
-        index, 
-        i.value :parsed :info :lamports / POW(10, 9) AS bid_amount
+        instructions[0] :accounts[2] :: STRING as acct_2, 
+        max(i.value :parsed :info :lamports / POW(10, 9)) AS bid_amount
     FROM {{ ref('silver__transactions') }} 
     t
     LEFT JOIN TABLE(FLATTEN(inner_instructions[0] :instructions)) i
+    
+    LEFT JOIN TABLE(FLATTEN(t.log_messages)) l
   
     WHERE 
-        log_messages[1] :: STRING LIKE 'Program log: Instruction: Bid on listing'
+        l.value :: STRING LIKE 'Program log: Instruction: Bid on listing'
+        AND i.index = 3
         AND i.value :parsed :type :: STRING = 'transfer'
-        AND index = 3 
     
     {% if is_incremental() %}
     AND _inserted_timestamp >= (
@@ -134,7 +141,11 @@ price_bids AS (
         FROM
             {{ this }}
     )
-    {% endif %}   
+    {% endif %}  
+
+    GROUP BY 
+        signers[0] :: STRING, 
+        instructions[0] :accounts[2] :: STRING
 )
 
 SELECT 
@@ -157,12 +168,12 @@ SELECT
      b._inserted_timestamp
 FROM base_table b
 
-INNER JOIN price_buys p
+LEFT OUTER JOIN price_buys p
 ON b.tx_id = p.tx_id
 
 LEFT OUTER JOIN sellers s
 ON b.acct_1 = s.acct_1
 
 LEFT OUTER JOIN price_bids bd
-ON b.purchaser = bd.purchaser
-AND b.acct_1 = bd.acct_1
+ON b.acct_2 = bd.acct_2
+AND b.purchaser = bd.purchaser

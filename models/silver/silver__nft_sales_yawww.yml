@@ -46,7 +46,8 @@ models:
       - name: SALES_AMOUNT
         description: "{{ doc('sales_amount') }}"
         tests: 
-          - not_null
+          - not_null: 
+              where: SUCCEEDED = 'TRUE'
       - name: SALE_TYPE 
         description: Whether the NFT was purchased directly or using a bid. 
         tests: 
