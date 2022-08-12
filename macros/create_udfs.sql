@@ -4,6 +4,7 @@
     {{ udf_bulk_get_validator_metadata() }};
     {{ udf_bulk_get_stake_account_tx_ids() }};
     {{ udf_bulk_get_txs() }};
+    {{ udf_bulk_get_blocks() }};
     {{ create_udf_ordered_signers(
         schema = "silver"
     ) }}
