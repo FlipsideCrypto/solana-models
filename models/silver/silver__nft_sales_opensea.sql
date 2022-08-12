@@ -33,6 +33,7 @@ WITH sales_inner_instructions AS (
     WHERE
         program_id = 'hausS13jsjafwWwGqZTUQRmWyvyxn9EQpqMwV1PBBmk' -- Programid used by OpenSea to execute sale, other non-opensea markets also use this
         AND instruction :data :: STRING LIKE '63LNsZWnP5%'
+        AND e.instruction :accounts [10] :: STRING = '3o9d13qUvEuuauhFrVom1vuCzgNsJifeaBYDPquaT73Y'
 
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
