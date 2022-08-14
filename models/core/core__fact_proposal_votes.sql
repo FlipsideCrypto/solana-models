@@ -13,10 +13,10 @@ SELECT
     voter_account,
     voter_nft,
     proposal, 
-    'NULL' AS realms_id, 
-    'NULL' AS vote_choice, 
-    'NULL' AS vote_rank, 
-    'NULL' AS vote_weight
+    NULL AS realms_id, 
+    NULL AS vote_choice, 
+    NULL AS vote_rank, 
+    NULL AS vote_weight
 
 FROM
     {{ ref('silver__proposal_votes_marinade') }}
@@ -32,7 +32,7 @@ SELECT
     succeeded,  
     voter, 
     vote_account, 
-    'NULL' AS voter_nft, 
+    NULL AS voter_nft, 
     proposal,
     realms_id, 
     vote_choice, 
