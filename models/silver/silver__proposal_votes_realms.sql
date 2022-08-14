@@ -145,12 +145,12 @@ SELECT
         'ABSTAIN'
     END AS vote_choice,
     CASE WHEN log_message LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote { vote: Approve%' THEN 
-        split_part(split_part(split_part(split_part(log_message :: STRING, '{', 3), '}', 1), ',', 1), ':', 2)
+        TRY_CAST(split_part(split_part(split_part(split_part(log_message :: STRING, '{', 3), '}', 1), ',', 1), ':', 2) AS INTEGER)
     ELSE 
         0
     END AS vote_rank, 
     CASE WHEN log_message LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote { vote: Approve%' THEN 
-        split_part(split_part(split_part(split_part(log_message:: STRING, '{', 3), '}', 1), ',', 2), ':', 2) :: INTEGER
+        TRY_CAST(split_part(split_part(split_part(split_part(log_message:: STRING, '{', 3), '}', 1), ',', 2), ':', 2) AS INTEGER)
     WHEN log_message LIKE 'Program log: GOVERNANCE-INSTRUCTION: CastVote { vote: Yes }' THEN 
         100
     ELSE 
