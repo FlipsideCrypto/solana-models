@@ -86,4 +86,63 @@ sources:
             data_type: string
           - name: data
             data_type: variant
+      - name: blocks_api
+        description: "External table of solana stake account tx ids"
+        external:
+          location: "@solana.bronze.analytics_external_tables/{{target.database}}/BLOCKS_API"
+          file_format: "( type = json, strip_outer_array = TRUE )"
+          auto_refresh: true
+          partitions:
+            - name: _inserted_date
+              data_type: string
+              expression: substr((split_part(METADATA$FILENAME,'/',3)),16,10)
+        columns:
+          - name: metadata
+            data_type: variant
+          - name: block_id
+            data_type: integer
+          - name: data
+            data_type: variant
+          - name: error
+            data_type: variant
+      - name: block_rewards_api
+        description: "External table of solana stake account tx ids"
+        external:
+          location: "@solana.bronze.analytics_external_tables/{{target.database}}/BLOCK_REWARDS_API"
+          file_format: "( type = json, strip_outer_array = TRUE )"
+          auto_refresh: true
+          partitions:
+            - name: _partition_id
+              data_type: number
+              expression: to_number(split_part(split_part(METADATA$FILENAME,'/',3),'=',2))
+        columns:
+          - name: metadata
+            data_type: variant
+          - name: block_id
+            data_type: integer
+          - name: data
+            data_type: variant
+          - name: error
+            data_type: variant
+      - name: block_txs_api
+        description: "External table of solana stake account tx ids"
+        external:
+          location: "@solana.bronze.analytics_external_tables/{{target.database}}/BLOCK_TXS_API"
+          file_format: "( type = json, strip_outer_array = TRUE )"
+          auto_refresh: true
+          partitions:
+            - name: _partition_id
+              data_type: number
+              expression: to_number(split_part(split_part(METADATA$FILENAME,'/',3),'=',2))
+        columns:
+          - name: metadata
+            data_type: variant
+          - name: block_id
+            data_type: integer
+          - name: tx_id
+            data_type: string
+          - name: data
+            data_type: variant
+          - name: error
+            data_type: variant
   

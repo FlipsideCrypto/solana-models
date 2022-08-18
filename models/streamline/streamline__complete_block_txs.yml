@@ -1,0 +1,16 @@
+version: 2
+models:
+  - name: streamline__complete_block_txs
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+    columns:
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: _PARTITION_ID
+        description: Value representing a single pipeline execution batch
+        tests:
+          - not_null
