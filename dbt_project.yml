@@ -35,6 +35,7 @@ on-run-start:
   - '{{ sp_create_bulk_get_validator_metadata() }}'
   - '{{ sp_create_bulk_get_stake_account_tx_ids() }}'
   - '{{ sp_create_bulk_get_txs() }}'
+  - '{{ sp_refresh_external_table_batch() }}'
 
 
 # Configuring models

@@ -6,6 +6,7 @@
     {{ udf_bulk_get_txs() }};
     {{ udf_bulk_get_blocks() }};
     {{ udf_bulk_get_block_txs() }};
+    {{ udf_bulk_get_block_rewards() }};
     {{ create_udf_ordered_signers(
         schema = "silver"
     ) }}

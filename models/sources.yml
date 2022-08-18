@@ -112,15 +112,17 @@ sources:
           file_format: "( type = json, strip_outer_array = TRUE )"
           auto_refresh: true
           partitions:
-            - name: _inserted_date
-              data_type: string
-              expression: substr((split_part(METADATA$FILENAME,'/',3)),16,10)
+            - name: _partition_id
+              data_type: number
+              expression: to_number(split_part(split_part(METADATA$FILENAME,'/',3),'=',2))
         columns:
           - name: metadata
             data_type: variant
           - name: block_id
             data_type: integer
           - name: data
+            data_type: variant
+          - name: error
             data_type: variant
       - name: block_txs_api
         description: "External table of solana stake account tx ids"
@@ -140,5 +142,7 @@ sources:
           - name: tx_id
             data_type: string
           - name: data
+            data_type: variant
+          - name: error
             data_type: variant
   

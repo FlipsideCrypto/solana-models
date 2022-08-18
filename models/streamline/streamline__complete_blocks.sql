@@ -1,8 +1,8 @@
 {{ config (
     materialized = "incremental",
     unique_key = "block_id",
-    cluster_by = "ROUND(block_id, -5)",
-    merge_update_columns = ["block_id"]
+    cluster_by = "_inserted_date",
+    merge_update_columns = ["_inserted_date","_inserted_timestamp"]
 ) }}
 
 WITH meta AS (
@@ -16,7 +16,6 @@ WITH meta AS (
                 table_name => '{{ source( "solana_external", "blocks_api") }}'
             )
         ) A
-
 {% if is_incremental() %}
 WHERE
     registered_on >= (
@@ -24,18 +23,12 @@ WHERE
             COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
         FROM
             {{ this }})
-    ),
-    max_date AS (
-        SELECT
-            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
-        FROM
-            {{ this }})
-        {% else %}
-    )
 {% endif %}
+)
 SELECT
     block_id,
-    m.registered_on AS _inserted_timestamp
+    _inserted_date,
+    m.registered_on as _inserted_timestamp
 FROM
     {{ source(
         "solana_external",
@@ -44,18 +37,17 @@ FROM
     JOIN meta m
     ON m.file_name = metadata$filename
 WHERE
-    s._inserted_date >= CURRENT_DATE -1
-    AND s.block_id IS NOT NULL
+    s.block_id IS NOT NULL
 
 {% if is_incremental() %}
-AND m.registered_on > (
-    SELECT
-        max_INSERTED_TIMESTAMP
-    FROM
-        max_date
-)
+    AND s._inserted_date >= CURRENT_DATE
+    AND m.registered_on > (
+        SELECT
+            max(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% endif %}
-
 qualify(ROW_NUMBER() over (PARTITION BY block_id
 ORDER BY
-    _inserted_timestamp DESC)) = 1
+_inserted_date, _inserted_timestamp DESC)) = 1

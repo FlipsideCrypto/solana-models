@@ -13,7 +13,7 @@ WITH meta AS (
     FROM
         TABLE(
             information_schema.external_table_files(
-                table_name => '{{ source( "solana_external", "block_txs_api") }}'
+                table_name => '{{ source( "solana_external", "block_rewards_api") }}'
             )
         ) A
 )
@@ -23,7 +23,7 @@ SELECT
 FROM
     {{ source(
         "solana_external",
-        "block_txs_api"
+        "block_rewards_api"
     ) }} AS s
 WHERE
     s.block_id IS NOT NULL
@@ -37,8 +37,3 @@ AND s._partition_id > (
 )
 {% endif %}
 group by 1,2
-{% if not is_incremental() %}
-qualify(ROW_NUMBER() over (PARTITION BY block_id
-ORDER BY
-_partition_id DESC)) = 1
-{% endif %}  

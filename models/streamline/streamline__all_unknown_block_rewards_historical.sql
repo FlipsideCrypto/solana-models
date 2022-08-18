@@ -14,7 +14,7 @@ WITH pre_final AS (
     SELECT
         block_id
     FROM
-        {{ ref('streamline__complete_block_txs') }}
+        {{ ref('streamline__complete_block_rewards') }}
 )
 SELECT
     block_id,
@@ -22,7 +22,7 @@ SELECT
         SELECT
             coalesce(MAX(_partition_id) + 1,1)
         FROM
-            {{ ref('streamline__complete_block_txs') }}
+            {{ ref('streamline__complete_block_rewards') }}
     ) AS batch_id
 FROM
     pre_final
