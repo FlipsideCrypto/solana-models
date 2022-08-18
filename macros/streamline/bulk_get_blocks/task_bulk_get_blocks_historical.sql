@@ -1,9 +1,9 @@
 {% macro task_bulk_get_blocks_historical() %}
 {% set sql %}
-create or replace task streamline.bulk_get_blocks_historical
+execute immediate 'create or replace task streamline.bulk_get_blocks_historical
     warehouse = dbt_cloud_solana
     allow_overlapping_execution = false
-    schedule = 'USING CRON */5 * * * * UTC'
+    schedule = \'USING CRON */5 * * * * UTC\'
 as
 BEGIN
     alter external table bronze.blocks_api refresh;
@@ -18,13 +18,13 @@ BEGIN
                     FROM
                         TABLE(
                             information_schema.external_table_files(
-                                table_name => 'bronze.blocks_api'
+                                table_name => \'bronze.blocks_api\'
                             )
                         ) A
                     WHERE
                         registered_on >= (
                             SELECT
-                                COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
+                                COALESCE(MAX(_INSERTED_TIMESTAMP), \'1970-01-01\' :: DATE) max_INSERTED_TIMESTAMP
                             FROM
                                 streamline.complete_blocks
                         )
@@ -70,8 +70,11 @@ BEGIN
         from streamline.all_unknown_blocks_historical
         limit 1
     );
-END;
+END;'
+{% endset %}
+{% do run_query(sql) %}
 
+{% set sql %}
 alter task streamline.bulk_get_blocks_historical resume;
 {% endset %}
 {% do run_query(sql) %}

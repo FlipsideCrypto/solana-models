@@ -1,11 +1,12 @@
 {% macro task_bulk_get_block_txs_historical() %}
-create or replace task streamline.bulk_get_block_txs_historical
+{% set sql %}
+execute immediate 'create or replace task streamline.bulk_get_block_txs_historical
     warehouse = dbt_cloud_solana
     allow_overlapping_execution = false
-    schedule = 'USING CRON */6 * * * * UTC'
+    schedule = \'USING CRON */6 * * * * UTC\'
 as
 BEGIN
-    call streamline.refresh_external_table_next_batch('block_txs_api','complete_block_txs');
+    call streamline.refresh_external_table_next_batch(\'block_txs_api\',\'complete_block_txs\');
     create or replace temporary table streamline.complete_block_txs__dbt_tmp as
     (
         select * 
@@ -45,7 +46,12 @@ BEGIN
         from streamline.all_unknown_block_txs_historical
         limit 1
     );
-END;
+END;'
+{% endset %}
+{% do run_query(sql) %}
 
-alter task streamline.bulk_get_block_txs_historical resume
+{% set sql %}
+alter task streamline.bulk_get_block_txs_historical resume;
+{% endset %}
+{% do run_query(sql) %}
 {% endmacro %}
