@@ -1,0 +1,49 @@
+version: 2
+models:
+  - name: core__fact_proposal_creation
+    description: An EZ view of all proposal creations. Currently, this table is limited to only proposal creations on Realms DAO governance spaces. A space serves as a voting group for an organization, dAPP, or DAO.  
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: PROGRAM_NAME
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: REALMS_ID 
+        description: An address that is unique to the space or voting group on Realms. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: PROPOSAL
+        description: Address representing the proposal being voted on.
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: PROPOSAL_WRITER
+        description: Address of the user who is submitting the proposal for voting. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: PROPOSAL_NAME
+        description: The name of the proposal that is being submitted
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: VOTE_TYPE
+        description: The type of voting strategy that will be used for voting on the proposal. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: VOTE_OPTIONS
+        description: The options that will be available to users who are voting on the proposal 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
