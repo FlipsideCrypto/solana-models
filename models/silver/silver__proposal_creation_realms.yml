@@ -1,0 +1,64 @@
+version: 2
+models:
+  - name: silver__proposal_creation_realms
+    description: An EZ view of all proposal creations on Realms DAO governance spaces. A space serves as a voting group for an organization, dAPP, or DAO.  
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 5 
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: INDEX
+        description: "{{ doc('index') }}"
+        tests: 
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null
+      - name: REALMS_ID 
+        description: An address that is unique to the space or voting group on Realms. 
+        tests: 
+          - not_null
+      - name: PROPOSAL
+        description: Address representing the proposal being voted on.
+        tests: 
+          - not_null
+      - name: PROPOSAL_WRITER
+        description: Address of the user who is submitting the proposal for voting. 
+        tests: 
+          - not_null
+      - name: PROPOSAL_NAME
+        description: The name of the proposal that is being submitted
+        tests: 
+          - not_null
+      - name: VOTE_TYPE
+        description: The type of voting strategy that will be used for voting on the proposal. 
+        tests: 
+          - not_null
+      - name: VOTE_OPTIONS
+        description: The options that will be available to users who are voting on the proposal 
+        tests: 
+          - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
