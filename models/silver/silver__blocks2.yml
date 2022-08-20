@@ -45,11 +45,7 @@ models:
         description: previous block's hash value
         tests:
           - not_null
-      - name: INGESTED_AT
-        description: "{{ doc('ingested_at') }}"
-        tests: 
-          - not_null
-      - name: _INSERTED_TIMESTAMP
+      - name: _INSERTED_DATE
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
           - not_null
