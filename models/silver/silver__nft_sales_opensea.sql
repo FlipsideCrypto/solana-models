@@ -48,6 +48,8 @@ AND t._inserted_timestamp >= (
     FROM
         {{ this }}
 )
+{% else %}
+    AND _inserted_timestamp :: DATE >= '2022-04-03' -- no Opensea sales before this date
 {% endif %}
 ),
 post_token_balances AS (
@@ -67,6 +69,8 @@ WHERE
         FROM
             {{ this }}
     )
+{% else %}
+    WHERE _inserted_timestamp :: DATE >= '2022-04-03' -- no Opensea sales before this date
 {% endif %}
 ),
 pre_final AS (

@@ -66,6 +66,8 @@ WITH base_table AS (
         FROM
             {{ this }}
     )
+    {% else %}
+    AND _inserted_timestamp :: DATE >= '2022-07-12' -- no YAWWW sales before this date
     {% endif %}
 ),  
 price_buys AS (
@@ -92,6 +94,8 @@ price_buys AS (
         FROM
             {{ this }}
     )
+    {% else %}
+    AND _inserted_timestamp :: DATE >= '2022-07-12' -- no YAWWW sales before this date
     {% endif %}
     GROUP BY b.tx_id 
 ),  
@@ -116,6 +120,8 @@ sellers AS (
         FROM
             {{ this }}
     )
+    {% else %}
+    AND _inserted_timestamp :: DATE >= '2022-07-12' -- no YAWWW sales before this date
     {% endif %}
 ),  
 price_bids AS (
@@ -141,7 +147,9 @@ price_bids AS (
         FROM
             {{ this }}
     )
-    {% endif %}  
+    {% else %}
+    AND _inserted_timestamp :: DATE >= '2022-07-12' -- no YAWWW sales before this date
+    {% endif %}
 
     GROUP BY 
         signers[0] :: STRING, 

@@ -24,6 +24,8 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+{% else %}
+    AND _inserted_timestamp :: DATE >= '2022-01-01' -- no saber gov before this date
 {% endif %}
 ),
 third_party_programs AS (
@@ -46,6 +48,8 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+{% else %}
+    AND _inserted_timestamp :: DATE >= '2022-01-14' -- no saber votes before this date
 {% endif %}
 ),
 saber_gov_lock_events AS (
@@ -83,6 +87,8 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+{% else %}
+    AND _inserted_timestamp :: DATE >= '2022-01-14' -- no saber votes before this date
 {% endif %}
 ),
 tx_logs AS (
@@ -125,6 +131,8 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+{% else %}
+    AND _inserted_timestamp :: DATE >= '2022-01-14' -- no saber votes before this date
 {% endif %}
 )
 SELECT
