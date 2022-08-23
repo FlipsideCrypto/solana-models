@@ -25,10 +25,6 @@ models:
         description: chain identifier, this will always be solana.  Field is used in joins with crosschain tables
         tests:
           - not_null
-      - name: TX_COUNT
-        description: number of transactions within this block
-        tests:
-          - not_null
       - name: BLOCK_HEIGHT
         description: heigh of the block
         tests:

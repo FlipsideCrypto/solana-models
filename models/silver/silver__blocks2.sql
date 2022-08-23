@@ -6,19 +6,6 @@
   post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
-WITH tx_counter AS (
-    SELECT 
-        value :block_id AS block_id, 
-        count(*) AS tx_count
-    FROM 
-      {{ source(
-        'solana_external', 
-        'block_txs_api'
-      ) }}
-    GROUP BY 
-        value :block_id
-)
-
 SELECT 
     value :block_id :: INTEGER AS block_id,
     to_timestamp(data :blockTime) AS block_timestamp, 
