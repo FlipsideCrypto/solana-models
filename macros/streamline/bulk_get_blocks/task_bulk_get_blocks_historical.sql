@@ -74,8 +74,10 @@ END;'
 {% endset %}
 {% do run_query(sql) %}
 
-{% set sql %}
-alter task streamline.bulk_get_blocks_historical resume;
-{% endset %}
-{% do run_query(sql) %}
+{% if target.database == 'SOLANA' %}
+    {% set sql %}
+    alter task streamline.bulk_get_blocks_historical resume;
+    {% endset %}
+    {% do run_query(sql) %}
+{% endif %}
 {% endmacro %}
