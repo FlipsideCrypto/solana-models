@@ -11,7 +11,7 @@ $$
         refresh_stmt string;
         res resultset;
     begin 
-        select_stmt := 'select concat(\'batch=\',max(_partition_id)+1,\'/\') as path from streamline.' || :streamline_table_name;
+        select_stmt := 'select concat(\'batch=\',coalesce(max(_partition_id),0)+1,\'/\') as path from streamline.' || :streamline_table_name;
         res := (execute immediate :select_stmt);
         let c1 cursor for res;
         for row_variable in c1 do

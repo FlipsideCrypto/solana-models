@@ -44,7 +44,7 @@ BEGIN
                     AND s._inserted_date >= CURRENT_DATE
                     AND m.registered_on > (
                         SELECT
-                            max(_inserted_timestamp)
+                            coalesce(max(_inserted_timestamp),\'2022-01-01 00:00:00\'::timestamp_ntz)
                         FROM
                             streamline.complete_blocks
                     )
@@ -74,8 +74,10 @@ END;'
 {% endset %}
 {% do run_query(sql) %}
 
-{% set sql %}
-alter task streamline.bulk_get_blocks_historical resume;
-{% endset %}
-{% do run_query(sql) %}
+{% if target.database == 'SOLANA' %}
+    {% set sql %}
+    alter task streamline.bulk_get_blocks_historical resume;
+    {% endset %}
+    {% do run_query(sql) %}
+{% endif %}
 {% endmacro %}

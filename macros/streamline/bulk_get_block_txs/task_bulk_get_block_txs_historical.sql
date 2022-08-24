@@ -22,7 +22,7 @@ BEGIN
 
             AND s._partition_id > (
                 select 
-                    max(_partition_id)
+                    coalesce(max(_partition_id),0)
                 from
                     streamline.complete_block_txs
             )
@@ -50,8 +50,10 @@ END;'
 {% endset %}
 {% do run_query(sql) %}
 
-{% set sql %}
-alter task streamline.bulk_get_block_txs_historical resume;
-{% endset %}
-{% do run_query(sql) %}
+{% if target.database == 'SOLANA' %}
+    {% set sql %}
+    alter task streamline.bulk_get_block_txs_historical resume;
+    {% endset %}
+    {% do run_query(sql) %}
+{% endif %}
 {% endmacro %}
