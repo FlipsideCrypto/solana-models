@@ -40,17 +40,26 @@ $$
             var schema = existing_functions.getColumnValue(1)
             var function_name = existing_functions.getColumnValue(2)
             var argument_signature = existing_functions.getColumnValue(3)
-            snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUNCTION ${DESTINATION_DB_NAME}.${schema}.${function_name}${argument_signature} to role ${ROLE_NAME};`});
+            snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUNCTION ${DESTINATION_DB_NAME}.${schema}.${function_name}${argument_signature} to role ${ROLE_NAME} REVOKE CURRENT GRANTS;`});
         }
 
-        var existing_procedures = snowflake.execute({sqlText: `SELECT procedure_schema, procedure_name, argument_signature
+        var existing_procedures = snowflake.execute({sqlText: `SELECT procedure_schema, procedure_name, concat('(',array_to_string(regexp_substr_all(argument_signature, 'VARCHAR|NUMBER|FLOAT|ARRAY|VARIANT|OBJECT|DOUBLE'),','),')') as argument_signature
             FROM ${DESTINATION_DB_NAME}.INFORMATION_SCHEMA.PROCEDURES;`});
 
         while (existing_procedures.next()) {
             var schema = existing_procedures.getColumnValue(1)
             var procedure_name = existing_procedures.getColumnValue(2)
             var argument_signature = existing_procedures.getColumnValue(3)
-            snowflake.execute({sqlText: `GRANT OWNERSHIP ON PROCEDURE ${DESTINATION_DB_NAME}.${schema}.${procedure_name}${argument_signature} to role ${ROLE_NAME};`});
+            snowflake.execute({sqlText: `GRANT OWNERSHIP ON PROCEDURE ${DESTINATION_DB_NAME}.${schema}.${procedure_name}${argument_signature} to role ${ROLE_NAME} REVOKE CURRENT GRANTS;`});
+        }
+
+        var existing_tasks = snowflake.execute({sqlText: `SHOW TASKS IN DATABASE ${DESTINATION_DB_NAME};`});
+
+        while (existing_tasks.next()) {
+            var schema = existing_tasks.getColumnValue(5)
+            var task_name = existing_tasks.getColumnValue(2)
+            snowflake.execute({sqlText: `ALTER TASK ${DESTINATION_DB_NAME}.${schema}.${task_name} SUSPEND;`})
+            snowflake.execute({sqlText: `GRANT OWNERSHIP ON TASK ${DESTINATION_DB_NAME}.${schema}.${task_name} to role ${ROLE_NAME} REVOKE CURRENT GRANTS;`});
         }
 
         snowflake.execute({sqlText: `GRANT OWNERSHIP ON DATABASE ${DESTINATION_DB_NAME} TO ROLE ${ROLE_NAME};`})
