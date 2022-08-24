@@ -22,7 +22,7 @@ BEGIN
 
             AND s._partition_id > (
                 select 
-                    max(_partition_id)
+                    coalesce(max(_partition_id),0)
                 from
                     streamline.complete_block_txs
             )
