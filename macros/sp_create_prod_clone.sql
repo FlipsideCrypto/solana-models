@@ -53,6 +53,15 @@ $$
             snowflake.execute({sqlText: `GRANT OWNERSHIP ON PROCEDURE ${DESTINATION_DB_NAME}.${schema}.${procedure_name}${argument_signature} to role ${ROLE_NAME} REVOKE CURRENT GRANTS;`});
         }
 
+        var existing_tasks = snowflake.execute({sqlText: `SHOW TASKS IN DATABASE ${DESTINATION_DB_NAME};`});
+
+        while (existing_tasks.next()) {
+            var schema = existing_tasks.getColumnValue(5)
+            var task_name = existing_tasks.getColumnValue(2)
+            snowflake.execute({sqlText: `ALTER TASK ${DESTINATION_DB_NAME}.${schema}.${task_name} SUSPEND;`})
+            snowflake.execute({sqlText: `GRANT OWNERSHIP ON TASK ${DESTINATION_DB_NAME}.${schema}.${task_name} to role ${ROLE_NAME} REVOKE CURRENT GRANTS;`});
+        }
+
         snowflake.execute({sqlText: `GRANT OWNERSHIP ON DATABASE ${DESTINATION_DB_NAME} TO ROLE ${ROLE_NAME};`})
         snowflake.execute({sqlText: `COMMIT;`});
     } catch (err) {
