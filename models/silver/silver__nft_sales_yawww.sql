@@ -43,7 +43,7 @@ WITH base_table AS (
     FROM {{ ref('silver__events') }} 
     e
     
-    INNER JOIN "SOLANA_DEV"."SILVER"."TRANSACTIONS" t
+    INNER JOIN {{ ref('silver__transactions') }}  t
     ON t.tx_id = e.tx_id 
   
     LEFT JOIN TABLE(FLATTEN(t.log_messages)) l
