@@ -4,7 +4,6 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - BLOCK_ID
             - TX_ID
     columns:
       - name: BLOCK_TIMESTAMP
@@ -32,7 +31,7 @@ models:
           - null_threshold:
               threshold_percent: 0.99 # some older transactions have valid null fees
           - not_null:
-              where: ingested_at::date >= current_date - 2
+              where: _inserted_date >= current_date - 2
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests: 

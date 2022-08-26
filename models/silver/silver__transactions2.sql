@@ -1,10 +1,22 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "CONCAT_WS('-', block_id, tx_id)",
+    unique_key = "tx_id",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
 ) }}
+
+{% if is_incremental() %}
+WITH max_partition AS (
+
+    SELECT
+        MAX(
+            _partition_id
+        ) _partition_id
+    FROM
+        {{ this }}
+)
+{% endif %}
 
 SELECT 
     b.block_timestamp, 
@@ -26,24 +38,31 @@ SELECT
     data :transaction :message :instructions :: ARRAY AS instructions, 
     data :meta :innerInstructions :: ARRAY AS inner_instructions, 
     data :meta :logMessages :: ARRAY as log_messages,
-    b._inserted_date
+    b._inserted_date, 
+    _partition_id
 FROM 
-    {{ source(
-        'solana_external', 
-        'block_txs_api'
-    ) }} t
+    {{ ref('bronze__transactions2') }} t
 
 LEFT OUTER JOIN {{ ref('silver__blocks2') }} b
 ON t.block_id = b.block_id
   
 WHERE 
-    b.block_timestamp >= '2022-08-10'
+    _partition_id >= 2200
+    ---AND t._partition_id <= 1499
+    AND (error IS NULL 
+    OR error :code <> '-32009') -- block is empty
     AND 
         COALESCE(
             data :transaction :message :instructions [0] :programId :: STRING,
             ''
         ) <> 'Vote111111111111111111111111111111111111111'
 
-    qualify(ROW_NUMBER() over(PARTITION BY t.block_id, t.tx_id
-ORDER BY
-    b._inserted_date DESC)) = 1
+{% if is_incremental() %}
+AND
+  _partition_id >= (
+    SELECT
+      MAX(_partition_id)
+    FROM
+      max_partition
+  )
+{% endif %}

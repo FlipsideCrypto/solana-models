@@ -11,25 +11,21 @@ SELECT
     to_timestamp(data :blockTime) AS block_timestamp, 
     'mainnet' AS network, 
     'solana' AS chain_id, 
-    tx_count, 
     data :blockHeight AS block_height, 
     TRIM(data :blockhash, '"') AS block_hash, 
     data :parentSlot AS previous_block_id, 
     TRIM(data :previousBlockhash, '"') AS previous_block_hash, 
     _inserted_date
 FROM 
-    {{ source(
-        'solana_external', 
-        'blocks_api'
-    ) }}
-    b
+    {{ ref('bronze__blocks2') }}
 
-LEFT OUTER JOIN tx_counter 
-t 
-ON b.block_id = t.block_id
+WHERE 
+  metadata IS NOT NULL
+  AND (error IS NULL
+  OR error :code <> '-32009' )-- Block is empty
 
 {% if is_incremental() %}
-WHERE
+AND
   _inserted_date >= (
     SELECT
       MAX(_inserted_date)
@@ -38,6 +34,6 @@ WHERE
   )
 {% endif %}
 
-qualify(ROW_NUMBER() over(PARTITION BY b.block_id
+qualify(ROW_NUMBER() over(PARTITION BY block_id
 ORDER BY
   _inserted_date DESC)) = 1
