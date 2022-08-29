@@ -14,7 +14,11 @@ WITH base_table AS (
         t.succeeded,
         e.program_id,
         CASE
-            WHEN t.log_messages [1] :: STRING LIKE 'Program log: Instruction: Accept bid' THEN instruction :accounts [1] :: STRING
+            WHEN t.log_messages [1] :: STRING LIKE 'Program log: Instruction: Accept bid' THEN 'bid'
+            ELSE 'direct buy'
+        END AS sale_type,
+        CASE
+            WHEN sale_type = 'bid' THEN instruction :accounts [1] :: STRING
             ELSE instruction :accounts [0] :: STRING
         END AS purchaser,
         CASE
@@ -22,18 +26,14 @@ WITH base_table AS (
             ELSE instruction :accounts [1] :: STRING
         END AS seller,
         CASE
-            WHEN t.log_messages [1] :: STRING LIKE 'Program log: Instruction: Accept bid' THEN instruction :accounts [10] :: STRING
+            WHEN sale_type = 'bid' THEN instruction :accounts [10] :: STRING
             ELSE instruction :accounts [9] :: STRING
         END AS acct_1,
         instruction :accounts [2] :: STRING AS acct_2,
         CASE
-            WHEN t.log_messages [1] :: STRING LIKE 'Program log: Instruction: Accept bid' THEN instruction :accounts [8] :: STRING
+            WHEN sale_type = 'bid' THEN instruction :accounts [8] :: STRING
             ELSE instruction :accounts [7] :: STRING
         END AS mint,
-        CASE
-            WHEN t.log_messages [1] :: STRING LIKE 'Program log: Instruction: Accept bid' THEN 'bid'
-            ELSE 'direct buy'
-        END AS sale_type,
         l.value :: STRING AS log_messages,
         e._inserted_timestamp
     FROM

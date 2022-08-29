@@ -25,11 +25,17 @@ AND _inserted_timestamp >= (
 {% endif %}
 )
 SELECT
-    t.tx_id,
+    t.block_id,
     t.block_timestamp,
+    t.tx_id,
+    t.succeeded,
     t.signers [0] :: STRING AS bidder,
     instructions [0] :accounts [2] :: STRING AS acct_2,
-    MAX(i.value :parsed :info :lamports / pow(10, 9)) AS bid_amount
+    i.value :parsed :info :lamports / pow(
+        10,
+        9
+    ) AS bid_amount,
+    _inserted_timestamp
 FROM
     {{ ref('silver__transactions') }}
     t
@@ -50,8 +56,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-GROUP BY
-    1,
-    2,
-    3,
-    4
+
+qualify(ROW_NUMBER() over (PARTITION BY t.tx_id
+ORDER BY
+    bid_amount DESC)) = 1
