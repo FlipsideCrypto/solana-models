@@ -3,7 +3,7 @@
 execute immediate 'create or replace task streamline.bulk_get_block_txs_historical
     warehouse = dbt_cloud_solana
     allow_overlapping_execution = false
-    schedule = \'USING CRON */6 * * * * UTC\'
+    schedule = \'USING CRON */30 * * * * UTC\'
 as
 BEGIN
     call streamline.refresh_external_table_next_batch(\'block_txs_api\',\'complete_block_txs\');
