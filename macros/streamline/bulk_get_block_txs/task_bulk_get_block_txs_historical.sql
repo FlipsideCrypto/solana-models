@@ -42,6 +42,12 @@ BEGIN
         from streamline.all_unknown_block_txs_historical
         limit 1
     );
+    select streamline.udf_bulk_get_block_txs(TRUE)
+    where exists (
+        select 1
+        from streamline.all_unknown_block_txs_real_time
+        limit 1
+    );
 END;'
 {% endset %}
 {% do run_query(sql) %}
