@@ -9,9 +9,10 @@ SELECT
     block_id, 
     tx_id, 
     data, 
-    error
+    error,
+    TO_TIMESTAMP_NTZ(
+        SUBSTR(SPLIT_PART(metadata$filename, '/', 4), 1, 10) :: NUMBER,
+        0
+    ) as _inserted_timestamp
 FROM 
-    {{ source(
-        'bronze_prod', 
-        'block_txs_api'
-    )}}
+    solana.bronze.block_txs_api
