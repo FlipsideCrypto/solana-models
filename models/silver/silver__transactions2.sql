@@ -49,6 +49,11 @@ WITH pre_final AS (
             select max(_partition_id)-1
             from {{this}}
         )
+    AND
+        _partition_id <= (
+            select max(_partition_id)+1
+            from {{this}}
+        )
     AND 
         t._inserted_timestamp > (
             select max(_inserted_timestamp)
@@ -56,7 +61,7 @@ WITH pre_final AS (
         )
     {% else %}
     AND 
-        _partition_id = 1
+        _partition_id in (1,2)
     {% endif %}
 )
 {% if is_incremental() %}
@@ -81,7 +86,7 @@ WITH pre_final AS (
         greatest(t._inserted_timestamp,b._inserted_timestamp) as _inserted_timestamp
     from {{ this }} t
     inner join {{ ref('silver__blocks2') }} b on b.block_id = t.block_id
-    where block_timestamp::date is null
+    where t.block_timestamp::date is null
 )
 {% endif %}
 SELECT
