@@ -3,7 +3,7 @@
 execute immediate 'create or replace task streamline.bulk_get_blocks_historical
     warehouse = dbt_cloud_solana
     allow_overlapping_execution = false
-    schedule = \'USING CRON */5 * * * * UTC\'
+    schedule = \'USING CRON */15 * * * * UTC\'
 as
 BEGIN
     alter external table bronze.blocks_api refresh;
