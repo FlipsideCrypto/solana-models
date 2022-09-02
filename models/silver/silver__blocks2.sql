@@ -11,7 +11,7 @@ WITH next_date_to_load AS (
     MIN(_inserted_timestamp) AS load_timestamp,
     MIN(_inserted_date) as load_date
   FROM
-    {{ ref('streamline__complete_blocks') }}
+    {{ ref('bronze__blocks2') }}
   WHERE
     _inserted_timestamp > (
       SELECT
