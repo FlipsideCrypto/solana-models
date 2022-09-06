@@ -30,8 +30,7 @@ models:
         tests: 
           - null_threshold:
               threshold_percent: 0.99 # some older transactions have valid null fees
-          - not_null:
-              where: _inserted_date >= current_date - 2
+          - not_null
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests: 
@@ -52,7 +51,7 @@ models:
         description: List of post-transaction token balances for different token accounts
       - name: LOG_MESSAGES
         description: Array of log messages written by the program for this transaction
-      - name: _INSERTED_DATE
+      - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
           - not_null
