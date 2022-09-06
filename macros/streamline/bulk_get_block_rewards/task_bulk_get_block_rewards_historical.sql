@@ -3,7 +3,7 @@
 execute immediate 'create or replace task streamline.bulk_get_block_rewards_historical
     warehouse = dbt_cloud_solana
     allow_overlapping_execution = false
-    schedule = \'USING CRON */3 * * * * UTC\'
+    schedule = \'USING CRON */15 * * * * UTC\'
 as
 BEGIN
     call streamline.refresh_external_table_next_batch(\'block_rewards_api\',\'complete_block_rewards\');
@@ -24,7 +24,6 @@ BEGIN
                     from
                         streamline.complete_block_rewards
                 )
-
             group by 1,2
         ) 
         order by (_partition_id)
@@ -38,18 +37,26 @@ BEGIN
         when not matched then 
             insert ("BLOCK_ID", "_PARTITION_ID")
             values ("BLOCK_ID", "_PARTITION_ID");
-    select streamline.udf_bulk_get_block_rewards()
+    select streamline.udf_bulk_get_block_rewards(FALSE)
         where exists (
             select 1
             from streamline.all_unknown_block_rewards_historical
             limit 1
-        );       
+        );
+    select streamline.udf_bulk_get_block_rewards(TRUE)
+        where exists (
+            select 1
+            from streamline.all_unknown_block_rewards_real_time
+            limit 1
+        );        
 END;'
 {% endset %}
 {% do run_query(sql) %}
 
-{% set sql %}
-alter task streamline.bulk_get_block_rewards_historical resume;
-{% endset %}
-{% do run_query(sql) %}
+{% if target.database == 'SOLANA' %}
+    {% set sql %}
+    alter task streamline.bulk_get_block_rewards_historical resume;
+    {% endset %}
+    {% do run_query(sql) %}
+{% endif %}
 {% endmacro %}

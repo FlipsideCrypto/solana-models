@@ -3,12 +3,14 @@
 ) }}
 
 SELECT
-    SEQ8() AS block_id
+    SEQ8() + 98680445 AS block_id
 FROM
-    TABLE(GENERATOR(rowcount => 1000000000))
-WHERE block_id <= 98680445
+    TABLE(GENERATOR(rowcount => 60000000))
+WHERE
+    block_id > 98680445
+    AND block_id <= 148693779
 EXCEPT
 SELECT
     block_id
-from 
+FROM
     {{ ref('streamline__complete_blocks') }}

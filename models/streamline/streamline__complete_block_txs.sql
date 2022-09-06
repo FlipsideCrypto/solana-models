@@ -5,18 +5,6 @@
     merge_update_columns = ["_partition_id"]
 ) }}
 
-WITH meta AS (
-
-    SELECT
-        registered_on,
-        file_name
-    FROM
-        TABLE(
-            information_schema.external_table_files(
-                table_name => '{{ source( "solana_external", "block_txs_api") }}'
-            )
-        ) A
-)
 SELECT
     block_id,
     _partition_id

@@ -3,7 +3,7 @@
 execute immediate 'create or replace task streamline.bulk_get_blocks_historical
     warehouse = dbt_cloud_solana
     allow_overlapping_execution = false
-    schedule = \'USING CRON */5 * * * * UTC\'
+    schedule = \'USING CRON */15 * * * * UTC\'
 as
 BEGIN
     alter external table bronze.blocks_api refresh;
@@ -39,12 +39,10 @@ BEGIN
                     ON m.file_name = metadata$filename
                 WHERE
                     s.block_id IS NOT NULL
-
-
                     AND s._inserted_date >= CURRENT_DATE
                     AND m.registered_on > (
                         SELECT
-                            max(_inserted_timestamp)
+                            coalesce(max(_inserted_timestamp),\'2022-01-01 00:00:00\'::timestamp_ntz)
                         FROM
                             streamline.complete_blocks
                     )
@@ -64,18 +62,26 @@ BEGIN
         when not matched then 
             insert ("BLOCK_ID", "_INSERTED_DATE", "_INSERTED_TIMESTAMP")
             values ("BLOCK_ID", "_INSERTED_DATE", "_INSERTED_TIMESTAMP");
-    select streamline.udf_bulk_get_blocks()
+    select streamline.udf_bulk_get_blocks(FALSE)
     where exists (
         select 1
         from streamline.all_unknown_blocks_historical
+        limit 1
+    );
+    select streamline.udf_bulk_get_blocks(TRUE)
+    where exists (
+        select 1
+        from streamline.all_unknown_blocks_real_time
         limit 1
     );
 END;'
 {% endset %}
 {% do run_query(sql) %}
 
-{% set sql %}
-alter task streamline.bulk_get_blocks_historical resume;
-{% endset %}
-{% do run_query(sql) %}
+{% if target.database == 'SOLANA' %}
+    {% set sql %}
+    alter task streamline.bulk_get_blocks_historical resume;
+    {% endset %}
+    {% do run_query(sql) %}
+{% endif %}
 {% endmacro %}
