@@ -13,8 +13,7 @@ models:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
-          - not_null: 
-              enabled: False
+          - not_null
       - name: NETWORK
         description: solana network name
         tests:
