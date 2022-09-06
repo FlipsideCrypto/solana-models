@@ -49,7 +49,7 @@ AND t._inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND _inserted_timestamp :: DATE >= '2022-04-03' -- no Opensea sales before this date
+    AND e.block_timestamp :: DATE >= '2022-04-03' -- no Opensea sales before this date
 {% endif %}
 ),
 post_token_balances AS (

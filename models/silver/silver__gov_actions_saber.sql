@@ -25,7 +25,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND _inserted_timestamp :: DATE >= '2022-01-01' -- no saber gov before this date
+    AND block_timestamp :: DATE >= '2022-01-01' -- no saber gov before this date
 {% endif %}
 ),
 third_party_programs AS (

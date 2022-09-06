@@ -35,6 +35,7 @@ WITH raydium_dex_txs AS (
                 'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS'
             )
         )
+        AND t.block_timestamp :: date >= '2021-02-21'
 
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
@@ -84,6 +85,9 @@ WHERE
         FROM
             {{ this }}
     )
+{% else %}
+WHERE 
+    b.block_timestamp :: date >= '2021-02-21'
 {% endif %}
 ),
 destinations AS (
@@ -127,6 +131,9 @@ AND e._inserted_timestamp >= (
     FROM
         {{ this }}
 )
+{% else %}
+AND 
+    e.block_timestamp :: date >= '2021-02-21'
 {% endif %}
 ),
 destination_acct_map AS (

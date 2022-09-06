@@ -35,7 +35,7 @@ AND t._inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND _inserted_timestamp :: DATE >= '2022-01-08' -- no ME V2 contract before this date
+    AND e.block_timestamp :: DATE >= '2022-01-08' -- no ME V2 contract before this date
 {% endif %}
 GROUP BY
     1,

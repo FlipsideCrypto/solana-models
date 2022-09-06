@@ -27,7 +27,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND _inserted_timestamp :: DATE >= '2022-01-14' -- no saber votes before this date
+    AND block_timestamp :: DATE >= '2022-01-14' -- no saber votes before this date
 {% endif %}
 ),
 tx_logs AS (
@@ -71,7 +71,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND _inserted_timestamp :: DATE >= '2022-01-14' -- no saber votes before this date
+    AND t.block_timestamp :: DATE >= '2022-01-14' -- no saber votes before this date
 {% endif %}
 )
 SELECT

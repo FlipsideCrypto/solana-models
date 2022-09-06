@@ -21,7 +21,8 @@ WITH saber_dex_txs AS (
         t
         ON t.tx_id = e.tx_id
     WHERE
-        program_id = 'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t'
+        t.block_timestamp :: date >= '2021-06-01'
+        AND program_id = 'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t'
 
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
@@ -71,6 +72,9 @@ WHERE
         FROM
             {{ this }}
     )
+{% else %}
+WHERE 
+    b.block_timestamp :: date >= '2021-06-01'
 {% endif %}
 ),
 destinations AS (
@@ -99,7 +103,8 @@ destinations AS (
         ON t.tx_id = e.tx_id
         LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
     WHERE
-        destination IS NOT NULL
+        e.block_timestamp :: date >= '2021-06-01'
+        AND destination IS NOT NULL
         AND e.program_id = 'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t'
 
 {% if is_incremental() %}
