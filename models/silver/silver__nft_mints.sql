@@ -5,111 +5,104 @@
     cluster_by = ['block_timestamp::DATE'],
 ) }}
 
-WITH b AS (
+WITH base_mint_actions AS (
 
     SELECT
-        tx_id
+        *
     FROM
-        {{ ref('silver__events') }}
-        e
+        {{ ref('silver__mint_actions') }}
+    {% if is_incremental() %}
+    WHERE
+        _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp)
+            FROM
+                {{ this }}
+        )
+    {% endif %}
+),
+base_mint_price AS (
+    SELECT
+        *
+    FROM
+        {{ ref('silver__nft_mint_price') }}
+    {% if is_incremental() %}
+    WHERE
+        _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp)
+            FROM
+                {{ this }}
+        )
+    {% endif %}
+),
+initialization AS (
+    SELECT
+        *
+    FROM
+        base_mint_actions
     WHERE
         event_type IN (
-            'mintTo',
-            'initializeMint'
+            'initializeMint',
+            'initializeMint2'
         )
         AND succeeded
-
-{% if is_incremental() %}
-AND e._inserted_timestamp >= (
+),
+first_mint AS (
     SELECT
-        MAX(_inserted_timestamp)
+        *
     FROM
-        {{ this }}
-)
-{% endif %}
-EXCEPT
-SELECT
-    tx_id
-FROM
-    {{ ref('silver__nft_mints_tmp') }}
-    m
-
-{% if is_incremental() %}
-WHERE m._inserted_timestamp >= (
+        base_mint_actions
+    WHERE
+        event_type NOT IN (
+            'initializeMint',
+            'initializeMint2'
+        )
+        AND succeeded qualify(ROW_NUMBER() over (PARTITION BY mint
+    ORDER BY
+        block_timestamp)) = 1
+),
+pre_final AS (
     SELECT
-        MAX(_inserted_timestamp)
+        i.block_id,
+        i.block_timestamp,
+        i.tx_id,
+        i.succeeded,
+        i.mint,
+        i.decimal,
+        f.mint_amount
     FROM
-        {{ this }}
-)
-{% endif %}
-)
-SELECT
-    block_timestamp,
-    block_id,
-    tx_id,
-    succeeded,
-    program_id,
-    purchaser,
-    mint_currency,
-    mint,
-    mint_price,
-    ingested_at,
-    _inserted_timestamp
-FROM
-    {{ ref('silver__nft_mints_tmp') }}
-    e
-{% if is_incremental() %}
-WHERE e._inserted_timestamp >= (
+        initialization i
+        LEFT OUTER JOIN first_mint f
+        ON i.mint = f.mint
+),
+b AS (
     SELECT
-        MAX(_inserted_timestamp)
+        *,
+        CASE
+            WHEN DECIMAL = 0
+            AND mint_amount = 1 THEN 'nft'
+            WHEN DECIMAL <> 0
+            OR mint_amount > 1 THEN 'token'
+            ELSE 'unknown'
+        END AS mint_type
     FROM
-        {{ this }}
+        pre_final
 )
-{% endif %}
-UNION
 SELECT
-    e.block_timestamp,
-    e.block_id,
-    e.tx_id,
-    e.succeeded,
-    e.program_id,
-    COALESCE(
-        instruction :parsed :info :mintAuthority :: STRING,
-        instruction :parsed :info :multisigMintAuthority :: STRING
-    ) AS purchaser,
-    NULL AS mint_currency,
-    instruction :parsed :info :mint :: STRING AS mint,
-    NULL AS mint_price,
-    e.ingested_at,
-    e._inserted_timestamp
+    b.block_id,
+    b.block_timestamp,
+    b.succeeded,
+    b.tx_id,
+    b.mint,
+    mp.payer,
+    mp.mint_price
 FROM
-    {{ ref('silver__events') }}
-    e
-    INNER JOIN b
-    ON b.tx_id = e.tx_id
+    b
+    LEFT OUTER JOIN base_mint_price mp
+    ON b.mint = mp.mint
 WHERE
-    event_type IN (
-        'mintTo',
-        'initializeMint'
+    b.mint_type IN (
+        'nft',
+        'unknown'
     )
-
-{% if is_incremental() %}
-AND e._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-{% endif %}
-GROUP BY
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10,
-    11
