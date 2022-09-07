@@ -34,6 +34,8 @@ AND t._inserted_timestamp >= (
     FROM
         {{ this }}
 )
+{% else %}
+    AND e.block_timestamp :: DATE >= '2022-01-08' -- no ME V2 contract before this date
 {% endif %}
 GROUP BY
     1,
@@ -101,6 +103,8 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+{% else %}
+    AND e.block_timestamp :: DATE >= '2022-01-08' -- no ME V2 contract before this date
 {% endif %}
 ),
 sellers AS (
@@ -127,6 +131,8 @@ sellers AS (
 
 {% if is_incremental() %}
 AND ingested_at :: DATE >= CURRENT_DATE - 2
+{% else %}
+    AND e.block_timestamp:: DATE >= '2022-01-08' -- no ME V2 contract before this date
 {% endif %}
 
 ),
@@ -158,6 +164,8 @@ WHERE
         FROM
             {{ this }}
     )
+{% else %}
+    WHERE block_timestamp :: DATE >= '2022-01-08' -- no ME V2 contract before this date
 {% endif %}
 )
 SELECT

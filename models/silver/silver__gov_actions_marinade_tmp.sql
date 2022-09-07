@@ -25,7 +25,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND _inserted_timestamp :: DATE >= '2022-04-01' -- no marinade gov before this date
+    AND block_timestamp :: DATE >= '2022-04-01' -- no marinade gov before this date
 {% endif %}
 UNION
 SELECT
@@ -46,7 +46,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND _inserted_timestamp :: DATE >= '2022-04-01' -- no marinade gov before this date
+    AND block_timestamp :: DATE >= '2022-04-01' -- no marinade gov before this date
 {% endif %}
 ),
 marinade_lock_txs AS (
@@ -73,7 +73,7 @@ AND e._inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND e._inserted_timestamp :: DATE >= '2022-04-01'
+    AND e.block_timestamp :: DATE >= '2022-04-01'
 {% endif %}
 EXCEPT
 SELECT
@@ -105,7 +105,7 @@ AND e._inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND e._inserted_timestamp :: DATE >= '2022-04-01'
+    AND e.block_timestamp :: DATE >= '2022-04-01'
 {% endif %}
 ),
 b AS (
@@ -141,7 +141,7 @@ WHERE
     )
 {% else %}
 WHERE
-    t._inserted_timestamp :: DATE >= '2022-04-01'
+    t.block_timestamp :: DATE >= '2022-04-01'
 {% endif %}
 ),
 C AS (
@@ -267,7 +267,7 @@ AND e._inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND e._inserted_timestamp :: DATE >= '2022-04-01'
+    AND e.block_timestamp :: DATE >= '2022-04-01'
 {% endif %}
 )
 SELECT

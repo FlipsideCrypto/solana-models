@@ -104,6 +104,6 @@ WHERE
     )
 {% else %}
 WHERE
-    e._inserted_timestamp :: DATE >= '2022-04-01'
-    AND t._inserted_timestamp :: DATE >= '2022-04-01'
+    e.block_timestamp :: DATE >= '2022-04-01'
+    AND t.block_timestamp :: date >= '2022-04-01'
 {% endif %}

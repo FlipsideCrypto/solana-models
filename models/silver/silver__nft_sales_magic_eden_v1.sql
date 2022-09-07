@@ -34,7 +34,8 @@ WITH sales_inner_instructions AS (
     ON t.tx_id = e.tx_id
     LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
   WHERE
-    program_id = 'MEisE1HzehtrDpAAT8PnLHjpSSkRYakotTuJRPjTpo8' -- Magic Eden V1 Program ID
+    e.block_timestamp :: date >= '2021-09-07'
+    AND program_id = 'MEisE1HzehtrDpAAT8PnLHjpSSkRYakotTuJRPjTpo8' -- Magic Eden V1 Program ID
     AND ARRAY_SIZE(
       inner_instruction :instructions
     ) > 2
