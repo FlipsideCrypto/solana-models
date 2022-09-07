@@ -104,7 +104,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND _inserted_timestamp :: DATE >= '2022-01-08' -- no ME V2 contract before this date
+    AND e.block_timestamp :: DATE >= '2022-01-08' -- no ME V2 contract before this date
 {% endif %}
 ),
 sellers AS (
@@ -132,7 +132,7 @@ sellers AS (
 {% if is_incremental() %}
 AND ingested_at :: DATE >= CURRENT_DATE - 2
 {% else %}
-    AND _inserted_timestamp :: DATE >= '2022-01-08' -- no ME V2 contract before this date
+    AND e.block_timestamp:: DATE >= '2022-01-08' -- no ME V2 contract before this date
 {% endif %}
 
 ),

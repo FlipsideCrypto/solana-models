@@ -70,7 +70,7 @@ WHERE
             {{ this }}
     )
 {% else %}
-    WHERE _inserted_timestamp :: DATE >= '2022-04-03' -- no Opensea sales before this date
+    WHERE block_timestamp :: DATE >= '2022-04-03' -- no Opensea sales before this date
 {% endif %}
 ),
 pre_final AS (

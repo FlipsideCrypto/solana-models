@@ -105,4 +105,5 @@ WHERE
 {% else %}
 WHERE
     e.block_timestamp :: DATE >= '2022-04-01'
+    AND t.block_timestamp :: date >= '2022-04-01'
 {% endif %}
