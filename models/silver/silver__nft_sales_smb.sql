@@ -22,7 +22,9 @@ WITH base_table AS (
     INNER JOIN {{ ref('silver__transactions') }} t
     ON t.tx_id = e.tx_id 
   
-    WHERE program_id = 'J7RagMKwSD5zJSbRQZU56ypHUtux8LRDkUpAPSKH4WPp' -- solana monke business marketplace
+    WHERE 
+        e.block_timestamp :: date >= '2022-08-17'
+        AND program_id = 'J7RagMKwSD5zJSbRQZU56ypHUtux8LRDkUpAPSKH4WPp' -- solana monke business marketplace
 
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (

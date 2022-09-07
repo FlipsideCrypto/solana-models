@@ -13,7 +13,8 @@ WITH yawww_txs AS (
         {{ ref('silver__events') }}
         e
     WHERE
-        program_id = '5SKmrbAxnHV2sgqyDXkGrLrokZYtWWVEEk5Soed7VLVN'
+        block_timestamp :: date >= '2022-07-12'
+        AND program_id = '5SKmrbAxnHV2sgqyDXkGrLrokZYtWWVEEk5Soed7VLVN'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

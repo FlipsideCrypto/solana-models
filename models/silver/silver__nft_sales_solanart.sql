@@ -31,7 +31,8 @@ WITH sales_inner_instructions AS (
         ON t.tx_id = e.tx_id
         LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
     WHERE
-        e.program_id = 'CJsLwbP1iu5DuUikHEJnLfANgKy6stB2uFgvBBHoyxwz' -- Solanart Program ID
+        e.block_timestamp :: date >= '2021-08-01'
+        AND e.program_id = 'CJsLwbP1iu5DuUikHEJnLfANgKy6stB2uFgvBBHoyxwz' -- Solanart Program ID
 
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
@@ -57,7 +58,8 @@ post_token_balances AS (
         {{ ref('silver___post_token_balances') }}
         p
     WHERE
-        amount <> 0 -- Removes random account transfers with no NFT
+        block_timestamp :: date >= '2021-08-01'
+        AND amount <> 0 -- Removes random account transfers with no NFT
 
 {% if is_incremental() %}
 AND p._inserted_timestamp >= (

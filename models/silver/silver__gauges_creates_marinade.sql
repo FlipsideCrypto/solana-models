@@ -19,7 +19,7 @@ WITH create_validator_gauge_events AS (
         {{ ref('silver__events') }}
     WHERE
         program_id = 'va12L6Z9fa5aGJ7gxtJuQZ928nySAk5UetjcGPve3Nu' -- validator gauge creation program id
-        AND _inserted_timestamp :: DATE >= '2022-05-17'
+        AND block_timestamp :: DATE >= '2022-05-17'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -59,7 +59,7 @@ b AS (
         ON t.tx_id = g.tx_id
         LEFT OUTER JOIN TABLE(FLATTEN(t.log_messages)) l
     WHERE
-        _inserted_timestamp :: DATE >= '2022-05-17'
+        t.block_timestamp :: DATE >= '2022-05-17'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
