@@ -31,7 +31,8 @@ WITH sales_inner_instructions AS (
     ON t.tx_id = e.tx_id
     LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
   WHERE
-    program_id = 'SPf5WqNywtPrRXSU5enq5z9bPPhREaSYf2LhN5fUxcj' -- Solport Program ID
+    e.block_timestamp :: date >= '2021-10-26'
+    AND program_id = 'SPf5WqNywtPrRXSU5enq5z9bPPhREaSYf2LhN5fUxcj' -- Solport Program ID
 
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
@@ -58,7 +59,8 @@ post_token_balances AS (
     {{ ref('silver___post_token_balances') }}
     p
   WHERE
-    amount > 0
+    block_timestamp :: date >= '2021-10-26'
+    AND amount > 0
 
 {% if is_incremental() %}
 AND p._inserted_timestamp >= (

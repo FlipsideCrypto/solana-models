@@ -30,7 +30,7 @@ AND e._inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND e._inserted_timestamp :: DATE >= '2022-04-01'
+    AND e.block_timestamp :: DATE >= '2022-04-01'
 {% endif %}
 INTERSECT
 SELECT
@@ -62,7 +62,7 @@ AND e._inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND e._inserted_timestamp :: DATE >= '2022-04-01'
+    AND e.block_timestamp :: DATE >= '2022-04-01'
 {% endif %}
 ),
 b AS (
@@ -98,7 +98,7 @@ WHERE
     )
 {% else %}
 WHERE
-    t._inserted_timestamp :: DATE >= '2022-04-01'
+    t.block_timestamp :: DATE >= '2022-04-01'
 {% endif %}
 ),
 C AS (
@@ -164,5 +164,5 @@ AND e._inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND e._inserted_timestamp :: DATE >= '2022-04-01'
+    AND e.block_timestamp :: DATE >= '2022-04-01'
 {% endif %}

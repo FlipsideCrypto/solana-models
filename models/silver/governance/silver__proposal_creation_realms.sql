@@ -36,7 +36,8 @@ prop_txs AS (
     ON e.program_id = v.address
     
     WHERE 
-        instruction :data :: STRING <> 'Q'
+        block_timestamp :: date >= '2022-04-28'
+        AND instruction :data :: STRING <> 'Q'
 
     {% if is_incremental() %}
     AND _inserted_timestamp >= (
@@ -83,6 +84,9 @@ b AS (
             FROM
                 {{ this }}
         )
+        {% else %}
+        WHERE 
+            t.block_timestamp :: date >= '2022-04-28'
         {% endif %}
 ),
 C AS (
