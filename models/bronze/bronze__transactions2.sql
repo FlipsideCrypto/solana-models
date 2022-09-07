@@ -15,4 +15,7 @@ SELECT
         0
     ) as _inserted_timestamp
 FROM 
-    solana.bronze.block_txs_api
+    {{ source(
+        'solana_external', 
+        'block_txs_api'
+    )}}

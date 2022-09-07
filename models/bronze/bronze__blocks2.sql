@@ -14,4 +14,7 @@ SELECT
         0
     ) as _inserted_timestamp
 FROM 
-    solana.bronze.blocks_api
+    {{ source(
+        'solana_external', 
+        'blocks_api'
+    )}}

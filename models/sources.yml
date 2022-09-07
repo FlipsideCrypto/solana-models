@@ -22,12 +22,6 @@ sources:
     schema: bronze
     tables: 
       - name: prod_nft_metadata_uploads_1828572827
-  - name: bronze_prod
-    database: solana
-    schema: bronze
-    tables: 
-      - name: blocks_api
-      - name: block_txs_api
   - name: solana_external
     schema: bronze
     loader: S3
