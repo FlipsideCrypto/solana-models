@@ -165,7 +165,7 @@ WHERE
             {{ this }}
     )
 {% else %}
-    WHERE _inserted_timestamp :: DATE >= '2022-01-08' -- no ME V2 contract before this date
+    WHERE block_timestamp :: DATE >= '2022-01-08' -- no ME V2 contract before this date
 {% endif %}
 )
 SELECT
