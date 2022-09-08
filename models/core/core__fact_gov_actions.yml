@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: core__fact_gov_actions
+    description: All governance votes for Realms spaces and Marinade / Saber votes hosted on Tribeca. 
     columns:
       - name: PROGRAM_NAME
         description: "name of solana program"

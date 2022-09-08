@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: core__fact_transactions
+    description: A table that contains high level information about every transaction on the Solana blockchain. 
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

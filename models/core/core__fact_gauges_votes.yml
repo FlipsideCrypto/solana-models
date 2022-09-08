@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: core__fact_gauges_votes
+    description: All gauge votes on Solana for Marinade and Saber. Gauges allow voting escrows to allocate the rewards of a set of liquidity mining pools. 
     columns:
       - name: PROGRAM_NAME
         description: "name of solana program"

@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: core__fact_blocks
+    description: Contains general information about each block produced on Solana. 
     columns:
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"

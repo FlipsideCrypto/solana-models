@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__fact_swaps
-    description: Records with swaps on specific apps
+    description: Records with swaps on Jupiter, Orca, Raydium, and Saber. 
     columns:
       - name: SWAP_PROGRAM
         description: name of decentralized exchange used to perform the swap

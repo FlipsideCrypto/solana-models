@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: core__dim_labels
+    description: A hand curated table containing address names / labels for popular contracts, protocols, apps, nft projects, etc. 
     columns:
       - name: BLOCKCHAIN
         description: The name of the blockchain
