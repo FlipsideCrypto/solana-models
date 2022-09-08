@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: core__fact_events
+    description: Contains each event that occurs on Solana. A transaction can consist of more than one event. 
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

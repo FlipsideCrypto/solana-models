@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: core__fact_votes_agg_block
+    description: An aggregate table containing the number of automatic validator voting transactions that occurred during a block. 
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

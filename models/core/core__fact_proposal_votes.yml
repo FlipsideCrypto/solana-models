@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: core__fact_proposal_votes
+    description: All governance votes for Realms spaces and Marinade / Saber votes hosted on Tribeca. 
     columns:
       - name: GOVERNANCE_PLATFORM
         description: "platform used for governance space"
