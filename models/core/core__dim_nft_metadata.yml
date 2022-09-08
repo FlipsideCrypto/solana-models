@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: core__dim_nft_metadata
+    description: Contains NFT metadata for some collections. This table is sourced from the Magic Eden API. 
     columns:
       - name: BLOCKCHAIN
         description: "{{ doc('blockchain') }}"

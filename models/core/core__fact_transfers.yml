@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: core__fact_transfers
+    description: Contains transfer events for Solana and spl-tokens. 
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
