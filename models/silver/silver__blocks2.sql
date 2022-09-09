@@ -12,6 +12,7 @@ WITH next_date_to_load AS (
     MIN(_inserted_date) as load_date
   FROM
     {{ ref('bronze__blocks2') }}
+  {% if is_incremental() %}
   WHERE
     _inserted_timestamp > (
       SELECT
@@ -19,6 +20,7 @@ WITH next_date_to_load AS (
       FROM
         {{ this }}
     )
+  {% endif %}
 ),
 pre_final AS (
   SELECT
