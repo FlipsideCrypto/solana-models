@@ -9,6 +9,7 @@ with base as (
         program_id,
         payer,
         mint,
+        mint_currency,
         mint_price,
         _inserted_timestamp,
         1 as ranking
@@ -21,6 +22,7 @@ with base as (
         program_id,
         payer,
         mint,
+        mint_currency,
         mint_price,
         _inserted_timestamp,
         2 as ranking
@@ -35,6 +37,7 @@ with base as (
         program_id,
         payer,
         mint,
+        mint_currency,
         mint_price,
         _inserted_timestamp,
         99 as ranking
@@ -46,4 +49,4 @@ with base as (
 select 
     *
 from base 
-qualify(row_number() over (partition by mint order by ranking)) = 1
+qualify(row_number() over (partition by mint, mint_currency order by ranking)) = 1

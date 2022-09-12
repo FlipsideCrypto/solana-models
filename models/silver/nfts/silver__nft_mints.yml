@@ -7,6 +7,19 @@ models:
             - TX_ID
             - MINT
             - MINT_CURRENCY
+      - compare_model_subset:
+          name: silver__nft_mints_business_logic_test
+          compare_model: ref('testing__nft_mints')
+          compare_columns: 
+            - mint
+            - mint_currency
+            - round(mint_price,8)
+          model_condition: "where mint in ('zsFUFcetxjLCeUaNjsQE57b3c3awU79sVeTZQrsoSq6','8XQqL7wwKrGftLaSnd8Km9WnA6bwT1B1w2NXrxQfxU6t',
+            '8miSwDxQNV9W7LHPRzXEMXwk4oYHU29fxFi5LAaS3Zoo','CArsPMgQyevzmE4SYDjVaeWvoNwEMsE4cwbCyXrPGtE5','YcDLuwoqB8yWcfnwNDrjoSo4iuVmTCz27ZXsh6w12mo',
+            '6HBSxEKHJzS19aKhFhzWeYRM9QezKk1QGKug3QLFw8AU','3ry2VrRvehb6Z7roeXaAzzQuqheeM2wyWHTmgMUtZZSk','FUHUjD4z1YDDRGqZAL4n89HsuDEFhVLcoz47LJirCnBm',
+            'FaC8SaDj6crwZA5JyucbKuTDbbTLbCSVpGbLVSXxaxJ4','BxGPRSEzHwEzX73Ep67a9u5xFc2BSuXSrAevqNMkzN8Z','HrbK1X3ooR2fBujtDSWeKQtbj1fUtptrEb7mWvsxeQQk',
+            'CmejwsHB1hcQPbY7y4EjYD5gxWJEXn9G4PkXLpLoTus1','JBzLjej5DEtVupwVtn6y1mnG4HFEkm5PVxQYFNYMJzhc','J5EFUxYPxAyx5oCUUgmCrESHjhmXuzrYsscoxRvVW5Vz'
+            )"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

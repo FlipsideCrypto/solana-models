@@ -93,9 +93,10 @@ SELECT
     b.block_id,
     b.block_timestamp,
     b.succeeded,
-    b.tx_id,
-    b.mint,
+    b.tx_id as initialization_tx_id,
     mp.payer,
+    b.mint,
+    mp.mint_currency,
     mp.mint_price
 FROM
     b
