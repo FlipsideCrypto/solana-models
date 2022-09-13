@@ -53,9 +53,6 @@ models:
         description: Slots being voted on
       - name: _PARTITION_ID
         description: Value representing a single pipeline execution batch
-        tests:
-          - not_null:
-              name: votes2_partition_id_not_null
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
