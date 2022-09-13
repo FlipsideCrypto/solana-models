@@ -38,7 +38,7 @@ WITH pre_final AS (
         COALESCE(
             t.data :transaction :message :instructions [0] :programId :: STRING,
             ''
-        ) = 'Vote111111111111111111111111111111111111111' -- equal
+        ) = 'Vote111111111111111111111111111111111111111'
     {% if is_incremental() %}
     AND 
         _partition_id >= (
