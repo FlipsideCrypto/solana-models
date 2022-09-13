@@ -20,8 +20,6 @@ WITH pre_final AS (
             ELSE FALSE
         END AS succeeded,
         t.data :transaction :message :accountKeys :: ARRAY AS account_keys,
-        t.data :transaction :message :instructions :: ARRAY AS instructions,
-        t.data :meta :innerInstructions :: ARRAY AS inner_instructions,
         t.data :transaction :message :instructions [0] :parsed :info :voteAccount :: STRING AS vote_account,
         t.data :transaction :message :instructions [0] :parsed :info :voteAuthority :: STRING AS vote_authority,
         t.data :transaction :message :instructions [0] :parsed :info :vote :hash :: STRING AS vote_hash,
