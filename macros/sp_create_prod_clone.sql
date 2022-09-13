@@ -33,7 +33,7 @@ $$
             snowflake.execute({sqlText: `GRANT OWNERSHIP ON TABLE ${DESTINATION_DB_NAME}.${schema}.${table_name} TO ROLE ${ROLE_NAME} COPY CURRENT GRANTS;`});
         }
 
-        var existing_functions = snowflake.execute({sqlText: `SELECT function_schema, function_name, concat('(',array_to_string(regexp_substr_all(argument_signature, 'VARCHAR|NUMBER|FLOAT|ARRAY|VARIANT|OBJECT|DOUBLE'),','),')') as argument_signature
+        var existing_functions = snowflake.execute({sqlText: `SELECT function_schema, function_name, concat('(',array_to_string(regexp_substr_all(argument_signature, 'VARCHAR|NUMBER|FLOAT|ARRAY|VARIANT|OBJECT|DOUBLE|BOOLEAN'),','),')') as argument_signature
             FROM ${DESTINATION_DB_NAME}.INFORMATION_SCHEMA.FUNCTIONS;`});
 
         while (existing_functions.next()) {
@@ -43,7 +43,7 @@ $$
             snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUNCTION ${DESTINATION_DB_NAME}.${schema}.${function_name}${argument_signature} to role ${ROLE_NAME} REVOKE CURRENT GRANTS;`});
         }
 
-        var existing_procedures = snowflake.execute({sqlText: `SELECT procedure_schema, procedure_name, concat('(',array_to_string(regexp_substr_all(argument_signature, 'VARCHAR|NUMBER|FLOAT|ARRAY|VARIANT|OBJECT|DOUBLE'),','),')') as argument_signature
+        var existing_procedures = snowflake.execute({sqlText: `SELECT procedure_schema, procedure_name, concat('(',array_to_string(regexp_substr_all(argument_signature, 'VARCHAR|NUMBER|FLOAT|ARRAY|VARIANT|OBJECT|DOUBLE|BOOLEAN'),','),')') as argument_signature
             FROM ${DESTINATION_DB_NAME}.INFORMATION_SCHEMA.PROCEDURES;`});
 
         while (existing_procedures.next()) {
