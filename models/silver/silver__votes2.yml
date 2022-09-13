@@ -1,0 +1,57 @@
+version: 2
+models:
+  - name: silver__votes2
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: RECENT_BLOCK_HASH
+        description: Previous block's hash value
+        tests:
+          - not_null
+      - name: SIGNERS
+        description: List of accounts that signed the transaction
+      - name: FEE
+        description: Transaction fee (in lamports)
+        tests: 
+          - null_threshold:
+              threshold_percent: 0.99 # some older transactions have valid null fees
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: ACCOUNT_KEYS
+        description: List of accounts that are referenced by pre/post sol/token balances objects
+        tests: 
+          - not_null
+      - name: VOTE_ACCOUNT
+        description: Account belonging to the voting delegator
+        tests: 
+          - not_null
+      - name: VOTE_AUTHORITY
+        description: Authority for the voting delegator
+        tests: 
+          - not_null: 
+              enabled: false # Vote authority not always available
+      - name: VOTE_HASH
+        description: Unique hash representing this set of votes(?)
+      - name: VOTE_SLOTS
+        description: Slots being voted on
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
