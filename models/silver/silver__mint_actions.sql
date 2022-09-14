@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "CONCAT_WS('-', tx_id, event_type, mint)",
+    unique_key = "CONCAT_WS('-', tx_id, index, inner_index, event_type, mint)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
 ) }}
@@ -27,6 +27,8 @@ SELECT
     block_timestamp,
     tx_id,
     succeeded,
+    index,
+    null as inner_index,
     event_type,
     instruction :parsed :info :mint :: STRING AS mint,
     instruction :parsed :info :decimals :: INTEGER AS DECIMAL,
@@ -50,6 +52,8 @@ SELECT
     block_timestamp,
     tx_id,
     succeeded,
+    e.index,
+    i.index as inner_index,
     i.value :parsed :type :: STRING AS event_type,
     i.value :parsed :info :mint :: STRING AS mint,
     i.value :parsed :info :decimals :: INTEGER AS DECIMAL,
@@ -59,7 +63,7 @@ SELECT
     ) AS mint_amount,
     _inserted_timestamp
 FROM
-    base_events,
+    base_events e,
     TABLE(FLATTEN(inner_instruction :instructions)) i
 WHERE
     i.value :parsed :type :: STRING IN (

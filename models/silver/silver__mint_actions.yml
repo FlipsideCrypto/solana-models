@@ -6,6 +6,8 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
+            - INDEX
+            - INNER_INDEX
             - EVENT_TYPE
             - MINT
     columns:
@@ -26,6 +28,14 @@ models:
           - not_null
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - not_null
+      - name: INDEX
+        description: "{{ doc('event_index') }}"
+        tests:
+          - not_null
+      - name: INNER_INDEX
+        description: Location of the inner instruction within an instruction
         tests:
           - not_null
       - name: EVENT_TYPE 
