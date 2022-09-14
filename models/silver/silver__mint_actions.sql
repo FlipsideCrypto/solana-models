@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "CONCAT_WS('-', tx_id, index, inner_index, event_type, mint)",
+    unique_key = "CONCAT_WS('-', tx_id, event_type, mint)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
 ) }}
