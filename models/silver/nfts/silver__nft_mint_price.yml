@@ -1,55 +1,48 @@
 version: 2
 models:
-  - name: silver__nft_mints_tmp
+  - name: silver__nft_mint_price
+    description: intermediary model for getting an nft's mint price
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - TX_ID
             - MINT
+            - PAYER
             - MINT_CURRENCY
     columns:
       - name: BLOCK_TIMESTAMP
-        description: "{{ doc('block_timestamp') }}"
+        description: "block timestamp of the latest transaction with a mint price"
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 3
-      - name: BLOCK_ID
-        description: "{{ doc('block_id') }}"
+      - name: TX_IDS
+        description: "set of transaction ids that has an associated mint price"
         tests:
           - not_null
-      - name: TX_ID
-        description: "{{ doc('tx_id') }}"
-        tests:
-          - not_null
-      - name: SUCCEEDED
-        description: "{{ doc('tx_succeeded') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
-      - name: PROGRAM_ID 
-        description: "{{ doc('program_id') }}"
+      - name: MINT
+        description: "{{ doc('mint') }}"
         tests: 
           - not_null
-      - name: PURCHASER
-        description: "{{ doc('purchaser') }}"
+      - name: PAYER 
+        description: "{{ doc('mint_payer') }}"
         tests: 
-          - not_null
+          - not_null:
+              where: mint_price is not null
       - name: MINT_CURRENCY
         description: "{{ doc('mint_currency') }}"
         tests: 
-          - not_null
-      - name: MINT 
-        description: "{{ doc('mint') }}"
+          - not_null:
+              where: mint_price is not null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
         tests: 
           - not_null
       - name: MINT_PRICE
         description: "{{ doc('mint_price') }}"
-        tests: 
-          - not_null
-      - name: INGESTED_AT
-        description: " {{ doc('ingested_at') }} "
-        tests: 
+      - name: RANKING
+        description: ranking order for which model to take mint price from first
+        tests:
           - not_null
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
