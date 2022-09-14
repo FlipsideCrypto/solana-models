@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "CONCAT_WS('-', tx_id, mint, mint_currency)",
+    unique_key = "CONCAT_WS('-', initialization_tx_id, mint, purchaser, mint_currency)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
 ) }}
@@ -70,7 +70,8 @@ pre_final AS (
         i.succeeded,
         i.mint,
         i.decimal,
-        f.mint_amount
+        f.mint_amount,
+        i._inserted_timestamp
     FROM
         initialization i
         LEFT OUTER JOIN first_mint f
@@ -94,10 +95,12 @@ SELECT
     b.block_timestamp,
     b.succeeded,
     b.tx_id as initialization_tx_id,
-    mp.payer,
+    mp.program_id,
+    mp.payer as purchaser,
     b.mint,
     mp.mint_currency,
-    mp.mint_price
+    mp.mint_price,
+    b._inserted_timestamp
 FROM
     b
     LEFT OUTER JOIN base_mint_price mp
