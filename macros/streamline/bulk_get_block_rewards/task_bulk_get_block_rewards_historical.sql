@@ -14,8 +14,7 @@ BEGIN
             SELECT
                 block_id,
                 _partition_id
-            FROM
-                bronze.block_rewards_api AS s
+            FROM streamline.{{ target.database }}.block_rewards_api AS s
             WHERE
                 s.block_id IS NOT NULL
                 AND s._partition_id > (
@@ -53,10 +52,16 @@ END;'
 {% endset %}
 {% do run_query(sql) %}
 
-{% if target.database == 'SOLANA' %}
-    {% set sql %}
-    alter task streamline.bulk_get_block_rewards_historical resume;
-    {% endset %}
-    {% do run_query(sql) %}
-{% endif %}
+/* no backfills atm so we can suspend in prod also */
+{% set sql %}
+    alter task streamline.bulk_get_block_rewards_historical suspend;
+{% endset %}
+{% do run_query(sql) %}
+
+-- {% if target.database == 'SOLANA' %}
+--     {% set sql %}
+--     alter task streamline.bulk_get_block_rewards_historical resume;
+--     {% endset %}
+--     {% do run_query(sql) %}
+-- {% endif %}
 {% endmacro %}

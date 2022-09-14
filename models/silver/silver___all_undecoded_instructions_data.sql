@@ -46,7 +46,7 @@ SELECT
 FROM
     possible_undecoded_instructions p
     LEFT OUTER JOIN {{ source(
-        'solana_external',
+        'bronze_streamline',
         'decoded_instructions_data_api'
     ) }}
     d

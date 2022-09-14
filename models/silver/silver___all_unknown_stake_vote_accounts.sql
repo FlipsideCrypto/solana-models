@@ -23,7 +23,7 @@ validator_keys as (
         VALUE :nodePubkey :: STRING AS node_pubkey
     FROM
         {{ source(
-            'solana_external',
+            'bronze_streamline',
             'validator_metadata_api'
         ) }}
 )
@@ -40,6 +40,6 @@ SELECT
     account
 FROM
     {{ source(
-        'solana_external',
+        'bronze_streamline',
         'stake_account_tx_ids_api'
     ) }}
