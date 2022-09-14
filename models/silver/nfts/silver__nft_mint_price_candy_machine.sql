@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "CONCAT_WS('-', mint, mint_currency)",
+    unique_key = "CONCAT_WS('-', mint, payer, mint_currency)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
 ) }}
@@ -90,6 +90,8 @@ SELECT
     max(_inserted_timestamp) as _inserted_timestamp
 FROM
     pre_final p
+WHERE 
+    p.mint not in ('Sysvar1nstructions1111111111111111111111111','SysvarRent111111111111111111111111111111111') -- not mint events
 GROUP BY 
     1, 
     2, 

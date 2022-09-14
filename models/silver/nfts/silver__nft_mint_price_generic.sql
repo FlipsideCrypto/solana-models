@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "CONCAT_WS('-', mint, mint_currency)",
+    unique_key = "CONCAT_WS('-', mint, payer, mint_currency)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
 ) }}
@@ -116,13 +116,14 @@ mint_price_events AS (
         me.tx_id,
         me.index,
         i.index as inner_index,
-        me.program_id,
+        'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s' as program_id,
         CASE
             WHEN num_accounts in (14,17) THEN me.accounts [3] :: STRING
             ELSE me.accounts [1] :: STRING
         END AS mint,
         CASE
             WHEN num_accounts in (14,17) THEN me.accounts [6] :: STRING
+            WHEN num_accounts = 9 THEN me.accounts [4] :: STRING
             ELSE me.accounts [3] :: STRING
         END AS payer,
         COALESCE(

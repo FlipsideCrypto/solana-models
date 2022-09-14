@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "CONCAT_WS('-', mint, mint_currency)",
+    unique_key = "CONCAT_WS('-', mint, payer, mint_currency)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
 ) }}
@@ -184,43 +184,3 @@ GROUP BY
     3, 
     4, 
     5
-
--- SELECT
---     p.block_id,
---     p.block_timestamp,
---     p.tx_id,
---     p.succeeded,
---     p.program_id,
---     p.payer,
---     p.mint,
---     COALESCE(
---         m.mint_paid,
---         'So11111111111111111111111111111111111111111'
---     ) AS mint_currency,
---     p.mint_price / pow(10, COALESCE(m.decimal, 9)) AS mint_price,
---     _inserted_timestamp
--- FROM
---     hweq_fallback p
---     LEFT OUTER JOIN base_ptb m
---     ON p.tx_id = m.tx_id
---     AND p.payer = m.account
--- UNION
--- SELECT
---     p.block_id,
---     p.block_timestamp,
---     p.tx_id,
---     p.succeeded,
---     p.program_id,
---     p.payer,
---     p.mint,
---     COALESCE(
---         m.mint_paid,
---         'So11111111111111111111111111111111111111111'
---     ) AS mint_currency,
---     p.mint_price / pow(10, COALESCE(m.decimal, 9)) AS mint_price,
---     _inserted_timestamp
--- FROM
---     multi_mints_fallback p
---     LEFT OUTER JOIN base_ptb m
---     ON p.tx_id = m.tx_id
---     AND p.payer = m.account

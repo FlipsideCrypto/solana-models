@@ -49,4 +49,4 @@ with base as (
 select 
     *
 from base 
-qualify(row_number() over (partition by mint, mint_currency order by ranking)) = 1
+qualify(row_number() over (partition by mint, payer, mint_currency order by ranking)) = 1
