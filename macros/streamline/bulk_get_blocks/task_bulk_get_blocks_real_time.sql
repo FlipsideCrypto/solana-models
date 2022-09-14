@@ -62,7 +62,6 @@ BEGIN
         when not matched then 
             insert ("BLOCK_ID", "_INSERTED_DATE", "_INSERTED_TIMESTAMP")
             values ("BLOCK_ID", "_INSERTED_DATE", "_INSERTED_TIMESTAMP");
-    select streamline.udf_bulk_get_blocks(FALSE)
     select streamline.udf_bulk_get_blocks(TRUE)
     where exists (
         select 1

@@ -36,7 +36,6 @@ BEGIN
         when not matched then 
             insert ("BLOCK_ID", "_PARTITION_ID")
             values ("BLOCK_ID", "_PARTITION_ID");
-    select streamline.udf_bulk_get_block_txs(FALSE)
     select streamline.udf_bulk_get_block_txs(TRUE)
     where exists (
         select 1
