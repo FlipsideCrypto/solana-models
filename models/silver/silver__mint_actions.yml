@@ -36,8 +36,6 @@ models:
           - not_null
       - name: INNER_INDEX
         description: Location of the inner instruction within an instruction
-        tests:
-          - not_null
       - name: EVENT_TYPE 
         description: "{{ doc('event_type') }}"
         tests: 
