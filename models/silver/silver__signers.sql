@@ -24,12 +24,9 @@ all_txs AS (
         _inserted_timestamp
     FROM 
         {{ ref('silver__transactions') }}
-  
-    WHERE 
-        signers[0] :: STRING = '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H'
 
     {% if is_incremental() %}
-    AND _inserted_timestamp >= (
+    WHERE _inserted_timestamp >= (
         SELECT
             MAX(_inserted_timestamp)
         FROM
@@ -48,11 +45,9 @@ all_txs AS (
         _inserted_timestamp
     FROM 
         {{ ref('silver__transactions2') }}
-    WHERE 
-        signers[0] :: STRING = '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H'
-
+   
     {% if is_incremental() %}
-    AND _inserted_timestamp >= (
+    WHERE _inserted_timestamp >= (
         SELECT
             MAX(_inserted_timestamp)
         FROM
@@ -71,11 +66,10 @@ SELECT
     count(DISTINCT tx_id) AS total_txs, 
     count(DISTINCT program_id) AS programs_used, 
     sum(fee) AS total_fees
-FROM all_txs t
-
+FROM 
+    all_txs t
 WHERE 
-    signer = '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H'
-    AND program_id NOT IN (
+    program_id NOT IN (
         SELECT 
             address
         FROM programs
