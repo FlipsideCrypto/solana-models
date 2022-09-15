@@ -15,6 +15,6 @@ SELECT
     ) as _inserted_timestamp
 FROM 
     {{ source(
-        'solana_external', 
+        'bronze_streamline', 
         'blocks_api'
     )}}

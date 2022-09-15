@@ -1,7 +1,7 @@
 {% macro task_bulk_get_block_txs_historical() %}
 {% set sql %}
 execute immediate 'create or replace task streamline.bulk_get_block_txs_historical
-    warehouse = dbt_emergency
+    warehouse = dbt_cloud_solana
     allow_overlapping_execution = false
     schedule = \'USING CRON */20 * * * * UTC\'
 as
@@ -15,7 +15,7 @@ BEGIN
                 block_id,
                 _partition_id
             FROM
-                bronze.block_txs_api AS s
+                streamline.{{ target.database }}.block_txs_api AS s
             WHERE
                 s.block_id IS NOT NULL
             AND s._partition_id > (
@@ -52,10 +52,16 @@ END;'
 {% endset %}
 {% do run_query(sql) %}
 
-{% if target.database == 'SOLANA' %}
-    {% set sql %}
-    alter task streamline.bulk_get_block_txs_historical resume;
-    {% endset %}
-    {% do run_query(sql) %}
-{% endif %}
+/* no backfills atm so we can suspend in prod also */
+{% set sql %}
+    alter task streamline.bulk_get_block_txs_historical suspend;
+{% endset %}
+{% do run_query(sql) %}
+
+-- {% if target.database == 'SOLANA' %}
+--     {% set sql %}
+--     alter task streamline.bulk_get_block_txs_historical resume;
+--     {% endset %}
+--     {% do run_query(sql) %}
+-- {% endif %}
 {% endmacro %}

@@ -10,7 +10,7 @@ SELECT
     _partition_id
 FROM
     {{ source(
-        "solana_external",
+        "bronze_streamline",
         "block_rewards_api"
     ) }} AS s
 WHERE

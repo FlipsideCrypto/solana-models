@@ -17,7 +17,7 @@ $$
         for row_variable in c1 do
             path := row_variable.path;
         end for;
-        refresh_stmt := 'alter external table bronze.' || :external_table_name || ' refresh \'' || :PATH || '\'';
+        refresh_stmt := 'alter external table streamline.{{ target.database }}.' || :external_table_name || ' refresh \'' || :PATH || '\'';
         res := (execute immediate :refresh_stmt);
         return 'table refreshed with ' || :refresh_stmt;
     end;

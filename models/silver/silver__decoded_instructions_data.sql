@@ -17,7 +17,7 @@ SELECT
     ) AS _inserted_timestamp
 FROM
     {{ source(
-        'solana_external',
+        'bronze_streamline',
         'decoded_instructions_data_api'
     ) }}
 
