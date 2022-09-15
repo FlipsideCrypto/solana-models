@@ -52,16 +52,8 @@ END;'
 {% endset %}
 {% do run_query(sql) %}
 
-/* no backfills atm so we can suspend in prod also */
 {% set sql %}
     alter task streamline.bulk_get_block_rewards_historical suspend;
 {% endset %}
 {% do run_query(sql) %}
-
--- {% if target.database == 'SOLANA' %}
---     {% set sql %}
---     alter task streamline.bulk_get_block_rewards_historical resume;
---     {% endset %}
---     {% do run_query(sql) %}
--- {% endif %}
 {% endmacro %}
