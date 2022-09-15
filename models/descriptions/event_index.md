@@ -1,5 +1,5 @@
 {% docs event_index %}
 
-Location of the event within the instructions of a transaction
+Location of the instruction (event) within a transaction
 
 {% enddocs %}

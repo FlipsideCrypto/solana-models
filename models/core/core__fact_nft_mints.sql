@@ -5,7 +5,7 @@
 SELECT
     block_timestamp, 
     block_id, 
-    tx_id, 
+    initialization_tx_id as tx_id, 
     succeeded, 
     program_id,
     purchaser,  

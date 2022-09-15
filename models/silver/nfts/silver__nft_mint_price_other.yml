@@ -1,0 +1,48 @@
+version: 2
+models:
+  - name: silver__nft_mint_price_other
+    description: intermediary model for getting an nft's mint price
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - MINT
+            - PAYER
+            - MINT_CURRENCY
+          where: mint <> 'GqzH4GRCqqsNXAvx9FSK7n3pMqRCjnyns7pqe94yAV1M' # seems like a special token, actually minted twice?
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "block timestamp of the latest transaction with a mint price"
+        tests:
+          - not_null
+      - name: TX_IDS
+        description: "set of transaction ids that has an associated mint price"
+        tests:
+          - not_null
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        tests: 
+          - not_null
+      - name: PAYER 
+        description: "{{ doc('mint_payer') }}"
+        tests: 
+          - not_null:
+              where: mint_price is not null
+      - name: MINT_CURRENCY
+        description: "{{ doc('mint_currency') }}"
+        tests: 
+          - not_null:
+              where: mint_price is not null
+      - name: DECIMAL
+        description: "{{ doc('decimal') }}"
+        tests: 
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null
+      - name: MINT_PRICE
+        description: "{{ doc('mint_price') }}"
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
