@@ -78,6 +78,7 @@ WITH pre_final AS (
     from {{ this }} t
     inner join {{ ref('silver__blocks2') }} b on b.block_id = t.block_id
     where t.block_timestamp::date is null
+    and t.block_id > 39824213;
 )
 {% endif %}
 SELECT
