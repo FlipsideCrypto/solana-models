@@ -187,7 +187,7 @@ validators AS (
         VALUE :number :: INTEGER AS validator_rank
     FROM
         {{ source(
-            'solana_external',
+            'bronze_streamline',
             'validator_metadata_api'
         ) }}
 ),

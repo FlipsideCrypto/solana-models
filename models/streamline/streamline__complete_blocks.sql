@@ -13,7 +13,7 @@ WITH meta AS (
     FROM
         TABLE(
             information_schema.external_table_files(
-                table_name => '{{ source( "solana_external", "blocks_api") }}'
+                table_name => '{{ source( "bronze_streamline", "blocks_api") }}'
             )
         ) A
 {% if is_incremental() %}
@@ -31,7 +31,7 @@ SELECT
     m.registered_on as _inserted_timestamp
 FROM
     {{ source(
-        "solana_external",
+        "bronze_streamline",
         "blocks_api"
     ) }} AS s
     JOIN meta m

@@ -15,7 +15,7 @@ WITH instructs AS (
         i.value AS instruction
     FROM
         {{ source(
-            'solana_external',
+            'bronze_streamline',
             'txs_api'
         ) }},
         TABLE(
@@ -51,7 +51,7 @@ SELECT
     C.value AS instruction
 FROM
     {{ source(
-        'solana_external',
+        'bronze_streamline',
         'txs_api'
     ) }} A,
     TABLE(FLATTEN (DATA :result :meta :innerInstructions)) b,
@@ -102,7 +102,7 @@ tx_base AS (
         ) AS _inserted_timestamp
     FROM
         {{ source(
-            'solana_external',
+            'bronze_streamline',
             'txs_api'
         ) }}
         t
