@@ -7,9 +7,9 @@ WITH pre_final AS (
     SELECT
         SEQ8()+
         iff(
-            (select max(block_id)-300000 from {{ ref('streamline__complete_block_rewards') }}) < 148693779,
+            (select max(block_id)-1000000 from {{ ref('streamline__complete_block_rewards') }}) < 148693779,
             148693779,
-            (select max(block_id)-300000 from {{ ref('streamline__complete_block_rewards') }})) 
+            (select max(block_id)-1000000 from {{ ref('streamline__complete_block_rewards') }})) 
         as block_id
     FROM
         TABLE(GENERATOR(rowcount => 5000000))
