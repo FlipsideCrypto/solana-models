@@ -12,7 +12,7 @@ WITH base_candy_machine_events AS (
     FROM
         {{ ref('silver__events') }}
     WHERE 
-        program_id = 'cndy3Z4yapfJBmL3ShUp5exZKqR3z33thTzeNMm2gRZ'
+        program_id in ('cndy3Z4yapfJBmL3ShUp5exZKqR3z33thTzeNMm2gRZ','cndyAnrLdpjq1Ssp1z8xxDsB8dxe7u4HL5Nxi2K5WXZ')
     AND 
         succeeded
 
