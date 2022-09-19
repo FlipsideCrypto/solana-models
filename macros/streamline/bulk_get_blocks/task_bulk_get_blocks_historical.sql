@@ -6,7 +6,6 @@ execute immediate 'create or replace task streamline.bulk_get_blocks_historical
     schedule = \'USING CRON */15 * * * * UTC\'
 as
 BEGIN
-    alter external table streamline.{{ target.database }}.blocks_api refresh;
     create or replace temporary table streamline.complete_blocks__dbt_tmp as
     (
         select * 
