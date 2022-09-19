@@ -17,36 +17,26 @@ FROM
     {{ ref('silver__transactions2') }}
     t,
     TABLE(FLATTEN(instructions)) AS e
-WHERE
-    COALESCE(
-        e.value :programId :: STRING,
-        ''
-    ) NOT IN (
-        -- exclude Pyth Oracle programs
-        'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH',
-        'DtmE9D2CSB4L5D6A15mraeEjrGMm6auWVzgaD8hK2tZM'
-    )
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
     "false"
 ) == "true" %}
-AND
-    t.block_id between 140000000 and 144000000
-    -- t.block_id BETWEEN (
-    --     SELECT
-    --         COALESCE(MAX(block_id), 105368)+1
-    --     FROM
-    --         {{ this }}
-    --     )
-    --     AND (
-    --     SELECT
-    --         COALESCE(MAX(block_id), 105368)+8000000
-    --     FROM
-    --         {{ this }}
-    --     ) 
+WHERE
+    t.block_id BETWEEN (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 105368)+1,151386092)
+        FROM
+            {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 105368)+4000000,151386092)
+        FROM
+            {{ this }}
+        ) 
 {% elif is_incremental() %}
-AND
+WHERE
     _inserted_timestamp >= (
         SELECT
             MAX(_inserted_timestamp)
@@ -54,6 +44,6 @@ AND
             {{ this }}
     )
 {% else %}
-AND
+WHERE
     t.block_id between 105368 and 1000000
 {% endif %}

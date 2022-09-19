@@ -31,19 +31,19 @@ FROM
 WHERE
     t.block_timestamp :: DATE BETWEEN (
         SELECT
-            DATEADD(
+            LEAST(DATEADD(
                 'day',
                 1,
-                COALESCE(MAX(block_timestamp) :: DATE, '2021-01-30'))
+                COALESCE(MAX(block_timestamp) :: DATE, '2021-01-30')),'2022-09-19')
                 FROM
                     {{ this }}
         )
         AND (
         SELECT
-            DATEADD(
+            LEAST(DATEADD(
             'day',
             30,
-            COALESCE(MAX(block_timestamp) :: DATE, '2021-01-30'))
+            COALESCE(MAX(block_timestamp) :: DATE, '2021-01-30')),'2022-09-19')
             FROM
                 {{ this }}
         ) 
