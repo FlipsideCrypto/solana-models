@@ -25,13 +25,13 @@ FROM
 WHERE
     t.block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 39824111)+1,151386092)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 39824111)+4000000,151386092)
         FROM
             {{ this }}
         ) 
@@ -45,5 +45,5 @@ WHERE
     )
 {% else %}
 WHERE
-    t.block_id between 105368 and 1000000
+    t.block_id between 39824111 and 43824111
 {% endif %}
