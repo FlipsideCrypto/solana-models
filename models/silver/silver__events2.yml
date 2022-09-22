@@ -1,0 +1,48 @@
+version: 2
+models:
+  - name: silver__events2
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+            - TX_ID
+            - INDEX
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null:
+              where: block_id > 39824213 and _inserted_timestamp::date < current_date
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: INDEX
+        description: "{{ doc('event_index') }}"
+        tests:  
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+      - name: EVENT_TYPE
+        description: "{{ doc('event_type') }}"
+      - name: INSTRUCTION
+        description: An instruction specifies which program it is calling, which accounts it wants to read or modify, and additional data that serves as auxiliary input to the program
+        tests: 
+          - not_null
+      - name: INNER_INSTRUCTION
+        description: A call from one smart contract program to another. 
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
