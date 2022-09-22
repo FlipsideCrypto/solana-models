@@ -73,7 +73,10 @@ SELECT
     'MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey' AS mint,
     'UPDATE LOCK' AS action,
     (
-        e.instruction :parsed :info :tokenAmount :amount * pow(
+        COALESCE(
+            e.instruction :parsed :info :tokenAmount :amount,
+            e.instruction :parsed :info :amount
+        ) * pow(
             10,
             -9
         )
@@ -105,5 +108,5 @@ WHERE
 {% else %}
 WHERE
     e.block_timestamp :: DATE >= '2022-04-01'
-    AND t.block_timestamp :: date >= '2022-04-01'
+    AND t.block_timestamp :: DATE >= '2022-04-01'
 {% endif %}
