@@ -1,0 +1,63 @@
+version: 2
+models:
+  - name: silver__staking_lp_actions2
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+            - TX_ID
+            - INDEX
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: INDEX
+        description: Location of the event within the instructions of a transaction
+        tests:  
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests:
+          - not_null
+      - name: EVENT_TYPE
+        description: "{{ doc('event_type') }}"
+        tests: 
+          - not_null
+      - name: SIGNERS
+        description: List of accounts that signed the transaction
+      - name: ACCOUNT_KEYS
+        description: List of accounts that are referenced by pre/post sol/token balances objects
+      - name: INSTRUCTION
+        description: "{{ doc('instruction') }}"
+        tests: 
+          - not_null
+      - name: INNER_INSTRUCTION
+        description: "{{ doc('inner_instruction') }}"
+      - name: PRE_BALANCES
+        description: List of pre-transaction balances for different accounts
+      - name: POST_BALANCES
+        description: List of post-transaction balances for different accounts
+      - name: PRE_TOKEN_BALANCES
+        description: List of pre-transaction token balances for different token accounts
+      - name: POST_TOKEN_BALANCES
+        description: List of post-transaction token balances for different token accounts
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
