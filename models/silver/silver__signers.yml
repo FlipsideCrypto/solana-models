@@ -1,0 +1,46 @@
+version: 2
+models:
+  - name: silver__signers
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - signer
+            - b_date
+    columns:
+      - name: SIGNER
+        description: The address of the user that initiated the transaction
+        tests:
+          - not_null
+      - name: FIRST_TX_DATE
+        description: The first date that the wallet performed a transaction on.
+        tests: 
+          - not_null
+      - name: FIRST_PROGRAM_ID
+        description: The ID of the first program this signer interacted with, excluding chain admin programs.
+        tests: 
+          - not_null
+      - name: LAST_TX_DATE
+        description: The date of the most recent transaction the signer has performed.
+        tests: 
+          - not_null
+      - name: LAST_PROGRAM_ID
+        description: The ID of the last program this signer interacted with, excluding chain admin programs.
+        tests: 
+          - not_null
+      - name: NUM_DAYS_ACTIVE
+        description: A count of the total number of unique days that this signer has performed a transaction.
+        tests: 
+          - not_null
+      - name: NUM_TXS
+        description: The total number of distinct transactions initiated by this signer. 
+        tests: 
+          - not_null
+      - name: TOTAL_FEES
+        description: The total amount of fees (in lamports) that the signer has paid on a given day.
+        tests: 
+          - not_null
+      - name: PROGRAMS_USED
+        description: An array containing all program IDs a user interacted with on a given day.
+        tests: 
+          - not_null
+          

@@ -5,12 +5,35 @@
   cluster_by = 'signer'
 ) }}
 
-WITH base_min_signers AS (
+WITH 
+{% if is_incremental() %}
+max_date AS (
+
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) _inserted_timestamp
+    FROM
+        {{ this }}
+),
+{% endif %}
+
+base_min_signers AS (
     SELECT
         signer, 
         min(b_date) AS b_date
     FROM 
         {{ ref('silver__daily_signers') }}
+{% if is_incremental() %}
+    WHERE _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            )
+        FROM
+            max_date
+    )
+{% endif %}
     GROUP BY 
         signer
 ),
@@ -20,6 +43,16 @@ base_max_signers AS (
         max(b_date) as b_date
     FROM 
         {{ ref('silver__daily_signers') }}
+{% if is_incremental() %}
+    WHERE _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            )
+        FROM
+            max_date
+    )
+{% endif %}
     GROUP BY 
         signer
 ),
@@ -29,9 +62,20 @@ final_signers_agg AS (
         count(*) AS num_days_active, 
         sum(num_txs) AS num_txs,
         array_union_agg(unique_program_ids) AS programs_used,
-        sum(total_fees) AS total_fees
+        sum(total_fees) AS total_fees, 
+        max(_inserted_timestamp) AS _inserted_timestamp
     FROM
         {{ ref('silver__daily_signers') }}
+{% if is_incremental() %}
+    WHERE _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            )
+        FROM
+            max_date
+    )
+{% endif %}
     GROUP BY 
         signer
 ),
@@ -45,6 +89,17 @@ final_min_signers AS (
     INNER JOIN {{ ref('silver__daily_signers') }} sd 
     ON sd.signer = ms.signer
     AND sd.b_date = ms.b_date
+
+{% if is_incremental() %}
+    WHERE _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            )
+        FROM
+            max_date
+    )
+{% endif %}
 ),
 final_max_signers AS (
     SELECT 
@@ -52,9 +107,21 @@ final_max_signers AS (
         ms.b_date AS last_tx_date,
         sd.last_program_id
     FROM base_max_signers ms
-    INNER JOIN solana_dev.silver.signers_daily sd
+    
+    INNER JOIN {{ ref('silver__daily_signers') }} sd
     ON sd.signer = ms.signer 
     AND sd.b_date = ms.b_date
+
+{% if is_incremental() %}
+    WHERE _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            )
+        FROM
+            max_date
+    )
+{% endif %}
 )
 SELECT
     s_min.*,
@@ -63,11 +130,12 @@ SELECT
     s_agg.num_days_active, 
     s_agg.num_txs,
     s_agg.total_fees,
-    s_agg.programs_used
+    s_agg.programs_used, 
+    s_agg._inserted_timestamp
 FROM 
     final_min_signers s_min
 JOIN final_max_signers s_max
 ON s_max.signer = s_min.signer
 
 JOIN final_signers_agg s_agg
-ON s_agg.signer = s_min.signer;
+ON s_agg.signer = s_min.signer
