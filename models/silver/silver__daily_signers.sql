@@ -5,7 +5,23 @@
   cluster_by = 'signer'
 ) }}
 
-WITH b AS (
+WITH 
+{% if is_incremental() %}
+dates_changed AS (
+    SELECT
+        DISTINCT block_timestamp :: date AS block_timestamp_date
+    FROM
+        {{ ref('silver__transactions2') }}
+    WHERE _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM 
+            {{ this }}
+    )
+),
+{% endif %}
+
+b AS (
     SELECT 
         s.value::string AS signer, 
         block_timestamp::date AS b_date,
@@ -35,11 +51,11 @@ WITH b AS (
                 {{ this }}
             ) 
     {% elif is_incremental() %}
-        AND t._inserted_timestamp >= (
+        AND b_date IN (
             SELECT
-                MAX(_inserted_timestamp)
+                block_timestamp_date
             FROM
-                {{ this }}
+                dates_changed
         )
     {% endif %}
 ),
@@ -71,11 +87,11 @@ c AS (
                 {{ this }}
             ) 
     {% elif is_incremental() %}
-        AND _inserted_timestamp >= (
+        AND e.block_timestamp::date IN (
             SELECT
-                MAX(_inserted_timestamp)
+                block_timestamp_date
             FROM
-                {{ this }}
+                dates_changed
         )
     {% endif %}
 ),
