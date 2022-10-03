@@ -20,7 +20,6 @@ dates_changed AS (
     )
 ),
 {% endif %}
-
 b AS (
     SELECT 
         s.value::string AS signer, 
@@ -31,27 +30,25 @@ b AS (
     FROM 
         {{ ref('silver__transactions2') }} t,
     table(flatten(signers)) s
-    WHERE 
-        t.block_timestamp::date between '2022-08-01' AND '2022-08-10'
     {% if is_incremental() and env_var(
         'DBT_IS_BATCH_LOAD',
         "false"
     ) == "true" %}
-    AND
-        block_timestamp BETWEEN (
+    WHERE
+        block_id BETWEEN (
             SELECT
-                LEAST(COALESCE(MAX(block_timestamp), CURRENT_DATE-10)
+                LEAST(COALESCE(MAX(block_id), 105368)+1,151738154)
             FROM
                 {{ this }}
             )
             AND (
             SELECT
-                LEAST(COALESCE(MAX(block_timestamp), CURRENT_DATE-10)
+                LEAST(COALESCE(MAX(block_id), 105368)+9000000,151738154)
             FROM
                 {{ this }}
-            ) 
+        ) 
     {% elif is_incremental() %}
-        AND b_date IN (
+        WHERE b_date IN (
             SELECT
                 block_timestamp_date
             FROM
@@ -67,27 +64,25 @@ c AS (
         _inserted_timestamp
     FROM 
         {{ ref('silver__events2') }} e
-    WHERE 
-        e.block_timestamp::date between '2022-08-01' AND '2022-08-10'
     {% if is_incremental() and env_var(
         'DBT_IS_BATCH_LOAD',
         "false"
     ) == "true" %}
-    AND
-        e.block_timestamp BETWEEN (
+    WHERE
+        e.block_id BETWEEN (
             SELECT
-                LEAST(COALESCE(MAX(block_timestamp), CURRENT_DATE-10)
+                LEAST(COALESCE(MAX(block_id), 105368)+1,151738154)
             FROM
                 {{ this }}
             )
             AND (
             SELECT
-                LEAST(COALESCE(MAX(block_timestamp), CURRENT_DATE-10)
+                LEAST(COALESCE(MAX(block_id), 105368)+9000000,151738154)
             FROM
                 {{ this }}
-            ) 
+        ) 
     {% elif is_incremental() %}
-        AND e.block_timestamp::date IN (
+        WHERE e.block_timestamp::date IN (
             SELECT
                 block_timestamp_date
             FROM
