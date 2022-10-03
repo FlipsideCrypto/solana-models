@@ -20,6 +20,14 @@ dates_changed AS (
     )
 ),
 {% endif %}
+exclude AS (
+    SELECT
+        address
+    FROM 
+        {{ ref('core__dim_labels') }}
+    WHERE 
+        label_type = 'chadmin'
+),
 b AS (
     SELECT 
         s.value::string AS signer, 
@@ -95,9 +103,13 @@ base_programs AS (
         tx_id, 
         array_agg(program_id) within group (order by index) AS program_ids,
         program_ids[0]::string AS first_program_id,
-        program_ids[array_size(program_ids)-1]::string as last_program_id
+        program_ids[array_size(program_ids)-1]::string AS last_program_id
     FROM 
         c
+    LEFT JOIN exclude
+    ON program_ids[0]::string = address
+    OR program_ids[array_size(program_ids)-1]::string = address
+
     GROUP BY 
         tx_id
 ),
