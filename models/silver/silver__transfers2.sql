@@ -24,8 +24,7 @@ With base_transfers_i AS (
         'transfer',
         'transferChecked'
     )
-    -- -- testing parameter
-    -- AND block_id between 40000000 and 41000000
+    AND succeeded = TRUE
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -34,13 +33,13 @@ With base_transfers_i AS (
 AND
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 39824213)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 475146)+1,151386092)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 39824213)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 475146)+4000000,151386092)
         FROM
             {{ this }}
         ) 
@@ -50,7 +49,10 @@ AND _inserted_timestamp >= (
         MAX(_inserted_timestamp)
     FROM
         {{ this }}
-)
+    )
+{% else %}
+WHERE
+    block_id between 475146 and 1000000
 {% endif %}
 
     UNION
@@ -77,8 +79,6 @@ AND _inserted_timestamp >= (
         'transfer',
         'transferChecked'
     )
-    -- -- testing parameter
-    -- AND block_id between 40000000 and 41000000
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -87,13 +87,13 @@ AND _inserted_timestamp >= (
 AND
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 39824213)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 475146)+1,151386092)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 39824213)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 475146)+4000000,151386092)
         FROM
             {{ this }}
         ) 
@@ -103,57 +103,10 @@ AND _inserted_timestamp >= (
         MAX(_inserted_timestamp)
     FROM
         {{ this }}
-)
-{% endif %}
-),
-
-
-base_transfers_ii AS (
-
-    SELECT
-        e.block_id,
-        e.block_timestamp,
-        e.tx_id,
-        e.index,
-        e.instruction,
-        e._inserted_timestamp
-    FROM
-        base_transfers_i
-        e
-        INNER JOIN {{ ref('silver__transactions2') }}
-        t
-        ON t.tx_id = e.tx_id
-
-    WHERE
-    t.succeeded = TRUE
-    -- --testing parameteres
-    -- AND t.block_id between 40000000 and 41000000
-
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-
-AND
-    block_id BETWEEN (
-        SELECT
-            LEAST(COALESCE(MAX(block_id), 39824213)+1,151738154)
-        FROM
-            {{ this }}
-        )
-        AND (
-        SELECT
-            LEAST(COALESCE(MAX(block_id), 39824213)+4000000,151738154)
-        FROM
-            {{ this }}
-        ) 
-{% elif is_incremental() %}
-AND t._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+    )
+{% else %}
+WHERE
+    block_id between 475146 and 1000000
 {% endif %}
 ),
 base_post_token_balances AS (
@@ -165,8 +118,8 @@ base_post_token_balances AS (
         DECIMAL
     FROM
         {{ ref('silver___post_token_balances2') }}
-    --testing parameteres
-    -- WHERE block_id between 40000000 and 41000000
+
+
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -175,13 +128,13 @@ base_post_token_balances AS (
 WHERE
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 39824213)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 475146)+1,151386092)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 39824213)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 475146)+4000000,151386092)
         FROM
             {{ this }}
         ) 
@@ -193,6 +146,9 @@ WHERE
         FROM
             {{ this }}
     )
+{% else %}
+WHERE
+    block_id between 475146 and 1000000
 {% endif %}
 ),
 base_pre_token_balances AS (
@@ -204,7 +160,6 @@ base_pre_token_balances AS (
         DECIMAL
     FROM
         {{ ref('silver___pre_token_balances2') }}
-    -- WHERE block_id between 40000000 and 41000000
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -213,13 +168,13 @@ base_pre_token_balances AS (
 WHERE
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 39824213)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 475146)+1,151386092)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 39824213)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 475146)+4000000,151386092)
         FROM
             {{ this }}
         ) 
@@ -231,6 +186,9 @@ WHERE
         FROM
             {{ this }}
     )
+{% else %}
+WHERE
+    block_id between 475146 and 1000000
 {% endif %}
 ),
 spl_transfers AS (
@@ -269,7 +227,7 @@ spl_transfers AS (
         ) AS mint,
         e._inserted_timestamp
     FROM
-        base_transfers_ii e
+        base_transfers_i e
         LEFT OUTER JOIN base_pre_token_balances p
         ON e.tx_id = p.tx_id
         AND e.instruction :parsed :info :source :: STRING = p.account
@@ -300,7 +258,7 @@ sol_transfers AS (
         'So11111111111111111111111111111111111111112' AS mint,
         e._inserted_timestamp
     FROM
-        base_transfers_ii e
+        base_transfers_i e
     WHERE
         instruction :parsed :info :lamports :: STRING IS NOT NULL
 )
