@@ -45,13 +45,13 @@ b AS (
     WHERE
         block_id BETWEEN (
             SELECT
-                LEAST(COALESCE(MAX(block_id), 105368)+1,151738154)
+                LEAST(COALESCE(MAX(block_id), 105368)+1,153013616)
             FROM
                 {{ this }}
             )
             AND (
             SELECT
-                LEAST(COALESCE(MAX(block_id), 105368)+9000000,151738154)
+                LEAST(COALESCE(MAX(block_id), 105368)+9000000,153013616)
             FROM
                 {{ this }}
         ) 
@@ -62,6 +62,9 @@ b AS (
             FROM
                 dates_changed
         )
+    {% else %}
+    WHERE
+        ii.block_id between 105368 and 1000000
     {% endif %}
 ),
 c AS (
@@ -96,6 +99,9 @@ c AS (
             FROM
                 dates_changed
         )
+    {% else %}
+    WHERE
+        ii.block_id between 105368 and 1000000
     {% endif %}
 ),
 base_programs AS (
