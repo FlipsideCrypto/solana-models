@@ -21,6 +21,7 @@ WITH base_e AS (
         {{ ref('silver__events2') }}
     WHERE
         program_id = 'Stake11111111111111111111111111111111111111'
+    -- AND block_id between 40000000 and 41000000
 
 -- new incremental logic
 {% if is_incremental() and env_var(
@@ -30,13 +31,13 @@ WITH base_e AS (
 AND
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 39824111)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 105368)+1,151738154)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 39824111)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 105368)+4000000,151738154)
         FROM
             {{ this }}
         ) 
@@ -69,6 +70,7 @@ AND _inserted_timestamp >= (
         TABLE(FLATTEN(i.value :instructions)) ii
     WHERE
         ii.value :programId :: STRING = 'Stake11111111111111111111111111111111111111'
+        -- AND i.block_id between 40000000 and 41000000
 --new incremental logic
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -109,6 +111,7 @@ base_t AS (
         account_keys
     FROM
         {{ ref('silver__transactions2') }}
+    -- WHERE block_id between 40000000 and 41000000
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -117,13 +120,13 @@ base_t AS (
 WHERE
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 105368)+1,151738154)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 105368)+4000000,151738154)
         FROM
             {{ this }}
         ) 

@@ -6,7 +6,109 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
-WITH base_transfers AS (
+With base_transfers_i AS (
+    SELECT
+        block_id,
+        block_timestamp,
+        tx_id,
+        INDEX,
+        event_type,
+        program_id,
+        instruction,
+        inner_instruction,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver__events2') }}
+    WHERE
+    event_type IN (
+        'transfer',
+        'transferChecked'
+    )
+    -- -- testing parameter
+    -- AND block_id between 40000000 and 41000000
+
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+AND
+    block_id BETWEEN (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 475146)+1,151386092)
+        FROM
+            {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 475146)+4000000,151386092)
+        FROM
+            {{ this }}
+        ) 
+{% elif is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
+
+    UNION
+    SELECT
+        i.block_id,
+        i.block_timestamp,
+        i.tx_id,
+        CONCAT(
+            i.mapped_instruction_index,
+            '.',
+            ii.index
+        ) AS INDEX,
+        ii.value :parsed :type :: STRING AS event_type,
+        ii.value :programId :: STRING AS program_id,
+        ii.value AS instruction,
+        NULL AS inner_instruction,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver___inner_instructions2') }}
+        i,
+        TABLE(FLATTEN(i.value :instructions)) ii
+    WHERE
+        ii.value :parsed :type :: STRING IN (
+        'transfer',
+        'transferChecked'
+    )
+    -- -- testing parameter
+    -- AND block_id between 40000000 and 41000000
+
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+AND
+    block_id BETWEEN (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 475146)+1,151386092)
+        FROM
+            {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 475146)+4000000,151386092)
+        FROM
+            {{ this }}
+        ) 
+{% elif is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+
+
+base_transfers_ii AS (
 
     SELECT
         e.block_id,
@@ -16,48 +118,37 @@ WITH base_transfers AS (
         e.instruction,
         e._inserted_timestamp
     FROM
-        {{ ref('silver__events2') }}
+        base_transfers_i
         e
         INNER JOIN {{ ref('silver__transactions2') }}
         t
         ON t.tx_id = e.tx_id
 
     WHERE
-    e.event_type IN (
-        'transfer',
-        'transferChecked'
-    )
-    AND t.succeeded = TRUE
+    t.succeeded = TRUE
+    -- --testing parameteres
+    -- AND t.block_id between 40000000 and 41000000
 
-
--- new logic for incremental batch load
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
     "false"
 ) == "true" %}
 
 AND
-    e.block_id BETWEEN (
+    block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+1,151738154)
+            LEAST(COALESCE(MAX(block_id), 475146)+1,151738154)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+4000000,151738154)
+            LEAST(COALESCE(MAX(block_id), 475146)+4000000,151738154)
         FROM
             {{ this }}
         ) 
 {% elif is_incremental() %}
 AND t._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-
-AND e._inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
@@ -74,6 +165,8 @@ base_post_token_balances AS (
         DECIMAL
     FROM
         {{ ref('silver___post_token_balances2') }}
+    --testing parameteres
+    -- WHERE block_id between 40000000 and 41000000
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -82,13 +175,13 @@ base_post_token_balances AS (
 WHERE
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 475146)+1,151386092)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 475146)+4000000,151386092)
         FROM
             {{ this }}
         ) 
@@ -111,6 +204,7 @@ base_pre_token_balances AS (
         DECIMAL
     FROM
         {{ ref('silver___pre_token_balances2') }}
+    --WHERE block_id between 40000000 and 41000000
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -119,13 +213,13 @@ base_pre_token_balances AS (
 WHERE
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 475146)+1,151386092)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 475146)+4000000,151386092)
         FROM
             {{ this }}
         ) 
@@ -173,10 +267,9 @@ spl_transfers AS (
             p3.mint,
             p4.mint
         ) AS mint,
-        e.ingested_at,
         e._inserted_timestamp
     FROM
-        base_transfers e
+        base_transfers_ii e
         LEFT OUTER JOIN base_pre_token_balances p
         ON e.tx_id = p.tx_id
         AND e.instruction :parsed :info :source :: STRING = p.account
@@ -205,10 +298,9 @@ sol_transfers AS (
             9
         ) AS amount,
         'So11111111111111111111111111111111111111112' AS mint,
-        e.ingested_at,
         e._inserted_timestamp
     FROM
-        base_transfers e
+        base_transfers_ii e
     WHERE
         instruction :parsed :info :lamports :: STRING IS NOT NULL
 )
@@ -221,7 +313,6 @@ SELECT
     tx_to,
     amount,
     mint,
-    ingested_at,
     _inserted_timestamp
 FROM
     spl_transfers
@@ -235,7 +326,6 @@ SELECT
     tx_to,
     amount,
     mint,
-    ingested_at,
     _inserted_timestamp
 FROM
     sol_transfers
