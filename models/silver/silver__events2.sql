@@ -26,13 +26,13 @@ WITH base_i AS (
 WHERE
     i.block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+1,151738154)
+            LEAST(COALESCE(MAX(block_id), 105368)+1,153013616)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+4000000,151738154)
+            LEAST(COALESCE(MAX(block_id), 105368)+4000000,153013616)
         FROM
             {{ this }}
         ) 
@@ -67,13 +67,13 @@ base_ii AS (
 WHERE
     ii.block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+1,151738154)
+            LEAST(COALESCE(MAX(block_id), 105368)+1,153013616)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+4000000,151738154)
+            LEAST(COALESCE(MAX(block_id), 105368)+4000000,153013616)
         FROM
             {{ this }}
         ) 
