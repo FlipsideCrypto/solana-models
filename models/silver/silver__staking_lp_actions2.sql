@@ -31,13 +31,13 @@ WITH base_e AS (
 AND
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+1,151738154)
+            LEAST(COALESCE(MAX(block_id), 39824213)+1,151738154)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+4000000,151738154)
+            LEAST(COALESCE(MAX(block_id), 39824213)+4000000,151738154)
         FROM
             {{ this }}
         ) 
@@ -79,13 +79,13 @@ AND _inserted_timestamp >= (
 AND
     i.block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+1,151738154)
+            LEAST(COALESCE(MAX(block_id), 39824213)+1,151738154)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+4000000,151738154)
+            LEAST(COALESCE(MAX(block_id), 39824213)+4000000,151738154)
         FROM
             {{ this }}
         ) 
@@ -120,13 +120,13 @@ base_t AS (
 WHERE
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+1,151738154)
+            LEAST(COALESCE(MAX(block_id), 39824213)+1,151738154)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 105368)+4000000,151738154)
+            LEAST(COALESCE(MAX(block_id), 39824213)+4000000,151738154)
         FROM
             {{ this }}
         ) 

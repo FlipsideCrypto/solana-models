@@ -34,13 +34,13 @@ With base_transfers_i AS (
 AND
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 475146)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 39824213)+1,151386092)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 475146)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 39824213)+4000000,151386092)
         FROM
             {{ this }}
         ) 
@@ -87,13 +87,13 @@ AND _inserted_timestamp >= (
 AND
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 475146)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 39824213)+1,151386092)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 475146)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 39824213)+4000000,151386092)
         FROM
             {{ this }}
         ) 
@@ -137,13 +137,13 @@ base_transfers_ii AS (
 AND
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 475146)+1,151738154)
+            LEAST(COALESCE(MAX(block_id), 39824213)+1,151738154)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 475146)+4000000,151738154)
+            LEAST(COALESCE(MAX(block_id), 39824213)+4000000,151738154)
         FROM
             {{ this }}
         ) 
@@ -175,13 +175,13 @@ base_post_token_balances AS (
 WHERE
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 475146)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 39824213)+1,151386092)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 475146)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 39824213)+4000000,151386092)
         FROM
             {{ this }}
         ) 
@@ -204,7 +204,7 @@ base_pre_token_balances AS (
         DECIMAL
     FROM
         {{ ref('silver___pre_token_balances2') }}
-    --WHERE block_id between 40000000 and 41000000
+    -- WHERE block_id between 40000000 and 41000000
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -213,13 +213,13 @@ base_pre_token_balances AS (
 WHERE
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 475146)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 39824213)+1,151386092)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 475146)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 39824213)+4000000,151386092)
         FROM
             {{ this }}
         ) 
