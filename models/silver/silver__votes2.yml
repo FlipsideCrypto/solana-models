@@ -9,7 +9,8 @@ models:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
-          - not_null
+          - not_null:
+              where: block_id > 39824213 and _inserted_timestamp::date < current_date
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
@@ -29,7 +30,6 @@ models:
         tests: 
           - null_threshold:
               threshold_percent: 0.99 # some older transactions have valid null fees
-          - not_null
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests: 
