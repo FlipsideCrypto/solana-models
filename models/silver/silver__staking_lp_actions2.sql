@@ -47,7 +47,7 @@ AND _inserted_timestamp >= (
         {{ this }}
     )
 {% else %}
-WHERE
+AND
     block_id between 105368 and 1000000
 {% endif %}
     UNION
@@ -97,7 +97,7 @@ AND _inserted_timestamp >= (
         {{ this }}
     )
 {% else %}
-WHERE
+AND
     block_id between 105368 and 1000000
 {% endif %}
 ),
