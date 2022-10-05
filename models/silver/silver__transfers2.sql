@@ -57,28 +57,30 @@ WHERE
 
     UNION
     SELECT
-        i.block_id,
-        i.block_timestamp,
-        i.tx_id,
+        e.block_id,
+        e.block_timestamp,
+        e.tx_id,
         CONCAT(
-            i.mapped_instruction_index,
+            e.inner_instruction :index :: NUMBER,
             '.',
             ii.index
         ) AS INDEX,
         ii.value :parsed :type :: STRING AS event_type,
         ii.value :programId :: STRING AS program_id,
-        ii.value AS instruction,
+        ii.value as instruction,
         NULL AS inner_instruction,
         _inserted_timestamp
     FROM
-        {{ ref('silver___inner_instructions2') }}
-        i,
-        TABLE(FLATTEN(i.value :instructions)) ii
+        {{ ref('silver__events2') }}
+        e,
+        TABLE(FLATTEN(e.inner_instruction :instructions)) ii
     WHERE
+        e.succeeded = TRUE
+        AND
         ii.value :parsed :type :: STRING IN (
         'transfer',
         'transferChecked'
-    )
+        )
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -118,7 +120,6 @@ base_post_token_balances AS (
         DECIMAL
     FROM
         {{ ref('silver___post_token_balances2') }}
-
 
 
 {% if is_incremental() and env_var(
