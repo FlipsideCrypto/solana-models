@@ -33,13 +33,13 @@ With base_transfers_i AS (
 AND
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 475146)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 4260184)+1,151386092)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 475146)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 4260184)+4000000,151386092)
         FROM
             {{ this }}
         ) 
@@ -52,7 +52,7 @@ AND _inserted_timestamp >= (
     )
 {% else %}
 AND
-    block_id between 475146 and 1000000
+    block_id between 4260184 and 5260184
 {% endif %}
 
     UNION
@@ -89,13 +89,13 @@ AND
 AND
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 475146)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 4260184)+1,151386092)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 475146)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 4260184)+4000000,151386092)
         FROM
             {{ this }}
         ) 
@@ -108,7 +108,7 @@ AND _inserted_timestamp >= (
     )
 {% else %}
 AND
-    block_id between 475146 and 1000000
+    block_id between 4260184 and 5260184
 {% endif %}
 ),
 base_post_token_balances AS (
@@ -129,13 +129,13 @@ base_post_token_balances AS (
 WHERE
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 475146)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 4260184)+1,151386092)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 475146)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 4260184)+4000000,151386092)
         FROM
             {{ this }}
         ) 
@@ -149,7 +149,7 @@ WHERE
     )
 {% else %}
 WHERE
-    block_id between 475146 and 1000000
+    block_id between 4260184 and 5260184
 {% endif %}
 ),
 base_pre_token_balances AS (
@@ -169,13 +169,13 @@ base_pre_token_balances AS (
 WHERE
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 475146)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 4260184)+1,151386092)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 475146)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 4260184)+4000000,151386092)
         FROM
             {{ this }}
         ) 
@@ -189,7 +189,7 @@ WHERE
     )
 {% else %}
 WHERE
-    block_id between 475146 and 1000000
+    block_id between 4260184 and 5260184
 {% endif %}
 ),
 spl_transfers AS (
