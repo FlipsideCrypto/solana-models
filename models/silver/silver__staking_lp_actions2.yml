@@ -38,7 +38,8 @@ models:
       - name: EVENT_TYPE
         description: "{{ doc('event_type') }}"
         tests: 
-          - not_null
+          - not_null:
+              where: SUCCEEDED = TRUE
       - name: SIGNERS
         description: List of accounts that signed the transaction
       - name: ACCOUNT_KEYS
