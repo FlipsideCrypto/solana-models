@@ -28,7 +28,8 @@ models:
       - name: VALUE
         description: json object that contains the instruction
         tests: 
-          - not_null
+          - not_null:
+              where: block_timestamp::date > current_date - 30
       - name: INGESTED_AT
         description: "{{ doc('ingested_at') }}"
         tests: 

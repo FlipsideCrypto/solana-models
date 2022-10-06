@@ -7,6 +7,7 @@ models:
             - BLOCK_ID
             - TX_ID
             - INDEX
+          where: block_timestamp::date > current_date - 30
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

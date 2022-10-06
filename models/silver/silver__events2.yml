@@ -7,6 +7,7 @@ models:
             - BLOCK_ID
             - TX_ID
             - INDEX
+          where: block_timestamp::date > current_date - 30
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -39,7 +40,8 @@ models:
       - name: INSTRUCTION
         description: An instruction specifies which program it is calling, which accounts it wants to read or modify, and additional data that serves as auxiliary input to the program
         tests: 
-          - not_null
+          - not_null:
+              where: block_timestamp::date > current_date - 30
       - name: INNER_INSTRUCTION
         description: A call from one smart contract program to another. 
       - name: _INSERTED_TIMESTAMP
