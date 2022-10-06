@@ -39,7 +39,8 @@ models:
       - name: AMOUNT 
         description: "{{ doc('amount') }}"
         tests: 
-          - not_null
+          - null_threshold:
+              threshold_percent: 0.70
       - name: MINT
         description: "{{ doc('mint') }}"
         tests: 

@@ -11,7 +11,7 @@ With base_transfers_i AS (
         block_id,
         block_timestamp,
         tx_id,
-        INDEX,
+        INDEX::string as index,
         event_type,
         program_id,
         instruction,
@@ -213,7 +213,8 @@ spl_transfers AS (
             p.decimal,
             p2.decimal,
             p3.decimal,
-            p4.decimal
+            p4.decimal,
+            9 -- default to solana decimals
         ) AS decimal_adj,
         COALESCE (
             e.instruction :parsed :info :amount :: INTEGER,
