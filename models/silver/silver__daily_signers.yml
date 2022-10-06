@@ -24,17 +24,20 @@ models:
         tests: 
           - not_null
       - name: TOTAL_FEES
-        description: The total amount of fees (in lamports) that the signer has paid on a given day.
+        description: The total amount of fees (in lamports) that the signer has paid on a given day. This field can be null, as only the first signer pays transaction fees.
         tests: 
-          - not_null
+          - not_null: 
+              enabled: FALSE 
       - name: FIRST_PROGRAM_ID
-        description: The first program the signer interacted with.
+        description: The first program the signer interacted with. This field can be null, as some transactions do not have instructions.
         tests: 
-          - not_null 
+          - not_null: 
+              enabled: FALSE 
       - name: LAST_PROGRAM_ID
-        description: The most recent program the signer interacted with.
+        description: The most recent program the signer interacted with. This field can be null, as some transactions do not have instructions.
         tests: 
-          - not_null
+          - not_null: 
+              enabled: FALSE
       - name: UNIQUE_PROGRAM_IDS
         description: An array containing all program IDs a user interacted with on a given day.
         tests: 

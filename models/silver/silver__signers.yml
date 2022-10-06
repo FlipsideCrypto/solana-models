@@ -5,7 +5,6 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - signer
-            - b_date
     columns:
       - name: SIGNER
         description: The address of the user that initiated the transaction
@@ -18,7 +17,8 @@ models:
       - name: FIRST_PROGRAM_ID
         description: The ID of the first program this signer interacted with, excluding chain admin programs.
         tests: 
-          - not_null
+          - not_null: 
+              enabled: FALSE
       - name: LAST_TX_DATE
         description: The date of the most recent transaction the signer has performed.
         tests: 
@@ -26,7 +26,8 @@ models:
       - name: LAST_PROGRAM_ID
         description: The ID of the last program this signer interacted with, excluding chain admin programs.
         tests: 
-          - not_null
+          - not_null: 
+              enabled: FALSE
       - name: NUM_DAYS_ACTIVE
         description: A count of the total number of unique days that this signer has performed a transaction.
         tests: 
@@ -36,9 +37,10 @@ models:
         tests: 
           - not_null
       - name: TOTAL_FEES
-        description: The total amount of fees (in lamports) that the signer has paid on a given day.
+        description: The total amount of fees (in lamports) that the signer has paid on a given day. This field can be null, as only the first signer pays fees in a transaction.
         tests: 
-          - not_null
+          - not_null: 
+              enabled: FALSE
       - name: PROGRAMS_USED
         description: An array containing all program IDs a user interacted with on a given day.
         tests: 
