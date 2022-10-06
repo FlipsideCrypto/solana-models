@@ -95,6 +95,7 @@ base_tmp AS (
             )
             OR inner_instruction_type = 'create'
         )
+        AND array_size(e.instruction:accounts) > 12
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -110,10 +111,7 @@ AND _inserted_timestamp >= (
 sellers AS (
      SELECT
         e.tx_id,
-        CASE WHEN signer <> instruction :accounts [1] :: STRING THEN 
-            instruction :accounts [6] :: STRING
-        ELSE 
-            instruction :accounts [1] :: STRING END AS seller
+        instruction :accounts [1] :: STRING AS seller
     FROM
         {{ ref('silver__events') }}
         e
