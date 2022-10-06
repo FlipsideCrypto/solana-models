@@ -7,8 +7,9 @@
 ) }}
 
 WITH pre_final AS (
+
     SELECT
-        b.block_timestamp,
+        COALESCE(TO_TIMESTAMP_NTZ(t.value :block_time), b.block_timestamp) AS block_timestamp,
         t.block_id,
         t.tx_id,
         t.data :transaction :message :recentBlockhash :: STRING AS recent_block_hash,
@@ -30,40 +31,48 @@ WITH pre_final AS (
         t._partition_id,
         t._inserted_timestamp
     FROM
-        {{ ref('bronze__transactions2') }} t
-    LEFT OUTER JOIN 
-        {{ ref('silver__blocks2') }} b on b.block_id = t.block_id
+        {{ ref('bronze__transactions2') }}
+        t
+        LEFT OUTER JOIN {{ ref('silver__blocks2') }}
+        b
+        ON b.block_id = t.block_id
     WHERE
-        tx_id is not null
-    AND 
-        COALESCE(
+        tx_id IS NOT NULL
+        AND COALESCE(
             t.data :transaction :message :instructions [0] :programId :: STRING,
             ''
         ) <> 'Vote111111111111111111111111111111111111111'
-    {% if is_incremental() %}
-    AND 
-        _partition_id >= (
-            select max(_partition_id)-1
-            from {{this}}
-        )
-    AND
-        _partition_id <= (
-            select max(_partition_id)+10
-            from {{this}}
-        )
-    AND 
-        t._inserted_timestamp > (
-            select max(_inserted_timestamp)
-            from {{this}}
-        )
-    {% else %}
-    AND 
-        _partition_id in (1,2)
-    {% endif %}
-)
+
 {% if is_incremental() %}
-, prev_null_block_timestamp_txs as (
-    select 
+AND _partition_id >= (
+    SELECT
+        MAX(_partition_id) -1
+    FROM
+        {{ this }}
+)
+AND _partition_id <= (
+    SELECT
+        MAX(_partition_id) + 10
+    FROM
+        {{ this }}
+)
+AND t._inserted_timestamp > (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% else %}
+    AND _partition_id IN (
+        1,
+        2
+    )
+{% endif %}
+)
+
+{% if is_incremental() %},
+prev_null_block_timestamp_txs AS (
+    SELECT
         b.block_timestamp,
         t.block_id,
         t.tx_id,
@@ -80,11 +89,19 @@ WITH pre_final AS (
         t.inner_instructions,
         t.log_messages,
         t._partition_id,
-        greatest(t._inserted_timestamp,b._inserted_timestamp) as _inserted_timestamp
-    from {{ this }} t
-    inner join {{ ref('silver__blocks2') }} b on b.block_id = t.block_id
-    where t.block_timestamp::date is null
-    and t.block_id > 39824213
+        GREATEST(
+            t._inserted_timestamp,
+            b._inserted_timestamp
+        ) AS _inserted_timestamp
+    FROM
+        {{ this }}
+        t
+        INNER JOIN {{ ref('silver__blocks2') }}
+        b
+        ON b.block_id = t.block_id
+    WHERE
+        t.block_timestamp :: DATE IS NULL
+        AND t.block_id > 39824213
 )
 {% endif %}
 SELECT
@@ -106,12 +123,14 @@ SELECT
     _partition_id,
     _inserted_timestamp
 FROM
-    pre_final b 
-qualify(ROW_NUMBER() over(PARTITION BY block_id, tx_id
+    pre_final b qualify(ROW_NUMBER() over(PARTITION BY block_id, tx_id
 ORDER BY
     _inserted_timestamp DESC)) = 1
+
 {% if is_incremental() %}
-union
-select *
-from prev_null_block_timestamp_txs
+UNION
+SELECT
+    *
+FROM
+    prev_null_block_timestamp_txs
 {% endif %}

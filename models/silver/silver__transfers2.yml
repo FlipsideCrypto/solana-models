@@ -1,13 +1,12 @@
 version: 2
 models:
-  - name: silver__events2
+  - name: silver__transfers2
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - BLOCK_ID
             - TX_ID
             - INDEX
-          where: block_timestamp::date > current_date - 30
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -25,25 +24,26 @@ models:
         description: "{{ doc('tx_id') }}"
         tests:
           - not_null
-      - name: SUCCEEDED
-        description: "{{ doc('tx_succeeded') }}"
-        tests: 
-          - not_null
       - name: INDEX
-        description: "{{ doc('event_index') }}"
-        tests:  
-          - not_null
-      - name: PROGRAM_ID
-        description: "{{ doc('program_id') }}"
-      - name: EVENT_TYPE
-        description: "{{ doc('event_type') }}"
-      - name: INSTRUCTION
-        description: An instruction specifies which program it is calling, which accounts it wants to read or modify, and additional data that serves as auxiliary input to the program
+        description: "{{ doc('index') }}"
         tests: 
-          - not_null:
-              where: block_timestamp::date > current_date - 30
-      - name: INNER_INSTRUCTION
-        description: A call from one smart contract program to another. 
+          - not_null
+      - name: TX_FROM
+        description: "{{ doc('tx_from') }}"
+        tests: 
+          - not_null 
+      - name: TX_TO 
+        description: "{{ doc('tx_to') }}"
+        tests: 
+          - not_null 
+      - name: AMOUNT 
+        description: "{{ doc('amount') }}"
+        tests: 
+          - not_null
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        tests: 
+          - not_null
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
