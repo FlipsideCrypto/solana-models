@@ -22,7 +22,8 @@ With base_transfers_i AS (
     WHERE
     event_type IN (
         'transfer',
-        'transferChecked'
+        'transferChecked',
+        'transferWithSeed'
     )
     AND succeeded = TRUE
 
@@ -79,7 +80,8 @@ AND
         AND
         ii.value :parsed :type :: STRING IN (
         'transfer',
-        'transferChecked'
+        'transferChecked',
+        'transferWithSeed'
         )
 
 {% if is_incremental() and env_var(
