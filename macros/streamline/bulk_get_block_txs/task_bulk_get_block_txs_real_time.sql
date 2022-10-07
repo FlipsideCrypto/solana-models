@@ -25,7 +25,7 @@ BEGIN
                 from
                     streamline.complete_block_txs
             )
-            group by 1,2
+            group by 1,2,3
         ) 
         order by (_partition_id)
     );
