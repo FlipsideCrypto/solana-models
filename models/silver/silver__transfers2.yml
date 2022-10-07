@@ -39,12 +39,12 @@ models:
       - name: AMOUNT 
         description: "{{ doc('amount') }}"
         tests: 
-          - null_threshold:
-              threshold_percent: 0.70
+          - not_null
       - name: MINT
         description: "{{ doc('mint') }}"
         tests: 
-          - not_null
+          - null_threshold:
+              threshold_percent: 0.70
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
