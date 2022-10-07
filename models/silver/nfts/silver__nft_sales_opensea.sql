@@ -30,7 +30,8 @@ WITH sales_inner_instructions AS (
         t
         ON t.tx_id = e.tx_id
         LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
-    WHERE
+
+    WHERE 
         program_id = 'hausS13jsjafwWwGqZTUQRmWyvyxn9EQpqMwV1PBBmk' -- Programid used by OpenSea to execute sale, other non-opensea markets also use this
         AND instruction :data :: STRING LIKE '63LNsZWnP5%'
         AND e.instruction :accounts [10] :: STRING = '3o9d13qUvEuuauhFrVom1vuCzgNsJifeaBYDPquaT73Y'
@@ -49,7 +50,10 @@ AND t._inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND e.block_timestamp :: DATE >= '2022-04-03' -- no Opensea sales before this date
+AND
+    e.block_timestamp :: DATE >= '2022-04-03' -- no Opensea sales before this date
+AND
+    t.block_timestamp :: DATE >= '2022-04-03' -- no Opensea sales before this date
 {% endif %}
 ),
 post_token_balances AS (
@@ -96,8 +100,6 @@ pre_final AS (
         LEFT OUTER JOIN post_token_balances p
         ON p.tx_id = s.tx_id
         AND p.account = s.nft_account
-    WHERE
-        s.block_timestamp :: DATE >= '2022-04-03' -- transactions before this time are not opensea
     GROUP BY
         s.block_timestamp,
         s.block_id,
