@@ -40,7 +40,7 @@ models:
         description: "{{ doc('event_type') }}"
         tests: 
           - not_null:
-              where: SUCCEEDED = TRUE
+              where: SUCCEEDED = TRUE and block_id > 25706401
       - name: SIGNERS
         description: List of accounts that signed the transaction
       - name: ACCOUNT_KEYS

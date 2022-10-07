@@ -5,6 +5,19 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
+      - compare_model_subset:
+          name: silver__nft_sales_magic_eden_v2_business_logic_test
+          compare_model: ref('testing__nft_sales_magic_eden_v2')
+          compare_columns: 
+            - tx_id
+            - purchaser
+            - seller
+            - mint
+            - round(sales_amount,8)
+          model_condition: "where tx_id in ('28PWDFj8Cxb9YihmGqN6CeU5iNrNW1fiZ5mxVbu8Sox61uiTH2m57duJ4F5pv7DahNPr2oAN7umziBCHab6FCBXR',
+            '2opUe8cZkhMrVQBNy9McDZThPdW7gFoFzf4J6TnX3QUKAQi9pfDZoYwAQFcvDrQBfzg2Jw7SXhx6D5Y6kdPh68oY',
+            '4hr1zeCVBHT1FGgcHad19tp8Jp9Q6itcKHjRLK7uuVVwjhDbSDG2hrEm6Zfd73RiNnu9sqQbBfpo798viibFunWi',
+            '4iq2miqiFfJXw7gKHunTLnLyzFDom13vakh25DUXZRFDnZaUC9KztFbcqx9L9Up8WB7u6qd3NyuoCsHMNKHrBHYV')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
