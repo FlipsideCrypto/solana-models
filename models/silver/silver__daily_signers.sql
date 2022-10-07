@@ -6,7 +6,10 @@
 ) }}
 
 WITH 
-{% if is_incremental() %}
+{% if is_incremental() and env_var(
+        'DBT_IS_BATCH_LOAD',
+        "false"
+    ) == "false" %}
 dates_changed AS (
     SELECT
         DISTINCT block_timestamp :: date AS block_timestamp_date
