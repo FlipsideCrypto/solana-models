@@ -21,13 +21,13 @@ WITH base_events AS (
 AND
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 39824111)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 81103515)+1,151386092)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 39824111)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 81103515)+100000,151386092)
         FROM
             {{ this }}
         ) 
@@ -38,6 +38,8 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+{% else %}
+AND block_timestamp :: date >= '2021-06-02'
 {% endif %}
 ),
 base_ptb AS (
@@ -48,31 +50,32 @@ base_ptb AS (
     FROM
         {{ ref('silver___post_token_balances2') }}
 
--- new incremental logic
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
     "false"
 ) == "true" %}
-AND
+WHERE
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 39824111)+1,151386092)
+            LEAST(COALESCE(MAX(block_id), 81103515)+1,151386092)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 39824111)+4000000,151386092)
+            LEAST(COALESCE(MAX(block_id), 81103515)+100000,151386092)
         FROM
             {{ this }}
         ) 
 {% elif is_incremental() %}
-AND _inserted_timestamp >= (
+WHERE _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
         {{ this }}
 )
+{% else %}
+WHERE block_timestamp :: date >= '2021-06-02'
 {% endif %}
 ),
 metaplex_events AS (
