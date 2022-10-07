@@ -35,15 +35,15 @@ b AS (
         "false"
     ) == "true" %}
     WHERE
-        block_id BETWEEN (
+        _inserted_timestamp :: date BETWEEN (
             SELECT
-                LEAST(COALESCE(MAX(block_id), 105368)+1,153013616)
+                LEAST(COALESCE(MAX(_inserted_timestamp :: date), '2022-08-12')+1, CURRENT_DATE)
             FROM
                 {{ this }}
             )
             AND (
             SELECT
-                LEAST(COALESCE(MAX(block_id), 105368)+9000000,153013616)
+                LEAST(COALESCE(MAX(_inserted_timestamp :: date), '2022-08-12')+10, CURRENT_DATE)
             FROM
                 {{ this }}
         ) 
@@ -54,6 +54,9 @@ b AS (
             FROM
                 dates_changed
         )
+    {% else %}
+    WHERE 
+        _inserted_timestamp :: date = '2022-08-12'
     {% endif %}
 ),
 c AS (
@@ -71,13 +74,13 @@ c AS (
     WHERE
         e.block_id BETWEEN (
             SELECT
-                LEAST(COALESCE(MAX(block_id), 105368)+1,151738154)
+                LEAST(COALESCE(MAX(_inserted_timestamp :: date), '2022-08-12')+1, CURRENT_DATE)
             FROM
                 {{ this }}
             )
             AND (
             SELECT
-                LEAST(COALESCE(MAX(block_id), 105368)+9000000,151738154)
+                LEAST(COALESCE(MAX(_inserted_timestamp :: date), '2022-08-12')+10, CURRENT_DATE)
             FROM
                 {{ this }}
         ) 
@@ -88,6 +91,9 @@ c AS (
             FROM
                 dates_changed
         )
+    {% else %}
+    WHERE 
+        _inserted_timestamp :: date = '2022-08-12'
     {% endif %}
 ),
 base_programs AS (

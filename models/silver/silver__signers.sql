@@ -5,35 +5,12 @@
   cluster_by = 'signer'
 ) }}
 
-WITH 
-{% if is_incremental() %}
-max_date AS (
-
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) _inserted_timestamp
-    FROM
-        {{ this }}
-),
-{% endif %}
-
-base_min_signers AS (
+WITH base_min_signers AS (
     SELECT
         signer, 
         min(b_date) AS b_date
     FROM 
         {{ ref('silver__daily_signers') }}
-{% if is_incremental() %}
-    WHERE _inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            )
-        FROM
-            max_date
-    )
-{% endif %}
     GROUP BY 
         signer
 ),
@@ -43,16 +20,6 @@ base_max_signers AS (
         max(b_date) as b_date
     FROM 
         {{ ref('silver__daily_signers') }}
-{% if is_incremental() %}
-    WHERE _inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            )
-        FROM
-            max_date
-    )
-{% endif %}
     GROUP BY 
         signer
 ),
@@ -66,16 +33,6 @@ final_signers_agg AS (
         max(_inserted_timestamp) AS _inserted_timestamp
     FROM
         {{ ref('silver__daily_signers') }}
-{% if is_incremental() %}
-    WHERE _inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            )
-        FROM
-            max_date
-    )
-{% endif %}
     GROUP BY 
         signer
 ),
@@ -89,17 +46,6 @@ final_min_signers AS (
     INNER JOIN {{ ref('silver__daily_signers') }} sd 
     ON sd.signer = ms.signer
     AND sd.b_date = ms.b_date
-
-{% if is_incremental() %}
-    WHERE _inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            )
-        FROM
-            max_date
-    )
-{% endif %}
 ),
 final_max_signers AS (
     SELECT 
@@ -111,17 +57,6 @@ final_max_signers AS (
     INNER JOIN {{ ref('silver__daily_signers') }} sd
     ON sd.signer = ms.signer 
     AND sd.b_date = ms.b_date
-
-{% if is_incremental() %}
-    WHERE _inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            )
-        FROM
-            max_date
-    )
-{% endif %}
 )
 SELECT
     s_min.*,
