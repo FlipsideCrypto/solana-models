@@ -19,17 +19,23 @@ WITH base_events AS (
     "false"
 ) == "true" %}
 AND
-    block_id BETWEEN (
+    block_timestamp :: DATE BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 81103515)+1,151386092)
-        FROM
-            {{ this }}
+            LEAST(DATEADD(
+                'day',
+                1,
+                COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+                FROM
+                    {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 81103515)+100000,151386092)
-        FROM
-            {{ this }}
+            LEAST(DATEADD(
+            'day',
+            30,
+            COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+            FROM
+                {{ this }}
         ) 
 {% elif is_incremental() %}
 AND _inserted_timestamp >= (
@@ -39,7 +45,10 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-AND block_timestamp :: date >= '2021-06-02'
+AND 
+    block_timestamp :: DATE BETWEEN '2021-06-02'
+    AND '2021-06-17'
+
 {% endif %}
 ),
 base_ptb AS (
@@ -55,17 +64,23 @@ base_ptb AS (
     "false"
 ) == "true" %}
 WHERE
-    block_id BETWEEN (
+    block_timestamp :: DATE BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 81103515)+1,151386092)
-        FROM
-            {{ this }}
+            LEAST(DATEADD(
+                'day',
+                1,
+                COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+                FROM
+                    {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 81103515)+100000,151386092)
-        FROM
-            {{ this }}
+            LEAST(DATEADD(
+            'day',
+            30,
+            COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+            FROM
+                {{ this }}
         ) 
 {% elif is_incremental() %}
 WHERE _inserted_timestamp >= (
@@ -75,7 +90,9 @@ WHERE _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-WHERE block_timestamp :: date >= '2021-06-02'
+WHERE
+    block_timestamp :: DATE BETWEEN '2021-06-02'
+    AND '2021-06-17'
 {% endif %}
 ),
 metaplex_events AS (
