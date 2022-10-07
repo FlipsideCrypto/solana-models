@@ -8,7 +8,7 @@
 
 WITH pre_final AS (
     SELECT
-        b.block_timestamp,
+        COALESCE(TO_TIMESTAMP_NTZ(t.value :block_time), b.block_timestamp) AS block_timestamp,
         t.block_id,
         t.tx_id,
         t.data :transaction :message :recentBlockhash :: STRING AS recent_block_hash,
