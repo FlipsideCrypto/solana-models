@@ -6,45 +6,111 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
-WITH base_transfers AS (
+With base_transfers_i AS (
+    SELECT
+        block_id,
+        block_timestamp,
+        tx_id,
+        INDEX::string as index,
+        event_type,
+        program_id,
+        instruction,
+        inner_instruction,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver__events2') }}
+    WHERE
+    event_type IN (
+        'transfer',
+        'transferChecked',
+        'transferWithSeed'
+    )
+    AND succeeded = TRUE
 
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+AND
+    block_id BETWEEN (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 4260184)+1,151386092)
+        FROM
+            {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 4260184)+4000000,151386092)
+        FROM
+            {{ this }}
+        ) 
+{% elif is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+    )
+{% else %}
+AND
+    block_id between 4260184 and 5260184
+{% endif %}
+
+    UNION
     SELECT
         e.block_id,
         e.block_timestamp,
         e.tx_id,
-        e.index,
-        e.instruction,
-        e.ingested_at,
-        e._inserted_timestamp
+        CONCAT(
+            e.inner_instruction :index :: NUMBER,
+            '.',
+            ii.index
+        ) AS INDEX,
+        ii.value :parsed :type :: STRING AS event_type,
+        ii.value :programId :: STRING AS program_id,
+        ii.value as instruction,
+        NULL AS inner_instruction,
+        _inserted_timestamp
     FROM
-        {{ ref('silver__events') }}
-        e
-        INNER JOIN {{ ref('silver__transactions') }}
-        t
-        ON t.tx_id = e.tx_id
-
-{% if is_incremental() %}
-AND t._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-{% endif %}
-WHERE
-    e.event_type IN (
+        {{ ref('silver__events2') }}
+        e,
+        TABLE(FLATTEN(e.inner_instruction :instructions)) ii
+    WHERE
+        e.succeeded = TRUE
+        AND
+        ii.value :parsed :type :: STRING IN (
         'transfer',
-        'transferChecked'
-    )
-    AND t.succeeded = TRUE
+        'transferChecked',
+        'transferWithSeed'
+        )
 
-{% if is_incremental() %}
-AND e._inserted_timestamp >= (
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+AND
+    block_id BETWEEN (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 4260184)+1,151386092)
+        FROM
+            {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 4260184)+4000000,151386092)
+        FROM
+            {{ this }}
+        ) 
+{% elif is_incremental() %}
+AND _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
         {{ this }}
-)
+    )
+{% else %}
+AND
+    block_id between 4260184 and 5260184
 {% endif %}
 ),
 base_post_token_balances AS (
@@ -55,9 +121,27 @@ base_post_token_balances AS (
         mint,
         DECIMAL
     FROM
-        {{ ref('silver___post_token_balances') }}
+        {{ ref('silver___post_token_balances2') }}
 
-{% if is_incremental() %}
+
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+WHERE
+    block_id BETWEEN (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 4260184)+1,151386092)
+        FROM
+            {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 4260184)+4000000,151386092)
+        FROM
+            {{ this }}
+        ) 
+{% elif is_incremental() %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -65,6 +149,9 @@ WHERE
         FROM
             {{ this }}
     )
+{% else %}
+WHERE
+    block_id between 4260184 and 5260184
 {% endif %}
 ),
 base_pre_token_balances AS (
@@ -75,9 +162,26 @@ base_pre_token_balances AS (
         mint,
         DECIMAL
     FROM
-        {{ ref('silver___pre_token_balances') }}
+        {{ ref('silver___pre_token_balances2') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+WHERE
+    block_id BETWEEN (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 4260184)+1,151386092)
+        FROM
+            {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 4260184)+4000000,151386092)
+        FROM
+            {{ this }}
+        ) 
+{% elif is_incremental() %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -85,6 +189,9 @@ WHERE
         FROM
             {{ this }}
     )
+{% else %}
+WHERE
+    block_id between 4260184 and 5260184
 {% endif %}
 ),
 spl_transfers AS (
@@ -106,7 +213,8 @@ spl_transfers AS (
             p.decimal,
             p2.decimal,
             p3.decimal,
-            p4.decimal
+            p4.decimal,
+            9 -- default to solana decimals
         ) AS decimal_adj,
         COALESCE (
             e.instruction :parsed :info :amount :: INTEGER,
@@ -121,10 +229,9 @@ spl_transfers AS (
             p3.mint,
             p4.mint
         ) AS mint,
-        e.ingested_at,
         e._inserted_timestamp
     FROM
-        base_transfers e
+        base_transfers_i e
         LEFT OUTER JOIN base_pre_token_balances p
         ON e.tx_id = p.tx_id
         AND e.instruction :parsed :info :source :: STRING = p.account
@@ -153,10 +260,9 @@ sol_transfers AS (
             9
         ) AS amount,
         'So11111111111111111111111111111111111111112' AS mint,
-        e.ingested_at,
         e._inserted_timestamp
     FROM
-        base_transfers e
+        base_transfers_i e
     WHERE
         instruction :parsed :info :lamports :: STRING IS NOT NULL
 )
@@ -169,7 +275,6 @@ SELECT
     tx_to,
     amount,
     mint,
-    ingested_at,
     _inserted_timestamp
 FROM
     spl_transfers
@@ -183,7 +288,6 @@ SELECT
     tx_to,
     amount,
     mint,
-    ingested_at,
     _inserted_timestamp
 FROM
     sol_transfers
