@@ -11,8 +11,6 @@ WITH base_events AS (
         *
     FROM
         {{ ref('silver__events2') }}
-    WHERE block_timestamp :: date >= '2020-10-07'
-
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
     "false"
