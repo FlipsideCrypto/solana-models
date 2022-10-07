@@ -30,6 +30,7 @@ BEGIN
                 )
                 SELECT
                     block_id,
+                    error,
                     _inserted_date,
                     m.registered_on as _inserted_timestamp
                 FROM
@@ -57,10 +58,11 @@ BEGIN
         when matched then 
             update set
             _inserted_date = DBT_INTERNAL_SOURCE._inserted_date,
-            _inserted_timestamp = DBT_INTERNAL_SOURCE._inserted_timestamp
+            _inserted_timestamp = DBT_INTERNAL_SOURCE._inserted_timestamp,
+            error = DBT_INTERNAL_SOURCE.error
         when not matched then 
-            insert ("BLOCK_ID", "_INSERTED_DATE", "_INSERTED_TIMESTAMP")
-            values ("BLOCK_ID", "_INSERTED_DATE", "_INSERTED_TIMESTAMP");
+            insert ("BLOCK_ID", "ERROR", "_INSERTED_DATE", "_INSERTED_TIMESTAMP")
+            values ("BLOCK_ID", "ERROR", "_INSERTED_DATE", "_INSERTED_TIMESTAMP");
     select streamline.udf_bulk_get_blocks(TRUE)
     where exists (
         select 1
