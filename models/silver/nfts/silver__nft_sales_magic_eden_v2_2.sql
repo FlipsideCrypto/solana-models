@@ -183,7 +183,7 @@ sellers AS (
         e.tx_id,
         instruction :accounts [1] :: STRING AS seller
     FROM
-        {{ ref('silver__events') }}
+        {{ ref('silver__events2') }}
         e
         INNER JOIN txs t
         ON t.tx_id = e.tx_id
