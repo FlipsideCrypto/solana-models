@@ -77,9 +77,11 @@ AND t._inserted_timestamp >= (
 )
 {% else %}
     AND 
-        e.block_timestamp :: DATE >= '2022-01-08' -- no ME V2 contract before this date
+        e.block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
+        AND '2022-02-08'
     AND 
-        t.block_timestamp :: DATE >= '2022-01-08'
+        t.block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
+        AND '2022-02-08'
 {% endif %}
 GROUP BY
     1,
@@ -138,6 +140,8 @@ base_tmp AS (
             )
             OR inner_instruction_type = 'create'
         )
+        AND array_size(e.instruction:accounts) > 12
+
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
     "false"
@@ -169,18 +173,17 @@ AND e._inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND e.block_timestamp :: DATE >= '2022-01-08' -- no ME V2 contract before this date
+    AND 
+        e.block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
+        AND '2022-02-08'
 {% endif %}
 ),
 sellers AS (
      SELECT
         e.tx_id,
-        CASE WHEN signer <> instruction :accounts [1] :: STRING THEN 
-            instruction :accounts [6] :: STRING
-        ELSE 
-            instruction :accounts [1] :: STRING END AS seller
+        instruction :accounts [1] :: STRING AS seller
     FROM
-        {{ ref('silver__events2') }}
+        {{ ref('silver__events') }}
         e
         INNER JOIN txs t
         ON t.tx_id = e.tx_id
@@ -219,14 +222,16 @@ AND
         )
 {% elif is_incremental() %}
 AND
-    _inserted_timestamp >= (
+    e._inserted_timestamp >= (
         SELECT
             MAX(_inserted_timestamp)
         FROM
             {{ this }}
     )
 {% else %}
-    AND e.block_timestamp:: DATE >= '2022-01-08' -- no ME V2 contract before this date
+AND
+    e.block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
+    AND '2022-02-08'
 {% endif %}
 
 ),
@@ -282,7 +287,9 @@ WHERE
             {{ this }}
     )
 {% else %}
-    WHERE block_timestamp :: DATE >= '2022-01-08' -- no ME V2 contract before this date
+WHERE
+    block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
+    AND '2022-02-08'
 {% endif %}
 )
 SELECT

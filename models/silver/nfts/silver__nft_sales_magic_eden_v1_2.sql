@@ -94,10 +94,13 @@ AND t._inserted_timestamp >= (
     {{ this }}
 )
 {% else %}
-AND
-  e.block_timestamp :: date >= '2021-09-07'
-AND
-  t.block_timestamp :: date >= '2021-09-07'
+AND 
+    e.block_timestamp :: DATE BETWEEN '2021-09-07'
+    AND '2021-10-07'
+AND 
+    t.block_timestamp :: DATE BETWEEN '2021-09-07'
+    AND '2021-10-07'
+
 {% endif %}
 ),
 sellers AS (
