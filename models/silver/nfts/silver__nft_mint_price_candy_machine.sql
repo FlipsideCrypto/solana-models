@@ -14,7 +14,7 @@ WITH base_candy_machine_events AS (
     WHERE 
         program_id in ('cndy3Z4yapfJBmL3ShUp5exZKqR3z33thTzeNMm2gRZ','cndyAnrLdpjq1Ssp1z8xxDsB8dxe7u4HL5Nxi2K5WXZ')
     AND 
-        succeeded
+        succeeded        
 
 {% if is_incremental() %}
 AND
@@ -24,6 +24,9 @@ AND
         FROM
             {{ this }}
     )
+
+{% else %}
+    AND block_timestamp :: date >= '2021-08-28'
 {% endif %}
 ),
 base_ptb AS (
@@ -34,6 +37,7 @@ base_ptb AS (
     FROM
         {{ ref('silver___post_token_balances') }}
 
+
 {% if is_incremental() %}
 WHERE
     _inserted_timestamp >= (
@@ -42,7 +46,11 @@ WHERE
         FROM
             {{ this }}
     )
+{% else %}
+WHERE
+    block_timestamp :: date >= '2021-08-28'
 {% endif %}
+
 ),
 candy_machine AS (
     SELECT

@@ -44,8 +44,7 @@ WITH base_table AS (
         ON t.tx_id = e.tx_id
         LEFT JOIN TABLE(FLATTEN(t.log_messages)) l
     WHERE
-        e.block_timestamp :: date >= '2022-07-12'
-        AND program_id = '5SKmrbAxnHV2sgqyDXkGrLrokZYtWWVEEk5Soed7VLVN' -- yawww program ID
+        program_id = '5SKmrbAxnHV2sgqyDXkGrLrokZYtWWVEEk5Soed7VLVN' -- yawww program ID
         AND (
             l.value :: STRING ILIKE 'Program log: Instruction: Accept bid'
             OR l.value :: STRING ILIKE 'Program log: Instruction: Buy listed item'
@@ -64,6 +63,11 @@ AND t._inserted_timestamp >= (
     FROM
         {{ this }}
 )
+{% else %}
+AND 
+    e.block_timestamp :: date >= '2022-07-12'
+AND 
+    t.block_timestamp :: date >= '2022-07-12'
 {% endif %}
 ),
 price_buys AS (
@@ -92,6 +96,9 @@ AND e._inserted_timestamp >= (
     FROM
         {{ this }}
 )
+{% else %}
+AND 
+    e.block_timestamp :: date >= '2022-07-12'
 {% endif %}
 GROUP BY
     b.tx_id

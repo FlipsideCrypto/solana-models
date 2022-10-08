@@ -11,30 +11,30 @@ WITH base_mint_actions AS (
         *
     FROM
         {{ ref('silver__mint_actions') }}
-    {% if is_incremental() %}
-    WHERE
-        _inserted_timestamp >= (
-            SELECT
-                MAX(_inserted_timestamp)
-            FROM
-                {{ this }}
-        )
-    {% endif %}
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
 base_mint_price AS (
     SELECT
         *
     FROM
         {{ ref('silver__nft_mint_price') }}
-    {% if is_incremental() %}
-    WHERE
-        _inserted_timestamp >= (
-            SELECT
-                MAX(_inserted_timestamp)
-            FROM
-                {{ this }}
-        )
-    {% endif %}
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
 initialization AS (
     SELECT
