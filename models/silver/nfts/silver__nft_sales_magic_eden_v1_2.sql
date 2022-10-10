@@ -139,7 +139,7 @@ WHERE
             LEAST(DATEADD(
                 'day',
                 1,
-                COALESCE(MAX(block_timestamp) :: DATE, '2021-09-07')),'2022-09-19')
+                COALESCE(MAX(block_timestamp) :: DATE, '2021-09-07')),'2022-10-05')
                 FROM
                     {{ this }}
         )
@@ -148,7 +148,7 @@ WHERE
             LEAST(DATEADD(
             'day',
             30,
-            COALESCE(MAX(block_timestamp) :: DATE, '2021-09-07')),'2022-09-19')
+            COALESCE(MAX(block_timestamp) :: DATE, '2021-09-07')),'2022-10-05')
             FROM
                 {{ this }}
         ) 
