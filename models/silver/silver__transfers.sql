@@ -18,7 +18,7 @@ With base_transfers_i AS (
         inner_instruction,
         _inserted_timestamp
     FROM
-        {{ ref('silver__events2') }}
+        {{ ref('silver__events') }}
     WHERE
     event_type IN (
         'transfer',
@@ -72,7 +72,7 @@ AND
         NULL AS inner_instruction,
         _inserted_timestamp
     FROM
-        {{ ref('silver__events2') }}
+        {{ ref('silver__events') }}
         e,
         TABLE(FLATTEN(e.inner_instruction :instructions)) ii
     WHERE
@@ -121,7 +121,7 @@ base_post_token_balances AS (
         mint,
         DECIMAL
     FROM
-        {{ ref('silver___post_token_balances2') }}
+        {{ ref('silver___post_token_balances') }}
 
 
 {% if is_incremental() and env_var(
@@ -162,7 +162,7 @@ base_pre_token_balances AS (
         mint,
         DECIMAL
     FROM
-        {{ ref('silver___pre_token_balances2') }}
+        {{ ref('silver___pre_token_balances') }}
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
