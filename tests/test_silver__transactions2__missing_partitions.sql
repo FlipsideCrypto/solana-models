@@ -21,4 +21,4 @@ select b._partition_id
 from base b
 left outer join base_txs t on b._partition_id = t._partition_id 
 where t._partition_id is null
-
+and b._partition_id <> 1877 -- seems like this whole partition is skipped slots
