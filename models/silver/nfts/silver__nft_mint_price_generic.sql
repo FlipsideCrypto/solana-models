@@ -13,14 +13,42 @@ WITH base_events AS (
         {{ ref('silver__events') }}
     WHERE succeeded
 
-{% if is_incremental() %}
+-- new incremental logic
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
 AND
-    _inserted_timestamp >= (
+    block_timestamp :: DATE BETWEEN (
         SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
+            LEAST(DATEADD(
+                'day',
+                1,
+                COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+                FROM
+                    {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(DATEADD(
+            'day',
+            30,
+            COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+            FROM
+                {{ this }}
+        ) 
+{% elif is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% else %}
+AND 
+    block_timestamp :: DATE BETWEEN '2021-06-02'
+    AND '2021-06-17'
+
 {% endif %}
 ),
 base_ptb AS (
@@ -31,14 +59,40 @@ base_ptb AS (
     FROM
         {{ ref('silver___post_token_balances') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
 WHERE
-    _inserted_timestamp >= (
+    block_timestamp :: DATE BETWEEN (
         SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
+            LEAST(DATEADD(
+                'day',
+                1,
+                COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+                FROM
+                    {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(DATEADD(
+            'day',
+            30,
+            COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+            FROM
+                {{ this }}
+        ) 
+{% elif is_incremental() %}
+WHERE _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% else %}
+WHERE
+    block_timestamp :: DATE BETWEEN '2021-06-02'
+    AND '2021-06-17'
 {% endif %}
 ),
 metaplex_events AS (

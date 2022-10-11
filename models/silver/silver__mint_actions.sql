@@ -11,8 +11,24 @@ WITH base_events AS (
         *
     FROM
         {{ ref('silver__events') }}
-
-{% if is_incremental() %}
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+WHERE
+    block_id BETWEEN (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 31310775)+1,151386092)
+        FROM
+            {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 31310775)+4000000,151386092)
+        FROM
+            {{ this }}
+        ) 
+{% elif is_incremental() %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -20,6 +36,9 @@ WHERE
         FROM
             {{ this }}
     )
+{% else %}
+WHERE
+    block_id between 31310775 and 32310775
 {% endif %}
 )
 SELECT

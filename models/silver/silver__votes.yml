@@ -4,44 +4,47 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - BLOCK_ID
             - TX_ID
-          where: block_timestamp::date >= current_date - 2
+          where: block_timestamp::date > current_date - 30
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
-          - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 2
+          - not_null:
+              where: block_id > 39824213 and _inserted_timestamp::date < current_date
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
-        tests:
-          - not_null
-      - name: RECENT_BLOCK_HASH
-        description: Previous block's hash value
         tests:
           - not_null
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
         tests:
           - not_null
+      - name: RECENT_BLOCK_HASH
+        description: Previous block's hash value
+        tests:
+          - not_null
+      - name: SIGNERS
+        description: List of accounts that signed the transaction
       - name: FEE
         description: Transaction fee (in lamports)
         tests: 
           - null_threshold:
               threshold_percent: 0.99 # some older transactions have valid null fees
-          - not_null:
-              where: ingested_at::date >= current_date - 2
       - name: SUCCEEDED
-        description: True when a transaction is successful, otherwise false. 
+        description: "{{ doc('tx_succeeded') }}"
         tests: 
           - not_null
+      - name: ACCOUNT_KEYS
+        description: List of accounts that are referenced by pre/post sol/token balances objects
+        tests: 
+          - not_null:
+              where: block_timestamp::date > current_date - 30
       - name: VOTE_ACCOUNT
         description: Account belonging to the voting delegator
         tests: 
-          - not_null
+          - null_threshold:
+              threshold_percent: 0.9999 # some vote program transactions don't have vote accounts or unknown which account is vote account
       - name: VOTE_AUTHORITY
         description: Authority for the voting delegator
         tests: 
@@ -51,10 +54,8 @@ models:
         description: Unique hash representing this set of votes(?)
       - name: VOTE_SLOTS
         description: Slots being voted on
-      - name: INGESTED_AT
-        description: "{{ doc('ingested_at') }}"
-        tests: 
-          - not_null
+      - name: _PARTITION_ID
+        description: Value representing a single pipeline execution batch
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 

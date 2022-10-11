@@ -20,8 +20,49 @@ WITH txs AS (
         ON t.tx_id = e.tx_id
     WHERE
         program_id = 'M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K' -- Magic Eden V2 Program ID
-
-{% if is_incremental() %}
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+AND
+    t.block_timestamp :: DATE BETWEEN (
+        SELECT
+            LEAST(DATEADD(
+                'day',
+                1,
+                COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
+                FROM
+                    {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(DATEADD(
+            'day',
+            30,
+            COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
+            FROM
+                {{ this }}
+        )
+AND
+    e.block_timestamp :: DATE BETWEEN (
+        SELECT
+            LEAST(DATEADD(
+                'day',
+                1,
+                COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
+                FROM
+                    {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(DATEADD(
+            'day',
+            30,
+            COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
+            FROM
+                {{ this }}
+        ) 
+{% elif is_incremental() %}
 AND e._inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
@@ -35,7 +76,12 @@ AND t._inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND e.block_timestamp :: DATE >= '2022-01-08' -- no ME V2 contract before this date
+    AND 
+        e.block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
+        AND '2022-02-08'
+    AND 
+        t.block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
+        AND '2022-02-08'
 {% endif %}
 GROUP BY
     1,
@@ -75,7 +121,6 @@ base_tmp AS (
             ORDER BY
                 inner_index
         ) AS nft_account_mint,
-        ingested_at,
         _inserted_timestamp
     FROM
         {{ ref('silver__events') }}
@@ -97,15 +142,40 @@ base_tmp AS (
         )
         AND array_size(e.instruction:accounts) > 12
 
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+AND
+    e.block_timestamp :: DATE BETWEEN (
+        SELECT
+            LEAST(DATEADD(
+                'day',
+                1,
+                COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
+                FROM
+                    {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(DATEADD(
+            'day',
+            30,
+            COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
+            FROM
+                {{ this }}
+        )
+{% elif is_incremental() %}
+AND e._inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
         {{ this }}
 )
 {% else %}
-    AND e.block_timestamp :: DATE >= '2022-01-08' -- no ME V2 contract before this date
+    AND 
+        e.block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
+        AND '2022-02-08'
 {% endif %}
 ),
 sellers AS (
@@ -127,10 +197,41 @@ sellers AS (
     AND i.value :programId :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
     AND i.value :parsed :type :: STRING = 'transfer'
 
-{% if is_incremental() %}
-AND ingested_at :: DATE >= CURRENT_DATE - 2
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+AND
+    e.block_timestamp :: DATE BETWEEN (
+        SELECT
+            LEAST(DATEADD(
+                'day',
+                1,
+                COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
+                FROM
+                    {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(DATEADD(
+            'day',
+            30,
+            COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
+            FROM
+                {{ this }}
+        )
+{% elif is_incremental() %}
+AND
+    e._inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% else %}
-    AND e.block_timestamp:: DATE >= '2022-01-08' -- no ME V2 contract before this date
+AND
+    e.block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
+    AND '2022-02-08'
 {% endif %}
 
 ),
@@ -154,7 +255,30 @@ post_token_balances AS (
     FROM
         {{ ref('silver___post_token_balances') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+WHERE
+    block_timestamp :: DATE BETWEEN (
+        SELECT
+            LEAST(DATEADD(
+                'day',
+                1,
+                COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
+                FROM
+                    {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(DATEADD(
+            'day',
+            30,
+            COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
+            FROM
+                {{ this }}
+        )
+{% elif is_incremental() %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -163,7 +287,9 @@ WHERE
             {{ this }}
     )
 {% else %}
-    WHERE block_timestamp :: DATE >= '2022-01-08' -- no ME V2 contract before this date
+WHERE
+    block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
+    AND '2022-02-08'
 {% endif %}
 )
 SELECT
@@ -184,7 +310,6 @@ SELECT
         10,
         9
     ) AS sales_amount,
-    b.ingested_at,
     b._inserted_timestamp
 FROM
     base b
@@ -205,5 +330,4 @@ GROUP BY
     ),
     b.purchaser,
     ss.seller, 
-    b.ingested_at, 
     b._inserted_timestamp

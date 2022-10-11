@@ -16,17 +16,37 @@ WITH base_i AS (
     value:parsed:type AS event_type, 
     value:programId AS program_id, 
     value, 
-    ingested_at,
     _inserted_timestamp
-  FROM {{ ref('silver___instructions') }} 
+  FROM {{ ref('silver___instructions') }} i
 
-{% if is_incremental() %}
-  WHERE _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+WHERE
+    i.block_id BETWEEN (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 105368)+1,153013616)
+        FROM
+            {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 105368)+4000000,153013616)
+        FROM
+            {{ this }}
+        ) 
+{% elif is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+{% else %}
+WHERE
+    i.block_id between 105368 and 1000000
 {% endif %}
 ), 
 
@@ -36,17 +56,38 @@ base_ii AS (
     tx_id, 
     mapped_instruction_index :: INTEGER AS mapped_instruction_index, 
     value,  
-    ingested_at,
+    silver.udf_get_all_inner_instruction_program_ids(value) as inner_instruction_program_ids,
     _inserted_timestamp
-  FROM {{ ref('silver___inner_instructions') }}
+  FROM {{ ref('silver___inner_instructions') }} ii
 
-{% if is_incremental() %}
-  WHERE _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+WHERE
+    ii.block_id BETWEEN (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 105368)+1,153013616)
+        FROM
+            {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 105368)+4000000,153013616)
+        FROM
+            {{ this }}
+        ) 
+{% elif is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+{% else %}
+WHERE
+    ii.block_id between 105368 and 1000000
 {% endif %}
 ) 
 
@@ -60,7 +101,7 @@ SELECT
   i.program_id :: STRING AS program_id, 
   i.value AS instruction,
   ii.value AS inner_instruction,
-  i.ingested_at,
+  ii.inner_instruction_program_ids,
   i._inserted_timestamp
 FROM
   base_i
