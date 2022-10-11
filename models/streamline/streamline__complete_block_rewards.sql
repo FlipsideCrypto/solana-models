@@ -7,6 +7,7 @@
 
 SELECT
     block_id,
+    error,
     _partition_id
 FROM
     {{ source(
