@@ -3,18 +3,18 @@ WITH max_part_id_tmp AS (
     MAX(_partition_id) AS _partition_id
   FROM
     {% if target.database == 'SOLANA' %}
-      solana.silver.votes2
+      solana.silver.votes
     {% else %}
-      solana_dev.silver.votes2
+      solana_dev.silver.votes
     {% endif %}
   UNION
   SELECT
     MAX(_partition_id)
   FROM
     {% if target.database == 'SOLANA' %}
-      solana.silver.transactions2
+      solana.silver.transactions
     {% else %}
-      solana_dev.silver.transactions2
+      solana_dev.silver.transactions
     {% endif %}
 ),
 base AS (
@@ -38,15 +38,15 @@ base_txs AS (
   SELECT
     DISTINCT _partition_id
   FROM
-    {{ ref('silver__transactions2') }}
+    {{ ref('silver__transactions') }}
   UNION
   SELECT
     DISTINCT _partition_id
   FROM
     {% if target.database == 'SOLANA' %}
-      solana.silver.votes2
+      solana.silver.votes
     {% else %}
-      solana_dev.silver.votes2
+      solana_dev.silver.votes
     {% endif %}
 )
 SELECT

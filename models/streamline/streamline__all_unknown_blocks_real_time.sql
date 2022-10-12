@@ -6,7 +6,7 @@ with tmp as (
     select
         block_id,
         previous_block_id
-    from solana.silver.blocks2
+    from {{ ref('silver__blocks') }}
 ),
 missing as (
     select 

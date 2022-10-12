@@ -32,7 +32,7 @@ base_blocks AS (
     SELECT
         *
     FROM
-        {{ ref('silver__blocks2') }}
+        {{ ref('silver__blocks') }}
     WHERE
         block_id >= 154195836 -- this query wont give correct results prior to this block_id
         AND _inserted_date < CURRENT_DATE
@@ -41,14 +41,14 @@ base_txs AS (
     SELECT
         DISTINCT block_id
     FROM
-        {{ ref('silver__transactions2') }}
+        {{ ref('silver__transactions') }}
     WHERE
         block_id >= 154195836
     UNION
     SELECT
         DISTINCT block_id
     FROM
-        {{ ref('silver__votes2') }}
+        {{ ref('silver__votes') }}
     WHERE
         block_id >= 154195836
 ),

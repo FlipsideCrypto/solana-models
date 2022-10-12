@@ -4,7 +4,7 @@ WITH tmp AS (
         block_id,
         previous_block_id
     FROM
-        {{ ref('silver__blocks2') }}
+        {{ ref('silver__blocks') }}
     WHERE 
         _inserted_date < current_date 
     AND 
