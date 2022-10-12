@@ -5,28 +5,55 @@
     cluster_by = 'signer'
 ) }}
 
-WITH
-
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "false" %}
-dates_changed AS (
-
+WITH dates_changed AS (
     SELECT
         DISTINCT block_timestamp :: DATE AS block_timestamp_date
     FROM
         {{ ref('silver__transactions2') }}
-    WHERE
-        _inserted_timestamp >= (
-            SELECT
-                MAX(_inserted_timestamp)
-            FROM
-                {{ this }}
-        )
-),
-{% endif %}
 
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+WHERE
+    _inserted_timestamp :: DATE BETWEEN (
+        SELECT
+            LEAST(
+                DATEADD(
+                    'day',
+                    1,
+                    COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
+                ),
+                CURRENT_DATE - 1
+            )
+        FROM
+            {{ this }}
+    )
+    AND (
+        SELECT
+            LEAST(
+                DATEADD(
+                    'day',
+                    5,
+                    COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
+                ),
+                CURRENT_DATE - 1
+            )
+        FROM
+            {{ this }}
+    ) {% elif is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+{% else %}
+WHERE
+    _inserted_timestamp :: DATE = '2022-08-12'
+{% endif %}
+),
 b AS (
     SELECT
         s.value :: STRING AS signer,
@@ -47,49 +74,13 @@ b AS (
         {{ ref('silver__transactions2') }}
         t,
         TABLE(FLATTEN(signers)) s
-
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-WHERE
-    _inserted_timestamp :: DATE BETWEEN (
-        SELECT
-            LEAST(
-                DATEADD(
-                    'day',
-                    1,
-                    COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
-                ),
-                CURRENT_DATE
-            )
-        FROM
-            {{ this }}
-    )
-    AND (
-        SELECT
-            LEAST(
-                DATEADD(
-                    'day',
-                    1,
-                    COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
-                ),
-                CURRENT_DATE
-            )
-        FROM
-            {{ this }}
-    ) {% elif is_incremental() %}
-WHERE
-    b_date IN (
-        SELECT
-            block_timestamp_date
-        FROM
-            dates_changed
-    )
-{% else %}
-WHERE
-    _inserted_timestamp :: DATE = '2022-08-12'
-{% endif %}
+    WHERE
+        b_date IN (
+            SELECT
+                block_timestamp_date
+            FROM
+                dates_changed
+        )
 ),
 C AS (
     SELECT
@@ -100,49 +91,13 @@ C AS (
     FROM
         {{ ref('silver__events2') }}
         e
-
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-WHERE
-    _inserted_timestamp :: DATE BETWEEN (
-        SELECT
-            LEAST(
-                DATEADD(
-                    'day',
-                    1,
-                    COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
-                ),
-                CURRENT_DATE
-            )
-        FROM
-            {{ this }}
-    )
-    AND (
-        SELECT
-            LEAST(
-                DATEADD(
-                    'day',
-                    10,
-                    COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
-                ),
-                CURRENT_DATE
-            )
-        FROM
-            {{ this }}
-    ) {% elif is_incremental() %}
-WHERE
-    e.block_timestamp :: DATE IN (
-        SELECT
-            block_timestamp_date
-        FROM
-            dates_changed
-    )
-{% else %}
-WHERE
-    _inserted_timestamp :: DATE = '2022-08-12'
-{% endif %}
+    WHERE
+        e.block_timestamp :: DATE IN (
+            SELECT
+                block_timestamp_date
+            FROM
+                dates_changed
+        )
 ),
 base_programs AS (
     SELECT
