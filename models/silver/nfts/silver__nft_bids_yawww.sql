@@ -13,8 +13,7 @@ WITH yawww_txs AS (
         {{ ref('silver__events') }}
         e
     WHERE
-        block_timestamp :: date >= '2022-07-12'
-        AND program_id = '5SKmrbAxnHV2sgqyDXkGrLrokZYtWWVEEk5Soed7VLVN'
+        program_id = '5SKmrbAxnHV2sgqyDXkGrLrokZYtWWVEEk5Soed7VLVN'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -23,6 +22,9 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+
+{% else %}
+    AND block_timestamp :: date >= '2022-07-12' -- no tx w program id '5SKmrbAxnHV2sgqyDXkGrLrokZYtWWVEEk5Soed7VLVN' before this date
 {% endif %}
 )
 SELECT
@@ -48,6 +50,7 @@ WHERE
     l.value :: STRING LIKE 'Program log: Instruction: Bid on listing'
     AND i.index = 3
     AND i.value :parsed :type :: STRING = 'transfer'
+    
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -56,6 +59,9 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+
+{% else %}
+    AND t.block_timestamp :: date >= '2022-07-12' -- no tx w program id '5SKmrbAxnHV2sgqyDXkGrLrokZYtWWVEEk5Soed7VLVN' before this date
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY t.tx_id

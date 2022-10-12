@@ -7,38 +7,31 @@
 
 WITH base_table AS (
     SELECT 
-        e.block_timestamp, 
-        e.block_id, 
-        e.tx_id, 
-        t.succeeded, 
-        e.program_id, 
+        block_timestamp, 
+        block_id, 
+        tx_id, 
+        succeeded, 
+        program_id, 
         instruction :accounts[0] :: STRING AS acct_1, 
         instruction :accounts[3] :: STRING AS seller, 
         instruction :accounts[1] :: STRING AS mint, 
-        e.ingested_at, 
-        e._inserted_timestamp
-    FROM {{ ref('silver__events') }} e
-    
-    INNER JOIN {{ ref('silver__transactions') }} t
-    ON t.tx_id = e.tx_id 
-  
-    WHERE 
-        e.block_timestamp :: date >= '2022-08-17'
-        AND program_id = 'J7RagMKwSD5zJSbRQZU56ypHUtux8LRDkUpAPSKH4WPp' -- solana monke business marketplace
+        ingested_at, 
+        _inserted_timestamp
+    FROM {{ ref('silver__events') }}
+    WHERE program_id = 'J7RagMKwSD5zJSbRQZU56ypHUtux8LRDkUpAPSKH4WPp' -- solana monke business marketplace
 
 {% if is_incremental() %}
-AND e._inserted_timestamp >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
         {{ this }}
 )
-AND t._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+
+{% else %}
+AND 
+    block_timestamp :: date >= '2022-08-17'
+
 {% endif %}
 ),
 price AS (
@@ -54,12 +47,15 @@ price AS (
         e.event_type = 'transfer'
 
    {% if is_incremental() %}
-AND b._inserted_timestamp >= (
+AND e._inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
         {{ this }}
 )
+{% else %}
+AND 
+    e.block_timestamp :: date >= '2022-08-17'
 {% endif %}
 ) 
 

@@ -1,18 +1,18 @@
 version: 2
 models:
-  - name: silver__transfers
+  - name: silver__nft_sales_magic_eden_v1_2
+    description: intermediary model for sales on Magic Eden V1
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - BLOCK_ID
             - TX_ID
-            - INDEX
+            - MINT
+            - SELLER
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
-          - not_null:
-              where: block_id > 39824213 and _inserted_timestamp::date < current_date
+          - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 2
@@ -24,27 +24,33 @@ models:
         description: "{{ doc('tx_id') }}"
         tests:
           - not_null
-      - name: INDEX
-        description: "{{ doc('index') }}"
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - not_null
+      - name: PROGRAM_ID 
+        description: "{{ doc('program_id') }}"
         tests: 
           - not_null
-      - name: TX_FROM
-        description: "{{ doc('tx_from') }}"
+      - name: PURCHASER
+        description: "{{ doc('purchaser') }}"
         tests: 
-          - not_null 
-      - name: TX_TO 
-        description: "{{ doc('tx_to') }}"
+          - not_null:
+              where: succeeded = TRUE
+      - name: SELLER
+        description: "{{ doc('seller') }}"
         tests: 
-          - not_null 
-      - name: AMOUNT 
-        description: "{{ doc('amount') }}"
-        tests: 
-          - not_null
+          - not_null:
+              where: succeeded = TRUE
       - name: MINT
         description: "{{ doc('mint') }}"
         tests: 
-          - null_threshold:
-              threshold_percent: 0.70
+          - not_null:
+              where: succeeded = TRUE
+      - name: SALES_AMOUNT
+        description: "{{ doc('sales_amount') }}"
+        tests: 
+          - not_null
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 

@@ -1,12 +1,15 @@
 version: 2
 models:
-  - name: silver__transfers2
+  - name: silver__mint_actions2
+    description: table holding mint initialization or token minting events
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - BLOCK_ID
             - TX_ID
             - INDEX
+            - INNER_INDEX
+            - EVENT_TYPE
+            - MINT
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -15,7 +18,7 @@ models:
               where: block_id > 39824213 and _inserted_timestamp::date < current_date
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
-              interval: 2
+              interval: 3
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
@@ -24,26 +27,34 @@ models:
         description: "{{ doc('tx_id') }}"
         tests:
           - not_null
-      - name: INDEX
-        description: "{{ doc('index') }}"
-        tests: 
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
           - not_null
-      - name: TX_FROM
-        description: "{{ doc('tx_from') }}"
-        tests: 
-          - not_null 
-      - name: TX_TO 
-        description: "{{ doc('tx_to') }}"
-        tests: 
-          - not_null 
-      - name: AMOUNT 
-        description: "{{ doc('amount') }}"
+      - name: INDEX
+        description: "{{ doc('event_index') }}"
+        tests:
+          - not_null
+      - name: INNER_INDEX
+        description: Location of the inner instruction within an instruction
+      - name: EVENT_TYPE 
+        description: "{{ doc('event_type') }}"
         tests: 
           - not_null
       - name: MINT
         description: "{{ doc('mint') }}"
         tests: 
           - not_null
+      - name: DECIMAL
+        description: "{{ doc('decimal') }}"
+        tests: 
+          - not_null:
+              where: event_type in ('initializeMint','initializeMint2')
+      - name: MINT_AMOUNT
+        description: "{{ doc('mint_amount') }}"
+        tests: 
+          - not_null:
+              where: event_type in ('mintTo','mintToChecked')
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 

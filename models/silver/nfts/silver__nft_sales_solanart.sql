@@ -8,45 +8,38 @@
 WITH sales_inner_instructions AS (
 
     SELECT
-        e.block_timestamp,
-        e.block_id,
-        e.tx_id,
-        t.succeeded,
-        e.program_id,
+        block_timestamp,
+        block_id,
+        tx_id,
+        succeeded,
+        program_id,
         e.index,
         COALESCE(
             i.value :parsed :info :lamports :: NUMBER,
             0
         ) AS amount,
-        e.instruction :accounts [0] :: STRING AS purchaser,
-        e.instruction :accounts [3] :: STRING AS seller,
-        e.instruction :accounts [1] :: STRING AS nft_account,
-        e.ingested_at,
-        e._inserted_timestamp
+        instruction :accounts [0] :: STRING AS purchaser,
+        instruction :accounts [3] :: STRING AS seller,
+        instruction :accounts [1] :: STRING AS nft_account,
+        ingested_at,
+        _inserted_timestamp
     FROM
         {{ ref('silver__events') }}
         e
-        INNER JOIN {{ ref('silver__transactions') }}
-        t
-        ON t.tx_id = e.tx_id
         LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
     WHERE
-        e.block_timestamp :: date >= '2021-08-01'
-        AND e.program_id = 'CJsLwbP1iu5DuUikHEJnLfANgKy6stB2uFgvBBHoyxwz' -- Solanart Program ID
+        e.program_id = 'CJsLwbP1iu5DuUikHEJnLfANgKy6stB2uFgvBBHoyxwz' -- Solanart Program ID
 
 {% if is_incremental() %}
-AND e._inserted_timestamp >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
         {{ this }}
 )
-AND t._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+{% else %}
+AND 
+    block_timestamp :: date >= '2021-08-01'
 {% endif %}
 ),
 post_token_balances AS (
@@ -58,16 +51,17 @@ post_token_balances AS (
         {{ ref('silver___post_token_balances') }}
         p
     WHERE
-        block_timestamp :: date >= '2021-08-01'
-        AND amount <> 0 -- Removes random account transfers with no NFT
+        amount <> 0 -- Removes random account transfers with no NFT
 
 {% if is_incremental() %}
-AND p._inserted_timestamp >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
         {{ this }}
 )
+{% else %}
+AND block_timestamp :: date >= '2021-08-01'
 {% endif %}
 )
 SELECT
