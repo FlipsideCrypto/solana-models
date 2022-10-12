@@ -25,4 +25,4 @@ AND s._partition_id > (
         {{ this }}
 )
 {% endif %}
-group by 1,2
+group by 1,2,3
