@@ -28,6 +28,7 @@ WITH pre_final AS (
         t.data :transaction :message :instructions :: ARRAY AS instructions,
         t.data :meta :innerInstructions :: ARRAY AS inner_instructions,
         t.data :meta :logMessages :: ARRAY AS log_messages,
+        t.data :version :: STRING as version,
         t._partition_id,
         t._inserted_timestamp
     FROM
@@ -88,6 +89,7 @@ prev_null_block_timestamp_txs AS (
         t.instructions,
         t.inner_instructions,
         t.log_messages,
+        t.version,
         t._partition_id,
         GREATEST(
             t._inserted_timestamp,
