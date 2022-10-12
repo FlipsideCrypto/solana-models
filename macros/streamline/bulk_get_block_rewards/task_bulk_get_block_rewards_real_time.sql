@@ -13,6 +13,7 @@ BEGIN
         from (
             SELECT
                 block_id,
+                error,
                 _partition_id
             FROM streamline.{{ target.database }}.block_rewards_api AS s
             WHERE
@@ -23,7 +24,7 @@ BEGIN
                     from
                         streamline.complete_block_rewards
                 )
-            group by 1,2
+            group by 1,2,3
         ) 
         order by (_partition_id)
     );
@@ -32,7 +33,8 @@ BEGIN
         on DBT_INTERNAL_SOURCE.block_id = DBT_INTERNAL_DEST.block_id
         when matched then 
             update set
-            _partition_id = DBT_INTERNAL_SOURCE._partition_id
+                _partition_id = DBT_INTERNAL_SOURCE._partition_id,
+                error = DBT_INTERNAL_SOURCE.error
         when not matched then 
             insert ("BLOCK_ID", "_PARTITION_ID")
             values ("BLOCK_ID", "_PARTITION_ID");
