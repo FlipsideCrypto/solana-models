@@ -1,24 +1,60 @@
-with max_part_id_tmp as (
-    select max(_partition_id) as _partition_id
-    from solana.silver.votes2
-    union 
-    select max(_partition_id)
-    from solana.silver.transactions2
+WITH max_part_id_tmp AS (
+  SELECT
+    MAX(_partition_id) AS _partition_id
+  FROM
+    {% if target.database == 'SOLANA' %}
+      solana.silver.votes2
+    {% else %}
+      solana_dev.silver.votes2
+    {% endif %}
+  UNION
+  SELECT
+    MAX(_partition_id)
+  FROM
+    {% if target.database == 'SOLANA' %}
+      solana.silver.transactions2
+    {% else %}
+      solana_dev.silver.transactions2
+    {% endif %}
 ),
-base as (
-  select distinct _partition_id
-  from solana.streamline.complete_block_txs
-  where _partition_id <= (select max(_partition_id) from max_part_id_tmp)
+base AS (
+  SELECT
+    DISTINCT _partition_id
+  FROM
+    {% if target.database == 'SOLANA' %}
+      solana.streamline.complete_block_txs
+    {% else %}
+      solana_dev.streamline.complete_block_txs
+    {% endif %}
+  WHERE
+    _partition_id <= (
+      SELECT
+        MAX(_partition_id)
+      FROM
+        max_part_id_tmp
+    )
 ),
-base_txs as (
-    select distinct _partition_id
-    from {{ ref('silver__transactions2') }}
-    union 
-    select distinct _partition_id
-    from solana.silver.votes2
+base_txs AS (
+  SELECT
+    DISTINCT _partition_id
+  FROM
+    {{ ref('silver__transactions2') }}
+  UNION
+  SELECT
+    DISTINCT _partition_id
+  FROM
+    {% if target.database == 'SOLANA' %}
+      solana.silver.votes2
+    {% else %}
+      solana_dev.silver.votes2
+    {% endif %}
 )
-select b._partition_id 
-from base b
-left outer join base_txs t on b._partition_id = t._partition_id 
-where t._partition_id is null
-and b._partition_id <> 1877 -- seems like this whole partition is skipped slots
+SELECT
+  b._partition_id
+FROM
+  base b
+  LEFT OUTER JOIN base_txs t
+  ON b._partition_id = t._partition_id
+WHERE
+  t._partition_id IS NULL
+  AND b._partition_id <> 1877 -- seems like this whole partition is skipped slots

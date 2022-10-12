@@ -2,7 +2,11 @@ WITH base_blocks AS (
     SELECT
         *
     FROM
+        {% if target.database == 'SOLANA' %}
         solana.silver.blocks2
+        {% else %}
+        solana_dev.silver.blocks2
+        {% endif %}
     WHERE
         block_id >= 154195836 -- this query wont give correct results prior to this block_id
         AND _inserted_date < CURRENT_DATE
@@ -11,14 +15,22 @@ base_txs AS (
     SELECT
         DISTINCT block_id
     FROM
+        {% if target.database == 'SOLANA' %}
         solana.silver.transactions2
+        {% else %}
+        solana_dev.silver.transactions2
+        {% endif %}
     WHERE
         block_id >= 154195836
     UNION
     SELECT
         DISTINCT block_id
     FROM
+        {% if target.database == 'SOLANA' %}
         solana.silver.votes2
+        {% else %}
+        solana_dev.silver.votes2
+        {% endif %}
     WHERE
         block_id >= 154195836
 ),
