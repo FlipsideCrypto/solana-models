@@ -11,14 +11,6 @@ WITH base_staking_lp_actions AS (
     FROM
         {{ ref('silver__staking_lp_actions') }}
 
-UNION
-
-    SELECT
-        * 
-    FROM 
-        {{ ref('silver___historical_staking_lp_actions') }}
-    WHERE block_id < 109547725
-
 ),
 merges_and_splits AS (
     SELECT
