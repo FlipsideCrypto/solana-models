@@ -31,4 +31,6 @@ WHERE program_id = 'hadeK9DLv9eA7ya5KCTqSvSvRZeJC3JgD5a9Y3CNbvu'
 
   {% if is_incremental() %}
     AND _inserted_timestamp >= (SELECT MAX(_inserted_timestamp) FROM {{ this }})
-  {% else %}
+{% else %}
+    AND block_timestamp :: date >= '2021-08-01'
+{% endif %}
