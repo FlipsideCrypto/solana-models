@@ -350,6 +350,4 @@ LEFT OUTER JOIN validators v
 ON vote_account = vote_pubkey
 LEFT OUTER JOIN {{ ref('core__dim_labels') }}
 ON vote_account = address
-WHERE 
-    block_id >= 109547725
    
