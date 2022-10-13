@@ -50,6 +50,8 @@ models:
         description: List of post-transaction token balances for different token accounts
       - name: LOG_MESSAGES
         description: Array of log messages written by the program for this transaction
+      - name: VERSION
+        description: Transaction version, legacy version is listed as NULL or 'legacy'
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
