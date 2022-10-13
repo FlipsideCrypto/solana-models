@@ -27,7 +27,7 @@ WITH pre_final AS (
         t._partition_id,
         t._inserted_timestamp
     FROM
-        {{ ref('bronze__transactions') }} t 
+        {{ ref('bronze__transactions2') }} t 
     LEFT OUTER JOIN 
         {{ ref('silver__blocks') }} b on b.block_id = t.block_id
     WHERE
