@@ -19,10 +19,6 @@ models:
         description: chain identifier, this will always be solana.  Field is used in joins with crosschain tables
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: TX_COUNT
-        description: number of transactions within this block
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: BLOCK_HEIGHT
         description: heigh of the block
         tests:
