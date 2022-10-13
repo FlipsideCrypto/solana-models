@@ -122,6 +122,7 @@ SELECT
     instructions,
     inner_instructions,
     log_messages,
+    version,
     _partition_id,
     _inserted_timestamp
 FROM
