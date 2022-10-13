@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: silver__nft_sales_magic_eden_v1
+    description: intermediary model for sales on Magic Eden V1
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -48,10 +49,6 @@ models:
               where: succeeded = TRUE
       - name: SALES_AMOUNT
         description: "{{ doc('sales_amount') }}"
-        tests: 
-          - not_null
-      - name: INGESTED_AT
-        description: " {{ doc('ingested_at') }} "
         tests: 
           - not_null
       - name: _INSERTED_TIMESTAMP

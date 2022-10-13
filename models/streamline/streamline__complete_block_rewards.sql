@@ -7,6 +7,7 @@
 
 SELECT
     block_id,
+    error,
     _partition_id
 FROM
     {{ source(
@@ -24,4 +25,4 @@ AND s._partition_id > (
         {{ this }}
 )
 {% endif %}
-group by 1,2
+group by 1,2,3

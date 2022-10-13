@@ -27,6 +27,7 @@ WHERE
 )
 SELECT
     block_id,
+    error,
     _inserted_date,
     m.registered_on as _inserted_timestamp
 FROM

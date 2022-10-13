@@ -15,7 +15,6 @@ WITH base_table AS (
         instruction :accounts[0] :: STRING AS acct_1, 
         instruction :accounts[3] :: STRING AS seller, 
         instruction :accounts[1] :: STRING AS mint, 
-        ingested_at, 
         _inserted_timestamp
     FROM {{ ref('silver__events') }}
     WHERE program_id = 'J7RagMKwSD5zJSbRQZU56ypHUtux8LRDkUpAPSKH4WPp' -- solana monke business marketplace
@@ -69,7 +68,6 @@ SELECT
      b.acct_1 AS purchaser, 
      b.seller, 
      p.amount / POW(10,9) AS sales_amount, 
-     b.ingested_at, 
      b._inserted_timestamp
 FROM base_table b
 

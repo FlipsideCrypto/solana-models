@@ -22,13 +22,33 @@ WITH base_e AS (
     WHERE
         program_id = 'Stake11111111111111111111111111111111111111'
 
-{% if is_incremental() %}
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+AND
+    block_id BETWEEN (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 105368)+1,151738154)
+        FROM
+            {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 105368)+4000000,151738154)
+        FROM
+            {{ this }}
+        ) 
+{% elif is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
         {{ this }}
-)
+    )
+{% else %}
+AND
+    block_id between 105368 and 1000000
 {% endif %}
     UNION
     SELECT
@@ -52,13 +72,33 @@ AND _inserted_timestamp >= (
     WHERE
         ii.value :programId :: STRING = 'Stake11111111111111111111111111111111111111'
 
-{% if is_incremental() %}
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+AND
+    i.block_id BETWEEN (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 105368)+1,151738154)
+        FROM
+            {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 105368)+4000000,151738154)
+        FROM
+            {{ this }}
+        ) 
+{% elif is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
         {{ this }}
-)
+    )
+{% else %}
+AND
+    block_id between 105368 and 1000000
 {% endif %}
 ),
 base_t AS (
@@ -75,7 +115,24 @@ base_t AS (
     FROM
         {{ ref('silver__transactions') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+WHERE
+    block_id BETWEEN (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 105368)+1,151738154)
+        FROM
+            {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(COALESCE(MAX(block_id), 105368)+4000000,151738154)
+        FROM
+            {{ this }}
+        ) 
+{% elif is_incremental() %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -83,6 +140,9 @@ WHERE
         FROM
             {{ this }}
     )
+{% else %}
+WHERE
+    block_id between 105368 and 1000000
 {% endif %}
 )
 SELECT

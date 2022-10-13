@@ -7,6 +7,7 @@
 
 SELECT
     block_id,
+    error,
     _partition_id
 FROM
     {{ source(
@@ -24,7 +25,7 @@ AND s._partition_id > (
         {{ this }}
 )
 {% endif %}
-group by 1,2
+group by 1,2,3
 {% if not is_incremental() %}
 qualify(ROW_NUMBER() over (PARTITION BY block_id
 ORDER BY

@@ -18,14 +18,36 @@ SELECT
     b.value :uiTokenAmount :decimals AS DECIMAL,
     b.value :uiTokenAmount :uiAmount AS uiAmount,
     b.value :uiTokenAmount :uiAmountString AS uiAmountString,
-    ingested_at,
     _inserted_timestamp
 FROM
     {{ ref('silver__transactions') }}
     t,
     TABLE(FLATTEN(post_token_balances)) b
 
-{% if is_incremental() %}
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+WHERE
+    t.block_timestamp :: DATE BETWEEN (
+        SELECT
+            LEAST(DATEADD(
+                'day',
+                1,
+                COALESCE(MAX(block_timestamp) :: DATE, '2021-01-30')),'2022-09-19')
+                FROM
+                    {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(DATEADD(
+            'day',
+            30,
+            COALESCE(MAX(block_timestamp) :: DATE, '2021-01-30')),'2022-09-19')
+            FROM
+                {{ this }}
+        ) 
+{% elif is_incremental() %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -33,4 +55,8 @@ WHERE
         FROM
             {{ this }}
     )
+{% else %}
+WHERE
+    t.block_timestamp :: DATE BETWEEN '2021-01-30'
+    AND '2021-02-27' -- first month with token data in txs
 {% endif %}
