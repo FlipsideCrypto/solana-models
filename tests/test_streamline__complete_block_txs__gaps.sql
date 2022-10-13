@@ -3,9 +3,9 @@ WITH base_blocks AS (
         *
     FROM
         {% if target.database == 'SOLANA' %}
-        solana.silver.blocks2
+        solana.silver.blocks
         {% else %}
-        solana_dev.silver.blocks2
+        solana_dev.silver.blocks
         {% endif %}
     WHERE
         block_id >= 154195836 -- this query wont give correct results prior to this block_id
@@ -16,9 +16,9 @@ base_txs AS (
         DISTINCT block_id
     FROM
         {% if target.database == 'SOLANA' %}
-        solana.silver.transactions2
+        solana.silver.transactions
         {% else %}
-        solana_dev.silver.transactions2
+        solana_dev.silver.transactions
         {% endif %}
     WHERE
         block_id >= 154195836
@@ -27,9 +27,9 @@ base_txs AS (
         DISTINCT block_id
     FROM
         {% if target.database == 'SOLANA' %}
-        solana.silver.votes2
+        solana.silver.votes
         {% else %}
-        solana_dev.silver.votes2
+        solana_dev.silver.votes
         {% endif %}
     WHERE
         block_id >= 154195836
