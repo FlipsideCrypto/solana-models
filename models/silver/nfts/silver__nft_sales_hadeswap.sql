@@ -15,7 +15,6 @@ SELECT
   INSTRUCTION:accounts[5] ::STRING as purchaser, 
   INSTRUCTION:accounts[3] ::STRING as seller, 
   i.value:parsed:info:lamports / POW(10,9) AS sales_amount,
-  ingested_at,
   _inserted_timestamp
 FROM {{ ref('silver__events') }} e
 
