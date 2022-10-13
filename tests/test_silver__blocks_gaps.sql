@@ -1,3 +1,5 @@
+{{ config(error_if = '>25', warn_if = '>0') }}
+
 WITH tmp AS (
 
     SELECT
