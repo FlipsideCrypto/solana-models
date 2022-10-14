@@ -7,7 +7,6 @@ SELECT
     block_timestamp, 
     network,
     chain_id,
-    tx_count,
     block_height, 
     block_hash, 
     previous_block_id, 

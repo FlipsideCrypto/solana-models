@@ -24,7 +24,6 @@ WITH sales_inner_instructions AS (
     e.instruction :accounts [4] :: STRING AS nft_account_3,
     t.signers [0] :: STRING AS signer,
     i.value :parsed :info :newAuthority :: STRING AS new_authority,
-    e.ingested_at,
     e._inserted_timestamp
   FROM
     {{ ref('silver__events') }}
@@ -33,14 +32,55 @@ WITH sales_inner_instructions AS (
     t
     ON t.tx_id = e.tx_id
     LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
-  WHERE
-    e.block_timestamp :: date >= '2021-09-07'
-    AND program_id = 'MEisE1HzehtrDpAAT8PnLHjpSSkRYakotTuJRPjTpo8' -- Magic Eden V1 Program ID
+  WHERE 
+    program_id = 'MEisE1HzehtrDpAAT8PnLHjpSSkRYakotTuJRPjTpo8' -- Magic Eden V1 Program ID
     AND ARRAY_SIZE(
       inner_instruction :instructions
     ) > 2
 
-{% if is_incremental() %}
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+AND
+    t.block_timestamp :: DATE BETWEEN (
+        SELECT
+            LEAST(DATEADD(
+                'day',
+                1,
+                COALESCE(MAX(block_timestamp) :: DATE, '2021-09-07')),'2022-10-05')
+                FROM
+                    {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(DATEADD(
+            'day',
+            30,
+            COALESCE(MAX(block_timestamp) :: DATE, '2021-09-07')),'2022-10-05')
+            FROM
+                {{ this }}
+        )
+AND
+    e.block_timestamp :: DATE BETWEEN (
+        SELECT
+            LEAST(DATEADD(
+                'day',
+                1,
+                COALESCE(MAX(block_timestamp) :: DATE, '2021-09-07')),'2022-10-05')
+                FROM
+                    {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(DATEADD(
+            'day',
+            30,
+            COALESCE(MAX(block_timestamp) :: DATE, '2021-09-07')),'2022-10-05')
+            FROM
+                {{ this }}
+        )
+{% elif is_incremental() %}
 AND e._inserted_timestamp >= (
   SELECT
     MAX(_inserted_timestamp)
@@ -53,6 +93,14 @@ AND t._inserted_timestamp >= (
   FROM
     {{ this }}
 )
+{% else %}
+AND 
+    e.block_timestamp :: DATE BETWEEN '2021-09-07'
+    AND '2021-10-07'
+AND 
+    t.block_timestamp :: DATE BETWEEN '2021-09-07'
+    AND '2021-10-07'
+
 {% endif %}
 ),
 sellers AS (
@@ -81,7 +129,30 @@ post_token_balances AS (
     {{ ref('silver___post_token_balances') }}
     p
 
-{% if is_incremental() %}
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+WHERE
+    p.block_timestamp :: DATE BETWEEN (
+        SELECT
+            LEAST(DATEADD(
+                'day',
+                1,
+                COALESCE(MAX(block_timestamp) :: DATE, '2021-09-07')),'2022-10-05')
+                FROM
+                    {{ this }}
+        )
+        AND (
+        SELECT
+            LEAST(DATEADD(
+            'day',
+            30,
+            COALESCE(MAX(block_timestamp) :: DATE, '2021-09-07')),'2022-10-05')
+            FROM
+                {{ this }}
+        ) 
+{% elif is_incremental() %}
 WHERE
   p._inserted_timestamp >= (
     SELECT
@@ -89,6 +160,10 @@ WHERE
     FROM
       {{ this }}
   )
+{% else %}
+WHERE
+    block_timestamp :: DATE BETWEEN '2021-09-07'
+    AND '2021-10-07'
 {% endif %}
 )
 SELECT
@@ -109,7 +184,6 @@ SELECT
     10,
     9
   ) AS sales_amount,
-  s.ingested_at,
   s._inserted_timestamp
 FROM
   sales_inner_instructions s
@@ -134,5 +208,4 @@ GROUP BY
   ),
   ss.seller,
   ss.purchaser,
-  s.ingested_at,
   s._inserted_timestamp

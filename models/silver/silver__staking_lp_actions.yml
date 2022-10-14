@@ -11,7 +11,8 @@ models:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
-          - not_null
+          - not_null:
+              where: block_id > 39824213 and _inserted_timestamp::date < current_date
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 2
@@ -38,7 +39,8 @@ models:
       - name: EVENT_TYPE
         description: "{{ doc('event_type') }}"
         tests: 
-          - not_null
+          - not_null:
+              where: SUCCEEDED = TRUE and block_id > 25706401
       - name: SIGNERS
         description: List of accounts that signed the transaction
       - name: ACCOUNT_KEYS

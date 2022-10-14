@@ -14,7 +14,8 @@ models:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
-          - not_null
+          - not_null:
+              where: block_id > 39824213 and _inserted_timestamp::date < current_date
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 3

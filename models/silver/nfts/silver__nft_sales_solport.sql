@@ -21,7 +21,6 @@ WITH sales_inner_instructions AS (
     instruction :accounts [0] :: STRING AS purchaser,
     instruction :accounts [2] :: STRING AS seller, 
     instruction :accounts [3] :: STRING AS nft_account,
-    ingested_at,
     _inserted_timestamp
   FROM
     {{ ref('silver__events') }}
@@ -78,7 +77,6 @@ SELECT
     10,
     9
   ) AS sales_amount,
-  s.ingested_at,
   s._inserted_timestamp
 FROM
   sales_inner_instructions s
@@ -94,5 +92,4 @@ GROUP BY
   p.mint,
   s.purchaser,
   s.seller, 
-  s.ingested_at,
   s._inserted_timestamp

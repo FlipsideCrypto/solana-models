@@ -7,11 +7,13 @@ models:
             - BLOCK_ID
             - TX_ID
             - INDEX
+          where: block_timestamp::date > current_date - 30
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
-          - not_null
+          - not_null:
+              where: block_id > 39824213 and _inserted_timestamp::date < current_date
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 2
@@ -38,13 +40,10 @@ models:
       - name: INSTRUCTION
         description: An instruction specifies which program it is calling, which accounts it wants to read or modify, and additional data that serves as auxiliary input to the program
         tests: 
-          - not_null
+          - not_null:
+              where: block_timestamp::date > current_date - 30
       - name: INNER_INSTRUCTION
         description: A call from one smart contract program to another. 
-      - name: INGESTED_AT
-        description: "{{ doc('ingested_at') }}"
-        tests: 
-          - not_null
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
