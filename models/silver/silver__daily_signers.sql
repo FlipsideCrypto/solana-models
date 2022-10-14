@@ -11,10 +11,10 @@ WITH dates_changed AS (
     FROM
         {{ ref('silver__transactions') }}
 
-{% if (is_incremental() and env_var(
+{% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
     "false"
-) == "true") or not is_incremental() %}
+) == "true" %}
 WHERE
     _inserted_timestamp :: DATE BETWEEN (
         SELECT
@@ -49,6 +49,9 @@ WHERE
         FROM
             {{ this }}
     )
+{% else %}
+WHERE
+    _inserted_timestamp :: DATE = '2022-08-12'
 {% endif %}
 ),
 b AS (
