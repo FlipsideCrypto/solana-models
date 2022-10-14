@@ -28,6 +28,7 @@ WITH pre_final AS (
         t.data :transaction :message :instructions :: ARRAY AS instructions,
         t.data :meta :innerInstructions :: ARRAY AS inner_instructions,
         t.data :meta :logMessages :: ARRAY AS log_messages,
+        t.data:transaction:message:addressTableLookups::array as address_table_lookups,
         t.data :version :: STRING as version,
         t._partition_id,
         t._inserted_timestamp
@@ -89,6 +90,7 @@ prev_null_block_timestamp_txs AS (
         t.instructions,
         t.inner_instructions,
         t.log_messages,
+        t.address_table_lookups,
         t.version,
         t._partition_id,
         GREATEST(
@@ -122,6 +124,7 @@ SELECT
     instructions,
     inner_instructions,
     log_messages,
+    address_table_lookups,
     version,
     _partition_id,
     _inserted_timestamp
