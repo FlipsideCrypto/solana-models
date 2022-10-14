@@ -9,12 +9,12 @@ WITH dates_changed AS (
     SELECT
         DISTINCT block_timestamp :: DATE AS block_timestamp_date
     FROM
-        {{ ref('silver__transactions2') }}
+        {{ ref('silver__transactions') }}
 
-{% if is_incremental() and env_var(
+{% if (is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
     "false"
-) == "true" %}
+) == "true") or not is_incremental() %}
 WHERE
     _inserted_timestamp :: DATE BETWEEN (
         SELECT
@@ -49,9 +49,6 @@ WHERE
         FROM
             {{ this }}
     )
-{% else %}
-WHERE
-    _inserted_timestamp :: DATE = '2022-08-12'
 {% endif %}
 ),
 b AS (
@@ -71,7 +68,7 @@ b AS (
                 block_timestamp
         ) AS last_tx,*
     FROM
-        {{ ref('silver__transactions2') }}
+        {{ ref('silver__transactions') }}
         t,
         TABLE(FLATTEN(signers)) s
     WHERE
@@ -89,7 +86,7 @@ C AS (
         INDEX,
         _inserted_timestamp
     FROM
-        {{ ref('silver__events2') }}
+        {{ ref('silver__events') }}
         e
     WHERE
         e.block_timestamp :: DATE IN (
