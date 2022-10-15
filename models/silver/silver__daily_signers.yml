@@ -1,0 +1,45 @@
+version: 2
+models:
+  - name: silver__daily_signers
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - signer
+            - b_date
+    columns:
+      - name: SIGNER
+        description: The address of the user that initiated the transaction
+        tests:
+          - not_null
+      - name: B_DATE
+        description: The date the information is valid for
+        tests: 
+          - not_null
+      - name: FIRST_TX
+        description: The transaction ID of the first daily transaction.
+        tests: 
+          - not_null
+      - name: LAST_TX
+        description: The transaction ID of the last daily transaction.
+        tests: 
+          - not_null
+      - name: TOTAL_FEES
+        description: The total amount of fees (in lamports) that the signer has paid on a given day. This field can be null, as only the first signer pays transaction fees.
+        tests: 
+          - not_null: 
+              enabled: FALSE 
+      - name: FIRST_PROGRAM_ID
+        description: The first program the signer interacted with. This field can be null, as some transactions do not have instructions.
+        tests: 
+          - not_null: 
+              enabled: FALSE 
+      - name: LAST_PROGRAM_ID
+        description: The most recent program the signer interacted with. This field can be null, as some transactions do not have instructions.
+        tests: 
+          - not_null: 
+              enabled: FALSE
+      - name: UNIQUE_PROGRAM_IDS
+        description: An array containing all program IDs a user interacted with on a given day.
+        tests: 
+          - not_null
+          
