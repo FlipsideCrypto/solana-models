@@ -34,7 +34,7 @@ WHERE
             LEAST(
                 DATEADD(
                     'day',
-                    5,
+                    1,
                     COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
                 ),
                 CURRENT_DATE - 1
@@ -90,7 +90,7 @@ b AS (
                 LEAST(
                     DATEADD(
                         'day',
-                        5,
+                        1,
                         COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
                     ),
                     CURRENT_DATE - 1
@@ -127,7 +127,7 @@ C AS (
                 LEAST(
                     DATEADD(
                         'day',
-                        5,
+                        1,
                         COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
                     ),
                     CURRENT_DATE - 1
