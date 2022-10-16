@@ -29,11 +29,19 @@ WHERE program_id = 'hadeK9DLv9eA7ya5KCTqSvSvRZeJC3JgD5a9Y3CNbvu'
   AND INSTRUCTION:accounts[4] ::STRING != '11111111111111111111111111111111'
   AND INSTRUCTION:accounts[5] ::STRING != '11111111111111111111111111111111'
 
-{% IF is_incremental() AND env_var('DBT_IS_BATCH_LOAD',"false") == "true" %}
-  AND block_timestamp :: DATE BETWEEN (SELECT LEAST(DATEADD('day',1,COALESCE(MAX(block_timestamp) :: DATE, '2022-09-22')),'2022-10-05') FROM {{ this }})
-  AND (SELECT LEAST(DATEADD('day',30,COALESCE(MAX(block_timestamp) :: DATE, '2022-09-22')),'2022-10-05') FROM {{ this }})
-{% elif is_incremental() %}
-  AND _inserted_timestamp >= (SELECT MAX(_inserted_timestamp) FROM {{ this }})
+{% if is_incremental() %}
+    WHERE block_timestamp >= ( SELECT MAX(block_timestamp) FROM {{ this }})
 {% else %}
-  AND block_timestamp :: DATE BETWEEN '2022-09-22' AND '2022-10-22'
+    WHERE block_timestamp :: DATE >= '2022-09-22' -- no Hadeswap sales before this date
 {% endif %}
+
+
+-- {% IF is_incremental() AND env_var('DBT_IS_BATCH_LOAD',"false") == "true" %}
+--   AND block_timestamp :: DATE BETWEEN (SELECT LEAST(DATEADD('day',1,COALESCE(MAX(block_timestamp) :: DATE, '2022-09-22')),'2022-10-05') FROM {{ this }})
+--   AND (SELECT LEAST(DATEADD('day',30,COALESCE(MAX(block_timestamp) :: DATE, '2022-09-22')),'2022-10-05') FROM {{ this }})
+-- {% elif is_incremental() %}
+--   AND _inserted_timestamp >= (SELECT MAX(_inserted_timestamp) FROM {{ this }})
+-- {% else %}
+--   AND block_timestamp :: DATE BETWEEN '2022-09-22' AND '2022-10-22'
+-- {% endif %}
+
