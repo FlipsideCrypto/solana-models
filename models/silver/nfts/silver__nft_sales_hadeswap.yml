@@ -6,6 +6,7 @@ models:
           combination_of_columns:
             - TX_ID
             - MINT
+            - INDEX
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -45,10 +46,6 @@ models:
               where: succeeded = TRUE
       - name: SALES_AMOUNT
         description: "{{ doc('sales_amount') }}"
-        tests: 
-          - not_null
-      - name: INGESTED_AT
-        description: " {{ doc('ingested_at') }} "
         tests: 
           - not_null
       - name: _INSERTED_TIMESTAMP
