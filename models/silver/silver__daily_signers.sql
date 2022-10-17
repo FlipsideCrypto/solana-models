@@ -85,12 +85,12 @@ b AS (
         'DBT_IS_BATCH_LOAD',
         "false"
     ) == "true" %}
-        AND _inserted_timestamp <= (
+        AND _inserted_timestamp < (
             SELECT
                 LEAST(
                     DATEADD(
                         'day',
-                        1,
+                        2,
                         COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
                     ),
                     CURRENT_DATE - 1
@@ -122,12 +122,12 @@ C AS (
         'DBT_IS_BATCH_LOAD',
         "false"
     ) == "true" %}
-        AND e._inserted_timestamp <= (
+        AND e._inserted_timestamp < (
             SELECT
                 LEAST(
                     DATEADD(
                         'day',
-                        1,
+                        2,
                         COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
                     ),
                     CURRENT_DATE - 1
