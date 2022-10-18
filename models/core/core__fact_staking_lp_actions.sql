@@ -1,5 +1,12 @@
 {{ config(
-    materialized = 'view'
+    materialized = 'view',
+    meta={
+        'database_tags':{
+            'table': {
+                'table_type': 'staking'
+            }
+        }
+    },
 ) }}
 
 SELECT 
