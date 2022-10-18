@@ -113,3 +113,31 @@ SELECT
     sales_amount
 FROM
     {{ ref('silver__nft_sales_hadeswap') }}
+UNION
+SELECT
+    'hyperspace',
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    purchaser,
+    seller, 
+    mint,
+    sales_amount
+FROM
+    {{ ref('silver__nft_sales_hyperspace') }}
+UNION 
+SELECT
+    'coral cube',
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    purchaser,
+    seller, 
+    mint,
+    sales_amount
+FROM
+    {{ ref('silver__nft_sales_coral_cube') }}
