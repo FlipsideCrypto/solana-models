@@ -98,7 +98,7 @@ b AS (
             FROM
                 {{ this }}
         )
-    {% else %}
+    {% elif not is_incremental() %}
         AND _inserted_timestamp :: DATE = '2022-08-12'
     {% endif %}
 ),
@@ -135,7 +135,7 @@ C AS (
             FROM
                 {{ this }}
         )
-    {% else %}
+    {% elif not is_incremental() %}
         AND e._inserted_timestamp :: DATE = '2022-08-12'
     {% endif %}
 ),
