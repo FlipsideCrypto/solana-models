@@ -116,7 +116,18 @@
     {% endset %}
     {% do run_query(query) %}
     {% set query %}
-        alter database solana_dev set tag {{target.database}}.silver.{{tag_name}} = '{{tag_value}}'
+        alter database {{target.database}} set tag {{target.database}}.silver.{{tag_name}} = '{{tag_value}}'
+    {% endset %}
+    {% do run_query(query) %}
+{% endmacro %}
+
+{% macro set_schema_tag_value(target_schema,tag_name,tag_value) %}
+    {% set query %}
+        create tag if not exists silver.{{tag_name}}
+    {% endset %}
+    {% do run_query(query) %}
+    {% set query %}
+        alter schema {{target.database}}.{{target_schema}} set tag {{target.database}}.silver.{{tag_name}} = '{{tag_value}}'
     {% endset %}
     {% do run_query(query) %}
 {% endmacro %}
