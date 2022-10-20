@@ -23,7 +23,8 @@ WITH base_table AS (
         e
     WHERE
         program_id = 'HYPERfwdTjyJ2SCaKHmpF2MtrXqWxrsotYDsTrshHWq8'
-        AND INDEX = 3
+        AND (instruction :accounts [10] :: STRING = '5pdaXth4ijgDCeYDKgSx3jAbN7m8h4gy1LRCErAAN1LM'
+        OR instruction :accounts [11] :: STRING = '5pdaXth4ijgDCeYDKgSx3jAbN7m8h4gy1LRCErAAN1LM')
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

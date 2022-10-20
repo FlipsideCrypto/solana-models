@@ -6,6 +6,17 @@ models:
           combination_of_columns:
             - TX_ID
             - MINT
+      - compare_model_subset:
+          name: silver__nft_sales_hyperspace_business_logic_test
+          compare_model: ref('testing__nft_sales_hyperspace')
+          compare_columns: 
+            - tx_id
+            - purchaser
+            - seller
+            - mint
+            - round(sales_amount,8)
+          model_condition: "where tx_id in ('4dVZSdzGgRdJxM4j3JVwwo5t9sxZEB5SkcMU5tWe7dsnZKJvthwy2jHwxmhwApR2QFgD6h9DSc2nTt2JpziGDLKM',
+            '3qRyNqFzkSKSf4cB43nfMS8VTSvMGe4zkG2jFF7Azhhxrw4HqimseHN7w6ox1G87yrr4ruaAjK6838eL7oAJiy7s')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
