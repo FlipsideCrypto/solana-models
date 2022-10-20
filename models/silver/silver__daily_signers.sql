@@ -34,7 +34,7 @@ WHERE
             LEAST(
                 DATEADD(
                     'day',
-                    10,
+                    1,
                     COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
                 ),
                 CURRENT_DATE - 1
@@ -51,8 +51,16 @@ WHERE
     )
 {% else %}
 WHERE
-    _inserted_timestamp :: DATE = '2022-08-12'
+    _inserted_timestamp :: DATE BETWEEN '2022-08-12' AND '2022-08-30'
 {% endif %}
+),
+exclude_programs AS (
+    SELECT
+        address
+    FROM 
+        {{ ref('core__dim_labels') }}
+    WHERE 
+        label_type = 'chadmin'
 ),
 b AS (
     SELECT
@@ -90,7 +98,7 @@ b AS (
                 LEAST(
                     DATEADD(
                         'day',
-                        11,
+                        2,
                         COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
                     ),
                     CURRENT_DATE - 1
@@ -99,7 +107,7 @@ b AS (
                 {{ this }}
         )
     {% elif not is_incremental() %}
-        AND _inserted_timestamp :: DATE = '2022-08-12'
+        AND _inserted_timestamp :: DATE BETWEEN '2022-08-12' AND '2022-08-30'
     {% endif %}
 ),
 C AS (
@@ -127,7 +135,7 @@ C AS (
                 LEAST(
                     DATEADD(
                         'day',
-                        11,
+                        2,
                         COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
                     ),
                     CURRENT_DATE - 1
@@ -136,7 +144,7 @@ C AS (
                 {{ this }}
         )
     {% elif not is_incremental() %}
-        AND e._inserted_timestamp :: DATE = '2022-08-12'
+        AND e._inserted_timestamp :: DATE BETWEEN '2022-08-12' AND '2022-08-30'
     {% endif %}
 ),
 base_programs AS (
@@ -150,6 +158,9 @@ base_programs AS (
         program_ids [array_size(program_ids)-1] :: STRING AS last_program_id
     FROM
         C
+    LEFT JOIN exclude_programs ep on ep.address = C.program_id
+    WHERE 
+        ep.address is null
     GROUP BY
         tx_id
 ),
@@ -158,13 +169,13 @@ first_last_programs AS (
         b.signer,
         b.b_date,
         b.tx_id,
-        FIRST_VALUE(first_program_id) over (
+        FIRST_VALUE(first_program_id ignore nulls) over (
             PARTITION BY signer,
             b_date
             ORDER BY
                 block_timestamp
         ) AS first_program_id,
-        LAST_VALUE(last_program_id) over (
+        LAST_VALUE(last_program_id ignore nulls) over (
             PARTITION BY signer,
             b_date
             ORDER BY
