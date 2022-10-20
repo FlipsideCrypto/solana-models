@@ -1,0 +1,19 @@
+solana:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SF_ACCOUNT') }}"
+      # User/password auth
+      user: "{{ env_var('SF_USERNAME') }}"
+      password: "{{ env_var('SF_PASSWORD') }}"
+      role: "{{ env_var('SF_ROLE') }}"
+      schema: "{{ env_var('SF_SCHEMA') }}"
+      region: "{{ env_var('SF_REGION') }}"
+      database: "{{ env_var('SF_DATABASE') }}"
+      warehouse: "{{ env_var('SF_WAREHOUSE') }}"
+      threads: 4
+      client_session_keep_alive: False
+      query_tag: solana_curator
+  config:
+    send_anonymous_usage_stats: False
