@@ -34,7 +34,7 @@ WHERE
             LEAST(
                 DATEADD(
                     'day',
-                    1,
+                    10,
                     COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
                 ),
                 CURRENT_DATE - 1
@@ -85,12 +85,12 @@ b AS (
         'DBT_IS_BATCH_LOAD',
         "false"
     ) == "true" %}
-        AND _inserted_timestamp <= (
+        AND _inserted_timestamp < (
             SELECT
                 LEAST(
                     DATEADD(
                         'day',
-                        1,
+                        11,
                         COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
                     ),
                     CURRENT_DATE - 1
@@ -98,7 +98,7 @@ b AS (
             FROM
                 {{ this }}
         )
-    {% else %}
+    {% elif not is_incremental() %}
         AND _inserted_timestamp :: DATE = '2022-08-12'
     {% endif %}
 ),
@@ -122,12 +122,12 @@ C AS (
         'DBT_IS_BATCH_LOAD',
         "false"
     ) == "true" %}
-        AND e._inserted_timestamp <= (
+        AND e._inserted_timestamp < (
             SELECT
                 LEAST(
                     DATEADD(
                         'day',
-                        1,
+                        11,
                         COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
                     ),
                     CURRENT_DATE - 1
@@ -135,7 +135,7 @@ C AS (
             FROM
                 {{ this }}
         )
-    {% else %}
+    {% elif not is_incremental() %}
         AND e._inserted_timestamp :: DATE = '2022-08-12'
     {% endif %}
 ),

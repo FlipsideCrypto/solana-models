@@ -1,0 +1,9 @@
+version: "3.4"
+
+services:
+  dbt_console:
+    build: .
+    volumes:
+      - .:/solana
+    env_file: 
+      - .env

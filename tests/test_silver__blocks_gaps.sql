@@ -41,4 +41,4 @@ SELECT
 FROM
     gaps
 WHERE
-    gap_end_block_id <> 1690556;-- this block is not available
+    gap_end_block_id <> 1690556 -- this block is not available
