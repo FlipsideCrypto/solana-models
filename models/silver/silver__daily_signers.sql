@@ -51,7 +51,7 @@ WHERE
     )
 {% else %}
 WHERE
-    _inserted_timestamp :: DATE = '2022-08-12'
+    _inserted_timestamp :: DATE BETWEEN '2022-08-12' AND '2022-08-30'
 {% endif %}
 ),
 exclude_programs AS (
@@ -107,7 +107,7 @@ b AS (
                 {{ this }}
         )
     {% elif not is_incremental() %}
-        AND _inserted_timestamp :: DATE = '2022-08-12'
+        AND _inserted_timestamp :: DATE BETWEEN '2022-08-12' AND '2022-08-30'
     {% endif %}
 ),
 C AS (
@@ -144,7 +144,7 @@ C AS (
                 {{ this }}
         )
     {% elif not is_incremental() %}
-        AND e._inserted_timestamp :: DATE = '2022-08-12'
+        AND e._inserted_timestamp :: DATE BETWEEN '2022-08-12' AND '2022-08-30'
     {% endif %}
 ),
 base_programs AS (
