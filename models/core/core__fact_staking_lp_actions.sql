@@ -3,10 +3,10 @@
     meta={
         'database_tags':{
             'table': {
-                'table_type': 'staking'
+                'PURPOSE': 'STAKING'
             }
         }
-    },
+    }
 ) }}
 
 SELECT 
