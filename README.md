@@ -71,5 +71,5 @@ dbt run --var '{"UPDATE_SNOWFLAKE_TAGS":True}' -s models/core/core__fact_swaps.s
 
 ```
 select *
-from table(solana_dev.information_schema.tag_references('solana.core.fact_blocks', 'table'));
+from table(solana.information_schema.tag_references('solana.core.fact_blocks', 'table'));
 ```
