@@ -64,7 +64,7 @@
 	{% if table_tag not in all_tag_names %}
 		{{ log('Creating missing tag '+table_tag, info=False) }}
         {%- call statement('main', fetch_result=True) -%}
-            create tag if not exists {{table_tag}}
+            create tag if not exists silver.{{table_tag}}
         {%- endcall -%}
 		{{ log(load_result('main').data, info=False) }}
 	{% else %}
