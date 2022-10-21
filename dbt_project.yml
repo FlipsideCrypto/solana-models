@@ -33,6 +33,9 @@ on-run-start:
   - '{{ sp_create_bulk_get_decoded_instructions_data() }}'
   - '{{ sp_create_bulk_get_validator_metadata() }}'
 
+on-run-end:
+  - '{{ apply_meta_as_tags(results) }}'
+
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models
@@ -49,3 +52,4 @@ models:
 
 vars:
   "dbt_date:time_zone": America/Los_Angeles
+  UPDATE_SNOWFLAKE_TAGS: False

@@ -1,5 +1,12 @@
 {{ config(
     materialized = 'table',
+    meta={
+        'database_tags':{
+            'table': {
+                'PURPOSE': 'STAKING'
+            }
+        }
+    },
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
 ) }}
