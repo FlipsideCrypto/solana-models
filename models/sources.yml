@@ -8,10 +8,17 @@ sources:
       - name: solana_blocks
       - name: solana_txs
   - name: crosschain
-    database: crosschain
+    database: "{{ 'crosschain' if target.database == 'SOLANA' else 'crosschain_dev' }}"
     schema: core
     tables:
       - name: address_labels
+      - name: dim_date_hours
+  - name: crosschain_silver
+    database: "{{ 'crosschain' if target.database == 'SOLANA' else 'crosschain_dev' }}"
+    schema: silver
+    tables:
+      - name: asset_metadata_coin_market_cap
+      - name: hourly_prices_coin_market_cap
   - name: shared
     database: flipside_prod_db
     schema: silver
