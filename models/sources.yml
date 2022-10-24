@@ -18,7 +18,9 @@ sources:
     schema: silver
     tables:
       - name: asset_metadata_coin_market_cap
+      - name: asset_metadata_coin_gecko
       - name: hourly_prices_coin_market_cap
+      - name: hourly_prices_coin_gecko
   - name: shared
     database: flipside_prod_db
     schema: silver

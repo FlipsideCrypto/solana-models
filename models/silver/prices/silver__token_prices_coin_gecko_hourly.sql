@@ -22,7 +22,7 @@ WITH date_hours AS (
             FROM
                 {{ source(
                     'crosschain_silver',
-                    'hourly_prices_coin_market_cap'
+                    'hourly_prices_coin_gecko'
                 ) }}
         )
 
@@ -42,35 +42,26 @@ asset_metadata AS (
     FROM
         {{ source(
             'crosschain_silver',
-            'asset_metadata_coin_market_cap'
+            'asset_metadata_coin_gecko'
         ) }}
     WHERE
-        _inserted_timestamp = (
-            SELECT
-                MAX(_inserted_timestamp)
-            FROM
-                {{ source(
-                    'crosschain_silver',
-                    'asset_metadata_coin_market_cap'
-                ) }}
-        )
-        AND id IN (
-            5426,
-            8526,
-            11461,
-            9549,
-            12297,
-            9015,
-            7978,
-            12236,
-            11171,
-            13524,
-            6187,
-            3408,
-            825,
-            7129,
-            4195,
-            11181
+        id IN (
+            'solana',
+            'cope',
+            'bonfida',
+            'jet',
+            'mercurial',
+            'mango-markets',
+            'msol',
+            'raydium',
+            'saber',
+            'solend',
+            'serum',
+            'lido-staked-sol',
+            'ftx-token',
+            'usd-coin',
+            'tether',
+            'terrausd'
         )
     GROUP BY
         1,
@@ -91,7 +82,7 @@ base_legacy_prices AS (
             'hour',
             recorded_at
         ) AS recorded_hour,
-        asset_id :: NUMBER AS id,
+        asset_id AS id,
         symbol,
         price AS CLOSE
     FROM
@@ -100,24 +91,24 @@ base_legacy_prices AS (
             'prices_v2'
         ) }}
     WHERE
-        provider = 'coinmarketcap'
+        provider = 'coingecko'
         AND asset_id IN (
-            '5426',
-            '8526',
-            '11461',
-            '9549',
-            '12297',
-            '9015',
-            '7978',
-            '12236',
-            '11171',
-            '13524',
-            '6187',
-            '3408',
-            '825',
-            '7129',
-            '4195',
-            '11181'
+            'solana',
+            'cope',
+            'bonfida',
+            'jet',
+            'mercurial',
+            'mango-markets',
+            'msol',
+            'raydium',
+            'saber',
+            'solend',
+            'serum',
+            'lido-staked-sol',
+            'ftx-token',
+            'usd-coin',
+            'tether',
+            'terrausd'
         )
         AND MINUTE(recorded_at) = 59
         AND recorded_at :: DATE < '2022-07-20' -- use legacy data before this date
@@ -140,29 +131,29 @@ base_prices AS (
     FROM
         {{ source(
             'crosschain_silver',
-            'hourly_prices_coin_market_cap'
+            'hourly_prices_coin_gecko'
         ) }}
         p
         LEFT OUTER JOIN asset_metadata m
         ON m.id = p.id
     WHERE
         p.id IN (
-            5426,
-            8526,
-            11461,
-            9549,
-            12297,
-            9015,
-            7978,
-            12236,
-            11171,
-            13524,
-            6187,
-            3408,
-            825,
-            7129,
-            4195,
-            11181
+            'solana',
+            'cope',
+            'bonfida',
+            'jet',
+            'mercurial',
+            'mango-markets',
+            'msol',
+            'raydium',
+            'saber',
+            'solend',
+            'serum',
+            'lido-staked-sol',
+            'ftx-token',
+            'usd-coin',
+            'tether',
+            'terrausd'
         )
         AND recorded_hour :: DATE >= '2022-07-20'
 
