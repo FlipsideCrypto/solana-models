@@ -6,15 +6,11 @@ models:
           combination_of_columns:
             - TX_ID
             - MINT
-            - INDEX
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
           - not_null
-          # - dbt_expectations.expect_row_values_to_have_recent_data:
-          #     datepart: day
-          #     interval: 2
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
