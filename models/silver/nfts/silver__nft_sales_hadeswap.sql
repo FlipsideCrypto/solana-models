@@ -101,7 +101,7 @@ buy_amount AS (
     AND e.block_timestamp :: DATE >= '2022-09-22'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND e._inserted_timestamp >= (
   SELECT
     MAX(_inserted_timestamp)
   FROM
@@ -126,7 +126,7 @@ lp_txs AS (
     AND l.value :: STRING LIKE 'Program log: Instruction: SellNftToLiquidityPair'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND t._inserted_timestamp >= (
   SELECT
     MAX(_inserted_timestamp)
   FROM
@@ -176,7 +176,7 @@ lp_amount AS (
     ) AS sales_amount
   FROM
     lp_buys l
-    INNER JOIN solana.silver.events e
+    INNER JOIN {{ ref('silver__events') }} e
     ON l.tx_id = e.tx_id
     AND l.instructions_index = e.inner_instruction :index
     LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
@@ -185,7 +185,7 @@ lp_amount AS (
     AND i.value :parsed :type = 'transfer'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND e._inserted_timestamp >= (
   SELECT
     MAX(_inserted_timestamp)
   FROM
