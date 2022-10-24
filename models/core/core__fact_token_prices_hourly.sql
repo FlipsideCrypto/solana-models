@@ -7,7 +7,7 @@ SELECT
     'coinmarketcap' AS provider,
     recorded_hour,
     id :: STRING AS id,
-    symbol,
+    upper(symbol) as symbol,
     CLOSE,
     imputed
 FROM
@@ -17,8 +17,8 @@ SELECT
     'coingecko' AS provider,
     recorded_hour,
     id,
-    symbol,
+    upper(symbol) as symbol,
     CLOSE,
     imputed
 FROM
-    {{ ref('silver__token_prices_coin_market_cap_hourly') }}
+    {{ ref('silver__token_prices_coin_gecko_hourly') }}
