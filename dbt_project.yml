@@ -51,5 +51,6 @@ models:
   +on_schema_change: "append_new_columns"
 
 vars:
-  "dbt_date:time_zone": America/Los_Angeles
+  "dbt_date:time_zone": GMT
   UPDATE_SNOWFLAKE_TAGS: False
+  UPDATE_UDFS_AND_SPS: False 

@@ -1,0 +1,30 @@
+version: 2
+models:
+  - name: core__fact_token_prices_hourly
+    columns:
+      - name: PROVIDER
+        description: Provider of the data
+        tests:
+          - not_null
+      - name: RECORDED_HOUR
+        description: Hour that the price was recorded at
+        tests:
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: ID
+        description: ID of the asset from CoinMarketCap
+        tests:
+          - not_null
+      - name: SYMBOL
+        description: Symbol of the token
+        tests:
+          - not_null
+      - name: CLOSE
+        description: Closing price of the recorded hour in USD
+        tests: 
+          - not_null
+      - name: IMPUTED
+        description: Whether the price was imputed from an earlier record (generally used for low trade volume tokens)
+        tests: 
+          - not_null 
