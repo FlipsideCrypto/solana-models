@@ -16,7 +16,10 @@ WITH base_stake_pool_events AS (
         AND instruction :accounts [0] :: STRING IN (
             -- daopool stake pool
             '7ge2xKsZXmqPxa3YmXxXmzCp9Hc2ezrTxh6PECaxCwrL',
-            'stk9ApL5HeVAwPLr3TLhDXdZS8ptVu7zp6ov8HFDuMi' -- blazestake stake pool
+            -- blazestake stake pool
+            'stk9ApL5HeVAwPLr3TLhDXdZS8ptVu7zp6ov8HFDuMi',
+            -- jpool stake pool
+            'CtMyWsrUtAwXWiGr9WjHT5fC3p3fgV8cyGpLTo2LJzG1'
         )
 
 {% if is_incremental() %}
@@ -34,14 +37,26 @@ deposit_events AS (
     FROM
         base_stake_pool_events
     WHERE
-        ARRAY_SIZE(
+        (
+            ARRAY_SIZE(
             instruction :accounts
-        ) IN (
-            10,
-            11
+            ) IN (
+                10,
+                11
+            )
+            AND instruction :accounts [8] :: STRING = '11111111111111111111111111111111'
+            AND instruction :accounts [9] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
         )
-        AND instruction :accounts [8] :: STRING = '11111111111111111111111111111111'
-        AND instruction :accounts [9] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+        OR
+        (
+            ARRAY_SIZE(
+            instruction :accounts
+            ) = 15
+            AND instruction :accounts [11] :: STRING = 'SysvarC1ock11111111111111111111111111111111'
+            AND instruction :accounts [12] :: STRING = 'SysvarStakeHistory1111111111111111111111111'
+            AND instruction :accounts [13] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+            AND instruction :accounts [14] :: STRING = 'Stake11111111111111111111111111111111111111'
+        )
 ),
 withdraw_events AS (
     SELECT
@@ -49,16 +64,27 @@ withdraw_events AS (
     FROM
         base_stake_pool_events
     WHERE
-        ARRAY_SIZE(
-            instruction :accounts
-        ) IN (
-            12,
-            13
+        (
+            ARRAY_SIZE(
+                instruction :accounts
+            ) IN (
+                12,
+                13
+            )
+            AND instruction :accounts [8] :: STRING = 'SysvarC1ock11111111111111111111111111111111'
+            AND instruction :accounts [9] :: STRING = 'SysvarStakeHistory1111111111111111111111111'
+            AND instruction :accounts [10] :: STRING = 'Stake11111111111111111111111111111111111111'
+            AND instruction :accounts [11] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
         )
-        AND instruction :accounts [8] :: STRING = 'SysvarC1ock11111111111111111111111111111111'
-        AND instruction :accounts [9] :: STRING = 'SysvarStakeHistory1111111111111111111111111'
-        AND instruction :accounts [10] :: STRING = 'Stake11111111111111111111111111111111111111'
-        AND instruction :accounts [11] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+        OR
+        (
+            ARRAY_SIZE(
+            instruction :accounts
+            ) = 13
+            AND instruction :accounts [10] :: STRING = 'SysvarC1ock11111111111111111111111111111111'
+            AND instruction :accounts [11] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+            AND instruction :accounts [12] :: STRING = 'Stake11111111111111111111111111111111111111'
+        )
 ),
 stake_events AS (
     select *
@@ -88,7 +114,7 @@ SELECT
     e.block_timestamp,
     e.index,
     e.succeeded,
-    'delegate' AS action,
+    'deposit' AS action,
     e.instruction :accounts [0] :: STRING AS stake_pool,
     e.instruction :accounts [3] :: STRING AS delegator_address,
     i.value :parsed :info :lamports AS amount,
@@ -120,7 +146,7 @@ SELECT
     e.block_timestamp,
     e.index,
     e.succeeded,
-    'stake' AS action,
+    'increase_validator_stake' AS action,
     e.instruction :accounts [0] :: STRING AS stake_pool,
     e.instruction :accounts [1] :: STRING AS delegator_address,
     i.value :parsed :info :lamports AS amount,
@@ -136,7 +162,7 @@ SELECT
     e.block_timestamp,
     e.index,
     e.succeeded,
-    'unstake' AS action,
+    'decrease_validator_stake' AS action,
     e.instruction :accounts [0] :: STRING AS stake_pool,
     e.instruction :accounts [1] :: STRING AS delegator_address,
     i.value :parsed :info :lamports AS amount,
