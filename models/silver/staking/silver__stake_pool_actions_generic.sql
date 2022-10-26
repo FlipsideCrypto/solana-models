@@ -148,7 +148,7 @@ SELECT
     e.succeeded,
     'increase_validator_stake' AS action,
     e.instruction :accounts [0] :: STRING AS stake_pool,
-    e.instruction :accounts [1] :: STRING AS delegator_address,
+    NULL AS delegator_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp
 FROM
@@ -164,7 +164,7 @@ SELECT
     e.succeeded,
     'decrease_validator_stake' AS action,
     e.instruction :accounts [0] :: STRING AS stake_pool,
-    e.instruction :accounts [1] :: STRING AS delegator_address,
+    NULL AS delegator_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp
 FROM

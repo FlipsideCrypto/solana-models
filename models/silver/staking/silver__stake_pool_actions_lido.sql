@@ -78,7 +78,7 @@ SELECT
     e.block_timestamp,
     e.index,
     e.succeeded,
-    'delegate' AS action,
+    'deposit' AS action,
     e.instruction :accounts [1] :: STRING AS delegator_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp
@@ -109,7 +109,7 @@ SELECT
     e.index,
     e.succeeded,
     'stake' AS action,
-    e.instruction :accounts [1] :: STRING AS delegator_address,
+    NULL AS delegator_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp
 FROM
@@ -124,7 +124,7 @@ SELECT
     e.index,
     e.succeeded,
     'unstake' AS action,
-    e.instruction :accounts [1] :: STRING AS delegator_address,
+    NULL AS delegator_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp
 FROM
