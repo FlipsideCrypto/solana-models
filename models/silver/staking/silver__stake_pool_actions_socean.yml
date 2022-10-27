@@ -5,6 +5,24 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - _UNIQUE_KEY
+      - compare_model_subset:
+          name: silver__stake_pool_actions_socean_business_logic_test
+          compare_model: ref('testing__stake_pool_actions_socean')
+          compare_columns: 
+            - tx_id
+            - index
+            - action
+            - stake_pool
+            - stake_pool_withdraw_authority
+            - stake_pool_deposit_authority
+            - address
+            - reserve_stake_address
+            - amount
+          model_condition: "where tx_id in ('4pCtKHgugzwsXJ3HVRSyQroMkSVu9Uq5xXa92wm8qk3uzPBspJMyFSpS7K6zwUTGLrwtTufuppNKBMgbFGT1ntNC',
+            '4RG4VM2c7zVVL1pNzyojNquEHm9eK5tFxC3BYdxjsbXv6R7YgMv34r2qo79t2nmTXg4fPTfat2MbYrNMUCAyxkP3',
+            '2uSppNnHD25xVpawL8TgYACBsLAKXDTUBLWMwUupEjFMA4DScKrozcXJdurvJHh3AZwLoQzW3swov1bX5TtWKFTj',
+            '4KdY9xd6dbEx5F5zEN5Vy5qAN4ZTgWP8zscSoWj9xjd5fxwTWHn4xbVfnT1Nm39a3bpcq1Wcv3g6TNB9HoyTquAN',
+            '2BvmWkeogYu2rWiBmKE3zvXy73odpyQ4yC6LTcebhpDuZBXYryuCTTpURQ1Fqdgun1j3k7ueZwsxMXmYQGyBLtXt')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -43,8 +61,6 @@ models:
           - not_null
       - name: STAKE_POOL_DEPOSIT_AUTHORITY
         description: "{{ doc('stake_pool_deposit_authority') }}"
-        tests: 
-          - not_null
       - name: ADDRESS
         description: "{{ doc('stake_pool_address') }}"
         tests: 
@@ -52,7 +68,8 @@ models:
       - name: RESERVE_STAKE_ADDRESS
         description: "{{ doc('stake_pool_reserve_stake_address') }}"
         tests: 
-          - not_null
+          - not_null:
+              where: action <> 'withdraw_stake'
       - name: AMOUNT
         description: "{{ doc('stake_pool_amount') }}"
         tests: 
