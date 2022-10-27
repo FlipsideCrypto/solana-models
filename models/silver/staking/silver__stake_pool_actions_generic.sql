@@ -195,7 +195,7 @@ SELECT
     e.instruction :accounts [2] :: STRING AS reserve_stake_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp,
-    concat_ws('-',tx_id,e.index) as _unique_key
+    concat_ws('-',e.tx_id,e.index) as _unique_key
 FROM
     deposit_events e
     LEFT OUTER JOIN base_balances b
