@@ -191,14 +191,16 @@ SELECT
     e.instruction :accounts [0] :: STRING AS stake_pool,
     e.instruction :accounts [1] :: STRING AS stake_pool_withdraw_authority,
     NULL as stake_pool_deposit_authority,
-    e.instruction :accounts [3] :: STRING AS address,
+    b.signers[0] :: STRING AS address,  -- use signers instead of instruction account because of "passthrough" wallets
     e.instruction :accounts [2] :: STRING AS reserve_stake_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp,
     concat_ws('-',tx_id,e.index) as _unique_key
 FROM
-    deposit_events e,
-    TABLE(FLATTEN(inner_instruction :instructions)) i
+    deposit_events e
+    LEFT OUTER JOIN base_balances b
+        ON b.tx_id = e.tx_id
+    LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
 WHERE
     i.value :parsed :info :lamports IS NOT NULL
 UNION

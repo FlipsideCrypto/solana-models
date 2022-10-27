@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "block_id",
-    incremental_strategy = 'delete+insert',
+    unique_key = "_unique_key",
+    incremental_strategy = 'merge',
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::date']
 ) }}
 
@@ -81,7 +81,8 @@ SELECT
     'deposit' AS action,
     e.instruction :accounts [1] :: STRING AS delegator_address,
     i.value :parsed :info :lamports AS amount,
-    e._inserted_timestamp
+    e._inserted_timestamp,
+    concat_ws('-',tx_id,e.index) as _unique_key
 FROM
     deposit_events e,
     TABLE(FLATTEN(inner_instruction :instructions)) i
@@ -96,7 +97,8 @@ SELECT
     'withdraw' AS action,
     e.instruction :accounts [1] :: STRING AS delegator_address,
     i.value :parsed :info :lamports AS amount,
-    e._inserted_timestamp
+    e._inserted_timestamp,
+    concat_ws('-',tx_id,e.index) as _unique_key
 FROM
     withdraw_events e,
     TABLE(FLATTEN(inner_instruction :instructions)) i
@@ -108,10 +110,11 @@ SELECT
     e.block_timestamp,
     e.index,
     e.succeeded,
-    'stake' AS action,
+    'stake_deposit' AS action,
     NULL AS delegator_address,
     i.value :parsed :info :lamports AS amount,
-    e._inserted_timestamp
+    e._inserted_timestamp,
+    concat_ws('-',tx_id,e.index) as _unique_key
 FROM
     stake_events e,
     TABLE(FLATTEN(inner_instruction :instructions)) i
@@ -126,7 +129,8 @@ SELECT
     'unstake' AS action,
     NULL AS delegator_address,
     i.value :parsed :info :lamports AS amount,
-    e._inserted_timestamp
+    e._inserted_timestamp,
+    concat_ws('-',tx_id,e.index) as _unique_key
 FROM
     unstake_events e,
     TABLE(FLATTEN(inner_instruction :instructions)) i

@@ -1,0 +1,65 @@
+version: 2
+models:
+  - name: silver__stake_pool_actions_socean
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - _UNIQUE_KEY
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: INDEX
+        description: Location of the stake pool action within a transaction
+        tests: 
+          - not_null 
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: ACTION
+        description: "{{ doc('stake_pool_action') }}"
+        tests: 
+          - not_null 
+      - name: STAKE_POOL
+        description: "{{ doc('stake_pool') }}"
+        tests: 
+          - not_null
+      - name: STAKE_POOL_WITHDRAW_AUTHORITY
+        description: "{{ doc('stake_pool_withdraw_authority') }}"
+        tests: 
+          - not_null
+      - name: STAKE_POOL_DEPOSIT_AUTHORITY
+        description: "{{ doc('stake_pool_deposit_authority') }}"
+        tests: 
+          - not_null
+      - name: ADDRESS
+        description: "{{ doc('stake_pool_address') }}"
+        tests: 
+          - not_null
+      - name: RESERVE_STAKE_ADDRESS
+        description: "{{ doc('stake_pool_reserve_stake_address') }}"
+        tests: 
+          - not_null
+      - name: AMOUNT
+        description: "{{ doc('stake_pool_amount') }}"
+        tests: 
+          - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
+      - name: _UNIQUE_KEY
+        description: "Concatenation of columns to be used on merge for incremental loads"
