@@ -55,7 +55,7 @@ AND _inserted_timestamp >= (
 -- AND
 --     block_id between 4260184 and 5260184
 AND
-    block_id between 119087610 and 120000000
+    block_id between 118087610 and 123000000
 {% endif %}
 
     UNION
@@ -113,7 +113,7 @@ AND _inserted_timestamp >= (
 -- AND
 --     block_id between 4260184 and 5260184
 AND
-    block_id between 119087610 and 120000000
+    block_id between 118087610 and 123000000
 {% endif %}
 ),
 base_post_token_balances AS (
@@ -157,7 +157,7 @@ WHERE
 --     block_id between 4260184 and 5260184
 
 WHERE
-    block_id between 119087610 and 120000000
+    block_id between 118087610 and 123000000
 {% endif %}
 ),
 base_pre_token_balances AS (
@@ -200,7 +200,7 @@ WHERE
 --     block_id between 4260184 and 5260184
 
 WHERE
-    block_id between 119087610 and 120000000
+    block_id between 118087610 and 123000000
 {% endif %}
 ),
 spl_transfers AS (
