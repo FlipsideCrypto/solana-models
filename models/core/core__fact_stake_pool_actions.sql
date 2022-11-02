@@ -3,7 +3,7 @@
     meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }}}
 ) }}
 
-{% for model_suffix in ["generic","socean","lido","marinade"] %}
+{% for model_suffix in ["generic","socean","lido","marinade","eversol"] %}
 
     SELECT
         CASE
