@@ -148,3 +148,17 @@ SELECT
     sales_amount
 FROM
     {{ ref('silver__nft_sales_coral_cube') }}
+UNION 
+SELECT 
+    'exchange art',
+    block_timestamp, 
+    block_id, 
+    tx_id, 
+    succeeded, 
+    program_id, 
+    purchaser, 
+    seller, 
+    mint, 
+    sales_amount
+FROM 
+    {{ ref('silver__nft_sales_exchange_art') }}
