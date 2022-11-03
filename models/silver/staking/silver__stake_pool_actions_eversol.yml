@@ -1,0 +1,87 @@
+version: 2
+models:
+  - name: silver__stake_pool_actions_eversol
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - _UNIQUE_KEY
+      - compare_model_subset:
+          name: silver__stake_pool_actions_eversol_business_logic_test
+          compare_model: ref('testing__stake_pool_actions_eversol')
+          compare_columns: 
+            - tx_id
+            - index
+            - action
+            - stake_pool
+            - stake_pool_withdraw_authority
+            - stake_pool_deposit_authority
+            - address
+            - reserve_stake_address
+            - amount
+          model_condition: "where tx_id in ('216FXs3ZY5f8gFTXtrCdbJkr3QNNFu3S1dbuTaaQU3dodTQd5cs7sE8v561su4xnRC8B5JtijT3kR9GySiASM4aM',
+            'DhWuYAZAuEkfLGJ4H7q4wWLjUNwdB4w5v4mZco5znduVT1Nib5WdcViNmXS2TTEsEmcaXNAr2tZ783oA9Za6Ebi',
+            '5bRaq6XXdF7sQ7wAZBkz9BejkqdGxwXFQYSc5NPBPsf2Aqhi3FPuwYzRtJXVszo9KvQX3oxfzzysPg8ESedfm55Q',
+            '4yEPy188HUustcjtDX4NMijHTPdNjz6XkMUBRdy6QXrR8Q5pRBt6sQaX4tsp2PRC8nR3YtNxTEV7GwfKDbg3oNXX',
+            '2zzqbjTKJBRGfRghrshLEXmerUUCxen15uxgcnE1rihisgkXNTd9bV2SyGdR55Swm721MzyCdw7q6sin124U13Nu',
+            'Nau1Psy363PeTon1E9qFsJu6BMJ2h4WdLcQwhzLMJJNcLXqPwcsBjPEZrgqZPsVyNtAu4BeXDCVboUTF3pp8d1J',
+            '53U11neiXTjsMZPjRKrKF81zmn3KyJB75wcWzFzAy5XgAhdi3kQzRfLdyMgUEnvE63B8i37VUKzCHxV7KZvX4Cv6',
+            '33YV1cGrrKCVCEFnwHsNoZuyCFMYNJJS9EeC1C2b68GYKpfzCDvj2HkL7irqPCeB2aAtjcSimSU6z9BYSCbiWXKk',
+            '2ebQP2sxr8iwvHu7FboUEQ2pNka1yxCZjbaQ6PkZi12iYD6CQUrDqa9xL5dUbFtzPc7JgwyFiyNKzHFBuRD17r8a',
+            '4HT8Z9NuxLUnoAotLEHiPVZVkk7MnjSkd9Cd9EuBktKJXXByjuxVnjUjMACCiKpfErPAXEijj7kFAva8HXm84CMJ')"
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: INDEX
+        description: Location of the stake pool action within a transaction
+        tests: 
+          - not_null 
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: ACTION
+        description: "{{ doc('stake_pool_action') }}"
+        tests: 
+          - not_null 
+      - name: STAKE_POOL
+        description: "{{ doc('stake_pool') }}"
+        tests: 
+          - not_null
+      - name: STAKE_POOL_WITHDRAW_AUTHORITY
+        description: "{{ doc('stake_pool_withdraw_authority') }}"
+        tests: 
+          - not_null
+      - name: STAKE_POOL_DEPOSIT_AUTHORITY
+        description: "{{ doc('stake_pool_deposit_authority') }}"
+      - name: ADDRESS
+        description: "{{ doc('stake_pool_address') }}"
+        tests: 
+          - not_null
+      - name: RESERVE_STAKE_ADDRESS
+        description: "{{ doc('stake_pool_reserve_stake_address') }}"
+        tests: 
+          - not_null:
+              where: action not in ('withdraw_stake','withdraw_dao_stake')
+      - name: AMOUNT
+        description: "{{ doc('stake_pool_amount') }}"
+        tests: 
+          - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
+      - name: _UNIQUE_KEY
+        description: "Concatenation of columns to be used on merge for incremental loads"
