@@ -5,6 +5,8 @@
     cluster_by = ['block_timestamp::DATE'],
 ) }}
 
+-- still having issues
+
 WITH jupiter_dex_txs AS (
 
     SELECT
