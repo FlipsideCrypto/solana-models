@@ -21,7 +21,7 @@ WITH jupiter_dex_txs AS (
         t
         ON t.tx_id = i.tx_id
     WHERE
-        i.value :programId :: STRING = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo' -- jupiter aggregator v2
+        i.value :programId :: STRING IN ('JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo', 'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph', 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB' ) -- jupiter aggregator v2
         AND i.block_id > 111442741 -- token balances owner field not guaranteed to populated bofore this slot
 
 {% if is_incremental() %}
@@ -105,7 +105,7 @@ destinations AS (
             ii.value :programId :: STRING,
             ''
         ) <> '11111111111111111111111111111111'
-        AND e.program_id = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo'
+        AND e.program_id IN ('JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo', 'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph', 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB' )
 
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
@@ -135,13 +135,15 @@ swaps_tmp_1 AS (
             p1.owner,
             d2.authority
         ) AS destination_owner,
-        COALESCE(
+         COALESCE(
             p1.mint,
-            p2.mint
+            p2.mint, 
+            'So11111111111111111111111111111111111111112'
         ) AS mint,
         COALESCE(
             p1.decimal,
-            p2.decimal
+            p2.decimal, 
+            9
         ) AS DECIMAL,
         d.*
     FROM

@@ -50,6 +50,8 @@ models:
         description: List of post-transaction token balances for different token accounts
       - name: LOG_MESSAGES
         description: Array of log messages written by the program for this transaction
+      - name: ADDRESS_TABLE_LOOKUPS
+        description: Array of lookup keys used associate additional account keys with the transactions.  Valid for version > 0 transactions.
       - name: VERSION
         description: Transaction version, legacy version is listed as NULL or 'legacy'
       - name: _INSERTED_TIMESTAMP

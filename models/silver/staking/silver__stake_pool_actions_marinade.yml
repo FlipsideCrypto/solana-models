@@ -1,0 +1,90 @@
+version: 2
+models:
+  - name: silver__stake_pool_actions_marinade
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - _UNIQUE_KEY
+      - compare_model_subset:
+          name: silver__stake_pool_actions_marinade_business_logic_test
+          compare_model: ref('testing__stake_pool_actions_marinade')
+          compare_columns: 
+            - tx_id
+            - index
+            - action
+            - stake_pool
+            - stake_pool_withdraw_authority
+            - stake_pool_deposit_authority
+            - address
+            - reserve_stake_address
+            - claim_ticket_address
+            - amount
+          model_condition: "where tx_id in ('3cudBDjWrhQo1AcL7kp6VYwR5FMwNaqcfSRMKxYuVLSU4En8tGcaNCefNCSm8XCcoGcsm4bkQHLhmkBVHsHKa2mk',
+              'DwuAeLFnvBhg1uckZe3tAWBq2pSbAjATdhAptwpRbxALzQkNH9EiEwr985PdHqEvesaRyhPL7iV2EhmgFoBXSG9',
+              '3t9HvLgvv42CDDp4DmGFMX44CgaoTtYMfyX5kDs6z4jwEPqWAFmXQ3bKknY1oymqrTjgw9Ax7RU8kn5XdFCsyviJ',
+              'Z43TJRkym3QqKyjdqLFsHY3DSZXJeHsYJNU63hGbpcX2ERxaK5XGfjqZXEqv5x149QR2ZDTsjqdMcM4MRSF4weF',
+              '4xDDzJGkm6uhomMoVcGdvsPUt1sveYv7u2k6P8ocGi9ecsheACw6oGEEzpZQJdFzYm5e8r8rRjBNyqabJN63zdmM')"
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: INDEX
+        description: Location of the stake pool action within a transaction
+        tests: 
+          - not_null 
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: ACTION
+        description: "{{ doc('stake_pool_action') }}"
+        tests: 
+          - not_null 
+      - name: STAKE_POOL
+        description: "{{ doc('stake_pool') }}"
+        tests: 
+          - not_null
+      - name: STAKE_POOL_WITHDRAW_AUTHORITY
+        description: "{{ doc('stake_pool_withdraw_authority') }}"
+      - name: STAKE_POOL_DEPOSIT_AUTHORITY
+        tests:
+          - not_null:
+                where: action = 'deposit_stake'
+        description: "{{ doc('stake_pool_deposit_authority') }}"
+      - name: ADDRESS
+        description: "{{ doc('stake_pool_address') }}"
+        tests: 
+          - not_null
+      - name: RESERVE_STAKE_ADDRESS
+        description: "{{ doc('stake_pool_reserve_stake_address') }}"
+        tests: 
+          - not_null:
+              where: action in ('deposit','claim')
+      - name: CLAIM_TICKET_ADDRESS
+        description: "Address to be used to claim unstaked SOL when it is available in n+(1 or 2) epochs after an order_unstake action"
+        tests: 
+          - not_null:
+              where: action in ('order_unstake','claim')
+      - name: AMOUNT
+        description: "{{ doc('stake_pool_amount') }}"
+        tests: 
+          - not_null:
+              where: action <> 'order_unstake'
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
+      - name: _UNIQUE_KEY
+        description: "Concatenation of columns to be used on merge for incremental loads"

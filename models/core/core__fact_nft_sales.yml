@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__fact_nft_sales
-    description: NFT sales on Solana that occur on Magic Eden, Yawww, Opensea, the SMB marketplace, Solanart, and Solport.  
+    description: NFT sales on Solana that occur on Magic Eden, Yawww, Opensea, the SMB marketplace, Solanart, Solport, Coral Cube, Hyperspace, Hadeswap and Exchange Art.  
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

@@ -1,0 +1,64 @@
+version: 2
+models:
+  - name: silver__nft_sales_hyperspace
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - MINT
+      - compare_model_subset:
+          name: silver__nft_sales_hyperspace_business_logic_test
+          compare_model: ref('testing__nft_sales_hyperspace')
+          compare_columns: 
+            - tx_id
+            - purchaser
+            - seller
+            - mint
+            - round(sales_amount,8)
+          model_condition: "where tx_id in ('4dVZSdzGgRdJxM4j3JVwwo5t9sxZEB5SkcMU5tWe7dsnZKJvthwy2jHwxmhwApR2QFgD6h9DSc2nTt2JpziGDLKM',
+            '3qRyNqFzkSKSf4cB43nfMS8VTSvMGe4zkG2jFF7Azhhxrw4HqimseHN7w6ox1G87yrr4ruaAjK6838eL7oAJiy7s')"
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - not_null
+      - name: PROGRAM_ID 
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null
+      - name: PURCHASER
+        description: "{{ doc('purchaser') }}"
+        tests: 
+          - not_null
+      - name: SELLER
+        description: "{{ doc('seller') }}"
+        tests: 
+          - not_null
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        tests: 
+          - not_null:
+              where: succeeded = TRUE
+      - name: SALES_AMOUNT
+        description: "{{ doc('sales_amount') }}"
+        tests: 
+          - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
