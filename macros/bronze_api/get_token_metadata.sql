@@ -14,7 +14,7 @@ with base as (
     except 
     select address 
     from bronze_api.token_metadata
-    limit 1
+    limit 100
 )
 select 
     address,
