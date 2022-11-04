@@ -5,10 +5,7 @@
     cluster_by = ['block_timestamp::DATE'],
 ) }}
 
--- still having issues
-
 WITH jupiter_dex_txs AS (
-
     SELECT
         DISTINCT i.block_id,
         i.block_timestamp,
@@ -24,14 +21,24 @@ WITH jupiter_dex_txs AS (
         ON t.tx_id = i.tx_id
     WHERE
         i.value :programId :: STRING = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo'
-    AND i.block_timestamp::date between '2022-01-01' and '2022-03-28'
-    AND t.block_timestamp::date between '2022-01-01' and '2022-03-28'
+    AND i.block_timestamp::date between '2021-12-01' and '2022-02-01'
+    AND t.block_timestamp::date between '2021-12-01' and '2022-02-01'
 
-
+{% if is_incremental() %}
+AND i._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
 )
-
-,
-
+AND t._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
 signers AS (
     SELECT
         t.tx_id,
@@ -42,10 +49,7 @@ signers AS (
         TABLE(FLATTEN(t.signers)) s qualify(ROW_NUMBER() over (PARTITION BY t.tx_id
     ORDER BY
         s.index DESC)) = 1
-)
-
-
-,
+),
 
 swaps_temp as(
     SELECT 
@@ -68,10 +72,19 @@ swaps_temp as(
         a.succeeded,
         a._inserted_timestamp
     FROM {{ ref('silver__transfers2') }} as a
-    WHERE a.block_timestamp::date between '2022-01-01' and '2022-03-28'
+    WHERE a.block_timestamp::date between '2021-12-01' and '2022-02-01'
     and a.tx_id in (SELECT tx_id from jupiter_dex_txs)
-)
-,
+
+{% if is_incremental() %}
+WHERE
+    a._inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+{% endif %}
+),
 
 swaps_w_destination AS (
     SELECT
@@ -95,12 +108,16 @@ swaps_w_destination AS (
             ''
         ) <> '11111111111111111111111111111111'
         AND e.program_id = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo'
-        AND e.block_timestamp::date between '2022-01-01' and '2022-03-28'
-    
+        AND e.block_timestamp::date between '2021-12-01' and '2022-02-01'
+{% if is_incremental() %}
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
 )
-
-
-,
+{% endif %}   
+),
 
 swaps as(
     SELECT 
@@ -160,7 +177,6 @@ swaps_refunds as (
             
 )
 ,
-
 
 swaps_except_refunds as (
     SELECT 
