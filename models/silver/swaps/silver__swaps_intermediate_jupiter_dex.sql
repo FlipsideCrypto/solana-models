@@ -47,9 +47,10 @@ with jupiter_dex_txs as (
     from {{ ref('silver__events') }} e
     INNER JOIN {{ ref('silver__transactions') }} t ON t.tx_id = e.tx_id and t.block_timestamp::date = e.block_timestamp::date
     where program_id = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo'
+    and array_size(e.instruction:accounts) > 6
     {% if is_incremental() %}
-    AND e.block_timestamp::date = '2022-02-04'
-    -- AND i._inserted_timestamp >= (
+    AND e.block_timestamp::date = '2022-02-11'
+    -- AND e._inserted_timestamp >= (
     --     SELECT
     --         MAX(_inserted_timestamp)
     --     FROM
@@ -69,8 +70,8 @@ base_transfers as (
     select *
     from {{ ref('silver__transfers2') }} tr
     {% if is_incremental() %}
-    WHERE block_timestamp::date = '2022-02-04'
-    -- WHERE tr._inserted_timestamp >= (
+    WHERE block_timestamp::date = '2022-02-11'
+    -- WHERE _inserted_timestamp >= (
     --     SELECT
     --         MAX(_inserted_timestamp)
     --     FROM
@@ -84,7 +85,13 @@ base_post_token_balances as (
     select *
     from {{ ref('silver___post_token_balances') }}
     {% if is_incremental() %}
-    WHERE block_timestamp::date = '2022-02-04'
+    WHERE block_timestamp::date = '2022-02-11'
+    -- WHERE _inserted_timestamp >= (
+    --     SELECT
+    --         MAX(_inserted_timestamp)
+    --     FROM
+    --         {{ this }}
+    -- )
     {% else %}
     WHERE block_timestamp::date >= '2021-12-14'
     {% endif %}
@@ -126,6 +133,25 @@ account_mappings as (
         account AS associated_account,
         owner
     from base_post_token_balances
+    union 
+    select 
+        tx_id,
+        instruction:parsed:info:account::string as associated_account,
+        instruction:parsed:info:source::string as owner
+    from {{ ref('silver__events') }}
+    where program_id = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'
+    and event_type = 'create'
+    {% if is_incremental() %}
+    AND block_timestamp::date = '2022-02-11'
+    -- AND _inserted_timestamp >= (
+    --     SELECT
+    --         MAX(_inserted_timestamp)
+    --     FROM
+    --         {{ this }}
+    -- )
+    {% else %}
+    AND block_timestamp::date >= '2021-12-14'
+    {% endif %}
 ),
 swaps_w_destination AS (
     SELECT
@@ -174,6 +200,40 @@ final_temp as (
     left outer join account_mappings m on m.tx_id = s2.tx_id and m.associated_account = s2.destination
     where s1.inner_index = s1.min_inner_index 
     and s1.swapper in (s2.destination, m.owner)
+    and s1.mint <> s2.mint
+    union 
+    select s1.*, null, null
+    from swaps s1
+    where s1.inner_index <> s1.min_inner_index
+    and s1.tx_from = s1.swapper
+    union 
+    select 
+        s1.block_id,
+        s1.block_timestamp,
+        s1.tx_id,
+        s1.index,
+        s1.inner_index,
+        s1.tx_from,
+        s1.tx_to,
+        null as amount, 
+        null as mint,
+        s1.succeeded,
+        s1._inserted_timestamp,
+        s1.swapper, 
+        s1.destination,
+        s1.authority,
+        s1.source,
+        s1.min_inner_index,
+        s1.rn,
+        s1.inner_rn,
+        s1.mint as to_mint, 
+        s1.amount as to_amt
+    from swaps s1
+    left outer join swaps s2 on s1.tx_id = s2.tx_id and s1.index = s2.index and s2.inner_index = s2.min_inner_index
+    left outer join account_mappings m on m.tx_id = s1.tx_id and m.associated_account = s1.tx_to
+    where s1.inner_index <> s1.min_inner_index
+    and (m.owner = s1.swapper or s1.tx_to = s1.swapper)
+    and s2.mint = s1.mint
 )
 -- SELECT * FROM swaps
 -- WHERE TX_ID in ('3yVbSdBHnaoccDG4XpbTQrV1NNbqNiVdKYHio1iPNAnRpdnP1xK1sg6NdkdZKRhjj7tnve589UX3p55UBGWssTCD',
