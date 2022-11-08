@@ -26,8 +26,8 @@
 
 {% endmacro %}
 
-{% macro snowflake__get_merge_sql(target, source, unique_key, dest_columns, partition_by) -%}
-    {%- set predicates = [] -%}
+{% macro snowflake__get_merge_sql(target, source, unique_key, dest_columns, predicates) -%}
+    {%- set predicates = [] if config.get('merge_predicates') is none else config.get('merge_predicates') -%}
     {%- set dest_cols_csv = get_quoted_csv(dest_columns | map(attribute="name")) -%}
     {%- set merge_update_columns = config.get('merge_update_columns') -%}
     {%- set merge_exclude_columns = config.get('merge_exclude_columns') -%}
@@ -56,7 +56,7 @@
 
     merge into {{ target }} as DBT_INTERNAL_DEST
         using {{ source }} as DBT_INTERNAL_SOURCE
-        on {{ predicates | join(' and ') }} and DBT_INTERNAL_DEST.{{partition_by}} >= (select min({{partition_by}}) from {{ source }})
+        on {{ predicates | join(' and ') }}
 
     {% if unique_key %}
     when matched then update set
