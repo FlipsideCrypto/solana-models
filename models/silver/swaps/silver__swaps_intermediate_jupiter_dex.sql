@@ -49,7 +49,7 @@ with jupiter_dex_txs as (
     where program_id = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo'
     and array_size(e.instruction:accounts) > 6
     {% if is_incremental() %}
-    AND e.block_timestamp::date = '2022-02-11'
+    AND e.block_timestamp::date = '2022-02-24'
     -- AND e._inserted_timestamp >= (
     --     SELECT
     --         MAX(_inserted_timestamp)
@@ -70,7 +70,7 @@ base_transfers as (
     select *
     from {{ ref('silver__transfers2') }} tr
     {% if is_incremental() %}
-    WHERE block_timestamp::date = '2022-02-11'
+    WHERE block_timestamp::date = '2022-02-24'
     -- WHERE _inserted_timestamp >= (
     --     SELECT
     --         MAX(_inserted_timestamp)
@@ -85,7 +85,7 @@ base_post_token_balances as (
     select *
     from {{ ref('silver___post_token_balances') }}
     {% if is_incremental() %}
-    WHERE block_timestamp::date = '2022-02-11'
+    WHERE block_timestamp::date = '2022-02-24'
     -- WHERE _inserted_timestamp >= (
     --     SELECT
     --         MAX(_inserted_timestamp)
@@ -112,7 +112,7 @@ swaps_temp as(
         ) AS inner_index,
         a.tx_from,
         a.tx_to,
-        a.amount,
+        iff(a.succeeded, a.amount, 0) as amount,
         a.mint,
         a.succeeded,
         a._inserted_timestamp
@@ -142,7 +142,7 @@ account_mappings as (
     where program_id = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'
     and event_type = 'create'
     {% if is_incremental() %}
-    AND block_timestamp::date = '2022-02-11'
+    AND block_timestamp::date = '2022-02-24'
     -- AND _inserted_timestamp >= (
     --     SELECT
     --         MAX(_inserted_timestamp)
@@ -320,4 +320,4 @@ SELECT
                     rn
             ) AS swap_index
 from final_temp
-where coalesce(to_amt,0) > 0 or coalesce(from_amt,0) > 0
+where ((coalesce(to_amt,0) > 0 or coalesce(from_amt,0) > 0) or from_mint is not null)
