@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "tx_id",
-    incremental_strategy = 'delete+insert',
+    merge_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= current_date-7'],
     cluster_by = ['block_timestamp::DATE','block_id','_inserted_timestamp::DATE'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
 ) }}

@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "tx_id",
-    merge_partition_by = "block_id",
+    merge_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= current_date-7'],
     cluster_by = ['block_timestamp::DATE','block_id','_inserted_timestamp::DATE'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
@@ -46,7 +46,18 @@ WITH pre_final AS (
         ) <> 'Vote111111111111111111111111111111111111111'
 
 {% if is_incremental() %}
-AND _partition_id between 7049 and 7055
+AND _partition_id >= (
+    SELECT
+        MAX(_partition_id) -1
+    FROM
+        {{ this }}
+)
+AND _partition_id <= (
+    SELECT
+        MAX(_partition_id) + 10
+    FROM
+        {{ this }}
+)
 AND t._inserted_timestamp > (
     SELECT
         MAX(_inserted_timestamp)
