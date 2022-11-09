@@ -5,40 +5,6 @@
     cluster_by = ['block_timestamp::DATE'],
 ) }}
 
--- WITH jupiter_dex_txs AS (
---     SELECT
---         DISTINCT i.block_id,
---         i.block_timestamp,
---         i.tx_id,
---         t.fee,
---         t.succeeded,
---         t.signers
---     FROM
---         {{ ref('silver___instructions') }}
---         i
---         INNER JOIN {{ ref('silver__transactions') }}
---         t
---         ON t.tx_id = i.tx_id
---     WHERE
---         i.value :programId :: STRING = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo'
---     -- AND i.block_timestamp::date between '2021-12-01' and '2022-02-01'
---     -- AND t.block_timestamp::date between '2021-12-01' and '2022-02-01'
-
--- {% if is_incremental() %}
--- AND i._inserted_timestamp >= (
---     SELECT
---         MAX(_inserted_timestamp)
---     FROM
---         {{ this }}
--- )
--- AND t._inserted_timestamp >= (
---     SELECT
---         MAX(_inserted_timestamp)
---     FROM
---         {{ this }}
--- )
--- {% endif %}
--- ),
 
 with jupiter_dex_txs as (
     select 
@@ -46,10 +12,11 @@ with jupiter_dex_txs as (
         coalesce(signers[1],signers[0])::string as swapper
     from {{ ref('silver__events') }} e
     INNER JOIN {{ ref('silver__transactions') }} t ON t.tx_id = e.tx_id and t.block_timestamp::date = e.block_timestamp::date
-    where program_id = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo'
-    and array_size(e.instruction:accounts) > 6
+    WHERE program_id = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo'
+        AND array_size(e.instruction:accounts) > 6
+        AND e.block_id > 111442741
     {% if is_incremental() %}
-    AND e.block_timestamp::date = '2022-02-24'
+    AND e.block_timestamp::date = '2022-03-07'
     -- AND e._inserted_timestamp >= (
     --     SELECT
     --         MAX(_inserted_timestamp)
@@ -64,13 +31,14 @@ with jupiter_dex_txs as (
     -- )
     {% else %}
     AND e.block_timestamp::date >= '2021-12-14'
+    -- AND e.block_id > 111442741
     {% endif %}
 ),
 base_transfers as (
     select *
     from {{ ref('silver__transfers2') }} tr
     {% if is_incremental() %}
-    WHERE block_timestamp::date = '2022-02-24'
+    WHERE block_timestamp::date = '2022-03-07'
     -- WHERE _inserted_timestamp >= (
     --     SELECT
     --         MAX(_inserted_timestamp)
@@ -79,13 +47,14 @@ base_transfers as (
     -- )
     {% else %}
     WHERE block_timestamp::date >= '2021-12-14'
+    -- WHERE e.block_id > 111442741
     {% endif %}
 ),
 base_post_token_balances as (
     select *
     from {{ ref('silver___post_token_balances') }}
     {% if is_incremental() %}
-    WHERE block_timestamp::date = '2022-02-24'
+    WHERE block_timestamp::date = '2022-03-07'
     -- WHERE _inserted_timestamp >= (
     --     SELECT
     --         MAX(_inserted_timestamp)
@@ -112,7 +81,7 @@ swaps_temp as(
         ) AS inner_index,
         a.tx_from,
         a.tx_to,
-        iff(a.succeeded, a.amount, 0) as amount,
+        a.amount,
         a.mint,
         a.succeeded,
         a._inserted_timestamp
@@ -135,14 +104,16 @@ account_mappings as (
     from base_post_token_balances
     union 
     select 
-        tx_id,
+         tx_id,
         instruction:parsed:info:account::string as associated_account,
-        instruction:parsed:info:source::string as owner
-    from {{ ref('silver__events') }}
-    where program_id = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'
-    and event_type = 'create'
+        coalesce(
+            instruction:parsed:info:source::string,
+            instruction:parsed:info:owner::string) as owner
+    from SOLANA_DEV.silver.events
+    where (program_id = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL' and event_type = 'create')
+    or (program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' and event_type = 'closeAccount')
     {% if is_incremental() %}
-    AND block_timestamp::date = '2022-02-24'
+    AND block_timestamp::date = '2022-03-07'
     -- AND _inserted_timestamp >= (
     --     SELECT
     --         MAX(_inserted_timestamp)
@@ -219,7 +190,7 @@ final_temp as (
         null as mint,
         s1.succeeded,
         s1._inserted_timestamp,
-        s1.swapper, 
+        null as swapper, 
         s1.destination,
         s1.authority,
         s1.source,
@@ -235,73 +206,6 @@ final_temp as (
     and (m.owner = s1.swapper or s1.tx_to = s1.swapper)
     and s2.mint = s1.mint
 )
--- SELECT * FROM swaps
--- WHERE TX_ID in ('3yVbSdBHnaoccDG4XpbTQrV1NNbqNiVdKYHio1iPNAnRpdnP1xK1sg6NdkdZKRhjj7tnve589UX3p55UBGWssTCD',
---                 '2hZuCGiMkuXxPJ4jZwKf8zzxzs4gUteDb28ZTFd5KnVpmfseP8YBWzRHuLP63iWiwUgb8mFM74o3cmJmag4YniKU',
---                 '5hr56Qdh5ZogtFBaoDPnLroEa7yVAfC6NjbbboNrpUGAoCWcgTtPSXe9Jdx8NhE85u1BAeUT1472C3R42YbDwJXj',
---                'nmN84qNUcZtGpCCxm1r8Qct3Z8vgPMRXFfd7QFohE28dVociEgbSA9xrkn44WgKa8GbTH86u3EiicCakCsbKiya',
---                '4Xdjhm8219RTPpfsi5tMtBKjbUNgm8Kh2kphNpH5vLqGFxFeh3dcntQT5nMZGFaD93BZWJwFtviB1afjWEdXZRsu',
---                '3c9M2C4mE3Q14PmiTMTHkQNMkzPRZSCdMXRc1oYooV8iiFJGLyfSMRgsZVWrXVWqsgvsaw6cgv21DXxCRamK8JHJ',
---                '5UexvqZu5dcQ3rN4PV2DuXStLu1aThf4hNs1gH1jEtZbV81XRWiCDUjzKJFNtUEB9dbv8Tu5NNAqzuB47U6EQQ3J')
--- ORDER BY tx_id, rn
--- ,
-
--- swaps_refunds as (
---     SELECT 
---         s2.block_id,
---         s2.block_timestamp,
---         s2.tx_id,
---         s2.succeeded,
---         Null as swapper,
---         Null as from_mint,
---         Null as from_amt,
---         s2.mint as to_mint,
---         s2.amount as to_amt,
---         s2._inserted_timestamp,
---         s2.rn,
---         s2.inner_rn
-        
---     FROM swaps as s1
-    
---     INNER JOIN swaps s2
---         ON s1.tx_id = s2.tx_id
---             AND s1.index = s2.index
---             AND s1.swapper is not null
---             and ((s1.tx_from = s2.tx_to and s1.mint = s2.mint) OR (s1.tx_from != s2.tx_to and s1.mint != s2.mint))
-            
--- )
--- ,
-
--- swaps_except_refunds as (
---     SELECT 
---         s1.block_id,
---         s1.block_timestamp,
---         s1.tx_id,
---         s1.succeeded,
---         s1.swapper,
---         s1.mint as from_mint,
---         s1.amount as from_amt,
---         s2.mint as to_mint,
---         s2.amount as to_amt,
---         s1._inserted_timestamp,
---         s1.rn,
---         s1.inner_rn
-        
---     FROM swaps as s1
-    
---     INNER JOIN swaps s2
---         ON s1.tx_id = s2.tx_id
---         AND s1.tx_from = s2.tx_to
---         AND s1.mint != s2.mint
---         AND s1.index = s2.index
---         AND s1.inner_rn = 1
--- ),
-
--- final_temp as (
---     SELECT * FROM swaps_except_refunds
---     UNION
---     SELECT * FROM swaps_refunds
--- )
 
 SELECT 
     block_id,
@@ -320,4 +224,4 @@ SELECT
                     rn
             ) AS swap_index
 from final_temp
-where ((coalesce(to_amt,0) > 0 or coalesce(from_amt,0) > 0) or from_mint is not null)
+where coalesce(to_amt,0) > 0 or coalesce(from_amt,0) > 0
