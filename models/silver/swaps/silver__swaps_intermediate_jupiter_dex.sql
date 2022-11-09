@@ -31,7 +31,6 @@ with jupiter_dex_txs as (
     -- )
     {% else %}
     AND e.block_timestamp::date >= '2021-12-14'
-    -- AND e.block_id > 111442741
     {% endif %}
 ),
 base_transfers as (
@@ -47,7 +46,6 @@ base_transfers as (
     -- )
     {% else %}
     WHERE block_timestamp::date >= '2021-12-14'
-    -- WHERE e.block_id > 111442741
     {% endif %}
 ),
 base_post_token_balances as (
