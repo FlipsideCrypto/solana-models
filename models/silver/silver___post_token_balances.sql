@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = ['block_id','tx_id','index'],
-    merge_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from silver._post_token_balances__dbt_tmp))'],
+    merge_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from {{ this }}__dbt_tmp))'],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
 ) }}
 
