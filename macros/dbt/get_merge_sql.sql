@@ -52,11 +52,11 @@
         {% do predicates.append('FALSE') %}
     {% endif %}
 
-    {{ sql_header if sql_header is not none }}
+    {{ sql_header if sql_header is not none }}    
 
     merge into {{ target }} as DBT_INTERNAL_DEST
         using {{ source }} as DBT_INTERNAL_SOURCE
-        on {{ predicates | join(' and ') }}
+        on {{ render(predicates | join(' and ')) }}
 
     {% if unique_key %}
     when matched then update set
