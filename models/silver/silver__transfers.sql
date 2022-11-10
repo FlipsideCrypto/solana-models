@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "CONCAT_WS('-', block_id, tx_id, index)",
-    incremental_strategy = 'delete+insert',
+    unique_key = ["block_id","tx_id","index"],
+    merge_predicates = ["DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from {{ this }}__dbt_tmp))"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
