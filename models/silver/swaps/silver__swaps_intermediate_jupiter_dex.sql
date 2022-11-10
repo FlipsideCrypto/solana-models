@@ -16,7 +16,7 @@ with jupiter_dex_txs as (
         AND array_size(e.instruction:accounts) > 6
         AND e.block_id > 111442741
     {% if is_incremental() %}
-    AND e.block_timestamp::date = '2022-03-07'
+    AND e.block_timestamp::date = '2022-04-18'
     -- AND e._inserted_timestamp >= (
     --     SELECT
     --         MAX(_inserted_timestamp)
@@ -37,7 +37,7 @@ base_transfers as (
     select *
     from {{ ref('silver__transfers2') }} tr
     {% if is_incremental() %}
-    WHERE block_timestamp::date = '2022-03-07'
+    WHERE block_timestamp::date = '2022-04-18'
     -- WHERE _inserted_timestamp >= (
     --     SELECT
     --         MAX(_inserted_timestamp)
@@ -52,7 +52,7 @@ base_post_token_balances as (
     select *
     from {{ ref('silver___post_token_balances') }}
     {% if is_incremental() %}
-    WHERE block_timestamp::date = '2022-03-07'
+    WHERE block_timestamp::date = '2022-04-18'
     -- WHERE _inserted_timestamp >= (
     --     SELECT
     --         MAX(_inserted_timestamp)
@@ -111,7 +111,7 @@ account_mappings as (
     where (program_id = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL' and event_type = 'create')
     or (program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' and event_type = 'closeAccount')
     {% if is_incremental() %}
-    AND block_timestamp::date = '2022-03-07'
+    AND block_timestamp::date = '2022-04-18'
     -- AND _inserted_timestamp >= (
     --     SELECT
     --         MAX(_inserted_timestamp)
@@ -145,6 +145,13 @@ swaps_w_destination AS (
             ''
         ) <> '11111111111111111111111111111111'
 ),
+-- identify swaps where the swap is one-directional
+count_from_txfers as(
+    select tx_id, count(distinct(tx_from)) as ct_swappers
+    from base_transfers
+    GROUP BY tx_id
+
+),
 swaps as(
     SELECT 
         d.*,
@@ -161,21 +168,67 @@ swaps as(
                     d.inner_index
             ) AS inner_rn
     from swaps_w_destination d
+
+    Left outer join count_from_txfers as c
+    on d.tx_id = c.tx_id
+    WHERE c.ct_swappers <> 1
 ),
-final_temp as (
+-- final_temp as (
+--     select s1.*, s2.mint as to_mint, s2.amount as to_amt
+--     from swaps s1 
+--     left outer join swaps s2 on s1.tx_id = s2.tx_id and s1.index = s2.index and s1.inner_index <> s2.inner_index
+--     left outer join account_mappings m on m.tx_id = s2.tx_id and m.associated_account = s2.destination
+--     --where s1.inner_index = s1.min_inner_index
+--     where s1.swapper = s1.authority
+--     and s1.swapper in (s2.destination, m.owner)
+--     and s1.mint <> s2.mint
+--     union 
+--     select s1.*, null, null
+--     from swaps s1
+--     where s1.inner_index <> s1.min_inner_index
+--     and s1.tx_from = s1.swapper
+--     union 
+--     select 
+--         s1.block_id,
+--         s1.block_timestamp,
+--         s1.tx_id,
+--         s1.index,
+--         s1.inner_index,
+--         s1.tx_from,
+--         s1.tx_to,
+--         null as amount, 
+--         null as mint,
+--         s1.succeeded,
+--         s1._inserted_timestamp,
+--         null as swapper, 
+--         s1.destination,
+--         s1.authority,
+--         s1.source,
+--         s1.min_inner_index,
+--         s1.rn,
+--         s1.inner_rn,
+--         s1.mint as to_mint, 
+--         s1.amount as to_amt
+--     from swaps s1
+--     left outer join swaps s2 on s1.tx_id = s2.tx_id and s1.index = s2.index and s2.inner_index = s2.min_inner_index
+--     left outer join account_mappings m on m.tx_id = s1.tx_id and m.associated_account = s1.tx_to
+--     where s1.inner_index <> s1.min_inner_index
+--     and (m.owner = s1.swapper or s1.tx_to = s1.swapper)
+--     and s2.mint = s1.mint
+-- )
+final_temp_swaps as (
     select s1.*, s2.mint as to_mint, s2.amount as to_amt
     from swaps s1 
     left outer join swaps s2 on s1.tx_id = s2.tx_id and s1.index = s2.index and s1.inner_index <> s2.inner_index
     left outer join account_mappings m on m.tx_id = s2.tx_id and m.associated_account = s2.destination
-    where s1.inner_index = s1.min_inner_index 
+    -- where s1.inner_index = s1.min_inner_index 
+    where s1.swapper = s1.authority
     and s1.swapper in (s2.destination, m.owner)
-    and s1.mint <> s2.mint
-    union 
-    select s1.*, null, null
-    from swaps s1
-    where s1.inner_index <> s1.min_inner_index
-    and s1.tx_from = s1.swapper
-    union 
+    and s1.mint <> s2.mint)
+    
+,
+
+final_temp_refunds_and_fees as (
     select 
         s1.block_id,
         s1.block_timestamp,
@@ -189,6 +242,7 @@ final_temp as (
         s1.succeeded,
         s1._inserted_timestamp,
         null as swapper, 
+        -- s1.swapper,
         s1.destination,
         s1.authority,
         s1.source,
@@ -203,8 +257,29 @@ final_temp as (
     where s1.inner_index <> s1.min_inner_index
     and (m.owner = s1.swapper or s1.tx_to = s1.swapper)
     and s2.mint = s1.mint
-)
+    union 
+    select s1.*, null, null
+    from swaps s1
+    where s1.inner_index <> s1.min_inner_index
+    -- where s1.swapper = s1.authority
+    and s1.tx_from = s1.swapper
 
+)
+,
+
+final_temp as(
+
+    SELECT f.*
+    FROM final_temp_refunds_and_fees as f
+    left join final_temp_swaps as ft
+    ON f.tx_id = ft.tx_id and f.index=ft.index and f.inner_index = ft.inner_index
+    WHERE ft.tx_id is null
+    
+    union
+    
+    SELECT * FROM final_temp_swaps
+    
+)
 SELECT 
     block_id,
     block_timestamp,
