@@ -12,9 +12,10 @@ WITH base_events AS (
     FROM
         {{ ref('silver__events') }}
     WHERE succeeded
+    AND program_id in ('5WTCguyGQDrFosVn8M9JynwdoRpQJUPuzaembMwug35r','HWeQ1ntizxmbMwVHemf9zncf2h6RTTfLiuzbjD9wAN9e')
 {% if is_incremental() %}
 AND
-    _inserted_timestamp >= (
+    _inserted_timestamp > (
         SELECT
             MAX(_inserted_timestamp)
         FROM
@@ -24,15 +25,16 @@ AND
 ),
 base_ptb AS (
     SELECT
-        DISTINCT mint AS mint_paid,
-        account,
-        DECIMAL
+        DISTINCT p.mint AS mint_paid,
+        p.account,
+        p.DECIMAL
     FROM
-        {{ ref('silver___post_token_balances') }}
+        base_events e
+    INNER JOIN {{ ref('silver___post_token_balances') }} p on e.tx_id = p.tx_id and e.block_timestamp::date = p.block_timestamp::date
 
 {% if is_incremental() %}
 WHERE
-    _inserted_timestamp >= (
+    p._inserted_timestamp > (
         SELECT
             MAX(_inserted_timestamp)
         FROM
