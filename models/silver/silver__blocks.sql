@@ -5,23 +5,47 @@
   cluster_by = ['block_timestamp::DATE','_inserted_timestamp::date']
 ) }}
 
-WITH next_date_to_load AS (
-
+{% if is_incremental() %}
+WITH last_loaded_timestamp AS (
   SELECT
-    MIN(_inserted_timestamp) AS load_timestamp,
-    MIN(_inserted_date) as load_date
+    COALESCE(MAX(_inserted_timestamp), '2022-08-12T00:00:00' :: timestamp_ntz) AS max_inserted_timestamp
+  FROM
+    {{ this }}
+),
+base_blocks AS (
+  SELECT
+    *
   FROM
     {{ ref('bronze__blocks2') }}
-  {% if is_incremental() %}
+  WHERE
+    _inserted_date >= (
+      SELECT
+        DATEADD(
+          'day',
+          -1,
+          max_inserted_timestamp :: DATE
+        )
+      FROM
+        last_loaded_timestamp
+    )
+),
+next_date_to_load AS (
+  SELECT
+    MIN(_inserted_timestamp) AS load_timestamp,
+    MIN(_inserted_date) AS load_date
+  FROM
+    base_blocks
   WHERE
     _inserted_timestamp > (
       SELECT
-        COALESCE(MAX(_inserted_timestamp), '2022-08-12T00:00:00' :: timestamp_ntz)
+        max_inserted_timestamp
       FROM
-        {{ this }}
+        last_loaded_timestamp
     )
-  {% endif %}
 ),
+{% else %}
+WITH
+{% endif %}
 pre_final AS (
   SELECT
     VALUE :block_id :: INTEGER AS block_id,
@@ -37,7 +61,11 @@ pre_final AS (
     _inserted_date,
     _inserted_timestamp
   FROM
-    {{ ref('bronze__blocks2') }}
+    {% if is_incremental() %}
+      base_blocks
+    {% else %}
+      {{ ref('bronze__blocks2') }}
+    {% endif %}
   WHERE
     block_id IS NOT NULL
     AND error IS NULL
