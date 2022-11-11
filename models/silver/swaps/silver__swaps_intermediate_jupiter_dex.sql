@@ -15,8 +15,9 @@ with jupiter_dex_txs as (
     WHERE program_id = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo'
         AND array_size(e.instruction:accounts) > 6
         AND e.block_id > 111442741
+        AND inner_instruction_program_ids[0] <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
     {% if is_incremental() %}
-    AND e.block_timestamp::date = '2022-02-04'
+    AND e.block_timestamp::date = '2022-01-18'
     -- AND e._inserted_timestamp >= (
     --     SELECT
     --         MAX(_inserted_timestamp)
@@ -37,7 +38,7 @@ base_transfers as (
     select *
     from {{ ref('silver__transfers2') }} tr
     {% if is_incremental() %}
-    WHERE block_timestamp::date = '2022-02-04'
+    WHERE block_timestamp::date = '2022-01-18'
     -- WHERE _inserted_timestamp >= (
     --     SELECT
     --         MAX(_inserted_timestamp)
@@ -52,7 +53,7 @@ base_post_token_balances as (
     select *
     from {{ ref('silver___post_token_balances') }}
     {% if is_incremental() %}
-    WHERE block_timestamp::date = '2022-02-04'
+    WHERE block_timestamp::date = '2022-01-18'
     -- WHERE _inserted_timestamp >= (
     --     SELECT
     --         MAX(_inserted_timestamp)
@@ -111,7 +112,7 @@ account_mappings as (
     where (program_id = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL' and event_type = 'create')
     or (program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' and event_type = 'closeAccount')
     {% if is_incremental() %}
-    AND block_timestamp::date = '2022-02-04'
+    AND block_timestamp::date = '2022-01-18'
     -- AND _inserted_timestamp >= (
     --     SELECT
     --         MAX(_inserted_timestamp)
