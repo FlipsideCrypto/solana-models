@@ -12,7 +12,34 @@ with jupiter_dex_txs as (
         coalesce(signers[1],signers[0])::string as swapper
     from {{ ref('silver__events') }} e
     INNER JOIN {{ ref('silver__transactions') }} t ON t.tx_id = e.tx_id and t.block_timestamp::date = e.block_timestamp::date
-    WHERE program_id = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo'
+    WHERE
+        (
+        program_id in (
+            -- jupiter v2,v3,v4
+            'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo',
+            'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph',
+            'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
+            -- Orca
+            'MEV1HDn99aybER3U3oa9MySSXqoEZNDEQ4miAimTjaW',
+            '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
+            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1'
+            -- saber
+            'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t'
+            )
+            -- raydium
+            OR (
+                program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
+                AND instruction :accounts [2] :: STRING = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
+            )
+            OR (
+                program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+                AND instruction :accounts [1] :: STRING = '2EXiumdi14E9b8Fy62QcA5Uh6WdHS2b38wtSxp72Mibj'
+            )
+            OR program_id IN (
+                '93BgeoLHo5AdNbpqy9bD12dtfxtA5M2fh3rj72bE35Y3',
+                'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS'
+            )
+        )
         AND array_size(e.instruction:accounts) > 6
         AND e.block_id > 111442741
     {% if is_incremental() %}
