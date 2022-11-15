@@ -30,8 +30,6 @@ models:
           '3q2GQEoUHubwoFTf6pjU9nZYu9ymz5tdWkgpygjnsCsEYvyy2QWfJTgYCcaTvSJ1SW6RN3sz4nrukMm2dDct4ir',
           '5hr56Qdh5ZogtFBaoDPnLroEa7yVAfC6NjbbboNrpUGAoCWcgTtPSXe9Jdx8NhE85u1BAeUT1472C3R42YbDwJXj',
           '4JDczNYimuD8Czc2KW6oruTHtis2UQjAe18r52ngeHaxporYBbzYXwAbKK6R1Pk1VCTmuKqSnnnZL7VyYzdTZk5r',
-          '4VroTTqAjpsxYMTgnBzBSJG2P9uB2orenKxiEfvxbTBnAficioUuCijnAYotMmAH4pB6kgziKHvMgHNf7nU8g646',
-          '5JHjPkrTy1bWJv6ph8n1Tpk5ABBBuD89NZdyANUpbjdY8Zr2HKUyhJEjSrffQVEfAwYA3d9kVqK84qwuqVSZELp8',
           '2kyYvZSnQfd5eaew78fzVpUfDYmHVMyKvQpQ7cs3oqFH5U3UuqzNZyDDuS5Um2eFJCSbjPPdAWqkN9SAP6SPHzZ3',
           '2xWWgyut3mQdPaeiuQ5G3UtbJT2rsahhp4eeiVaCmnjBbYGdN1jvhG326hvETXVtXNYnqyeCbgh7aMoPsqH9oHK5',
           '5UexvqZu5dcQ3rN4PV2DuXStLu1aThf4hNs1gH1jEtZbV81XRWiCDUjzKJFNtUEB9dbv8Tu5NNAqzuB47U6EQQ3J',
@@ -41,7 +39,6 @@ models:
           '5FoqrCd2EUhVGWZSCZsKcXpmsEVjcqWkcG6vXNDTXMfKAoBnGCSg1tziLGad8K37UHy9oKe9WHCQXkzKwqiRBx3o',
           '6234EwRrPAFwzM5rcieMKHpzAjHTX4o2AK5uMVEogFMgz5n596n2cXXNZ7UVp2BiWMzzpihcBwnpaKYVEgMhxzmp',
           '8d6AQJ5KTJUkn2vb8U6EW2pXLDPEgfwPZ3nEsoBgF212YdsgAiAkatJcnfEcsvvrizxGS8nw8j8VqYNjozXpYs7',
-          '5e9ATFzcta5RfXB9tjCZfpE7qV1cBUh5H5ocNrwxSfC4D7KqRXTCRL3om4FTwNprwUmn9VMAUJAKm5qVYaJ8vsq6',
           '5D9K8nKmHqaiEfNYAbDj6PWfsCCkdg3EcGYszQ9AbaBLC1ve5gpaNPrms1Eruj4aZhTg5DKSp3WAdjkCvHr1WcsY',
           '57cxdqYXcqAiZwyhEVg8WomEjh68LVmcfBmpzh5cUTi9kaZfWTGWCgBwWshWm3QkBkTzchTcuj2w4Pyhc2MGmyzf',
           '3HUuJga6Xhwbzns8JAXB3BotAJKRFAmua3EtdN6wMEcr3fDUB2NzXD6ZYXJkWDNsg2akc98JcaNDAc24uTkGwwHN',
@@ -72,6 +69,9 @@ models:
           'ojKvTxF4MXgPEoxYYyxakcRbDko4eSYhmUqpCe9hTLJ4QSBxgfotDRbFW2v829N1zapX8MVeQ2D2kX3XnT8hwdL',
           'BkLJ56E93ai36Mwx7Wv8PoXVZ2RZUbCGCGMawZWU2nbEpU3QiipyG9Lr6CajGMtM6s5BnPWqSYuLLf3GzsAe5hQ',
           '4XMga64PPam74iSFPqnXohswejwtdxL1Dj5azTjBfYwE97PfGcP6JSastTwRFHdnzXTcdyRsMwD7t5ZZdpYzjqJj')"
+      - tx_excluded:
+          name: silver__swaps_intermediate_dex_tx_excluded_test
+          excluded_tx_ids: ref('testing__swaps_excluded_txs')
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
