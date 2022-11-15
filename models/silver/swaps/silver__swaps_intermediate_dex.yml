@@ -2,11 +2,11 @@ version: 2
 models:
   - name: silver__swaps_intermediate_dex
     tests:
-      # - dbt_utils.unique_combination_of_columns:
-      #     combination_of_columns:
-      #       - BLOCK_ID
-      #       - TX_ID
-      #       - SWAP_INDEX
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+            - TX_ID
+            - SWAP_INDEX
       - compare_model_subset:
           name: silver__swaps_intermediate_dex_business_logic_test
           compare_model: ref('testing__swaps_intermediate_dex')
@@ -72,50 +72,46 @@ models:
           'ojKvTxF4MXgPEoxYYyxakcRbDko4eSYhmUqpCe9hTLJ4QSBxgfotDRbFW2v829N1zapX8MVeQ2D2kX3XnT8hwdL',
           'BkLJ56E93ai36Mwx7Wv8PoXVZ2RZUbCGCGMawZWU2nbEpU3QiipyG9Lr6CajGMtM6s5BnPWqSYuLLf3GzsAe5hQ',
           '4XMga64PPam74iSFPqnXohswejwtdxL1Dj5azTjBfYwE97PfGcP6JSastTwRFHdnzXTcdyRsMwD7t5ZZdpYzjqJj')"
-    # columns:
-    #   - name: BLOCK_TIMESTAMP
-    #     description: "{{ doc('block_timestamp') }}"
-    #     tests:
-    #       - not_null
-    #       - dbt_expectations.expect_row_values_to_have_recent_data:
-    #           datepart: day
-    #           interval: 2
-    #   - name: BLOCK_ID
-    #     description: "{{ doc('block_id') }}"
-    #     tests:
-    #       - not_null
-    #   - name: TX_ID
-    #     description: "{{ doc('tx_id') }}"
-    #     tests:
-    #       - not_null
-    #   - name: SUCCEEDED
-    #     description: "{{ doc('tx_succeeded') }}"
-    #     tests: 
-    #       - not_null
-    #   - name: SWAPPER
-    #     description: Address that initiated the swap 
-    #   - name: FROM_AMT
-    #     description: Total amount of the token sent in to initiate the swap 
-    #     tests: 
-    #   - name: FROM_MINT
-    #     description: Token being sent or swapped from
-    #     tests: 
-    #   - name: TO_AMT
-    #     description: Total amount of the token received in the swap
-    #     tests: 
-    #       - not_null: 
-    #           where: succeeded = TRUE
-    #   - name: TO_MINT
-    #     description: Token being received or swapped for 
-    #     tests: 
-    #       - not_null: 
-    #           where: succeeded = TRUE
-    #   - name: SWAP_INDEX
-    #     description: Order in which the intermediate swap was executed
-    #     tests: 
-    #       - not_null: 
-    #           where: succeeded = TRUE
-    #   - name: _INSERTED_TIMESTAMP
-    #     description: "{{ doc('_inserted_timestamp') }}"
-    #     tests: 
-    #       - not_null
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: SWAPPER
+        description: Address that initiated the swap 
+      - name: FROM_AMT
+        description: Total amount of the token sent in to initiate the swap 
+        tests: 
+      - name: FROM_MINT
+        description: Token being sent or swapped from
+        tests: 
+      - name: TO_AMT
+        description: Total amount of the token received in the swap
+        tests: 
+      - name: TO_MINT
+        description: Token being received or swapped for 
+        tests: 
+      - name: SWAP_INDEX
+        description: Order in which the intermediate swap was executed
+        tests: 
+          - not_null: 
+              where: succeeded = TRUE
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null

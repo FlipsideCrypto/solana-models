@@ -26,10 +26,9 @@ WITH dex_txs AS (
     WHERE
         (
             program_id IN (
-                -- jupiter v2,v3,v4
+                -- jupiter v2,v3
                 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo',
                 'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph',
-                -- 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB',
                 -- Orca
                 'MEV1HDn99aybER3U3oa9MySSXqoEZNDEQ4miAimTjaW',
                 '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
@@ -40,6 +39,7 @@ WITH dex_txs AS (
             OR (
                 program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
                 AND instruction :accounts [2] :: STRING = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
+                AND (ARRAY_TO_STRING(inner_instruction_program_ids, ',') <> 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA,TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA,TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
             )
             OR (
                 program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
@@ -53,22 +53,23 @@ WITH dex_txs AS (
         AND ARRAY_SIZE(
             e.instruction :accounts
         ) > 6
-        AND e.block_id > 111442741
+        AND e.block_id > 111442741 -- token balances owner field not guaranteed to be populated before this slot
         AND inner_instruction_program_ids [0] <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB' --associated with wrapping of tokens
 
 {% if is_incremental() %}
-AND e.block_timestamp :: DATE = '2022-07-27' -- AND e._inserted_timestamp >= (
---     SELECT
---         MAX(_inserted_timestamp)
---     FROM
---         {{ this }}
--- )
--- AND t._inserted_timestamp >= (
---     SELECT
---         MAX(_inserted_timestamp)
---     FROM
---         {{ this }}
--- )
+-- AND e.block_timestamp :: DATE = '2022-07-27'
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+AND t._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% else %}
     AND e.block_timestamp :: DATE >= '2021-12-14'
 {% endif %}
@@ -81,13 +82,13 @@ base_transfers AS (
         tr
 
 {% if is_incremental() %}
-WHERE
-    block_timestamp :: DATE = '2022-07-27' -- WHERE _inserted_timestamp >= (
-    --     SELECT
-    --         MAX(_inserted_timestamp)
-    --     FROM
-    --         {{ this }}
-    -- )
+-- WHERE block_timestamp :: DATE = '2022-07-27'
+WHERE _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% else %}
 WHERE
     block_timestamp :: DATE >= '2021-12-14'
@@ -100,13 +101,14 @@ base_post_token_balances AS (
         {{ ref('silver___post_token_balances') }}
 
 {% if is_incremental() %}
-WHERE
-    block_timestamp :: DATE = '2022-07-27' -- WHERE _inserted_timestamp >= (
-    --     SELECT
-    --         MAX(_inserted_timestamp)
-    --     FROM
-    --         {{ this }}
-    -- )
+-- WHERE
+--     block_timestamp :: DATE = '2022-07-27'
+WHERE _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% else %}
 WHERE
     block_timestamp :: DATE >= '2021-12-14'
@@ -200,12 +202,13 @@ account_mappings AS (
 
 
 {% if is_incremental() %}
-AND block_timestamp :: DATE = '2022-07-27' -- AND _inserted_timestamp >= (
---     SELECT
---         MAX(_inserted_timestamp)
---     FROM
---         {{ this }}
--- )
+-- AND block_timestamp :: DATE = '2022-07-27'
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% else %}
     AND block_timestamp :: DATE >= '2021-12-14'
 {% endif %}
@@ -224,12 +227,13 @@ delegate_mappings AS(
         )
 
 {% if is_incremental() %}
-AND block_timestamp :: DATE = '2022-07-27' -- AND _inserted_timestamp >= (
---     SELECT
---         MAX(_inserted_timestamp)
---     FROM
---         {{ this }}
--- )
+-- AND block_timestamp :: DATE = '2022-07-27'
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% else %}
     AND block_timestamp :: DATE >= '2021-12-14'
 {% endif %}
@@ -372,6 +376,30 @@ final_temp AS (
             OR s1.tx_to = s1.swapper
         )
         AND s2.mint = s1.mint
+    union
+        select 
+        block_id,
+        block_timestamp,
+        tx_id,
+        index,
+        inner_index,
+        tx_from,
+        tx_to,
+        null as amount, 
+        null as mint,
+        succeeded,
+        _inserted_timestamp,
+        swapper, 
+        destination,
+        authority,
+        source,
+        min_index_swapper,
+        rn,
+        inner_rn,
+        mint as to_mint, 
+        amount as to_amt
+    from swaps as s1
+    WHERE min_index_swapper is null
 )
 SELECT
     block_id,
