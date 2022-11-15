@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "CONCAT_WS('-', block_id, tx_id, index)",
-    incremental_strategy = 'delete+insert',
+    unique_key = ["block_id","tx_id","index"],
+    merge_predicates = ["DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from {{ this }}__dbt_tmp))"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
@@ -16,7 +16,6 @@ With base_transfers_i AS (
         program_id,
         instruction,
         inner_instruction,
-        succeeded,
         _inserted_timestamp
     FROM
         {{ ref('silver__events') }}
@@ -52,10 +51,8 @@ AND _inserted_timestamp >= (
         {{ this }}
     )
 {% else %}
--- AND
---     block_id between 4260184 and 5260184
 AND
-    block_id between 112000000 and 117000000
+    block_id between 4260184 and 5260184
 {% endif %}
 
     UNION
@@ -72,7 +69,6 @@ AND
         ii.value :programId :: STRING AS program_id,
         ii.value as instruction,
         NULL AS inner_instruction,
-        e.succeeded,
         _inserted_timestamp
     FROM
         {{ ref('silver__events') }}
@@ -110,10 +106,8 @@ AND _inserted_timestamp >= (
         {{ this }}
     )
 {% else %}
--- AND
---     block_id between 4260184 and 5260184
 AND
-    block_id between 112000000 and 117000000
+    block_id between 4260184 and 5260184
 {% endif %}
 ),
 base_post_token_balances AS (
@@ -153,13 +147,8 @@ WHERE
             {{ this }}
     )
 {% else %}
--- WHERE
---     block_id between 4260184 and 5260184
-
--- WHERE
---     block_id between 118087610 and 123000000
 WHERE
-    block_id between 112000000 and 117000000
+    block_id between 4260184 and 5260184
 {% endif %}
 ),
 base_pre_token_balances AS (
@@ -198,11 +187,8 @@ WHERE
             {{ this }}
     )
 {% else %}
--- WHERE
---     block_id between 4260184 and 5260184
-
 WHERE
-    block_id between 112000000 and 117000000
+    block_id between 4260184 and 5260184
 {% endif %}
 ),
 spl_transfers AS (
@@ -211,7 +197,6 @@ spl_transfers AS (
         e.block_timestamp,
         e.tx_id,
         e.index,
-        e.succeeded,
         COALESCE(
             p.owner,
             e.instruction :parsed :info :authority :: STRING
@@ -265,7 +250,6 @@ sol_transfers AS (
         e.block_timestamp,
         e.tx_id,
         e.index,
-        e.succeeded,
         instruction :parsed :info :source :: STRING AS tx_from,
         instruction :parsed :info :destination :: STRING AS tx_to,
         instruction :parsed :info :lamports / pow(
@@ -283,7 +267,6 @@ SELECT
     block_id,
     block_timestamp,
     tx_id,
-    succeeded,
     INDEX,
     tx_from,
     tx_to,
@@ -297,7 +280,6 @@ SELECT
     block_id,
     block_timestamp,
     tx_id,
-    succeeded,
     INDEX,
     tx_from,
     tx_to,
