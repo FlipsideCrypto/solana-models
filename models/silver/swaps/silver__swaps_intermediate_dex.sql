@@ -5,8 +5,47 @@
     cluster_by = ['block_timestamp::DATE'],
 ) }}
 
-WITH dex_txs AS (
+WITH base_events AS(
 
+    SELECT
+        *
+    FROM
+        {{ ref('silver__events') }}
+    WHERE
+        (
+            program_id IN (
+                --jupiter v2/v3 program_ids
+                'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo',
+                'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph',
+                -- Orca
+                'MEV1HDn99aybER3U3oa9MySSXqoEZNDEQ4miAimTjaW',
+                '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
+                'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
+                -- saber
+                'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t',
+                --raydium program_ids
+                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+                '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h',
+                '93BgeoLHo5AdNbpqy9bD12dtfxtA5M2fh3rj72bE35Y3',
+                'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS',
+                --program ids for acct mapping
+                'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+                'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+            )
+        )
+
+{% if is_incremental() %}
+AND block_timestamp :: DATE = '2022-07-27' -- AND _inserted_timestamp >= (
+--     SELECT
+--         MAX(_inserted_timestamp)
+--     FROM
+--         {{ this }}
+-- )
+-- {% else %}
+--     AND block_timestamp :: DATE >= '2021-12-14'
+-- {% endif %}
+),
+dex_txs AS (
     SELECT
         e.*,
         CASE
@@ -17,8 +56,7 @@ WITH dex_txs AS (
             ELSE signers [0] :: STRING
         END AS swapper
     FROM
-        {{ ref('silver__events') }}
-        e
+        base_events e
         INNER JOIN {{ ref('silver__transactions') }}
         t
         ON t.tx_id = e.tx_id
@@ -65,21 +103,14 @@ WITH dex_txs AS (
         AND inner_instruction_program_ids [0] <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB' --associated with wrapping of tokens
 
 {% if is_incremental() %}
--- AND e.block_timestamp :: DATE = '2022-07-27'
-AND e._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-AND t._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+AND t.block_timestamp :: DATE = '2022-07-27' -- AND t._inserted_timestamp >= (
+--     SELECT
+--         MAX(_inserted_timestamp)
+--     FROM
+--         {{ this }}
+-- )
 {% else %}
-    AND e.block_timestamp :: DATE >= '2021-12-14'
+    AND t.block_timestamp :: DATE >= '2021-12-14'
 {% endif %}
 ),
 base_transfers AS (
@@ -90,14 +121,14 @@ base_transfers AS (
         tr
 
 {% if is_incremental() %}
--- WHERE block_timestamp :: DATE = '2022-07-27'
 WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
+    block_timestamp :: DATE = '2022-07-27' -- WHERE
+    --     _inserted_timestamp >= (
+    --         SELECT
+    --             MAX(_inserted_timestamp)
+    --         FROM
+    --             {{ this }}
+    --     )
 {% else %}
 WHERE
     block_timestamp :: DATE >= '2021-12-14'
@@ -110,15 +141,14 @@ base_post_token_balances AS (
         {{ ref('silver___post_token_balances') }}
 
 {% if is_incremental() %}
--- WHERE
---     block_timestamp :: DATE = '2022-07-27'
 WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
+    block_timestamp :: DATE = '2022-07-27' -- WHERE
+    --     _inserted_timestamp >= (
+    --         SELECT
+    --             MAX(_inserted_timestamp)
+    --         FROM
+    --             {{ this }}
+    --     )
 {% else %}
 WHERE
     block_timestamp :: DATE >= '2021-12-14'
@@ -198,7 +228,7 @@ account_mappings AS (
             instruction :parsed :info :owner :: STRING
         ) AS owner
     FROM
-        {{ ref('silver__events') }}
+        base_events
     WHERE
         (
             (
@@ -210,18 +240,6 @@ account_mappings AS (
                 AND event_type = 'closeAccount'
             )
         )
-
-{% if is_incremental() %}
--- AND block_timestamp :: DATE = '2022-07-27'
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND block_timestamp :: DATE >= '2021-12-14'
-{% endif %}
 ),
 delegate_mappings AS(
     SELECT
@@ -229,24 +247,12 @@ delegate_mappings AS(
         instruction :parsed :info :delegate :: STRING AS delegate,
         instruction :parsed :info :owner :: STRING AS delegate_owner
     FROM
-        {{ ref('silver__events') }}
+        base_events
     WHERE
         (
             program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
             AND event_type = 'approve'
         )
-
-{% if is_incremental() %}
--- AND block_timestamp :: DATE = '2022-07-27'
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND block_timestamp :: DATE >= '2021-12-14'
-{% endif %}
 ),
 swaps_w_destination AS (
     SELECT
@@ -379,39 +385,17 @@ final_temp AS (
         LEFT OUTER JOIN account_mappings m
         ON m.tx_id = s1.tx_id
         AND m.associated_account = s1.tx_to
-    WHERE
-        s1.inner_index <> s1.min_index_swapper
-        AND (
-            m.owner = s1.swapper
-            OR s1.tx_to = s1.swapper
+    WHERE(
+            (
+                s1.inner_index <> s1.min_index_swapper
+                AND (
+                    m.owner = s1.swapper
+                    OR s1.tx_to = s1.swapper
+                )
+                AND s2.mint = s1.mint
+            )
+            OR s1.min_index_swapper IS NULL
         )
-        AND s2.mint = s1.mint
-    UNION
-    SELECT
-        block_id,
-        block_timestamp,
-        tx_id,
-        INDEX,
-        inner_index,
-        tx_from,
-        tx_to,
-        NULL AS amount,
-        NULL AS mint,
-        succeeded,
-        _inserted_timestamp,
-        swapper,
-        destination,
-        authority,
-        source,
-        min_index_swapper,
-        rn,
-        inner_rn,
-        mint AS to_mint,
-        amount AS to_amt
-    FROM
-        swaps AS s1
-    WHERE
-        min_index_swapper IS NULL
 )
 SELECT
     block_id,
