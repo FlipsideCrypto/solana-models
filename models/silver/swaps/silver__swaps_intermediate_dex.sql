@@ -35,15 +35,16 @@ WITH base_events AS(
         )
 
 {% if is_incremental() %}
-AND block_timestamp :: DATE = '2022-07-27' -- AND _inserted_timestamp >= (
---     SELECT
---         MAX(_inserted_timestamp)
---     FROM
---         {{ this }}
--- )
--- {% else %}
---     AND block_timestamp :: DATE >= '2021-12-14'
--- {% endif %}
+-- AND block_timestamp :: DATE = '2022-07-27' 
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% else %}
+    AND block_timestamp :: DATE >= '2021-12-14'
+{% endif %}
 ),
 dex_txs AS (
     SELECT
@@ -103,12 +104,13 @@ dex_txs AS (
         AND inner_instruction_program_ids [0] <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB' --associated with wrapping of tokens
 
 {% if is_incremental() %}
-AND t.block_timestamp :: DATE = '2022-07-27' -- AND t._inserted_timestamp >= (
---     SELECT
---         MAX(_inserted_timestamp)
---     FROM
---         {{ this }}
--- )
+-- AND t.block_timestamp :: DATE = '2022-07-27'
+AND t._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% else %}
     AND t.block_timestamp :: DATE >= '2021-12-14'
 {% endif %}
@@ -122,13 +124,13 @@ base_transfers AS (
 
 {% if is_incremental() %}
 WHERE
-    block_timestamp :: DATE = '2022-07-27' -- WHERE
-    --     _inserted_timestamp >= (
-    --         SELECT
-    --             MAX(_inserted_timestamp)
-    --         FROM
-    --             {{ this }}
-    --     )
+    -- block_timestamp :: DATE = '2022-07-27'
+        _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp)
+            FROM
+                {{ this }}
+        )
 {% else %}
 WHERE
     block_timestamp :: DATE >= '2021-12-14'
@@ -142,13 +144,13 @@ base_post_token_balances AS (
 
 {% if is_incremental() %}
 WHERE
-    block_timestamp :: DATE = '2022-07-27' -- WHERE
-    --     _inserted_timestamp >= (
-    --         SELECT
-    --             MAX(_inserted_timestamp)
-    --         FROM
-    --             {{ this }}
-    --     )
+    -- block_timestamp :: DATE = '2022-07-27'
+        _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp)
+            FROM
+                {{ this }}
+        )
 {% else %}
 WHERE
     block_timestamp :: DATE >= '2021-12-14'
