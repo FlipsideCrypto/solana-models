@@ -33,10 +33,10 @@ WITH base_events AS(
                 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
             )
         )
-        AND block_id > 111442741
+    AND block_id > 111442741 -- token balances owner field not guaranteed to be populated before this slot
 
 {% if is_incremental() %}
--- AND block_timestamp :: DATE = '2022-07-27'
+-- AND block_timestamp :: DATE = '2022-07-27' 
 AND _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
@@ -125,12 +125,12 @@ base_transfers AS (
 {% if is_incremental() %}
 WHERE
     -- block_timestamp :: DATE = '2022-07-27'
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
+        _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp)
+            FROM
+                {{ this }}
+        )
 {% else %}
 WHERE
     block_timestamp :: DATE >= '2021-12-14'
@@ -145,12 +145,12 @@ base_post_token_balances AS (
 {% if is_incremental() %}
 WHERE
     -- block_timestamp :: DATE = '2022-07-27'
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
+        _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp)
+            FROM
+                {{ this }}
+        )
 {% else %}
 WHERE
     block_timestamp :: DATE >= '2021-12-14'
@@ -163,6 +163,7 @@ swaps_temp AS(
         A.tx_id,
         COALESCE(SPLIT_PART(INDEX :: text, '.', 1) :: INT, INDEX :: INT) AS INDEX,
         COALESCE(SPLIT_PART(INDEX :: text, '.', 2), NULL) AS inner_index,
+        A.program_id,
         A.tx_from,
         A.tx_to,
         A.amount,
@@ -242,12 +243,11 @@ account_mappings AS (
                 AND event_type = 'closeAccount'
             )
         )
-),
-delegate_mappings AS(
+    UNION 
     SELECT
         tx_id,
-        instruction :parsed :info :delegate :: STRING AS delegate,
-        instruction :parsed :info :owner :: STRING AS delegate_owner
+        instruction :parsed :info :delegate :: STRING AS associated_account,
+        instruction :parsed :info :owner :: STRING AS owner
     FROM
         base_events
     WHERE
@@ -258,47 +258,38 @@ delegate_mappings AS(
 ),
 swaps_w_destination AS (
     SELECT
-        s.*,
+        s.block_id,
+        s.block_timestamp,
+        s.tx_id,
+        s.INDEX,
+        s.inner_index,
+        COALESCE(m1.owner, s.tx_from) as tx_from,
+        COALESCE(m2.owner, s.tx_to) as tx_to,
+        s.amount,
+        s.mint,
+        s.succeeded,
+        s._inserted_timestamp,
         e.swapper,
-        ii.value :parsed :info :destination :: STRING AS destination,
-        ii.value :parsed :info :authority :: STRING AS authority,
-        ii.value :parsed :info :source :: STRING AS source
+        e.program_id
     FROM
         swaps_temp s
         LEFT OUTER JOIN dex_txs e
         ON s.tx_id = e.tx_id
         AND s.index = e.index
-        LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
+        LEFT OUTER JOIN account_mappings m1 on s.tx_id = m1.tx_id and s.tx_from = m1.associated_account
+        LEFT OUTER JOIN account_mappings m2 on s.tx_id = m2.tx_id and s.tx_to = m2.associated_account
     WHERE
-        destination IS NOT NULL
-        AND s.inner_index = ii.index
-        AND COALESCE(
-            ii.value :programId :: STRING,
-            ''
-        ) <> '11111111111111111111111111111111'
+        s.program_id <> '11111111111111111111111111111111'
 ),
-swaps_w_tx_from_owner AS (
-    SELECT
-        s.*,
-        COALESCE(
-            m.delegate_owner,
-            s.tx_from
-        ) AS tx_from_owner
-    FROM
-        swaps_w_destination AS s
-        LEFT OUTER JOIN delegate_mappings AS m
-        ON s.tx_id = m.tx_id
-        AND s.tx_from = m.delegate
-),
-min_idx_of_swapper AS(
+min_inner_index_of_swapper AS(
     SELECT
         tx_id,
         INDEX,
-        MIN(inner_index) AS min_index_swapper
+        MIN(inner_index) AS min_inner_index_swapper
     FROM
-        swaps_w_tx_from_owner
+        swaps_w_destination
     WHERE
-        tx_from_owner = swapper
+        tx_from = swapper
     GROUP BY
         1,
         2
@@ -306,7 +297,7 @@ min_idx_of_swapper AS(
 swaps AS(
     SELECT
         d.*,
-        m.min_index_swapper,
+        m.min_inner_index_swapper,
         ROW_NUMBER() over (
             PARTITION BY d.tx_id
             ORDER BY
@@ -321,13 +312,22 @@ swaps AS(
         ) AS inner_rn
     FROM
         swaps_w_destination d
-        LEFT JOIN min_idx_of_swapper m
+        LEFT JOIN min_inner_index_of_swapper m
         ON m.tx_id = d.tx_id
         AND m.index = d.index
 ),
 final_temp AS (
     SELECT
-        s1.*,
+        s1.block_id,
+        s1.block_timestamp,
+        s1.tx_id,
+        s1.succeeded,
+        s1.program_id,
+        s1.swapper,
+        s1.mint,
+        s1.amount,
+        s1.rn,
+        s1._inserted_timestamp,
         s2.mint AS to_mint,
         s2.amount AS to_amt
     FROM
@@ -336,46 +336,41 @@ final_temp AS (
         ON s1.tx_id = s2.tx_id
         AND s1.index = s2.index
         AND s1.inner_index <> s2.inner_index
-        LEFT OUTER JOIN account_mappings m
-        ON m.tx_id = s2.tx_id
-        AND m.associated_account = s2.destination
     WHERE
-        s1.inner_index = s1.min_index_swapper
-        AND s1.swapper IN (
-            s2.destination,
-            m.owner
-        )
+        s1.inner_index = s1.min_inner_index_swapper
+        AND s1.swapper = s2.tx_to
         AND s1.mint <> s2.mint
     UNION
     SELECT
-        s1.*,
+        s1.block_id,
+        s1.block_timestamp,
+        s1.tx_id,
+        s1.succeeded,
+        s1.program_id,
+        s1.swapper,
+        s1.mint,
+        s1.amount,
+        s1.rn,
+        s1._inserted_timestamp,
         NULL,
         NULL
     FROM
         swaps s1
     WHERE
-        s1.inner_index <> s1.min_index_swapper
+        s1.inner_index <> s1.min_inner_index_swapper
         AND s1.tx_from = s1.swapper
     UNION
     SELECT
         s1.block_id,
         s1.block_timestamp,
         s1.tx_id,
-        s1.index,
-        s1.inner_index,
-        s1.tx_from,
-        s1.tx_to,
-        NULL AS amount,
-        NULL AS mint,
         s1.succeeded,
-        s1._inserted_timestamp,
+        s1.program_id,
         s1.swapper,
-        s1.destination,
-        s1.authority,
-        s1.source,
-        s1.min_index_swapper,
+        NULL AS mint,
+        NULL AS amount,
         s1.rn,
-        s1.inner_rn,
+        s1._inserted_timestamp,
         s1.mint AS to_mint,
         s1.amount AS to_amt
     FROM
@@ -383,20 +378,14 @@ final_temp AS (
         LEFT OUTER JOIN swaps s2
         ON s1.tx_id = s2.tx_id
         AND s1.index = s2.index
-        AND s2.inner_index = s2.min_index_swapper
-        LEFT OUTER JOIN account_mappings m
-        ON m.tx_id = s1.tx_id
-        AND m.associated_account = s1.tx_to
+        AND s2.inner_index = s2.min_inner_index_swapper
     WHERE(
             (
-                s1.inner_index <> s1.min_index_swapper
-                AND (
-                    m.owner = s1.swapper
-                    OR s1.tx_to = s1.swapper
-                )
+                s1.inner_index <> s1.min_inner_index_swapper
+                AND s1.tx_to = s1.swapper
                 AND s2.mint = s1.mint
             )
-            OR s1.min_index_swapper IS NULL
+            OR s1.min_inner_index_swapper IS NULL
         )
 )
 SELECT
@@ -404,6 +393,7 @@ SELECT
     block_timestamp,
     tx_id,
     succeeded,
+    program_id,
     swapper,
     mint AS from_mint,
     amount AS from_amt,
