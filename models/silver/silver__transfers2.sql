@@ -197,6 +197,7 @@ spl_transfers AS (
         e.block_timestamp,
         e.tx_id,
         e.index,
+        e.program_id,
         COALESCE(
             p.owner,
             e.instruction :parsed :info :authority :: STRING
@@ -250,6 +251,7 @@ sol_transfers AS (
         e.block_timestamp,
         e.tx_id,
         e.index,
+        e.program_id,
         instruction :parsed :info :source :: STRING AS tx_from,
         instruction :parsed :info :destination :: STRING AS tx_to,
         instruction :parsed :info :lamports / pow(
@@ -267,6 +269,7 @@ SELECT
     block_id,
     block_timestamp,
     tx_id,
+    program_id,
     INDEX,
     tx_from,
     tx_to,
@@ -280,6 +283,7 @@ SELECT
     block_id,
     block_timestamp,
     tx_id,
+    program_id,
     INDEX,
     tx_from,
     tx_to,
