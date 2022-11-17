@@ -26,20 +26,31 @@ WITH dex_txs AS (
     WHERE
         (
             program_id IN (
-                -- jupiter v2,v3
-                'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo',
-                'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph',
                 -- Orca
                 'MEV1HDn99aybER3U3oa9MySSXqoEZNDEQ4miAimTjaW',
                 '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
                 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
                 -- saber
                 'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t'
+            ) -- jupiter v2,v3
+            OR (
+                program_id IN (
+                    'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo',
+                    'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph'
+                )
+                AND ARRAY_SIZE(
+                    e.instruction :accounts
+                ) > 6
             ) -- raydium
             OR (
                 program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
                 AND instruction :accounts [2] :: STRING = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
-                AND (ARRAY_TO_STRING(inner_instruction_program_ids, ',') <> 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA,TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA,TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
+                AND (
+                    ARRAY_TO_STRING(
+                        inner_instruction_program_ids,
+                        ','
+                    ) <> 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA,TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA,TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+                )
             )
             OR (
                 program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
@@ -50,9 +61,6 @@ WITH dex_txs AS (
                 'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS'
             )
         )
-        AND ARRAY_SIZE(
-            e.instruction :accounts
-        ) > 6
         AND e.block_id > 111442741 -- token balances owner field not guaranteed to be populated before this slot
         AND inner_instruction_program_ids [0] <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB' --associated with wrapping of tokens
 
@@ -83,7 +91,8 @@ base_transfers AS (
 
 {% if is_incremental() %}
 -- WHERE block_timestamp :: DATE = '2022-07-27'
-WHERE _inserted_timestamp >= (
+WHERE
+    _inserted_timestamp >= (
         SELECT
             MAX(_inserted_timestamp)
         FROM
@@ -103,7 +112,8 @@ base_post_token_balances AS (
 {% if is_incremental() %}
 -- WHERE
 --     block_timestamp :: DATE = '2022-07-27'
-WHERE _inserted_timestamp >= (
+WHERE
+    _inserted_timestamp >= (
         SELECT
             MAX(_inserted_timestamp)
         FROM
@@ -137,15 +147,17 @@ swaps_temp AS(
                 dex_txs
         )
 ),
-raydium_account_mapping as(
-        select 
+raydium_account_mapping AS(
+    SELECT
         tx_id,
-        ii.value:parsed:info:account::string as associated_account,
-        coalesce(
-            ii.value:parsed:info:source::string,
-            ii.value:parsed:info:owner::string) as owner
-    from dex_txs as d
-    LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
+        ii.value :parsed :info :account :: STRING AS associated_account,
+        COALESCE(
+            ii.value :parsed :info :source :: STRING,
+            ii.value :parsed :info :owner :: STRING
+        ) AS owner
+    FROM
+        dex_txs AS d
+        LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
     WHERE
         d.program_id IN (
             '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
@@ -153,17 +165,14 @@ raydium_account_mapping as(
             '93BgeoLHo5AdNbpqy9bD12dtfxtA5M2fh3rj72bE35Y3',
             'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS'
         )
-
-    and associated_account is not null
-    
+        AND associated_account IS NOT NULL
 ),
 account_mappings AS (
-        
     SELECT
-        * 
-    FROM 
+        *
+    FROM
         raydium_account_mapping
-    union
+    UNION
     SELECT
         tx_id,
         tx_to AS associated_account,
@@ -189,17 +198,18 @@ account_mappings AS (
             instruction :parsed :info :owner :: STRING
         ) AS owner
     FROM
-        solana_dev.silver.events
+        {{ ref('silver__events') }}
     WHERE
         (
-            program_id = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'
-            AND event_type = 'create'
+            (
+                program_id = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'
+                AND event_type = 'create'
+            )
+            OR (
+                program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+                AND event_type = 'closeAccount'
+            )
         )
-        OR (
-            program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-            AND event_type = 'closeAccount'
-        )
-
 
 {% if is_incremental() %}
 -- AND block_timestamp :: DATE = '2022-07-27'
@@ -219,7 +229,7 @@ delegate_mappings AS(
         instruction :parsed :info :delegate :: STRING AS delegate,
         instruction :parsed :info :owner :: STRING AS delegate_owner
     FROM
-        solana_dev.silver.events
+        {{ ref('silver__events') }}
     WHERE
         (
             program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
@@ -376,30 +386,32 @@ final_temp AS (
             OR s1.tx_to = s1.swapper
         )
         AND s2.mint = s1.mint
-    union
-        select 
+    UNION
+    SELECT
         block_id,
         block_timestamp,
         tx_id,
-        index,
+        INDEX,
         inner_index,
         tx_from,
         tx_to,
-        null as amount, 
-        null as mint,
+        NULL AS amount,
+        NULL AS mint,
         succeeded,
         _inserted_timestamp,
-        swapper, 
+        swapper,
         destination,
         authority,
         source,
         min_index_swapper,
         rn,
         inner_rn,
-        mint as to_mint, 
-        amount as to_amt
-    from swaps as s1
-    WHERE min_index_swapper is null
+        mint AS to_mint,
+        amount AS to_amt
+    FROM
+        swaps AS s1
+    WHERE
+        min_index_swapper IS NULL
 )
 SELECT
     block_id,
