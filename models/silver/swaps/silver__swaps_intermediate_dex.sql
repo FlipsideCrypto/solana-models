@@ -33,9 +33,10 @@ WITH base_events AS(
                 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
             )
         )
+        AND block_id > 111442741
 
 {% if is_incremental() %}
--- AND block_timestamp :: DATE = '2022-07-27' 
+-- AND block_timestamp :: DATE = '2022-07-27'
 AND _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
@@ -100,7 +101,6 @@ dex_txs AS (
                 'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS'
             )
         )
-        AND e.block_id > 111442741 -- token balances owner field not guaranteed to be populated before this slot
         AND inner_instruction_program_ids [0] <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB' --associated with wrapping of tokens
 
 {% if is_incremental() %}
@@ -125,12 +125,12 @@ base_transfers AS (
 {% if is_incremental() %}
 WHERE
     -- block_timestamp :: DATE = '2022-07-27'
-        _inserted_timestamp >= (
-            SELECT
-                MAX(_inserted_timestamp)
-            FROM
-                {{ this }}
-        )
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% else %}
 WHERE
     block_timestamp :: DATE >= '2021-12-14'
@@ -145,12 +145,12 @@ base_post_token_balances AS (
 {% if is_incremental() %}
 WHERE
     -- block_timestamp :: DATE = '2022-07-27'
-        _inserted_timestamp >= (
-            SELECT
-                MAX(_inserted_timestamp)
-            FROM
-                {{ this }}
-        )
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% else %}
 WHERE
     block_timestamp :: DATE >= '2021-12-14'
