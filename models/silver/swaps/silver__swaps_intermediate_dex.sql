@@ -36,7 +36,7 @@ WITH base_events AS(
     AND block_id > 111442741 -- token balances owner field not guaranteed to be populated before this slot
 
 {% if is_incremental() %}
--- AND block_timestamp :: DATE = '2022-07-27' 
+-- AND block_timestamp :: DATE = '2022-11-01' 
 AND _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
@@ -104,7 +104,7 @@ dex_txs AS (
         AND inner_instruction_program_ids [0] <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB' --associated with wrapping of tokens
 
 {% if is_incremental() %}
--- AND t.block_timestamp :: DATE = '2022-07-27'
+-- AND t.block_timestamp :: DATE = '2022-11-01'
 AND t._inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
@@ -124,7 +124,7 @@ base_transfers AS (
 
 {% if is_incremental() %}
 WHERE
-    -- block_timestamp :: DATE = '2022-07-27'
+    -- block_timestamp :: DATE = '2022-11-01'
         _inserted_timestamp >= (
             SELECT
                 MAX(_inserted_timestamp)
@@ -144,7 +144,7 @@ base_post_token_balances AS (
 
 {% if is_incremental() %}
 WHERE
-    -- block_timestamp :: DATE = '2022-07-27'
+    -- block_timestamp :: DATE = '2022-11-01'
         _inserted_timestamp >= (
             SELECT
                 MAX(_inserted_timestamp)
@@ -276,8 +276,8 @@ swaps_w_destination AS (
         LEFT OUTER JOIN dex_txs e
         ON s.tx_id = e.tx_id
         AND s.index = e.index
-        LEFT OUTER JOIN account_mappings m1 on s.tx_id = m1.tx_id and s.tx_from = m1.associated_account
-        LEFT OUTER JOIN account_mappings m2 on s.tx_id = m2.tx_id and s.tx_to = m2.associated_account
+        LEFT OUTER JOIN account_mappings m1 on s.tx_id = m1.tx_id and s.tx_from = m1.associated_account and s.tx_to <> m1.owner
+        LEFT OUTER JOIN account_mappings m2 on s.tx_id = m2.tx_id and s.tx_to = m2.associated_account and s.tx_from <> m2.owner
     WHERE
         s.program_id <> '11111111111111111111111111111111'
 ),
@@ -315,6 +315,8 @@ swaps AS(
         LEFT JOIN min_inner_index_of_swapper m
         ON m.tx_id = d.tx_id
         AND m.index = d.index
+     WHERE
+        d.swapper is not null
 ),
 final_temp AS (
     SELECT

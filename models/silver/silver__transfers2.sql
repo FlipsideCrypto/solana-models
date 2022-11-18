@@ -16,6 +16,7 @@ With base_transfers_i AS (
         program_id,
         instruction,
         inner_instruction,
+        succeeded,
         _inserted_timestamp
     FROM
         {{ ref('silver__events') }}
@@ -69,6 +70,7 @@ AND
         ii.value :programId :: STRING AS program_id,
         ii.value as instruction,
         NULL AS inner_instruction,
+        e.succeeded,
         _inserted_timestamp
     FROM
         {{ ref('silver__events') }}
@@ -198,6 +200,7 @@ spl_transfers AS (
         e.tx_id,
         e.index,
         e.program_id,
+        e.succeeded,
         COALESCE(
             p.owner,
             e.instruction :parsed :info :authority :: STRING
@@ -252,6 +255,7 @@ sol_transfers AS (
         e.tx_id,
         e.index,
         e.program_id,
+        e.succeeded,
         instruction :parsed :info :source :: STRING AS tx_from,
         instruction :parsed :info :destination :: STRING AS tx_to,
         instruction :parsed :info :lamports / pow(
@@ -270,6 +274,7 @@ SELECT
     block_timestamp,
     tx_id,
     program_id,
+    succeeded,
     INDEX,
     tx_from,
     tx_to,
@@ -284,6 +289,7 @@ SELECT
     block_timestamp,
     tx_id,
     program_id,
+    succeeded,
     INDEX,
     tx_from,
     tx_to,
