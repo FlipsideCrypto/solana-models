@@ -6,7 +6,6 @@ execute immediate 'create or replace task streamline.bulk_get_block_rewards_real
     schedule = \'USING CRON */15 * * * * UTC\'
 as
 BEGIN
-    call streamline.refresh_external_table_next_batch(\'block_rewards_api\',\'complete_block_rewards\');
     create or replace temporary table streamline.complete_block_rewards__dbt_tmp as
     (
         select * 
