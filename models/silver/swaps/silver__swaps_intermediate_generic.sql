@@ -23,11 +23,6 @@ WITH base_events AS(
                 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
                 -- saber
                 'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t',
-                --raydium program_ids
-                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
-                '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h',
-                '93BgeoLHo5AdNbpqy9bD12dtfxtA5M2fh3rj72bE35Y3',
-                'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS',
                 --program ids for acct mapping
                 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
                 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
@@ -81,24 +76,6 @@ dex_txs AS (
                 AND ARRAY_SIZE(
                     e.instruction :accounts
                 ) > 6
-            ) -- raydium
-            OR (
-                program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
-                AND instruction :accounts [2] :: STRING = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
-                AND (
-                    ARRAY_TO_STRING(
-                        inner_instruction_program_ids,
-                        ','
-                    ) <> 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA,TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA,TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-                )
-            )
-            OR (
-                program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
-                AND instruction :accounts [1] :: STRING = '2EXiumdi14E9b8Fy62QcA5Uh6WdHS2b38wtSxp72Mibj'
-            )
-            OR program_id IN (
-                '93BgeoLHo5AdNbpqy9bD12dtfxtA5M2fh3rj72bE35Y3',
-                'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS'
             )
         )
         AND inner_instruction_program_ids [0] <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB' --associated with wrapping of tokens
@@ -180,32 +157,7 @@ swaps_temp AS(
                 dex_txs
         )
 ),
-raydium_account_mapping AS(
-    SELECT
-        tx_id,
-        ii.value :parsed :info :account :: STRING AS associated_account,
-        COALESCE(
-            ii.value :parsed :info :source :: STRING,
-            ii.value :parsed :info :owner :: STRING
-        ) AS owner
-    FROM
-        dex_txs AS d
-        LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
-    WHERE
-        d.program_id IN (
-            '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
-            '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h',
-            '93BgeoLHo5AdNbpqy9bD12dtfxtA5M2fh3rj72bE35Y3',
-            'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS'
-        )
-        AND associated_account IS NOT NULL
-),
 account_mappings AS (
-    SELECT
-        *
-    FROM
-        raydium_account_mapping
-    UNION
     SELECT
         tx_id,
         tx_to AS associated_account,

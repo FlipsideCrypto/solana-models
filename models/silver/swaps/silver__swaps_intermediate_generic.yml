@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__swaps_intermediate_dex
+  - name: silver__swaps_intermediate_generic
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -8,8 +8,8 @@ models:
             - TX_ID
             - SWAP_INDEX
       - compare_model_subset:
-          name: silver__swaps_intermediate_dex_business_logic_test
-          compare_model: ref('testing__swaps_intermediate_dex')
+          name: silver__swaps_intermediate_generic_business_logic_test
+          compare_model: ref('testing__swaps_intermediate_generic')
           compare_columns: 
             - tx_id
             - succeeded
@@ -59,18 +59,15 @@ models:
           '5LsYW2yEZJERFRD6jykprokamCZWRvEZRMqufNR625x9GELRawThDvcfRiwnHSx7hRBBdZzUqUPzPzBK6cyeBtHb',
           '3FpKL3EjTkSEyRhYakEqZ9ErDPHVGzZZ6upyba3wYkmshus4hPoM5NZEgzkMGefPcLrtX9iANWnbA5KA6WERktk2',
           '3mcp7RNz4qjQ37Sr3MZUrChpEYV66LDNkrVDoZWaMND61vcD6HpicftULvG8cYZChKyxESfNW7D6ZY7NnAwGwPK4',
-          '4bEAGZx3EkCyuh3arFg1k3hx7CgR2L9aFdxGg3ihWvwdB4KQiheF6JiyRCQcT6LpeJovYdajDg9fsJ3Lor8pN3kk',
-          '3VMB8QpABTaRiVD2PEz2QNdNYqV5nks9dNhq4WBG4HpTDYU7huq7pkj76uvanaJrACq7kMSuypWjsQAUbuCLXjnu',
           '3YVDZZ54VG7vNQvdzkHrx4sfMcBeSUoAUg7U8cE5Rod3GLsXShTAg53BEZ8fHB2Uwkq7Yh75cN9p82H1JVXYXHyz',
           '7mN7acM2k7mspxfkqhq66xx8nqLa8BigcDwM8URB48QRr9MkiL5E6nG6hrCyURrqRAssAGZzrsVhRfVtKvhmMS9',
           '2YYqA2s9bwZLiTEfBoQYCdXKznFFjHy1orhTHpP6MG63m29uckPovWQjbzoCnUbRcvP3PvR3btLK7kTHFc4PmqiY',
           '8NvbDSTvXQtBexQTSgQCqeZDBsZX4vzSeEnxEQ72aXbbxYmEbSxkfCVxm2oe9JCLLD6hVVYQgK24hkHPq1ncKw1',
           '5rMrTe9UhfSTm6ZNSjN7UqNhuDFKaZmbCmgHKqhSRAZi5cAs9d6zuff95RP9sbRsbkmQX3jRtGAn2erarE9pV8cD',
           'ojKvTxF4MXgPEoxYYyxakcRbDko4eSYhmUqpCe9hTLJ4QSBxgfotDRbFW2v829N1zapX8MVeQ2D2kX3XnT8hwdL',
-          'BkLJ56E93ai36Mwx7Wv8PoXVZ2RZUbCGCGMawZWU2nbEpU3QiipyG9Lr6CajGMtM6s5BnPWqSYuLLf3GzsAe5hQ',
-          '4XMga64PPam74iSFPqnXohswejwtdxL1Dj5azTjBfYwE97PfGcP6JSastTwRFHdnzXTcdyRsMwD7t5ZZdpYzjqJj')"
+          'BkLJ56E93ai36Mwx7Wv8PoXVZ2RZUbCGCGMawZWU2nbEpU3QiipyG9Lr6CajGMtM6s5BnPWqSYuLLf3GzsAe5hQ')"
       - tx_excluded:
-          name: silver__swaps_intermediate_dex_tx_excluded_test
+          name: silver__swaps_intermediate_generic_tx_excluded_test
           excluded_tx_ids: ref('testing__swaps_excluded_txs')
     columns:
       - name: BLOCK_TIMESTAMP
