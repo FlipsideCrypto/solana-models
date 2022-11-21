@@ -1,0 +1,10 @@
+version: 2
+models:
+  - name: silver__swaps
+    tests:
+      - tx_excluded:
+          name: silver__swaps_tx_excluded_test
+          excluded_tx_ids:
+            - 4WX8oi39gn2dH5jK2AqeNDY93ofuYssmDtMJeyErJzhjvkc4jTcJmDetueQQ9FmcR2UzAxzTvjcPVq7HHQkUoggp
+            - 3c9M2C4mE3Q14PmiTMTHkQNMkzPRZSCdMXRc1oYooV8iiFJGLyfSMRgsZVWrXVWqsgvsaw6cgv21DXxCRamK8JHJ
+            - nmN84qNUcZtGpCCxm1r8Qct3Z8vgPMRXFfd7QFohE28dVociEgbSA9xrkn44WgKa8GbTH86u3EiicCakCsbKiya
