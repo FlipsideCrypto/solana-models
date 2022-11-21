@@ -1,0 +1,69 @@
+version: 2
+models:
+  - name: silver__swaps_intermediate_raydium
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+            - TX_ID
+            - SWAP_INDEX
+      - compare_model_subset:
+          name: silver__swaps_intermediate_raydium_business_logic_test
+          compare_model: ref('testing__swaps_intermediate_raydium')
+          compare_columns: 
+            - tx_id
+            - succeeded
+            - swapper
+            - from_mint
+            - from_amt
+            - to_mint
+            - to_amt
+            - swap_index
+          model_condition: "where tx_id in ('3VMB8QpABTaRiVD2PEz2QNdNYqV5nks9dNhq4WBG4HpTDYU7huq7pkj76uvanaJrACq7kMSuypWjsQAUbuCLXjnu',
+          '4XMga64PPam74iSFPqnXohswejwtdxL1Dj5azTjBfYwE97PfGcP6JSastTwRFHdnzXTcdyRsMwD7t5ZZdpYzjqJj',
+          '4bEAGZx3EkCyuh3arFg1k3hx7CgR2L9aFdxGg3ihWvwdB4KQiheF6JiyRCQcT6LpeJovYdajDg9fsJ3Lor8pN3kk')"
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+      - name: SWAPPER
+        description: Address that initiated the swap 
+      - name: FROM_AMT
+        description: Total amount of the token sent in to initiate the swap 
+        tests: 
+      - name: FROM_MINT
+        description: Token being sent or swapped from
+        tests: 
+      - name: TO_AMT
+        description: Total amount of the token received in the swap
+        tests: 
+      - name: TO_MINT
+        description: Token being received or swapped for 
+        tests: 
+      - name: SWAP_INDEX
+        description: Order in which the intermediate swap was executed
+        tests: 
+          - not_null: 
+              where: succeeded = TRUE
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
