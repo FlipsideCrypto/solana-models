@@ -1,0 +1,73 @@
+version: 2
+models:
+  - name: silver__swaps_intermediate_jupiterv4
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+            - TX_ID
+            - SWAP_INDEX
+      - compare_model_subset:
+          name: silver__swaps_intermediate_jupiterv4_business_logic_test
+          compare_model: ref('testing__swaps_intermediate_jupiterv4')
+          compare_columns: 
+            - tx_id
+            - succeeded
+            - swapper
+            - from_mint
+            - from_amt
+            - to_mint
+            - to_amt
+            - swap_index
+          model_condition: "where tx_id in ('3q2GQEoUHubwoFTf6pjU9nZYu9ymz5tdWkgpygjnsCsEYvyy2QWfJTgYCcaTvSJ1SW6RN3sz4nrukMm2dDct4ir',
+          '31HQzRbMs68pbHuiYa5TxkKNeGcasYY9A6HrdUKfMWz1iVBT1XSnNGTYWB689RgKfysSJDfAK3etFxyZ9ikioaeU',
+          '4fmjzK1PMv1AR51778H35fbzjVuxsfb2bACtatdzkqfRSSg9Aca5L6gBKjNpQEJm2wQsjyb1Wd9F2r5vdodCuaE',
+          '9H27jvVtL9naDHm2HicebqjfropPnWXWJtZjuAQgh9hhDANhBxZc7LUqo9wiVuB848XYQtNifRcKjhwwsY1BU8r',
+          '31HQzRbMs68pbHuiYa5TxkKNeGcasYY9A6HrdUKfMWz1iVBT1XSnNGTYWB689RgKfysSJDfAK3etFxyZ9ikioaeU',
+          'L8n9PPRbhrTNL8FJJm27xDqoxfLKhrvt3zhJkrxigtzASCPqWyHLWipeVUrAwjYYfaoodTS3sdv992eWqYDXXeW',
+          'HNJsK2AoxNqBYgCwg2MZuL6EfzchbZFJPN75qXJ2FABftMnPp6K49EB7GmMqZofGcA58y5eD6MdQWW1dcALU121')"
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+      - name: SWAPPER
+        description: Address that initiated the swap 
+      - name: FROM_AMT
+        description: Total amount of the token sent in to initiate the swap 
+        tests: 
+      - name: FROM_MINT
+        description: Token being sent or swapped from
+        tests: 
+      - name: TO_AMT
+        description: Total amount of the token received in the swap
+        tests: 
+      - name: TO_MINT
+        description: Token being received or swapped for 
+        tests: 
+      - name: SWAP_INDEX
+        description: Order in which the intermediate swap was executed
+        tests: 
+          - not_null: 
+              where: succeeded = TRUE
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
