@@ -51,16 +51,11 @@ dex_txs AS (
             (
                 program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
                 AND instruction :accounts [2] :: STRING = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
-                AND (
-                    ARRAY_TO_STRING(
-                        inner_instruction_program_ids,
-                        ','
-                    ) <> 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA,TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA,TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-                )
+                AND array_size(instruction :accounts) >= 17
             )
             OR (
                 program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
-                AND instruction :accounts [1] :: STRING = '2EXiumdi14E9b8Fy62QcA5Uh6WdHS2b38wtSxp72Mibj'
+                AND instruction :accounts [2] :: STRING = '3uaZBfHPfmpAHW7dsimC1SnyR61X4bJqQZKWmRSCXJxv'
             )
             OR program_id IN (
                 '93BgeoLHo5AdNbpqy9bD12dtfxtA5M2fh3rj72bE35Y3',
@@ -82,10 +77,11 @@ AND t._inserted_timestamp >= (
 ),
 base_transfers AS (
     SELECT
-        *
+        tr.*
     FROM
         {{ ref('silver__transfers2') }}
         tr
+    INNER JOIN (select distinct tx_id from dex_txs) d on d.tx_id = tr.tx_id
 
 {% if is_incremental() %}
 WHERE
@@ -103,9 +99,10 @@ WHERE
 ),
 base_post_token_balances AS (
     SELECT
-        *
+        pb.*
     FROM
-        {{ ref('silver___post_token_balances') }}
+        {{ ref('silver___post_token_balances') }} pb
+    INNER JOIN (select distinct tx_id from dex_txs) d on d.tx_id = pb.tx_id
 
 {% if is_incremental() %}
 WHERE
@@ -189,36 +186,38 @@ account_mappings AS (
         base_post_token_balances
     UNION
     SELECT
-        tx_id,
-        instruction :parsed :info :account :: STRING AS associated_account,
+        e.tx_id,
+        e.instruction :parsed :info :account :: STRING AS associated_account,
         COALESCE(
-            instruction :parsed :info :source :: STRING,
-            instruction :parsed :info :owner :: STRING
+            e.instruction :parsed :info :source :: STRING,
+            e.instruction :parsed :info :owner :: STRING
         ) AS owner
     FROM
-        base_events
+        base_events e
+    INNER JOIN (select distinct tx_id from dex_txs) d on d.tx_id = e.tx_id
     WHERE
         (
             (
-                program_id = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'
-                AND event_type = 'create'
+                e.program_id = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'
+                AND e.event_type = 'create'
             )
             OR (
-                program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-                AND event_type = 'closeAccount'
+                e.program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+                AND e.event_type = 'closeAccount'
             )
         )
     UNION
     SELECT
-        tx_id,
-        instruction :parsed :info :delegate :: STRING AS associated_account,
-        instruction :parsed :info :owner :: STRING AS owner
+        e.tx_id,
+        e.instruction :parsed :info :delegate :: STRING AS associated_account,
+        e.instruction :parsed :info :owner :: STRING AS owner
     FROM
-        base_events
+        base_events e
+    INNER JOIN (select distinct tx_id from dex_txs) d on d.tx_id = e.tx_id
     WHERE
         (
-            program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-            AND event_type = 'approve'
+            e.program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+            AND e.event_type = 'approve'
         )
 ),
 swaps_w_destination AS (
