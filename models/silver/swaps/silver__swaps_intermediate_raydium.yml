@@ -21,7 +21,11 @@ models:
             - swap_index
           model_condition: "where tx_id in ('3VMB8QpABTaRiVD2PEz2QNdNYqV5nks9dNhq4WBG4HpTDYU7huq7pkj76uvanaJrACq7kMSuypWjsQAUbuCLXjnu',
           '4XMga64PPam74iSFPqnXohswejwtdxL1Dj5azTjBfYwE97PfGcP6JSastTwRFHdnzXTcdyRsMwD7t5ZZdpYzjqJj',
-          '4bEAGZx3EkCyuh3arFg1k3hx7CgR2L9aFdxGg3ihWvwdB4KQiheF6JiyRCQcT6LpeJovYdajDg9fsJ3Lor8pN3kk')"
+          '4bEAGZx3EkCyuh3arFg1k3hx7CgR2L9aFdxGg3ihWvwdB4KQiheF6JiyRCQcT6LpeJovYdajDg9fsJ3Lor8pN3kk',
+          'fACqZJ8hmUjLoBX2wzUS2gfwQUmV4HfJbXeQ5QbrZKTs2qdYZVREZxZbTaCy7brZT2Ck7QDqVLDBXVvbrLdYkk6',
+          'cFPb9Lq6S45br6RmfXnALPDiRGtZhwZ99PTcJa8a1e4TewEVLUAX5McbBjbk8G6gJuCab2pWZdZh2knB7JjbebQ',
+          'RJDZyoLB69PXEJzKwwtrhiXR9wmepV2mnjsVwmdj2dG3y5E7bydM6zdYmam88RBDMsrtSz9STEgkBRatzCdyjoQ',
+          '5QCTzHRQon1ydSsdCdiAR8to3ECt1FynDcU7yfsCAjLB5zMuhfzb14bwzJ8nqqupbXz6G9vEvpnuAbPHXxeh9sBU')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

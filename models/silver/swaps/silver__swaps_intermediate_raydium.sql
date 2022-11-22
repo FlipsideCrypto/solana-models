@@ -3,7 +3,6 @@
     unique_key = ["block_id","tx_id","swap_index"],
     merge_predicates = ["DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from {{ this }}__dbt_tmp))"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
 WITH base_events AS(
@@ -68,7 +67,6 @@ dex_txs AS (
                 'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS'
             )
         )
-        AND inner_instruction_program_ids [0] <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB' --associated with wrapping of tokens
 
 {% if is_incremental() %}
 -- AND t.block_timestamp :: DATE = '2022-11-01'
