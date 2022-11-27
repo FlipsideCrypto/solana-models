@@ -49,17 +49,32 @@ dex_txs AS (
     WHERE
         (
             (
-                program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
-                AND instruction :accounts [2] :: STRING = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
-                AND array_size(instruction :accounts) >= 17
-            )
-            OR (
-                program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
-                AND instruction :accounts [2] :: STRING = '3uaZBfHPfmpAHW7dsimC1SnyR61X4bJqQZKWmRSCXJxv'
-            )
-            OR program_id IN (
-                '93BgeoLHo5AdNbpqy9bD12dtfxtA5M2fh3rj72bE35Y3',
-                'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS'
+                (
+                    program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
+                    AND instruction :accounts [2] :: STRING = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
+                    AND ARRAY_SIZE(
+                        instruction :accounts
+                    ) >= 17
+                    AND (
+                        instruction :accounts [6] :: STRING = '9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin'
+                        OR instruction :accounts [7] :: STRING = '9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin'
+                    )
+                )
+                OR (
+                    program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+                    AND instruction :accounts [2] :: STRING = '3uaZBfHPfmpAHW7dsimC1SnyR61X4bJqQZKWmRSCXJxv'
+                    AND ARRAY_SIZE(
+                        instruction :accounts
+                    ) >= 17
+                    AND (
+                        instruction :accounts [6] :: STRING = '9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin'
+                        OR instruction :accounts [7] :: STRING = '9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin'
+                    )
+                )
+                OR program_id IN (
+                    '93BgeoLHo5AdNbpqy9bD12dtfxtA5M2fh3rj72bE35Y3',
+                    'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS'
+                )
             )
         )
 
@@ -81,7 +96,13 @@ base_transfers AS (
     FROM
         {{ ref('silver__transfers2') }}
         tr
-    INNER JOIN (select distinct tx_id from dex_txs) d on d.tx_id = tr.tx_id
+        INNER JOIN (
+            SELECT
+                DISTINCT tx_id
+            FROM
+                dex_txs
+        ) d
+        ON d.tx_id = tr.tx_id
 
 {% if is_incremental() %}
 WHERE
@@ -101,8 +122,15 @@ base_post_token_balances AS (
     SELECT
         pb.*
     FROM
-        {{ ref('silver___post_token_balances') }} pb
-    INNER JOIN (select distinct tx_id from dex_txs) d on d.tx_id = pb.tx_id
+        {{ ref('silver___post_token_balances') }}
+        pb
+        INNER JOIN (
+            SELECT
+                DISTINCT tx_id
+            FROM
+                dex_txs
+        ) d
+        ON d.tx_id = pb.tx_id
 
 {% if is_incremental() %}
 WHERE
@@ -194,7 +222,13 @@ account_mappings AS (
         ) AS owner
     FROM
         base_events e
-    INNER JOIN (select distinct tx_id from dex_txs) d on d.tx_id = e.tx_id
+        INNER JOIN (
+            SELECT
+                DISTINCT tx_id
+            FROM
+                dex_txs
+        ) d
+        ON d.tx_id = e.tx_id
     WHERE
         (
             (
@@ -213,7 +247,13 @@ account_mappings AS (
         e.instruction :parsed :info :owner :: STRING AS owner
     FROM
         base_events e
-    INNER JOIN (select distinct tx_id from dex_txs) d on d.tx_id = e.tx_id
+        INNER JOIN (
+            SELECT
+                DISTINCT tx_id
+            FROM
+                dex_txs
+        ) d
+        ON d.tx_id = e.tx_id
     WHERE
         (
             e.program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
