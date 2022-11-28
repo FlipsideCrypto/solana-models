@@ -26,6 +26,11 @@ models:
           'cFPb9Lq6S45br6RmfXnALPDiRGtZhwZ99PTcJa8a1e4TewEVLUAX5McbBjbk8G6gJuCab2pWZdZh2knB7JjbebQ',
           'RJDZyoLB69PXEJzKwwtrhiXR9wmepV2mnjsVwmdj2dG3y5E7bydM6zdYmam88RBDMsrtSz9STEgkBRatzCdyjoQ',
           '5QCTzHRQon1ydSsdCdiAR8to3ECt1FynDcU7yfsCAjLB5zMuhfzb14bwzJ8nqqupbXz6G9vEvpnuAbPHXxeh9sBU')"
+      - tx_excluded:
+          name: silver__swaps_intermediate_raydium_tx_excluded_test
+          excluded_tx_ids:
+            - 48XpWuQQKmoGGoGgrNE73fVJVz2PwcqeoRPiWunb8jHaxXgqDDZ4JiUPQWkjdCTYy98grJit8MX9y2eNHoaKsjqm
+            - 3XHSw61M1zr1ogrzrZ6wc6wgjp3sZFDustxcJAfuFd4GcNKRvbdmpWFYnqga3qje6seDCnSHqNEmQ2iP4BVftgMk
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
