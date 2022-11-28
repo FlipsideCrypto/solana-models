@@ -230,6 +230,8 @@ spl_transfers AS (
             p3.mint,
             p4.mint
         ) AS mint,
+        instruction :parsed :info :source :: STRING as source_token_account,
+        instruction :parsed :info :destination :: STRING as dest_token_account,
         e._inserted_timestamp
     FROM
         base_transfers_i e
@@ -263,6 +265,8 @@ sol_transfers AS (
             9
         ) AS amount,
         'So11111111111111111111111111111111111111112' AS mint,
+        NULL as source_token_account,
+        NULL as dest_token_account,
         e._inserted_timestamp
     FROM
         base_transfers_i e
@@ -280,6 +284,8 @@ SELECT
     tx_to,
     amount,
     mint,
+    source_token_account,
+    dest_token_account,
     _inserted_timestamp
 FROM
     spl_transfers
@@ -295,6 +301,8 @@ SELECT
     tx_to,
     amount,
     mint,
+    source_token_account,
+    dest_token_account,
     _inserted_timestamp
 FROM
     sol_transfers
