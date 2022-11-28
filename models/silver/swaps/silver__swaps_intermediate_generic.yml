@@ -65,7 +65,11 @@ models:
           '8NvbDSTvXQtBexQTSgQCqeZDBsZX4vzSeEnxEQ72aXbbxYmEbSxkfCVxm2oe9JCLLD6hVVYQgK24hkHPq1ncKw1',
           '5rMrTe9UhfSTm6ZNSjN7UqNhuDFKaZmbCmgHKqhSRAZi5cAs9d6zuff95RP9sbRsbkmQX3jRtGAn2erarE9pV8cD',
           'ojKvTxF4MXgPEoxYYyxakcRbDko4eSYhmUqpCe9hTLJ4QSBxgfotDRbFW2v829N1zapX8MVeQ2D2kX3XnT8hwdL',
-          'BkLJ56E93ai36Mwx7Wv8PoXVZ2RZUbCGCGMawZWU2nbEpU3QiipyG9Lr6CajGMtM6s5BnPWqSYuLLf3GzsAe5hQ')"
+          'BkLJ56E93ai36Mwx7Wv8PoXVZ2RZUbCGCGMawZWU2nbEpU3QiipyG9Lr6CajGMtM6s5BnPWqSYuLLf3GzsAe5hQ',
+          'KJ6M8YcsHbQr3CXSQpubh5pWxcgLyboZLg6HGJFZ6WUm9QFuqDrP1jQRfeMbbzzMqTJ4FzjxPYEpdnNBYtzM4wD',
+          '4EbgFcL5CM7B87EgZqW7KyAyVKRrvcifpPWvwP26UDmgQ4nb1NZdqjqZigUtUWXat9gH97kLenYpBVWaRmJ98MmD',
+          '4QJDoXfwFnR354DApr36GCLJGjamwwwSTkgVEwpLbTgwEy8LCqEJsiJPfjEfwQhNtQPQJnmqUjTEcBNRKQ1vfNPN',
+          'Zn4aQD6ScgbNfmcKRSYAuyDJ4AWibjwmKGLW2W4QrvMpWtxvHxTta7cxUYMgWTKTHHACF9hV78yKFdkG3CddKju')"
       - tx_excluded:
           name: silver__swaps_intermediate_generic_tx_excluded_test
           excluded_tx_ids: ref('testing__swaps_excluded_txs')
