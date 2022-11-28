@@ -19,7 +19,6 @@ WITH base_events AS(
                 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo',
                 'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph',
                 -- Orca
-                'MEV1HDn99aybER3U3oa9MySSXqoEZNDEQ4miAimTjaW',
                 '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
                 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
                 -- saber
@@ -64,7 +63,6 @@ dex_txs AS (
         (
             program_id IN (
                 -- Orca
-                --'MEV1HDn99aybER3U3oa9MySSXqoEZNDEQ4miAimTjaW',
                 '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
                 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
                 -- saber
