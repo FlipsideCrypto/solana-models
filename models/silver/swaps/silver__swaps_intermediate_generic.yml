@@ -72,7 +72,14 @@ models:
           'Zn4aQD6ScgbNfmcKRSYAuyDJ4AWibjwmKGLW2W4QrvMpWtxvHxTta7cxUYMgWTKTHHACF9hV78yKFdkG3CddKju')"
       - tx_excluded:
           name: silver__swaps_intermediate_generic_tx_excluded_test
-          excluded_tx_ids: ref('testing__swaps_excluded_txs')
+          excluded_tx_ids:
+            - 4VroTTqAjpsxYMTgnBzBSJG2P9uB2orenKxiEfvxbTBnAficioUuCijnAYotMmAH4pB6kgziKHvMgHNf7nU8g646
+            - 5JHjPkrTy1bWJv6ph8n1Tpk5ABBBuD89NZdyANUpbjdY8Zr2HKUyhJEjSrffQVEfAwYA3d9kVqK84qwuqVSZELp8
+            - 5e9ATFzcta5RfXB9tjCZfpE7qV1cBUh5H5ocNrwxSfC4D7KqRXTCRL3om4FTwNprwUmn9VMAUJAKm5qVYaJ8vsq6
+            - 3wSxtF5Mqeh5ybZVH1U4nE577pZSrhCr3td8GbJeCfwZfanpP7wrDXMiCUdhd5njhkWW6FKGgEzptDKsY8CW33RA
+            - 5hgT6wotqHT6c49iwJXexnvnCToteo5npbRStjFveMerx4RtR75azqXWKoaFyEWbXmLcEXR68EWwFgj5BzxjjXuy
+            - 3PdQf87gUGqRKrTXWzqpuduUVhe2cCfSFbmDbbJWQg4MwmsQu43esBRz3HQPsGZ98a8ZjtcNsxNDsrxhV1LBWNJn
+            - 4BhhKEKu1z7qXGPaoX1114oQ5Beqa2VWfgBvoW2dzcU6CmpAGPfztJZim2ZeF6MQsjdAAaiyr4ToChr3fa88mJpA
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
