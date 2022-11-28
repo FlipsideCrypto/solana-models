@@ -6,7 +6,6 @@ execute immediate 'create or replace task streamline.bulk_get_block_txs_historic
     schedule = \'USING CRON */20 * * * * UTC\'
 as
 BEGIN
-    call streamline.refresh_external_table_next_batch(\'block_txs_api\',\'complete_block_txs\');
     create or replace temporary table streamline.complete_block_txs__dbt_tmp as
     (
         select * 
