@@ -24,6 +24,7 @@ WITH base_events AS(
                 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
                 -- saber
                 'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t',
+                'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ',
                 --program ids for acct mapping
                 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
                 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
@@ -63,11 +64,12 @@ dex_txs AS (
         (
             program_id IN (
                 -- Orca
-                'MEV1HDn99aybER3U3oa9MySSXqoEZNDEQ4miAimTjaW',
+                --'MEV1HDn99aybER3U3oa9MySSXqoEZNDEQ4miAimTjaW',
                 '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
                 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
                 -- saber
-                'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t'
+                'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t',
+                'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
             ) -- jupiter v2,v3
             OR (
                 program_id IN (
@@ -234,13 +236,33 @@ swaps_w_destination AS (
     WHERE
         s.program_id <> '11111111111111111111111111111111'
 ),
+
+unique_tx_from_and_to as(
+    SELECT
+        tx_id,
+        index,
+        count(distinct(tx_from)) as num_tx_from,
+        count(distinct(tx_to)) as num_tx_to
+from 
+    swaps_w_destination
+group by 1,2),
+
+swaps_filtered_temp as(
+    SELECT s.* FROM
+swaps_w_destination as s
+    inner join
+    unique_tx_from_and_to as u
+    on s.tx_id = u.tx_id and s.index = u.index
+    where num_tx_from >1 or num_tx_to >1
+),
+
 min_inner_index_of_swapper AS(
     SELECT
         tx_id,
         INDEX,
         MIN(inner_index) AS min_inner_index_swapper
     FROM
-        swaps_w_destination
+        swaps_filtered_temp
     WHERE
         tx_from = swapper
     GROUP BY
@@ -264,7 +286,7 @@ swaps AS(
                 d.inner_index
         ) AS inner_rn
     FROM
-        swaps_w_destination d
+        swaps_filtered_temp d
         LEFT JOIN min_inner_index_of_swapper m
         ON m.tx_id = d.tx_id
         AND m.index = d.index
