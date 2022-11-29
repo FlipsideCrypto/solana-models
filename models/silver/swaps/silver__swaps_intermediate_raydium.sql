@@ -25,7 +25,6 @@ WITH base_events AS(
         AND block_id > 111442741 -- token balances owner field not guaranteed to be populated before this slot
 
 {% if is_incremental() %}
--- AND block_timestamp :: DATE = '2022-11-01'
 AND _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
@@ -39,7 +38,31 @@ AND _inserted_timestamp >= (
 dex_txs AS (
     SELECT
         e.*,
-        signers [0] :: STRING AS swapper
+        signers [0] :: STRING AS swapper,
+        ARRAY_SIZE(
+            e.instruction :accounts
+        ) AS instruction_account_size,
+        CASE
+            WHEN program_id IN (
+                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+                '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+            ) THEN e.instruction :accounts [instruction_account_size-3] :: STRING
+            ELSE NULL
+        END AS source_token_account,
+        CASE
+            WHEN program_id IN (
+                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+                '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+            ) THEN e.instruction :accounts [instruction_account_size-2] :: STRING
+            ELSE NULL
+        END AS dest_token_account,
+        CASE
+            WHEN program_id IN (
+                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+                '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+            ) THEN e.instruction :accounts [instruction_account_size-1] :: STRING
+            ELSE NULL
+        END AS user_owner
     FROM
         base_events e
         INNER JOIN {{ ref('silver__transactions') }}
@@ -79,7 +102,6 @@ dex_txs AS (
         )
 
 {% if is_incremental() %}
--- AND t.block_timestamp :: DATE = '2022-11-01'
 AND t._inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
@@ -106,7 +128,6 @@ base_transfers AS (
 
 {% if is_incremental() %}
 WHERE
-    -- block_timestamp :: DATE = '2022-11-01'
     _inserted_timestamp >= (
         SELECT
             MAX(_inserted_timestamp)
@@ -134,7 +155,6 @@ base_post_token_balances AS (
 
 {% if is_incremental() %}
 WHERE
-    -- block_timestamp :: DATE = '2022-11-01'
     _inserted_timestamp >= (
         SELECT
             MAX(_inserted_timestamp)
@@ -159,6 +179,8 @@ swaps_temp AS(
         A.amount,
         A.mint,
         A.succeeded,
+        A.source_token_account,
+        A.dest_token_account,
         A._inserted_timestamp
     FROM
         base_transfers AS A
@@ -267,19 +289,39 @@ swaps_w_destination AS (
         s.tx_id,
         s.index,
         s.inner_index,
-        COALESCE(
-            m1.owner,
-            s.tx_from
-        ) AS tx_from,
-        COALESCE(
-            m2.owner,
-            s.tx_to
-        ) AS tx_to,
+        CASE
+            WHEN e.program_id IN (
+                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+                '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+            )
+            AND s.source_token_account = e.source_token_account THEN e.user_owner
+            ELSE COALESCE(
+                m1.owner,
+                s.tx_from
+            )
+        END AS tx_from,
+        CASE
+            WHEN e.program_id IN (
+                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+                '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+            )
+            AND s.dest_token_account = e.dest_token_account THEN e.user_owner
+            ELSE COALESCE(
+                m2.owner,
+                s.tx_to
+            )
+        END AS tx_to,
         s.amount,
         s.mint,
         s.succeeded,
         s._inserted_timestamp,
-        e.swapper,
+        CASE
+            WHEN e.program_id IN (
+                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+                '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+            ) THEN e.user_owner
+            ELSE e.swapper
+        END AS swapper,
         e.program_id
     FROM
         swaps_temp s
