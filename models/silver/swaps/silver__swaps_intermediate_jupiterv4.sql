@@ -288,8 +288,8 @@ final_temp AS(
         succeeded,
         program_id,
         swapper,
-        mint,
-        amount,
+        mint as from_mint,
+        amount as from_amt,
         rn,
         _inserted_timestamp,
         to_mint,
@@ -304,12 +304,12 @@ final_temp AS(
         s.succeeded,
         s.program_id,
         s.swapper,
-        s.mint,
-        s.amount,
+        s.mint as from_mint,
+        s.amount as from_amt,
         s.rn,
         s._inserted_timestamp,
-        NULL,
-        NULL
+        NULL as to_mint,
+        NULL as to_amt
     FROM
         swaps s
         LEFT JOIN full_swaps_temp f
@@ -330,12 +330,12 @@ final_temp AS(
         s.succeeded,
         s.program_id,
         s.swapper,
-        s.mint,
-        s.amount,
+        NULL as from_mint,
+        NULL as from_amt,
         s.rn,
         s._inserted_timestamp,
-        NULL,
-        NULL
+        s.mint as to_mint,
+        s.amount as to_amt
     FROM
         swaps s
         LEFT JOIN full_swaps_temp f
@@ -356,8 +356,8 @@ SELECT
     succeeded,
     program_id,
     swapper,
-    mint AS from_mint,
-    amount AS from_amt,
+    from_mint,
+    from_amt,
     to_mint,
     to_amt,
     _inserted_timestamp,
