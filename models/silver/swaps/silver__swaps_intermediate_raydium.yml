@@ -29,7 +29,8 @@ models:
           '2FhZ9SjAJQgWqHPNBBBpz9dsX5JbsZVhmEcdDuSs1WwnLaPstFzZtY6p2cnwQhuutHGgS1rkoAq2ZkFpSTdbwF5X',
           '5UjXW6NCAJSUMzL9uU3e41r7KmUEuX9i9RT2QS5YSG6FKf6HUh6iRopxBkFsL9A7Bhx3PR1GZeUL561Y6DNehj52',
           'MtNdTT2uq9hy7woK4mRyPYZ5SNKFoKJY3UNvi4uRiLQJCrQSY7WMV13dLTDCuAWpHZzinNzAXyXRGXjQUYENtvU',
-          '39nyp3f5rUMSC4oaYnCVtkiwdbwMByKz7esgmRTFKPhoMgW3RprMgyj9jcrAwoAX9UWLNVGqpB9k79c4gAN7ug1q')"
+          '39nyp3f5rUMSC4oaYnCVtkiwdbwMByKz7esgmRTFKPhoMgW3RprMgyj9jcrAwoAX9UWLNVGqpB9k79c4gAN7ug1q',
+          '3XEzUVGbpruCZFKcHFsa3yCZAJ4MQ1TTyaHPFi5odqQ3XEpjA5TzUXHuEVSFRoSGiaRSKQpMwGPzw61ZTb9gRfv5')"
       - tx_excluded:
           name: silver__swaps_intermediate_raydium_tx_excluded_test
           excluded_tx_ids:
