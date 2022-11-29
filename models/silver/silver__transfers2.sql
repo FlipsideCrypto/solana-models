@@ -6,7 +6,7 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
-With base_transfers_i AS (
+WITH base_transfers_i AS (
     SELECT
         block_id,
         block_timestamp,
@@ -203,7 +203,8 @@ spl_transfers AS (
         e.succeeded,
         COALESCE(
             p.owner,
-            e.instruction :parsed :info :authority :: STRING
+            e.instruction :parsed :info :authority :: STRING,
+            e.instruction :parsed :info :multisigAuthority :: STRING
         ) AS tx_from,
         COALESCE(
             p2.owner,
@@ -248,7 +249,11 @@ spl_transfers AS (
         ON e.tx_id = p4.tx_id
         AND e.instruction :parsed :info :destination :: STRING = p4.account
     WHERE
-        e.instruction :parsed :info :authority :: STRING IS NOT NULL
+        (
+            e.instruction :parsed :info :authority :: STRING IS NOT NULL
+            OR 
+            e.instruction :parsed :info :multisigAuthority :: STRING IS NOT NULL
+        )
 ),
 sol_transfers AS (
     SELECT
