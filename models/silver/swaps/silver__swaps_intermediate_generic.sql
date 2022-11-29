@@ -18,9 +18,6 @@ WITH base_events AS(
                 --jupiter v2/v3 program_ids
                 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo',
                 'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph',
-                -- Orca
-                '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
-                'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
                 -- saber
                 'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t',
                 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ',
@@ -62,9 +59,6 @@ dex_txs AS (
     WHERE
         (
             program_id IN (
-                -- Orca
-                '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
-                'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
                 -- saber
                 'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t',
                 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
