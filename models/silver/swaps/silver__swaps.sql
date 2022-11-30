@@ -5,33 +5,40 @@
     cluster_by = ['block_timestamp::DATE'],
 ) }}
 
-with base as (
-    select 
+WITH base AS (
+
+    SELECT
         *
-    from {{ ref('silver__swaps_intermediate_generic') }}
-    {% if is_incremental() %}
-    WHERE _inserted_timestamp >= (
+    FROM
+        {{ ref('silver__swaps_intermediate_generic') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
         SELECT
             MAX(_inserted_timestamp)
         FROM
             {{ this }}
     )
-    {% endif %}
-    UNION 
-    select 
+{% endif %}
+    UNION
+    SELECT
         *
-    from {{ ref('silver__swaps_intermediate_raydium') }}
-    {% if is_incremental() %}
-    WHERE _inserted_timestamp >= (
+    FROM
+        {{ ref('silver__swaps_intermediate_raydium') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
         SELECT
             MAX(_inserted_timestamp)
         FROM
             {{ this }}
     )
-    {% endif %}
+{% endif %}
 ),
-base_swaps as (
-    select 
+base_swaps AS (
+    SELECT
         block_id,
         block_timestamp,
         tx_id,
@@ -41,42 +48,60 @@ base_swaps as (
         from_mint,
         to_mint,
         _inserted_timestamp,
-        min(swap_index) as swap_index,
-        sum(from_amt) as from_amt,
-        sum(to_amt) as to_amt
-    from base 
-    where from_amt is not null 
-    and to_amt is not null
-    group by 1,2,3,4,5,6,7,8,9
+        MIN(swap_index) AS swap_index,
+        SUM(from_amt) AS from_amt,
+        SUM(to_amt) AS to_amt
+    FROM
+        base
+    WHERE
+        from_amt IS NOT NULL
+        AND to_amt IS NOT NULL
+    GROUP BY
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
 ),
-intermediate_swaps as (
-    select 
+intermediate_swaps AS (
+    SELECT
         *,
-        max(swap_index) over (partition by tx_id) as max_swap_index
-    from base_swaps 
+        MAX(swap_index) over (
+            PARTITION BY tx_id
+        ) AS max_swap_index
+    FROM
+        base_swaps
 ),
-refunds as (
-    select 
+refunds AS (
+    SELECT
         tx_id,
         to_amt,
         to_mint
-    from base
-    where from_amt is null 
-    and from_mint is null
-    and to_amt is not null
+    FROM
+        base
+    WHERE
+        from_amt IS NULL
+        AND from_mint IS NULL
+        AND to_amt IS NOT NULL
 ),
-fees as (
-    select 
+fees AS (
+    SELECT
         tx_id,
         from_amt,
         from_mint
-    from base
-    where to_amt is null 
-    and to_mint is null
-    and from_amt is not null
-)
-, pre_final as (
-    select
+    FROM
+        base
+    WHERE
+        to_amt IS NULL
+        AND to_mint IS NULL
+        AND from_amt IS NOT NULL
+),
+pre_final AS (
+    SELECT
         b1.block_id,
         b1.block_timestamp,
         b1.tx_id,
@@ -84,32 +109,62 @@ fees as (
         b1.swapper,
         b1.from_amt,
         b1.from_mint,
-        coalesce(b2.to_amt,b1.to_amt) as to_amt,
-        coalesce(b2.to_mint,b1.to_mint) as to_mint,
+        COALESCE(
+            b2.to_amt,
+            b1.to_amt
+        ) AS to_amt,
+        COALESCE(
+            b2.to_mint,
+            b1.to_mint
+        ) AS to_mint,
         b1._inserted_timestamp
-    from intermediate_swaps b1
-    left outer join intermediate_swaps b2 on b2.tx_id = b1.tx_id and b2.swap_index <> b1.swap_index and b2.swap_index > 1
-    where b1.swap_index = 1
-    and (b2.swap_index = b2.max_swap_index or b2.tx_id is null)
+    FROM
+        intermediate_swaps b1
+        LEFT OUTER JOIN intermediate_swaps b2
+        ON b2.tx_id = b1.tx_id
+        AND b2.swap_index <> b1.swap_index
+        AND b2.swap_index > 1
+    WHERE
+        b1.swap_index = 1
+        AND (
+            b2.swap_index = b2.max_swap_index
+            OR b2.tx_id IS NULL
+        )
 )
-select 
+SELECT
     pf.block_id,
     pf.block_timestamp,
     pf.tx_id,
     pf.succeeded,
     pf.swapper,
-    case when succeeded then
-        pf.from_amt - coalesce(r.to_amt,0) + coalesce(f.from_amt,0) 
-    else 0
-    end as from_amt,
+    CASE
+        WHEN succeeded THEN pf.from_amt - COALESCE(
+            r.to_amt,
+            0
+        ) + COALESCE(
+            f.from_amt,
+            0
+        )
+        ELSE 0
+    END AS from_amt,
     pf.from_mint,
-    case when succeeded then
-        pf.to_amt - coalesce(f2.from_amt,0)
-    else 0 
-    end as to_amt,
+    CASE
+        WHEN succeeded THEN pf.to_amt - COALESCE(
+            f2.from_amt,
+            0
+        )
+        ELSE 0
+    END AS to_amt,
     pf.to_mint,
     pf._inserted_timestamp
-from pre_final pf
-left outer join refunds r on r.tx_id = pf.tx_id and r.to_mint = pf.from_mint
-left outer join fees f on f.tx_id = pf.tx_id and f.from_mint = pf.from_mint
-left outer join fees f2 on f2.tx_id = pf.tx_id and f2.from_mint = pf.to_mint
+FROM
+    pre_final pf
+    LEFT OUTER JOIN refunds r
+    ON r.tx_id = pf.tx_id
+    AND r.to_mint = pf.from_mint
+    LEFT OUTER JOIN fees f
+    ON f.tx_id = pf.tx_id
+    AND f.from_mint = pf.from_mint
+    LEFT OUTER JOIN fees f2
+    ON f2.tx_id = pf.tx_id
+    AND f2.from_mint = pf.to_mint
