@@ -18,21 +18,18 @@ WITH base_events AS(
                 --jupiter v2/v3 program_ids
                 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo',
                 'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph',
-                -- Orca
-                'MEV1HDn99aybER3U3oa9MySSXqoEZNDEQ4miAimTjaW',
-                '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
-                'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
                 -- saber
                 'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t',
+                'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ',
                 --program ids for acct mapping
                 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
                 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
             )
         )
-    AND block_id > 111442741 -- token balances owner field not guaranteed to be populated before this slot
+        AND block_id > 111442741 -- token balances owner field not guaranteed to be populated before this slot
 
 {% if is_incremental() %}
--- AND block_timestamp :: DATE = '2022-11-01' 
+-- AND block_timestamp :: DATE = '2022-11-01'
 AND _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
@@ -62,12 +59,9 @@ dex_txs AS (
     WHERE
         (
             program_id IN (
-                -- Orca
-                'MEV1HDn99aybER3U3oa9MySSXqoEZNDEQ4miAimTjaW',
-                '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
-                'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
                 -- saber
-                'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t'
+                'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t',
+                'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
             ) -- jupiter v2,v3
             OR (
                 program_id IN (
@@ -95,20 +89,27 @@ AND t._inserted_timestamp >= (
 ),
 base_transfers AS (
     SELECT
-        *
+        tr.*
     FROM
         {{ ref('silver__transfers2') }}
         tr
+        INNER JOIN (
+            SELECT
+                DISTINCT tx_id
+            FROM
+                dex_txs
+        ) d
+        ON d.tx_id = tr.tx_id
 
 {% if is_incremental() %}
 WHERE
     -- block_timestamp :: DATE = '2022-11-01'
-        _inserted_timestamp >= (
-            SELECT
-                MAX(_inserted_timestamp)
-            FROM
-                {{ this }}
-        )
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% else %}
 WHERE
     block_timestamp :: DATE >= '2021-12-14'
@@ -116,19 +117,27 @@ WHERE
 ),
 base_post_token_balances AS (
     SELECT
-        *
+        pb.*
     FROM
         {{ ref('silver___post_token_balances') }}
+        pb
+        INNER JOIN (
+            SELECT
+                DISTINCT tx_id
+            FROM
+                dex_txs
+        ) d
+        ON d.tx_id = pb.tx_id
 
 {% if is_incremental() %}
 WHERE
     -- block_timestamp :: DATE = '2022-11-01'
-        _inserted_timestamp >= (
-            SELECT
-                MAX(_inserted_timestamp)
-            FROM
-                {{ this }}
-        )
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% else %}
 WHERE
     block_timestamp :: DATE >= '2021-12-14'
@@ -158,6 +167,27 @@ swaps_temp AS(
                 dex_txs
         )
 ),
+delegates_mappings as (
+    SELECT
+        e.tx_id,
+        e.instruction :parsed :info :delegate :: STRING AS associated_account,
+        e.instruction :parsed :info :owner :: STRING AS owner
+    FROM
+        base_events e
+        INNER JOIN (
+            SELECT
+                DISTINCT tx_id
+            FROM
+                dex_txs
+            WHERE program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
+        ) d
+        ON d.tx_id = e.tx_id
+    WHERE
+        (
+            e.program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+            AND e.event_type = 'approve'
+        )
+),
 account_mappings AS (
     SELECT
         tx_id,
@@ -177,47 +207,58 @@ account_mappings AS (
         base_post_token_balances
     UNION
     SELECT
-        tx_id,
-        instruction :parsed :info :account :: STRING AS associated_account,
+        e.tx_id,
+        e.instruction :parsed :info :account :: STRING AS associated_account,
         COALESCE(
-            instruction :parsed :info :source :: STRING,
-            instruction :parsed :info :owner :: STRING
+            e.instruction :parsed :info :source :: STRING,
+            e.instruction :parsed :info :owner :: STRING
         ) AS owner
     FROM
-        base_events
+        base_events e
+        INNER JOIN (
+            SELECT
+                DISTINCT tx_id
+            FROM
+                dex_txs
+        ) d
+        ON d.tx_id = e.tx_id
     WHERE
         (
             (
-                program_id = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'
-                AND event_type = 'create'
+                e.program_id = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'
+                AND e.event_type = 'create'
             )
             OR (
-                program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-                AND event_type = 'closeAccount'
+                e.program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+                AND e.event_type = 'closeAccount'
             )
         )
-    UNION 
+    UNION
     SELECT
-        tx_id,
-        instruction :parsed :info :delegate :: STRING AS associated_account,
-        instruction :parsed :info :owner :: STRING AS owner
+        dm.*
     FROM
-        base_events
+        delegates_mappings dm
+        INNER JOIN dex_txs dt
+        ON dm.tx_id = dm.tx_id
+        AND dt.instruction :accounts [2] :: STRING = dm.associated_account
     WHERE
-        (
-            program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-            AND event_type = 'approve'
-        )
+        dt.program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
 ),
 swaps_w_destination AS (
     SELECT
         s.block_id,
         s.block_timestamp,
         s.tx_id,
-        s.INDEX,
+        s.index,
         s.inner_index,
-        COALESCE(m1.owner, s.tx_from) as tx_from,
-        COALESCE(m2.owner, s.tx_to) as tx_to,
+        COALESCE(
+            m1.owner,
+            s.tx_from
+        ) AS tx_from,
+        COALESCE(
+            m2.owner,
+            s.tx_to
+        ) AS tx_to,
         s.amount,
         s.mint,
         s.succeeded,
@@ -229,10 +270,40 @@ swaps_w_destination AS (
         LEFT OUTER JOIN dex_txs e
         ON s.tx_id = e.tx_id
         AND s.index = e.index
-        LEFT OUTER JOIN account_mappings m1 on s.tx_id = m1.tx_id and s.tx_from = m1.associated_account and s.tx_to <> m1.owner
-        LEFT OUTER JOIN account_mappings m2 on s.tx_id = m2.tx_id and s.tx_to = m2.associated_account and s.tx_from <> m2.owner
+        LEFT OUTER JOIN account_mappings m1
+        ON s.tx_id = m1.tx_id
+        AND s.tx_from = m1.associated_account
+        AND s.tx_to <> m1.owner
+        LEFT OUTER JOIN account_mappings m2
+        ON s.tx_id = m2.tx_id
+        AND s.tx_to = m2.associated_account
+        AND s.tx_from <> m2.owner
     WHERE
         s.program_id <> '11111111111111111111111111111111'
+),
+unique_tx_from_and_to AS (
+    SELECT
+        tx_id,
+        INDEX,
+        COUNT(DISTINCT(tx_from)) AS num_tx_from,
+        COUNT(DISTINCT(tx_to)) AS num_tx_to
+    FROM
+        swaps_w_destination
+    GROUP BY
+        1,
+        2
+    HAVING
+        num_tx_from > 1
+        AND num_tx_to > 1
+),
+swaps_filtered_temp AS(
+    SELECT
+        s.*
+    FROM
+        swaps_w_destination s
+        INNER JOIN unique_tx_from_and_to u
+        ON s.tx_id = u.tx_id
+        AND s.index = u.index
 ),
 min_inner_index_of_swapper AS(
     SELECT
@@ -240,7 +311,7 @@ min_inner_index_of_swapper AS(
         INDEX,
         MIN(inner_index) AS min_inner_index_swapper
     FROM
-        swaps_w_destination
+        swaps_filtered_temp
     WHERE
         tx_from = swapper
     GROUP BY
@@ -264,12 +335,12 @@ swaps AS(
                 d.inner_index
         ) AS inner_rn
     FROM
-        swaps_w_destination d
+        swaps_filtered_temp d
         LEFT JOIN min_inner_index_of_swapper m
         ON m.tx_id = d.tx_id
         AND m.index = d.index
-     WHERE
-        d.swapper is not null
+    WHERE
+        d.swapper IS NOT NULL
 ),
 final_temp AS (
     SELECT
