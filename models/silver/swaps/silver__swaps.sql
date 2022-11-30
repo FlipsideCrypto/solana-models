@@ -17,6 +17,18 @@ with base as (
             {{ this }}
     )
     {% endif %}
+    UNION 
+    select 
+        *
+    from {{ ref('silver__swaps_intermediate_raydium') }}
+    {% if is_incremental() %}
+    WHERE _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+    {% endif %}
 ),
 base_swaps as (
     select 
