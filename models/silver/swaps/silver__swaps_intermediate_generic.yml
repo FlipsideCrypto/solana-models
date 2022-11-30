@@ -47,7 +47,6 @@ models:
           '4Xdjhm8219RTPpfsi5tMtBKjbUNgm8Kh2kphNpH5vLqGFxFeh3dcntQT5nMZGFaD93BZWJwFtviB1afjWEdXZRsu',
           '2CAg4pz6eyZ6eaZznsr4WseRkscjETmzRJ68LJKAxHnd6Whd4Yrvrcfq3UxsVjrF835GF7upMUqSvL6WVJAHLJSc',
           '33fd31332UvoH9YLi2ZDarDqWqmuD2fsFDigc79LKtT1XVYY6N1M8htAkPfjP989yDfKUv8EmprRAcFrZSxQ38Cn',
-          '4WX8oi39gn2dH5jK2AqeNDY93ofuYssmDtMJeyErJzhjvkc4jTcJmDetueQQ9FmcR2UzAxzTvjcPVq7HHQkUoggp',
           'nmN84qNUcZtGpCCxm1r8Qct3Z8vgPMRXFfd7QFohE28dVociEgbSA9xrkn44WgKa8GbTH86u3EiicCakCsbKiya',
           '3c9M2C4mE3Q14PmiTMTHkQNMkzPRZSCdMXRc1oYooV8iiFJGLyfSMRgsZVWrXVWqsgvsaw6cgv21DXxCRamK8JHJ',
           '24XyX2uYVEJoXNLhkgeYPoTtsLDLUoqcxc65sWL4Yn4w9fcUYbbYpLwiFg2PoWgZ5sqUwAjjhvk28DaEP5Vm2mR2',
@@ -62,7 +61,8 @@ models:
           'ojKvTxF4MXgPEoxYYyxakcRbDko4eSYhmUqpCe9hTLJ4QSBxgfotDRbFW2v829N1zapX8MVeQ2D2kX3XnT8hwdL',
           'BkLJ56E93ai36Mwx7Wv8PoXVZ2RZUbCGCGMawZWU2nbEpU3QiipyG9Lr6CajGMtM6s5BnPWqSYuLLf3GzsAe5hQ',
           '4QJDoXfwFnR354DApr36GCLJGjamwwwSTkgVEwpLbTgwEy8LCqEJsiJPfjEfwQhNtQPQJnmqUjTEcBNRKQ1vfNPN',
-          'Zn4aQD6ScgbNfmcKRSYAuyDJ4AWibjwmKGLW2W4QrvMpWtxvHxTta7cxUYMgWTKTHHACF9hV78yKFdkG3CddKju')"
+          'Zn4aQD6ScgbNfmcKRSYAuyDJ4AWibjwmKGLW2W4QrvMpWtxvHxTta7cxUYMgWTKTHHACF9hV78yKFdkG3CddKju',
+          '5eCovtQh92hfW16oLWCv82uBkbXbkR1GJV6DvYYqik7mSoiJftUy39TqGgJqzkkMD2SpVYNWJPsuxGFHPGn9iVnb')"
       - tx_excluded:
           name: silver__swaps_intermediate_generic_tx_excluded_test
           excluded_tx_ids:
@@ -73,6 +73,10 @@ models:
             - 5hgT6wotqHT6c49iwJXexnvnCToteo5npbRStjFveMerx4RtR75azqXWKoaFyEWbXmLcEXR68EWwFgj5BzxjjXuy
             - 3PdQf87gUGqRKrTXWzqpuduUVhe2cCfSFbmDbbJWQg4MwmsQu43esBRz3HQPsGZ98a8ZjtcNsxNDsrxhV1LBWNJn
             - 4BhhKEKu1z7qXGPaoX1114oQ5Beqa2VWfgBvoW2dzcU6CmpAGPfztJZim2ZeF6MQsjdAAaiyr4ToChr3fa88mJpA
+            - 66ipdTYD19wCrWabViaw8Tn1KrZTz9eJnAtr1ZhETPn7c4aN2qcpiWLNnzoGNMaVzw65e5giwAsjCa7BffqKQ3aB
+            - 56E5FyopfrJuviUp39HCbNJp64d553HNx6p2RFEXQtwe9K3ahRWwmw5ikK6epeVYheqsgZfe1td8t6ZP6fQgx3dk
+            - 5mVtJYZGJMrCnNLSK2TV7b75KtWkcGngp5nwSheEghyT1qtBVQxdRhp8Y98sUwkJ7aPFVxZtvjLb3wJEVGDkyTS1
+            - 4WX8oi39gn2dH5jK2AqeNDY93ofuYssmDtMJeyErJzhjvkc4jTcJmDetueQQ9FmcR2UzAxzTvjcPVq7HHQkUoggp
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
