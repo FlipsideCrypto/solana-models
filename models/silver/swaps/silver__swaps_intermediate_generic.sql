@@ -167,6 +167,27 @@ swaps_temp AS(
                 dex_txs
         )
 ),
+delegates_mappings as (
+    SELECT
+        e.tx_id,
+        e.instruction :parsed :info :delegate :: STRING AS associated_account,
+        e.instruction :parsed :info :owner :: STRING AS owner
+    FROM
+        base_events e
+        INNER JOIN (
+            SELECT
+                DISTINCT tx_id
+            FROM
+                dex_txs
+            WHERE program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
+        ) d
+        ON d.tx_id = e.tx_id
+    WHERE
+        (
+            e.program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+            AND e.event_type = 'approve'
+        )
+),
 account_mappings AS (
     SELECT
         tx_id,
@@ -212,6 +233,16 @@ account_mappings AS (
                 AND e.event_type = 'closeAccount'
             )
         )
+    UNION
+    SELECT
+        dm.*
+    FROM
+        delegates_mappings dm
+        INNER JOIN dex_txs dt
+        ON dm.tx_id = dm.tx_id
+        AND dt.instruction :accounts [2] :: STRING = dm.associated_account
+    WHERE
+        dt.program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
 ),
 swaps_w_destination AS (
     SELECT
