@@ -22,6 +22,7 @@ env:
   WAREHOUSE_DEV: "${{ secrets.WAREHOUSE_DEV }}"
   WAREHOUSE_PROD: "${{ secrets.WAREHOUSE_PROD }}"
   SCHEMA: "${{ secrets.SCHEMA }}"
+  QUERY_TAG: "solana_dbt_adhoc"
 
 
 jobs:
