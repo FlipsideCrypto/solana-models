@@ -6,7 +6,7 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
-With base_transfers_i AS (
+WITH base_transfers_i AS (
     SELECT
         block_id,
         block_timestamp,
@@ -203,7 +203,8 @@ spl_transfers AS (
         e.succeeded,
         COALESCE(
             p.owner,
-            e.instruction :parsed :info :authority :: STRING
+            e.instruction :parsed :info :authority :: STRING,
+            e.instruction :parsed :info :multisigAuthority :: STRING
         ) AS tx_from,
         COALESCE(
             p2.owner,
@@ -230,6 +231,8 @@ spl_transfers AS (
             p3.mint,
             p4.mint
         ) AS mint,
+        instruction :parsed :info :source :: STRING as source_token_account,
+        instruction :parsed :info :destination :: STRING as dest_token_account,
         e._inserted_timestamp
     FROM
         base_transfers_i e
@@ -246,7 +249,11 @@ spl_transfers AS (
         ON e.tx_id = p4.tx_id
         AND e.instruction :parsed :info :destination :: STRING = p4.account
     WHERE
-        e.instruction :parsed :info :authority :: STRING IS NOT NULL
+        (
+            e.instruction :parsed :info :authority :: STRING IS NOT NULL
+            OR 
+            e.instruction :parsed :info :multisigAuthority :: STRING IS NOT NULL
+        )
 ),
 sol_transfers AS (
     SELECT
@@ -263,6 +270,8 @@ sol_transfers AS (
             9
         ) AS amount,
         'So11111111111111111111111111111111111111112' AS mint,
+        NULL as source_token_account,
+        NULL as dest_token_account,
         e._inserted_timestamp
     FROM
         base_transfers_i e
@@ -280,6 +289,8 @@ SELECT
     tx_to,
     amount,
     mint,
+    source_token_account,
+    dest_token_account,
     _inserted_timestamp
 FROM
     spl_transfers
@@ -295,6 +306,8 @@ SELECT
     tx_to,
     amount,
     mint,
+    source_token_account,
+    dest_token_account,
     _inserted_timestamp
 FROM
     sol_transfers
