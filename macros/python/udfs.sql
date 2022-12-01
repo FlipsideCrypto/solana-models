@@ -75,7 +75,7 @@ def get_all_inner_instruction_program_ids(inner_instruction) -> list:
 $$;
 {% endmacro %}
 
-{% macro create_udf_get_get_jupv4_inner_programs(schema) %}
+{% macro create_udf_get_jupv4_inner_programs(schema) %}
 create or replace function solana_dev.silver.udf_get_jupv4_inner_programs(inner_instruction array)
 returns array
 language python
