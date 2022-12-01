@@ -4,15 +4,15 @@ solana:
     dev:
       type: snowflake
       account: "{{ env_var('ACCOUNT') }}"
-      user: "{{ env_var('USERNAME') }}"
+      user: "{{ env_var('USER') }}"
       password: "{{ env_var('PASSWORD') }}"
       role: "{{ env_var('ROLE') }}"
       schema: "{{ env_var('SCHEMA') }}"
       region: "{{ env_var('REGION') }}"
-      database: "{{ env_var('DATABASE') }}"
-      warehouse: "{{ env_var('WAREHOUSE') }}"
+      database: "{{ env_var('DATABASE_DEV') }}"
+      warehouse: "{{ env_var('WAREHOUSE_DEV') }}"
       threads: 4
       client_session_keep_alive: False
-      query_tag: "{{ env_var('QUERY_TAG') }}"
+      query_tag: solana_dbt
   config:
     send_anonymous_usage_stats: False
