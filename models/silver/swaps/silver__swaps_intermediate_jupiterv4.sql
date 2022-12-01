@@ -36,7 +36,8 @@ AND _inserted_timestamp >= (
 dex_txs AS (
     SELECT
         e.*,
-        signers [0] :: STRING AS swapper
+        signers [0] :: STRING AS swapper,
+        solana_dev.silver.udf_get_jupv4_inner_programs(inner_instruction:instructions) as inner_programs
     FROM
         base_events e
         INNER JOIN {{ ref('silver__transactions') }}
@@ -62,32 +63,21 @@ AND t._inserted_timestamp >= (
     AND t.block_timestamp :: DATE >= '2022-07-12'
 {% endif %}
 ),
-temp_inner_program_ids AS (
-    SELECT
-        *,
-        solana_dev.silver.udf_get_jupv4_inner_programs(
-            inner_instruction :instructions
-        ) AS inner_programs
-    FROM
-        dex_txs
+temp_inner_program_ids as (
+    select 
+        dex_txs.*, 
+        i.value:program_id::string as inner_swap_program_id, 
+        i.value:inner_index::int as swap_program_inner_index_start,
+        coalesce(lead(swap_program_inner_index_start) over 
+                 (partition by tx_id, dex_txs.index order by swap_program_inner_index_start)-1,999999)  as swap_program_inner_index_end
+    from dex_txs,
+    table(flatten(inner_programs)) i
 ),
-temp_inner_program_ids_2 AS (
+base_transfers AS (
     SELECT
-        temp_inner_program_ids.*,
-        i.value :program_id :: STRING AS inner_swap_program_id,
-        i.value :inner_index :: INT AS swap_program_inner_index_start,
-        COALESCE(LEAD(swap_program_inner_index_start) over (PARTITION BY tx_id, temp_inner_program_ids.index
-    ORDER BY
-        swap_program_inner_index_start) -1, 999999) AS swap_program_inner_index_end
+        *
     FROM
-        temp_inner_program_ids,
-        TABLE(FLATTEN(inner_programs)) i),
-        base_transfers AS (
-            SELECT
-                *
-            FROM
-                {{ ref('silver__transfers2') }}
-                tr
+        {{ ref('silver__transfers2') }} tr
 
 {% if is_incremental() %}
 WHERE
@@ -153,7 +143,7 @@ swap_w_inner_program_id AS(
         t.inner_swap_program_id
     FROM
         swaps_temp s
-        LEFT OUTER JOIN temp_inner_program_ids_2 t
+        LEFT OUTER JOIN temp_inner_program_ids t
         ON t.tx_id = s.tx_id
         AND t.index = s.index
         AND s.inner_index BETWEEN t.swap_program_inner_index_start
