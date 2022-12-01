@@ -76,7 +76,7 @@ $$;
 {% endmacro %}
 
 {% macro create_udf_get_jupv4_inner_programs(schema) %}
-create or replace function solana_dev.silver.udf_get_jupv4_inner_programs(inner_instruction array)
+create or replace function {{ schema }}.udf_get_jupv4_inner_programs(inner_instruction array)
 returns array
 language python
 runtime_version = '3.8'

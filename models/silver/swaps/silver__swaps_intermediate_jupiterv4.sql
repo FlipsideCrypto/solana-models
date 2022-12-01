@@ -37,7 +37,7 @@ dex_txs AS (
     SELECT
         e.*,
         signers [0] :: STRING AS swapper,
-        solana_dev.silver.udf_get_jupv4_inner_programs(inner_instruction:instructions) as inner_programs
+        silver.udf_get_jupv4_inner_programs(inner_instruction:instructions) as inner_programs
     FROM
         base_events e
         INNER JOIN {{ ref('silver__transactions') }}
