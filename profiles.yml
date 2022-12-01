@@ -13,6 +13,6 @@ solana:
       warehouse: "{{ env_var('WAREHOUSE_DEV') }}"
       threads: 4
       client_session_keep_alive: False
-      query_tag: "{{ env_var('QUERY_TAG') }}"
+      query_tag: solana_dbt
   config:
     send_anonymous_usage_stats: False
