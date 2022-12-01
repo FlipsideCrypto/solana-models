@@ -19,14 +19,15 @@ models:
             - to_mint
             - to_amt
             - swap_index
-          model_condition: "where tx_id in ('3q2GQEoUHubwoFTf6pjU9nZYu9ymz5tdWkgpygjnsCsEYvyy2QWfJTgYCcaTvSJ1SW6RN3sz4nrukMm2dDct4ir',
-          '31HQzRbMs68pbHuiYa5TxkKNeGcasYY9A6HrdUKfMWz1iVBT1XSnNGTYWB689RgKfysSJDfAK3etFxyZ9ikioaeU',
+          model_condition: "where tx_id in ('31HQzRbMs68pbHuiYa5TxkKNeGcasYY9A6HrdUKfMWz1iVBT1XSnNGTYWB689RgKfysSJDfAK3etFxyZ9ikioaeU',
           '4fmjzK1PMv1AR51778H35fbzjVuxsfb2bACtatdzkqfRSSg9Aca5L6gBKjNpQEJm2wQsjyb1Wd9F2r5vdodCuaE',
           '9H27jvVtL9naDHm2HicebqjfropPnWXWJtZjuAQgh9hhDANhBxZc7LUqo9wiVuB848XYQtNifRcKjhwwsY1BU8r',
           '31HQzRbMs68pbHuiYa5TxkKNeGcasYY9A6HrdUKfMWz1iVBT1XSnNGTYWB689RgKfysSJDfAK3etFxyZ9ikioaeU',
           'L8n9PPRbhrTNL8FJJm27xDqoxfLKhrvt3zhJkrxigtzASCPqWyHLWipeVUrAwjYYfaoodTS3sdv992eWqYDXXeW',
           'HNJsK2AoxNqBYgCwg2MZuL6EfzchbZFJPN75qXJ2FABftMnPp6K49EB7GmMqZofGcA58y5eD6MdQWW1dcALU121',
-          '3oUHXJugLhCt6qSDRbwJuHtVw7XHNtgtbNFYqgyDVLtzeMk3ZQbSnWN9E4eeSttjVGWWhcos3mARuhfshhfNkBpw')"
+          '3oUHXJugLhCt6qSDRbwJuHtVw7XHNtgtbNFYqgyDVLtzeMk3ZQbSnWN9E4eeSttjVGWWhcos3mARuhfshhfNkBpw',
+          '4Lf3HEHzv8GL5LomueeG92ckd9VnR8igZcDohRyHHGRFTkNL6nCAhXo44gaasyQSDMejFmX7hyzNSUbvzETkZiaL',
+          '4JbNK3HRSV8of3MTCLXLUmbzTtvhLWafWoWteyuoTh6wNsDP6T673eXMViSBRSSfRz4785H2EBSJeozbK9Hrmoew')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

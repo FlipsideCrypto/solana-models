@@ -22,6 +22,10 @@
             create_udf_get_all_inner_instruction_program_ids(
             schema = "silver"
         ) }}
+        {{ 
+            create_udf_get_get_jupv4_inner_programs(
+            schema = "silver"
+        ) }}
         {% endset %}
         {% do run_query(sql) %}
     {% endif %}

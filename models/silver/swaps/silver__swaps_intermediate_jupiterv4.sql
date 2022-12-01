@@ -62,6 +62,24 @@ AND t._inserted_timestamp >= (
     AND t.block_timestamp :: DATE >= '2022-07-12'
 {% endif %}
 ),
+
+temp_inner_program_ids as (
+select *,
+    solana_dev.silver.udf_get_jupv4_inner_programs(inner_instruction:instructions) as inner_programs
+from dex_txs
+),
+
+temp_inner_program_ids_2 as (
+    select 
+        temp_inner_program_ids.*, 
+        i.value:program_id::string as inner_swap_program_id, 
+        i.value:inner_index::int as swap_program_inner_index_start,
+        coalesce(lead(swap_program_inner_index_start) over 
+                 (partition by tx_id, temp_inner_program_ids.index order by swap_program_inner_index_start)-1,999999)  as swap_program_inner_index_end
+    from temp_inner_program_ids,
+    table(flatten(inner_programs)) i
+),
+
 base_transfers AS (
     SELECT
         *
@@ -127,7 +145,56 @@ swaps_temp AS(
                 dex_txs
         )
 ),
+swap_w_inner_program_id as(
+select s.*, t.inner_swap_program_id
+from swaps_temp s
+left outer join temp_inner_program_ids_2 t 
+    on t.tx_id = s.tx_id 
+    and t.index = s.index and s.inner_index between t.swap_program_inner_index_start and t.swap_program_inner_index_end
+)
+,
+temp_acct_mappings as(
+        SELECT
+        tx_id,
+        i.value :parsed :info :account :: STRING AS associated_account,
+        COALESCE(
+            i.value :parsed :info :source :: STRING,
+            i.value :parsed :info :owner :: STRING
+        ) AS owner
+    FROM
+        base_events
+    LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
+    WHERE
+        (
+            (
+                i.value :programId = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'
+                AND i.value :parsed :type = 'create'
+            )
+            OR (
+                i.value :programId = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+                AND i.value :parsed :type = 'closeAccount'
+            )
+        )
+
+    UNION 
+    SELECT
+        tx_id,
+        i.value :parsed :info :delegate :: STRING AS associated_account,
+        i.value :parsed :info :owner :: STRING AS owner
+    FROM
+        base_events
+    LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
+    WHERE
+        (
+            i.value :programId = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+            AND i.value :parsed :type = 'approve'
+        )
+
+)
+,
 account_mappings AS (
+    SELECT * FROM temp_acct_mappings
+    union
     SELECT
         tx_id,
         tx_to AS associated_account,
@@ -198,40 +265,26 @@ swaps_w_destination AS (
         s.succeeded,
         s._inserted_timestamp,
         e.swapper,
-        e.program_id
+        e.program_id,
+        s.inner_swap_program_id
     FROM
-        swaps_temp s
+        swap_w_inner_program_id s
         LEFT OUTER JOIN dex_txs e
         ON s.tx_id = e.tx_id
         AND s.index = e.index
         LEFT OUTER JOIN account_mappings m1
         ON s.tx_id = m1.tx_id
         AND s.tx_from = m1.associated_account
-        AND s.tx_to <> m1.owner
         LEFT OUTER JOIN account_mappings m2
         ON s.tx_id = m2.tx_id
         AND s.tx_to = m2.associated_account
-        AND s.tx_from <> m2.owner
     WHERE
         s.program_id <> '11111111111111111111111111111111'
-),
-min_inner_index_of_swapper AS(
-    SELECT
-        tx_id,
-        INDEX,
-        MIN(inner_index) AS min_inner_index_swapper
-    FROM
-        swaps_w_destination
-    WHERE
-        tx_from = swapper
-    GROUP BY
-        1,
-        2
+        and s.inner_swap_program_id <> 'MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD'
 ),
 swaps AS(
     SELECT
         d.*,
-        m.min_inner_index_swapper,
         ROW_NUMBER() over (
             PARTITION BY d.tx_id
             ORDER BY
@@ -246,11 +299,9 @@ swaps AS(
         ) AS inner_rn
     FROM
         swaps_w_destination d
-        LEFT JOIN min_inner_index_of_swapper m
-        ON m.tx_id = d.tx_id
-        AND m.index = d.index
     WHERE
         d.swapper IS NOT NULL
+        and d.tx_from <> d.tx_to
 ),
 full_swaps_temp AS(
     SELECT
