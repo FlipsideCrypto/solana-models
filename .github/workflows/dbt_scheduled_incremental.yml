@@ -1,15 +1,13 @@
-name: adhoc_dbt_run
-run-name: call_workflow_template
+name: scheduled_incremental_dbt_run
+run-name: scheduled_incremental_dbt_run
 
 on:
-  workflow_dispatch:
+  push:
     branches:
-      - "main"
-    inputs:
-      dbt_command:
-        type: string
-        description: 'DBT Run Command'
-        required: true
+      - main
+  schedule:
+    # Runs "every hour" (see https://crontab.guru)
+    - cron: '0 */1 * * *'
     
 env:
   DBT_PROFILES_DIR: ./
@@ -30,6 +28,10 @@ jobs:
   called_workflow_template:
     uses: FlipsideCrypto/analytics-workflow-templates/.github/workflows/run_chain_template.yml@main
     with:
-      dbt_command: ${{ inputs.dbt_command }}
-    secrets: inherit # pass all secrets
-  
+      dbt_command: "dbt run-operation run_sp_refresh_external_tables_full -t prod"
+    secrets: inherit
+  called_workflow_template2:
+    uses: FlipsideCrypto/analytics-workflow-templates/.github/workflows/run_chain_template.yml@main
+    with:
+      dbt_command: "dbt run -m ./models/bronze -t prod"
+    secrets: inherit
