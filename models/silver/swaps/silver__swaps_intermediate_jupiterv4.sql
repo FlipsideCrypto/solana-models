@@ -62,30 +62,32 @@ AND t._inserted_timestamp >= (
     AND t.block_timestamp :: DATE >= '2022-07-12'
 {% endif %}
 ),
-
-temp_inner_program_ids as (
-select *,
-    solana_dev.silver.udf_get_jupv4_inner_programs(inner_instruction:instructions) as inner_programs
-from dex_txs
-),
-
-temp_inner_program_ids_2 as (
-    select 
-        temp_inner_program_ids.*, 
-        i.value:program_id::string as inner_swap_program_id, 
-        i.value:inner_index::int as swap_program_inner_index_start,
-        coalesce(lead(swap_program_inner_index_start) over 
-                 (partition by tx_id, temp_inner_program_ids.index order by swap_program_inner_index_start)-1,999999)  as swap_program_inner_index_end
-    from temp_inner_program_ids,
-    table(flatten(inner_programs)) i
-),
-
-base_transfers AS (
+temp_inner_program_ids AS (
     SELECT
-        *
+        *,
+        solana_dev.silver.udf_get_jupv4_inner_programs(
+            inner_instruction :instructions
+        ) AS inner_programs
     FROM
-        {{ ref('silver__transfers2') }}
-        tr
+        dex_txs
+),
+temp_inner_program_ids_2 AS (
+    SELECT
+        temp_inner_program_ids.*,
+        i.value :program_id :: STRING AS inner_swap_program_id,
+        i.value :inner_index :: INT AS swap_program_inner_index_start,
+        COALESCE(LEAD(swap_program_inner_index_start) over (PARTITION BY tx_id, temp_inner_program_ids.index
+    ORDER BY
+        swap_program_inner_index_start) -1, 999999) AS swap_program_inner_index_end
+    FROM
+        temp_inner_program_ids,
+        TABLE(FLATTEN(inner_programs)) i),
+        base_transfers AS (
+            SELECT
+                *
+            FROM
+                {{ ref('silver__transfers2') }}
+                tr
 
 {% if is_incremental() %}
 WHERE
@@ -145,16 +147,20 @@ swaps_temp AS(
                 dex_txs
         )
 ),
-swap_w_inner_program_id as(
-select s.*, t.inner_swap_program_id
-from swaps_temp s
-left outer join temp_inner_program_ids_2 t 
-    on t.tx_id = s.tx_id 
-    and t.index = s.index and s.inner_index between t.swap_program_inner_index_start and t.swap_program_inner_index_end
-)
-,
-temp_acct_mappings as(
-        SELECT
+swap_w_inner_program_id AS(
+    SELECT
+        s.*,
+        t.inner_swap_program_id
+    FROM
+        swaps_temp s
+        LEFT OUTER JOIN temp_inner_program_ids_2 t
+        ON t.tx_id = s.tx_id
+        AND t.index = s.index
+        AND s.inner_index BETWEEN t.swap_program_inner_index_start
+        AND t.swap_program_inner_index_end
+),
+temp_acct_mappings AS(
+    SELECT
         tx_id,
         i.value :parsed :info :account :: STRING AS associated_account,
         COALESCE(
@@ -163,7 +169,7 @@ temp_acct_mappings as(
         ) AS owner
     FROM
         base_events
-    LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
+        LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
     WHERE
         (
             (
@@ -175,26 +181,26 @@ temp_acct_mappings as(
                 AND i.value :parsed :type = 'closeAccount'
             )
         )
-
-    UNION 
+    UNION
     SELECT
         tx_id,
         i.value :parsed :info :delegate :: STRING AS associated_account,
         i.value :parsed :info :owner :: STRING AS owner
     FROM
         base_events
-    LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
+        LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
     WHERE
         (
             i.value :programId = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
             AND i.value :parsed :type = 'approve'
         )
-
-)
-,
+),
 account_mappings AS (
-    SELECT * FROM temp_acct_mappings
-    union
+    SELECT
+        *
+    FROM
+        temp_acct_mappings
+    UNION
     SELECT
         tx_id,
         tx_to AS associated_account,
@@ -280,7 +286,7 @@ swaps_w_destination AS (
         AND s.tx_to = m2.associated_account
     WHERE
         s.program_id <> '11111111111111111111111111111111'
-        and s.inner_swap_program_id <> 'MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD'
+        AND s.inner_swap_program_id <> 'MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD'
 ),
 swaps AS(
     SELECT
@@ -301,7 +307,7 @@ swaps AS(
         swaps_w_destination d
     WHERE
         d.swapper IS NOT NULL
-        and d.tx_from <> d.tx_to
+        AND d.tx_from <> d.tx_to
 ),
 full_swaps_temp AS(
     SELECT
@@ -310,6 +316,7 @@ full_swaps_temp AS(
         s1.tx_id,
         s1.succeeded,
         s1.program_id,
+        s1.inner_swap_program_id,
         s1.swapper,
         s1.mint,
         s1.amount,
@@ -331,22 +338,41 @@ full_swaps_temp AS(
         AND s1.swapper = s2.tx_to
         AND s1.mint <> s2.mint
 ),
-final_temp AS(
+min_inner_index_to_tx AS(
     SELECT
-        block_id,
-        block_timestamp,
         tx_id,
-        succeeded,
-        program_id,
-        swapper,
-        mint as from_mint,
-        amount as from_amt,
+        INDEX,
         rn,
-        _inserted_timestamp,
-        to_mint,
-        to_amt
+        MIN(inner_index_2) AS min_inner_index_to
     FROM
         full_swaps_temp
+    GROUP BY
+        1,
+        2,
+        3
+),
+final_temp AS(
+    SELECT
+        s.block_id,
+        s.block_timestamp,
+        s.tx_id,
+        s.succeeded,
+        s.program_id,
+        s.inner_swap_program_id,
+        s.swapper,
+        s.mint AS from_mint,
+        s.amount AS from_amt,
+        s.rn,
+        s._inserted_timestamp,
+        s.to_mint,
+        s.to_amt
+    FROM
+        full_swaps_temp AS s
+        INNER JOIN min_inner_index_to_tx AS m
+        ON s.tx_id = m.tx_id
+        AND s.index = m.index
+        AND s.rn = m.rn
+        AND s.inner_index_2 = m.min_inner_index_to
     UNION
     SELECT
         s.block_id,
@@ -354,13 +380,14 @@ final_temp AS(
         s.tx_id,
         s.succeeded,
         s.program_id,
+        s.inner_swap_program_id,
         s.swapper,
-        s.mint as from_mint,
-        s.amount as from_amt,
+        s.mint AS from_mint,
+        s.amount AS from_amt,
         s.rn,
         s._inserted_timestamp,
-        NULL as to_mint,
-        NULL as to_amt
+        NULL AS to_mint,
+        NULL AS to_amt
     FROM
         swaps s
         LEFT JOIN full_swaps_temp f
@@ -380,13 +407,14 @@ final_temp AS(
         s.tx_id,
         s.succeeded,
         s.program_id,
+        s.inner_swap_program_id,
         s.swapper,
-        NULL as from_mint,
-        NULL as from_amt,
+        NULL AS from_mint,
+        NULL AS from_amt,
         s.rn,
         s._inserted_timestamp,
-        s.mint as to_mint,
-        s.amount as to_amt
+        s.mint AS to_mint,
+        s.amount AS to_amt
     FROM
         swaps s
         LEFT JOIN full_swaps_temp f
@@ -406,6 +434,7 @@ SELECT
     tx_id,
     succeeded,
     program_id,
+    inner_swap_program_id,
     swapper,
     from_mint,
     from_amt,
