@@ -43,13 +43,8 @@ AND _inserted_timestamp >= (
 dex_txs AS (
     SELECT
         e.*,
-        CASE
-            WHEN program_id = 'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo' THEN COALESCE(
-                signers [1],
-                signers [0]
-            ) :: STRING
-            ELSE signers [0] :: STRING
-        END AS swapper
+        IFF(array_size(signers) = 1, signers[0]::STRING, NULL) AS swapper,
+        signers
     FROM
         base_events e
         INNER JOIN {{ ref('silver__transactions') }}
@@ -263,7 +258,8 @@ swaps_w_destination AS (
         s.mint,
         s.succeeded,
         s._inserted_timestamp,
-        e.swapper,
+        e.swapper as tmp_swapper,
+        e.signers,
         e.program_id
     FROM
         swaps_temp s
@@ -280,6 +276,16 @@ swaps_w_destination AS (
         AND s.tx_from <> m2.owner
     WHERE
         s.program_id <> '11111111111111111111111111111111'
+),
+multi_signer_swapper as (
+    select 
+        tx_id,
+        silver.udf_get_multi_signers_swapper(array_agg(tx_from), array_agg(tx_to), array_agg(signers)[0]) as swapper
+    from swaps_w_destination
+    where succeeded
+    and array_size(signers) > 1
+    and tmp_swapper is null
+    group by 1
 ),
 unique_tx_from_and_to AS (
     SELECT
@@ -298,12 +304,15 @@ unique_tx_from_and_to AS (
 ),
 swaps_filtered_temp AS(
     SELECT
-        s.*
+        s.*,
+        coalesce(s.tmp_swapper,m.swapper) as swapper
     FROM
         swaps_w_destination s
         INNER JOIN unique_tx_from_and_to u
         ON s.tx_id = u.tx_id
         AND s.index = u.index
+        LEFT OUTER JOIN multi_signer_swapper m
+        ON s.tx_id = m.tx_id
 ),
 min_inner_index_of_swapper AS(
     SELECT
@@ -434,11 +443,12 @@ SELECT
 FROM
     final_temp
 WHERE
-    COALESCE(
+    (COALESCE(
         to_amt,
         0
     ) > 0
     OR COALESCE(
         from_amt,
         0
-    ) > 0
+    ) > 0)
+AND program_id is not null
