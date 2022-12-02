@@ -1,7 +1,7 @@
 {% macro task_bulk_get_blocks_historical() %}
 {% set sql %}
 execute immediate 'create or replace task streamline.bulk_get_blocks_historical
-    warehouse = dbt_cloud_solana
+    warehouse = dbt_cloud
     allow_overlapping_execution = false
     schedule = \'USING CRON */15 * * * * UTC\'
 as
