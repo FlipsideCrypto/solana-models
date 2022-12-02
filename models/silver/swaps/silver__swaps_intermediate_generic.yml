@@ -63,7 +63,10 @@ models:
           '4QJDoXfwFnR354DApr36GCLJGjamwwwSTkgVEwpLbTgwEy8LCqEJsiJPfjEfwQhNtQPQJnmqUjTEcBNRKQ1vfNPN',
           'Zn4aQD6ScgbNfmcKRSYAuyDJ4AWibjwmKGLW2W4QrvMpWtxvHxTta7cxUYMgWTKTHHACF9hV78yKFdkG3CddKju',
           '5eCovtQh92hfW16oLWCv82uBkbXbkR1GJV6DvYYqik7mSoiJftUy39TqGgJqzkkMD2SpVYNWJPsuxGFHPGn9iVnb',
-          '3UrFWezXZNQKf1uScXa7ZWuLW1xGvTwT8zexhP4STWfjkHW22cpUBNVRfn82wZGo1LYVMsrRKiaH3FV3NfzrSssH')"
+          '3UrFWezXZNQKf1uScXa7ZWuLW1xGvTwT8zexhP4STWfjkHW22cpUBNVRfn82wZGo1LYVMsrRKiaH3FV3NfzrSssH',
+          '5kvu9vpkL4zRo7fRaSDAv5iebwKmiVXWWMKx5puXUcszqRcg8YmX5KLHD2NG2BmKYMCAJddTrrJ1M7vYEUaKJtYp',
+          '394empadgqiJ5EE2KHbTsQVA8V9mssJxFVc5Ygs1jT3DkZYbPxWVyLdLiuSTWbQKCcYy6FMkmCwX5Dm4rZmNe8E4',
+          '4TnvetxYacY6NCZfLNm8rQARU7nDdg5ADrXEfGiiT946ZhDZhSRJuBHcTpQs2BFEHHNc7gr8dMZqV2L8hQAfwyc6')"
       - tx_excluded:
           name: silver__swaps_intermediate_generic_tx_excluded_test
           excluded_tx_ids:
