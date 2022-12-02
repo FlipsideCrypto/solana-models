@@ -74,3 +74,28 @@ def get_all_inner_instruction_program_ids(inner_instruction) -> list:
     return program_ids
 $$;
 {% endmacro %}
+
+{% macro create_udf_get_multi_signers_swapper(schema) %}
+create or replace function {{ schema }}.udf_get_multi_signers_swapper(tx_to array, tx_from array, signers array)
+returns string
+language python
+runtime_version = '3.8'
+handler = 'get_multi_signers_swapper'
+as
+$$
+def get_multi_signers_swapper(tx_to, tx_from, signers):
+    lst = tx_to + tx_from
+    d = {}
+    for v in lst:
+        d[v] = d[v]+1  if d.get(v) else 1
+    
+    cnts = sorted(d.items(), key = lambda x: x[1], reverse = True)
+
+    for v in cnts:
+        for signer in signers:
+            if v[0] == signer:
+                return signer
+                
+    return signers[0]
+$$;
+{% endmacro %}
