@@ -23,7 +23,9 @@ WITH base_events AS(
                 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ',
                 --program ids for acct mapping
                 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
-                'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+                'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+                --solrise program id (small program but for completenesss...)
+                'SLrSmK5ykEhdLkZH8mEsrZsGtDvzrQLKYSwy7PVKQoj'
             )
         )
         AND block_id > 111442741 -- token balances owner field not guaranteed to be populated before this slot
@@ -238,6 +240,23 @@ account_mappings AS (
         AND dt.instruction :accounts [2] :: STRING = dm.associated_account
     WHERE
         dt.program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
+    UNION
+    SELECT
+        e.tx_id,
+        e.instruction :accounts[3] :: STRING AS associated_account,
+        e.instruction :accounts[0] :: STRING AS owner
+    FROM
+        base_events e
+        INNER JOIN (
+            SELECT
+                DISTINCT tx_id
+            FROM
+                dex_txs
+        ) d
+        ON d.tx_id = e.tx_id
+    WHERE
+        e.program_id = 'SLrSmK5ykEhdLkZH8mEsrZsGtDvzrQLKYSwy7PVKQoj'
+    AND instruction:data::string = 't'
 ),
 swaps_w_destination AS (
     SELECT
