@@ -88,7 +88,7 @@ base_transfers AS (
     SELECT
         tr.*
     FROM
-        {{ ref('silver__transfers2') }}
+        {{ ref('silver__transfers') }}
         tr
         INNER JOIN (
             SELECT
