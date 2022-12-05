@@ -11,7 +11,7 @@ solana:
       region: "{{ env_var('REGION') }}"
       database: "{{ env_var('DATABASE_DEV') }}"
       warehouse: "{{ env_var('WAREHOUSE_DEV') }}"
-      threads: 4
+      threads: 8
       client_session_keep_alive: False
       query_tag: solana_dbt_dev
     prod:
@@ -24,7 +24,7 @@ solana:
       region: "{{ env_var('REGION') }}"
       database: "{{ env_var('DATABASE_PROD') }}"
       warehouse: "{{ env_var('WAREHOUSE_PROD') }}"
-      threads: 4
+      threads: 8
       client_session_keep_alive: False
       query_tag: solana_dbt_prod
   config:
