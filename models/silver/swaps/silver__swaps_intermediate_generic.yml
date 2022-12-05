@@ -1,0 +1,131 @@
+version: 2
+models:
+  - name: silver__swaps_intermediate_generic
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+            - TX_ID
+            - SWAP_INDEX
+      - compare_model_subset:
+          name: silver__swaps_intermediate_generic_business_logic_test
+          compare_model: ref('testing__swaps_intermediate_generic')
+          compare_columns: 
+            - tx_id
+            - succeeded
+            - swapper
+            - from_mint
+            - from_amt
+            - to_mint
+            - to_amt
+            - swap_index
+          model_condition: "where tx_id in ('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')"
+      - tx_excluded:
+          name: silver__swaps_intermediate_generic_tx_excluded_test
+          excluded_tx_ids:
+            - 4VroTTqAjpsxYMTgnBzBSJG2P9uB2orenKxiEfvxbTBnAficioUuCijnAYotMmAH4pB6kgziKHvMgHNf7nU8g646
+            - 5JHjPkrTy1bWJv6ph8n1Tpk5ABBBuD89NZdyANUpbjdY8Zr2HKUyhJEjSrffQVEfAwYA3d9kVqK84qwuqVSZELp8
+            - 5e9ATFzcta5RfXB9tjCZfpE7qV1cBUh5H5ocNrwxSfC4D7KqRXTCRL3om4FTwNprwUmn9VMAUJAKm5qVYaJ8vsq6
+            - 3wSxtF5Mqeh5ybZVH1U4nE577pZSrhCr3td8GbJeCfwZfanpP7wrDXMiCUdhd5njhkWW6FKGgEzptDKsY8CW33RA
+            - 5hgT6wotqHT6c49iwJXexnvnCToteo5npbRStjFveMerx4RtR75azqXWKoaFyEWbXmLcEXR68EWwFgj5BzxjjXuy
+            - 3PdQf87gUGqRKrTXWzqpuduUVhe2cCfSFbmDbbJWQg4MwmsQu43esBRz3HQPsGZ98a8ZjtcNsxNDsrxhV1LBWNJn
+            - 4BhhKEKu1z7qXGPaoX1114oQ5Beqa2VWfgBvoW2dzcU6CmpAGPfztJZim2ZeF6MQsjdAAaiyr4ToChr3fa88mJpA
+            - 66ipdTYD19wCrWabViaw8Tn1KrZTz9eJnAtr1ZhETPn7c4aN2qcpiWLNnzoGNMaVzw65e5giwAsjCa7BffqKQ3aB
+            - 56E5FyopfrJuviUp39HCbNJp64d553HNx6p2RFEXQtwe9K3ahRWwmw5ikK6epeVYheqsgZfe1td8t6ZP6fQgx3dk
+            - 5mVtJYZGJMrCnNLSK2TV7b75KtWkcGngp5nwSheEghyT1qtBVQxdRhp8Y98sUwkJ7aPFVxZtvjLb3wJEVGDkyTS1
+            - 4WX8oi39gn2dH5jK2AqeNDY93ofuYssmDtMJeyErJzhjvkc4jTcJmDetueQQ9FmcR2UzAxzTvjcPVq7HHQkUoggp
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+      - name: SWAPPER
+        description: Address that initiated the swap 
+      - name: FROM_AMT
+        description: Total amount of the token sent in to initiate the swap 
+        tests: 
+      - name: FROM_MINT
+        description: Token being sent or swapped from
+        tests: 
+      - name: TO_AMT
+        description: Total amount of the token received in the swap
+        tests: 
+      - name: TO_MINT
+        description: Token being received or swapped for 
+        tests: 
+      - name: SWAP_INDEX
+        description: Order in which the intermediate swap was executed
+        tests: 
+          - not_null: 
+              where: succeeded = TRUE
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
