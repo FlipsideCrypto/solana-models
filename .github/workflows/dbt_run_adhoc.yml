@@ -3,6 +3,8 @@ run-name: call_workflow_template
 
 on:
   workflow_dispatch:
+    branches:
+      - "main"
     inputs:
       dbt_command:
         type: string
@@ -22,12 +24,11 @@ env:
   WAREHOUSE_DEV: "${{ secrets.WAREHOUSE_DEV }}"
   WAREHOUSE_PROD: "${{ secrets.WAREHOUSE_PROD }}"
   SCHEMA: "${{ secrets.SCHEMA }}"
-  QUERY_TAG: "solana_dbt_adhoc"
 
 
 jobs:
   called_workflow_template:
-    uses: FlipsideCrypto/analytics-workflow-templates/.github/workflows/run_chain_template.yml@main
+    uses: FlipsideCrypto/analytics-workflow-templates/.github/workflows/dbt_run_template.yml@main
     with:
       dbt_command: ${{ inputs.dbt_command }}
     secrets: inherit # pass all secrets
