@@ -1,0 +1,46 @@
+version: 2
+models:
+  - name: core__ez_token_prices
+    description: Dimension table that provides a name, symbol, and price of tokens at the hour level
+    tests:
+     - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - RECORDED_HOUR
+            - TOKEN_ADDRESS
+    columns:
+      - name: RECORDED_HOUR
+        description: Hour that the price was recorded at
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TOKEN_ADDRESS
+        description: "The token address"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: TOKEN_NAME
+        description: The token name
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: SYMBOL
+        description: The token symbol
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: DECIMALS
+        description: The number of decimals for the token
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: CLOSE_COIN_GECKO
+        description: Closing price of the recorded hour in USD from coin gecko
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: CLOSE_COIN_MARKET_CAP
+        description: Closing price of the recorded hour in USD for coin market cap
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: IMPUTED_COIN_GECKO
+        description: Whether the price was imputed from an earlier record (generally used for low trade volume tokens) from coin gecko
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: IMPUTED_COIN_MARKET_CAP
+        description: Whether the price was imputed from an earlier record (generally used for low trade volume tokens) from coin market cap
+        tests: 
+          - dbt_expectations.expect_column_to_exist

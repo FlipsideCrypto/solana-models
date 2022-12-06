@@ -21,6 +21,8 @@ sources:
       - name: asset_metadata_coin_gecko
       - name: hourly_prices_coin_market_cap
       - name: hourly_prices_coin_gecko
+      - name: coin_market_cap_cryptocurrency_info
+
   - name: shared
     database: flipside_prod_db
     schema: silver
@@ -42,3 +44,7 @@ sources:
       - name: blocks_api
       - name: block_rewards_api
       - name: block_txs_api
+  - name: bronze_api
+    schema: bronze_api
+    tables:
+      - name: solscan_token_list
