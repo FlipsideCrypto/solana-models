@@ -140,7 +140,8 @@ swaps_temp AS(
 swap_w_inner_program_id AS(
     SELECT
         s.*,
-        t.inner_swap_program_id
+        t.inner_swap_program_id,
+        t.swap_program_inner_index_start
     FROM
         swaps_temp s
         LEFT OUTER JOIN temp_inner_program_ids t
@@ -262,7 +263,8 @@ swaps_w_destination AS (
         s._inserted_timestamp,
         e.swapper,
         e.program_id,
-        s.inner_swap_program_id
+        s.inner_swap_program_id,
+        s.swap_program_inner_index_start
     FROM
         swap_w_inner_program_id s
         LEFT OUTER JOIN dex_txs e
@@ -276,7 +278,10 @@ swaps_w_destination AS (
         AND s.tx_to = m2.associated_account
     WHERE
         s.program_id <> '11111111111111111111111111111111'
-        AND s.inner_swap_program_id <> 'MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD'
+        AND s.inner_swap_program_id not in ( 
+            'MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD',
+            '1gE3LGQze8DQ3KD2C4ZUCmRX5g4njhY5yLfYmnmcvJR',
+            'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB')
 ),
 swaps AS(
     SELECT
@@ -317,16 +322,31 @@ full_swaps_temp AS(
         s2.inner_index AS inner_index_2,
         s2.mint AS to_mint,
         s2.amount AS to_amt
-    FROM
-        swaps s1
-        LEFT OUTER JOIN swaps s2
-        ON s1.tx_id = s2.tx_id
-        AND s1.index = s2.index
-        AND s1.inner_index <> s2.inner_index
-    WHERE
-        s1.tx_to = s2.tx_from
-        AND s1.swapper = s2.tx_to
-        AND s1.mint <> s2.mint
+    -- previous logic 2022-12-05
+    -- FROM
+    --     swaps s1
+    --     LEFT OUTER JOIN swaps s2
+    --     ON s1.tx_id = s2.tx_id
+    --     AND s1.index = s2.index
+    --     AND s1.inner_index <> s2.inner_index
+    -- WHERE
+        -- s1.tx_to = s2.tx_from
+        -- AND s1.tx_from = s2.tx_to
+        -- AND s1.swapper = s2.tx_to
+        -- AND s1.mint <> s2.mint
+        FROM
+            swaps s1
+            LEFT OUTER JOIN swaps s2
+            ON s1.tx_id = s2.tx_id
+            AND s1.index = s2.index
+            AND s1.inner_index <> s2.inner_index
+            AND s1.inner_swap_program_id = s2.inner_swap_program_id
+        WHERE
+            s1.swapper = s2.tx_to
+            AND s1.tx_from = s2.tx_to
+            AND s1.mint <> s2.mint
+            qualify(row_number() over (partition by s1.tx_id, s1.index, inner_index_1 order by inner_index_2)) = 1
+
 ),
 min_inner_index_to_tx AS(
     SELECT
@@ -341,6 +361,14 @@ min_inner_index_to_tx AS(
         2,
         3
 ),
+
+full_swaps as (
+SELECT s.*
+    FROM full_swaps_temp as s
+    inner join min_inner_index_to_tx as m
+    on s.tx_id = m.tx_id and s.index=m.index and s.rn = m.rn and s.inner_index_2 = m.min_inner_index_to
+),
+
 final_temp AS(
     SELECT
         s.block_id,
@@ -357,12 +385,7 @@ final_temp AS(
         s.to_mint,
         s.to_amt
     FROM
-        full_swaps_temp AS s
-        INNER JOIN min_inner_index_to_tx AS m
-        ON s.tx_id = m.tx_id
-        AND s.index = m.index
-        AND s.rn = m.rn
-        AND s.inner_index_2 = m.min_inner_index_to
+        full_swaps AS s
     UNION
     SELECT
         s.block_id,
