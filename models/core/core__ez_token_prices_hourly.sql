@@ -33,7 +33,7 @@ FROM
     AND b.recorded_hour = cg.recorded_hour
     LEFT JOIN {{ ref('silver__token_prices_coin_market_cap_hourly') }}
     cmc
-    ON A.coin_gecko_id = cmc.id
+    ON A.coin_market_cap_id = cmc.id
     AND b.recorded_hour = cmc.recorded_hour
 WHERE
     COALESCE(

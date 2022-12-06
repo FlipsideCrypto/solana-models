@@ -11,33 +11,52 @@ WITH base AS (
             'GET',
             'https://public-api.solscan.io/token/meta?tokenAddress=' || mint,{},{}
         ) AS DATA,
-        SYSDATE() _inserted_timestamp
+        SYSDATE() _inserted_timestamp,
+        _inserted_timestamp AS _inserted_timestamp_from_swap
     FROM
         (
             SELECT
-                DISTINCT swap_from_mint mint
+                A.swap_from_mint AS mint,
+                MIN(
+                    A._inserted_timestamp
+                ) _inserted_timestamp
             FROM
-                {{ ref('core__fact_swaps') }}
-            WHERE
-                swap_from_mint IS NOT NULL
+                {{ ref('silver__swaps') }} A
 
 {% if is_incremental() %}
-EXCEPT
-SELECT
-    mint
-FROM
-    (
-        SELECT
-            mint
-        FROM
-            {{ this }}
-        UNION ALL
-        SELECT
-            token_address
-        FROM
-            silver.solscan_tokens
-    )
+LEFT JOIN (
+    SELECT
+        mint
+    FROM
+        (
+            SELECT
+                mint
+            FROM
+                {{ this }}
+            UNION ALL
+            SELECT
+                token_address
+            FROM
+                silver.solscan_tokens
+        )
+) b
+ON A.swap_from_mint = b.mint
 {% endif %}
+WHERE
+    A.swap_from_mint IS NOT NULL
+
+{% if is_incremental() %}
+AND _inserted_timestamp :: DATE >= (
+    SELECT
+        MAX(
+            _inserted_timestamp_from_swap :: DATE
+        )
+    FROM
+        {{ this }}
+)
+{% endif %}
+GROUP BY
+    A.swap_from_mint
 LIMIT
     1
 )
@@ -53,6 +72,7 @@ SELECT
     DATA :data :icon :: STRING AS icon,
     DATA :data :twitter :: STRING AS twitter,
     DATA :data :website :: STRING AS website,
-    _inserted_timestamp
+    _inserted_timestamp,
+    _inserted_timestamp_from_swap
 FROM
     base
