@@ -119,7 +119,7 @@ swaps_temp AS(
         A.block_timestamp,
         A.tx_id,
         COALESCE(SPLIT_PART(INDEX :: text, '.', 1) :: INT, INDEX :: INT) AS INDEX,
-        COALESCE(SPLIT_PART(INDEX :: text, '.', 2), NULL) AS inner_index,
+        COALESCE(nullif(SPLIT_PART(INDEX :: text, '.', 2),'')::int, NULL) AS inner_index,
         A.program_id,
         A.tx_from,
         A.tx_to,
@@ -462,11 +462,12 @@ SELECT
 FROM
     final_temp
 WHERE
-    COALESCE(
+    (COALESCE(
         to_amt,
         0
     ) > 0
     OR COALESCE(
         from_amt,
         0
-    ) > 0
+    ) > 0)
+AND program_id is not null
