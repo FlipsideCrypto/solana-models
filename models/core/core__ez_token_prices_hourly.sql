@@ -19,11 +19,18 @@ SELECT
     token_address,
     token_name,
     A.symbol,
-    decimals,
-    cg.close close_coin_gecko,
-    cmc.close close_coin_market_cap,
-    cg.imputed imputed_coin_gecko,
-    cmc.imputed imputed_coin_market_cap
+    CASE
+        WHEN cg.imputed = FALSE THEN cg.close
+        WHEN cmc.imputed = FALSE THEN cmc.close
+        WHEN cg.imputed = TRUE THEN cg.close
+        WHEN cmc.imputed = TRUE THEN cmc.close
+    END AS CLOSE,
+    CASE
+        WHEN cg.imputed = FALSE THEN cg.imputed
+        WHEN cmc.imputed = FALSE THEN cmc.imputed
+        WHEN cg.imputed = TRUE THEN cg.imputed
+        WHEN cmc.imputed = TRUE THEN cmc.imputed
+    END AS is_imputed
 FROM
     {{ ref('silver__token_metadata') }} A
     CROSS JOIN base b
