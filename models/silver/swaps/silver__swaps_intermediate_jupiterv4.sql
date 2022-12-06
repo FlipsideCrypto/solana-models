@@ -37,7 +37,9 @@ dex_txs AS (
     SELECT
         e.*,
         signers [0] :: STRING AS swapper,
-        silver.udf_get_jupv4_inner_programs(inner_instruction:instructions) as inner_programs
+        silver.udf_get_jupv4_inner_programs(
+            inner_instruction :instructions
+        ) AS inner_programs
     FROM
         base_events e
         INNER JOIN {{ ref('silver__transactions') }}
@@ -63,21 +65,23 @@ AND t._inserted_timestamp >= (
     AND t.block_timestamp :: DATE >= '2022-07-12'
 {% endif %}
 ),
-temp_inner_program_ids as (
-    select 
-        dex_txs.*, 
-        i.value:program_id::string as inner_swap_program_id, 
-        i.value:inner_index::int as swap_program_inner_index_start,
-        coalesce(lead(swap_program_inner_index_start) over 
-                 (partition by tx_id, dex_txs.index order by swap_program_inner_index_start)-1,999999)  as swap_program_inner_index_end
-    from dex_txs,
-    table(flatten(inner_programs)) i
-),
-base_transfers AS (
+temp_inner_program_ids AS (
     SELECT
-        *
+        dex_txs.*,
+        i.value :program_id :: STRING AS inner_swap_program_id,
+        i.value :inner_index :: INT AS swap_program_inner_index_start,
+        COALESCE(LEAD(swap_program_inner_index_start) over (PARTITION BY tx_id, dex_txs.index
+    ORDER BY
+        swap_program_inner_index_start) -1, 999999) AS swap_program_inner_index_end
     FROM
-        {{ ref('silver__transfers2') }} tr
+        dex_txs,
+        TABLE(FLATTEN(inner_programs)) i),
+        base_transfers AS (
+            SELECT
+                *
+            FROM
+                {{ ref('silver__transfers2') }}
+                tr
 
 {% if is_incremental() %}
 WHERE
@@ -119,7 +123,7 @@ swaps_temp AS(
         A.block_timestamp,
         A.tx_id,
         COALESCE(SPLIT_PART(INDEX :: text, '.', 1) :: INT, INDEX :: INT) AS INDEX,
-        COALESCE(nullif(SPLIT_PART(INDEX :: text, '.', 2),'')::int, NULL) AS inner_index,
+        COALESCE(NULLIF(SPLIT_PART(INDEX :: text, '.', 2), '') :: INT, NULL) AS inner_index,
         A.program_id,
         A.tx_from,
         A.tx_to,
@@ -278,31 +282,48 @@ swaps_w_destination AS (
         AND s.tx_to = m2.associated_account
     WHERE
         s.program_id <> '11111111111111111111111111111111'
-        AND s.inner_swap_program_id not in ( 
+        AND s.inner_swap_program_id NOT IN (
             'MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD',
             '1gE3LGQze8DQ3KD2C4ZUCmRX5g4njhY5yLfYmnmcvJR',
-            'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB')
+            'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
+        )
 ),
-transfers_from_swapper as (
+transfers_from_swapper AS (
     SELECT
         d.*,
-        sum(amount) over (partition by tx_id, tx_from, index, mint, inner_swap_program_id) as sum_from_amount,
-        NULL as sum_to_amount
+        SUM(amount) over (
+            PARTITION BY tx_id,
+            tx_from,
+            INDEX,
+            mint,
+            inner_swap_program_id
+        ) AS sum_from_amount,
+        NULL AS sum_to_amount
     FROM
         swaps_w_destination d
-    WHERE 
+    WHERE
         tx_from = d.swapper
-    qualify(row_number() over (partition by tx_id, tx_from, index, mint, inner_swap_program_id order by inner_index)) = 1
-    UNION 
+        AND tx_from <> tx_to qualify(ROW_NUMBER() over (PARTITION BY tx_id, tx_from, INDEX, mint, inner_swap_program_id
+    ORDER BY
+        inner_index)) = 1
+    UNION
     SELECT
         d.*,
-        NULL as sum_from_amount,
-        sum(amount) over (partition by tx_id, tx_to, index, mint, inner_swap_program_id) as sum_to_amount
+        NULL AS sum_from_amount,
+        SUM(amount) over (
+            PARTITION BY tx_id,
+            tx_to,
+            INDEX,
+            mint,
+            inner_swap_program_id
+        ) AS sum_to_amount
     FROM
         swaps_w_destination d
-    WHERE 
+    WHERE
         tx_to = d.swapper
-    qualify(row_number() over (partition by tx_id, tx_to, index, mint, inner_swap_program_id order by inner_index)) = 1
+        AND tx_from <> tx_to qualify(ROW_NUMBER() over (PARTITION BY tx_id, tx_to, INDEX, mint, inner_swap_program_id
+    ORDER BY
+        inner_index)) = 1
 ),
 full_swaps_temp AS(
     SELECT
@@ -315,7 +336,7 @@ full_swaps_temp AS(
         s1.swapper,
         s1.mint,
         s1.amount,
-        s1.inner_index as rn,
+        s1.inner_index AS rn,
         s1._inserted_timestamp,
         s1.index,
         s1.inner_index AS inner_index_1,
@@ -334,8 +355,9 @@ full_swaps_temp AS(
     WHERE
         s1.swapper = s2.tx_to
         AND s1.tx_from = s2.tx_to
-        AND s1.mint <> s2.mint
-        qualify(row_number() over (partition by s1.tx_id, s1.index, inner_index_1 order by inner_index_2)) = 1
+        AND s1.mint <> s2.mint qualify(ROW_NUMBER() over (PARTITION BY s1.tx_id, s1.index, inner_index_1
+    ORDER BY
+        ABS(s1.swap_program_inner_index_start - s2.swap_program_inner_index_start), inner_index_2)) = 1
 ),
 final_temp AS(
     SELECT
@@ -351,7 +373,7 @@ final_temp AS(
         s.rn,
         s._inserted_timestamp,
         s.to_mint,
-        s.sum_to_amount as to_amt
+        s.sum_to_amount AS to_amt
     FROM
         full_swaps_temp AS s
     UNION
@@ -365,7 +387,7 @@ final_temp AS(
         s.swapper,
         s.mint AS from_mint,
         s.sum_from_amount AS from_amt,
-        s.inner_index as rn,
+        s.inner_index AS rn,
         s._inserted_timestamp,
         NULL AS to_mint,
         NULL AS to_amt
@@ -392,7 +414,7 @@ final_temp AS(
         s.swapper,
         NULL AS from_mint,
         NULL AS from_amt,
-        s.inner_index as rn,
+        s.inner_index AS rn,
         s._inserted_timestamp,
         s.mint AS to_mint,
         s.sum_to_amount AS to_amt
@@ -430,201 +452,190 @@ SELECT
 FROM
     final_temp
 WHERE
-    (COALESCE(
-        to_amt,
-        0
-    ) > 0
-    OR COALESCE(
-        from_amt,
-        0
-    ) > 0)
-AND program_id is not null
-
--- swaps AS(
---     SELECT
---         d.*,
---         ROW_NUMBER() over (
---             PARTITION BY d.tx_id
---             ORDER BY
---                 d.index,
---                 d.inner_index
---         ) AS rn,
---         ROW_NUMBER() over (
---             PARTITION BY d.tx_id,
---             d.index
---             ORDER BY
---                 d.inner_index
---         ) AS inner_rn
---     FROM
---         swaps_w_destination d
---     WHERE
---         d.swapper IS NOT NULL
---         AND d.tx_from <> d.tx_to
--- ),
--- full_swaps_temp AS(
---     SELECT
---         s1.block_id,
---         s1.block_timestamp,
---         s1.tx_id,
---         s1.succeeded,
---         s1.program_id,
---         s1.inner_swap_program_id,
---         s1.swapper,
---         s1.mint,
---         s1.amount,
---         s1.rn,
---         s1._inserted_timestamp,
---         s1.index,
---         s1.inner_index AS inner_index_1,
---         s2.inner_index AS inner_index_2,
---         s2.mint AS to_mint,
---         s2.amount AS to_amt
---     -- previous logic 2022-12-05
---     -- FROM
---     --     swaps s1
---     --     LEFT OUTER JOIN swaps s2
---     --     ON s1.tx_id = s2.tx_id
---     --     AND s1.index = s2.index
---     --     AND s1.inner_index <> s2.inner_index
---     -- WHERE
---         -- s1.tx_to = s2.tx_from
---         -- AND s1.tx_from = s2.tx_to
---         -- AND s1.swapper = s2.tx_to
---         -- AND s1.mint <> s2.mint
---         FROM
---             swaps s1
---             LEFT OUTER JOIN swaps s2
---             ON s1.tx_id = s2.tx_id
---             AND s1.index = s2.index
---             AND s1.inner_index <> s2.inner_index
---             AND s1.inner_swap_program_id = s2.inner_swap_program_id
---         WHERE
---             s1.swapper = s2.tx_to
---             AND s1.tx_from = s2.tx_to
---             AND s1.mint <> s2.mint
---             qualify(row_number() over (partition by s1.tx_id, s1.index, inner_index_1 order by inner_index_2)) = 1
-
--- ),
--- min_inner_index_to_tx AS(
---     SELECT
---         tx_id,
---         INDEX,
---         rn,
---         MIN(inner_index_2) AS min_inner_index_to
---     FROM
---         full_swaps_temp
---     GROUP BY
---         1,
---         2,
---         3
--- ),
-
--- full_swaps as (
--- SELECT s.*
---     FROM full_swaps_temp as s
---     inner join min_inner_index_to_tx as m
---     on s.tx_id = m.tx_id and s.index=m.index and s.rn = m.rn and s.inner_index_2 = m.min_inner_index_to
--- ),
-
--- final_temp AS(
---     SELECT
---         s.block_id,
---         s.block_timestamp,
---         s.tx_id,
---         s.succeeded,
---         s.program_id,
---         s.inner_swap_program_id,
---         s.swapper,
---         s.mint AS from_mint,
---         s.amount AS from_amt,
---         s.rn,
---         s._inserted_timestamp,
---         s.to_mint,
---         s.to_amt
---     FROM
---         full_swaps AS s
---     UNION
---     SELECT
---         s.block_id,
---         s.block_timestamp,
---         s.tx_id,
---         s.succeeded,
---         s.program_id,
---         s.inner_swap_program_id,
---         s.swapper,
---         s.mint AS from_mint,
---         s.amount AS from_amt,
---         s.rn,
---         s._inserted_timestamp,
---         NULL AS to_mint,
---         NULL AS to_amt
---     FROM
---         swaps s
---         LEFT JOIN full_swaps_temp f
---         ON s.tx_id = f.tx_id
---         AND s.index = f.index
---         AND (
---             s.inner_index = f.inner_index_1
---             OR s.inner_index = f.inner_index_2
---         )
---     WHERE
---         f.index IS NULL
---         AND s.tx_from = s.swapper
---     UNION
---     SELECT
---         s.block_id,
---         s.block_timestamp,
---         s.tx_id,
---         s.succeeded,
---         s.program_id,
---         s.inner_swap_program_id,
---         s.swapper,
---         NULL AS from_mint,
---         NULL AS from_amt,
---         s.rn,
---         s._inserted_timestamp,
---         s.mint AS to_mint,
---         s.amount AS to_amt
---     FROM
---         swaps s
---         LEFT JOIN full_swaps_temp f
---         ON s.tx_id = f.tx_id
---         AND s.index = f.index
---         AND (
---             s.inner_index = f.inner_index_1
---             OR s.inner_index = f.inner_index_2
---         )
---     WHERE
---         f.index IS NULL
---         AND s.tx_to = s.swapper
--- )
--- SELECT
---     block_id,
---     block_timestamp,
---     tx_id,
---     succeeded,
---     program_id,
---     inner_swap_program_id,
---     swapper,
---     from_mint,
---     from_amt,
---     to_mint,
---     to_amt,
---     _inserted_timestamp,
---     ROW_NUMBER() over (
---         PARTITION BY tx_id
---         ORDER BY
---             rn
---     ) AS swap_index
--- FROM
---     final_temp
--- WHERE
---     (COALESCE(
---         to_amt,
---         0
---     ) > 0
---     OR COALESCE(
---         from_amt,
---         0
---     ) > 0)
--- AND program_id is not null
+    (COALESCE(to_amt, 0) > 0
+    OR COALESCE(from_amt, 0) > 0)
+    AND program_id IS NOT NULL -- swaps AS(
+    --     SELECT
+    --         d.*,
+    --         ROW_NUMBER() over (
+    --             PARTITION BY d.tx_id
+    --             ORDER BY
+    --                 d.index,
+    --                 d.inner_index
+    --         ) AS rn,
+    --         ROW_NUMBER() over (
+    --             PARTITION BY d.tx_id,
+    --             d.index
+    --             ORDER BY
+    --                 d.inner_index
+    --         ) AS inner_rn
+    --     FROM
+    --         swaps_w_destination d
+    --     WHERE
+    --         d.swapper IS NOT NULL
+    --         AND d.tx_from <> d.tx_to
+    -- ),
+    -- full_swaps_temp AS(
+    --     SELECT
+    --         s1.block_id,
+    --         s1.block_timestamp,
+    --         s1.tx_id,
+    --         s1.succeeded,
+    --         s1.program_id,
+    --         s1.inner_swap_program_id,
+    --         s1.swapper,
+    --         s1.mint,
+    --         s1.amount,
+    --         s1.rn,
+    --         s1._inserted_timestamp,
+    --         s1.index,
+    --         s1.inner_index AS inner_index_1,
+    --         s2.inner_index AS inner_index_2,
+    --         s2.mint AS to_mint,
+    --         s2.amount AS to_amt
+    --     -- previous logic 2022-12-05
+    --     -- FROM
+    --     --     swaps s1
+    --     --     LEFT OUTER JOIN swaps s2
+    --     --     ON s1.tx_id = s2.tx_id
+    --     --     AND s1.index = s2.index
+    --     --     AND s1.inner_index <> s2.inner_index
+    --     -- WHERE
+    --         -- s1.tx_to = s2.tx_from
+    --         -- AND s1.tx_from = s2.tx_to
+    --         -- AND s1.swapper = s2.tx_to
+    --         -- AND s1.mint <> s2.mint
+    --         FROM
+    --             swaps s1
+    --             LEFT OUTER JOIN swaps s2
+    --             ON s1.tx_id = s2.tx_id
+    --             AND s1.index = s2.index
+    --             AND s1.inner_index <> s2.inner_index
+    --             AND s1.inner_swap_program_id = s2.inner_swap_program_id
+    --         WHERE
+    --             s1.swapper = s2.tx_to
+    --             AND s1.tx_from = s2.tx_to
+    --             AND s1.mint <> s2.mint
+    --             qualify(row_number() over (partition by s1.tx_id, s1.index, inner_index_1 order by inner_index_2)) = 1
+    -- ),
+    -- min_inner_index_to_tx AS(
+    --     SELECT
+    --         tx_id,
+    --         INDEX,
+    --         rn,
+    --         MIN(inner_index_2) AS min_inner_index_to
+    --     FROM
+    --         full_swaps_temp
+    --     GROUP BY
+    --         1,
+    --         2,
+    --         3
+    -- ),
+    -- full_swaps as (
+    -- SELECT s.*
+    --     FROM full_swaps_temp as s
+    --     inner join min_inner_index_to_tx as m
+    --     on s.tx_id = m.tx_id and s.index=m.index and s.rn = m.rn and s.inner_index_2 = m.min_inner_index_to
+    -- ),
+    -- final_temp AS(
+    --     SELECT
+    --         s.block_id,
+    --         s.block_timestamp,
+    --         s.tx_id,
+    --         s.succeeded,
+    --         s.program_id,
+    --         s.inner_swap_program_id,
+    --         s.swapper,
+    --         s.mint AS from_mint,
+    --         s.amount AS from_amt,
+    --         s.rn,
+    --         s._inserted_timestamp,
+    --         s.to_mint,
+    --         s.to_amt
+    --     FROM
+    --         full_swaps AS s
+    --     UNION
+    --     SELECT
+    --         s.block_id,
+    --         s.block_timestamp,
+    --         s.tx_id,
+    --         s.succeeded,
+    --         s.program_id,
+    --         s.inner_swap_program_id,
+    --         s.swapper,
+    --         s.mint AS from_mint,
+    --         s.amount AS from_amt,
+    --         s.rn,
+    --         s._inserted_timestamp,
+    --         NULL AS to_mint,
+    --         NULL AS to_amt
+    --     FROM
+    --         swaps s
+    --         LEFT JOIN full_swaps_temp f
+    --         ON s.tx_id = f.tx_id
+    --         AND s.index = f.index
+    --         AND (
+    --             s.inner_index = f.inner_index_1
+    --             OR s.inner_index = f.inner_index_2
+    --         )
+    --     WHERE
+    --         f.index IS NULL
+    --         AND s.tx_from = s.swapper
+    --     UNION
+    --     SELECT
+    --         s.block_id,
+    --         s.block_timestamp,
+    --         s.tx_id,
+    --         s.succeeded,
+    --         s.program_id,
+    --         s.inner_swap_program_id,
+    --         s.swapper,
+    --         NULL AS from_mint,
+    --         NULL AS from_amt,
+    --         s.rn,
+    --         s._inserted_timestamp,
+    --         s.mint AS to_mint,
+    --         s.amount AS to_amt
+    --     FROM
+    --         swaps s
+    --         LEFT JOIN full_swaps_temp f
+    --         ON s.tx_id = f.tx_id
+    --         AND s.index = f.index
+    --         AND (
+    --             s.inner_index = f.inner_index_1
+    --             OR s.inner_index = f.inner_index_2
+    --         )
+    --     WHERE
+    --         f.index IS NULL
+    --         AND s.tx_to = s.swapper
+    -- )
+    -- SELECT
+    --     block_id,
+    --     block_timestamp,
+    --     tx_id,
+    --     succeeded,
+    --     program_id,
+    --     inner_swap_program_id,
+    --     swapper,
+    --     from_mint,
+    --     from_amt,
+    --     to_mint,
+    --     to_amt,
+    --     _inserted_timestamp,
+    --     ROW_NUMBER() over (
+    --         PARTITION BY tx_id
+    --         ORDER BY
+    --             rn
+    --     ) AS swap_index
+    -- FROM
+    --     final_temp
+    -- WHERE
+    --     (COALESCE(
+    --         to_amt,
+    --         0
+    --     ) > 0
+    --     OR COALESCE(
+    --         from_amt,
+    --         0
+    --     ) > 0)
+    -- AND program_id is not null
