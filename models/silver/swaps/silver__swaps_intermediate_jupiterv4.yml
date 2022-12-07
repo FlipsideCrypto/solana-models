@@ -15,9 +15,9 @@ models:
             - succeeded
             - swapper
             - from_mint
-            - from_amt
+            - round(from_amt,8)
             - to_mint
-            - to_amt
+            - round(to_amt,8)
             - swap_index
           model_condition: "where tx_id in ('31HQzRbMs68pbHuiYa5TxkKNeGcasYY9A6HrdUKfMWz1iVBT1XSnNGTYWB689RgKfysSJDfAK3etFxyZ9ikioaeU',
           '4fmjzK1PMv1AR51778H35fbzjVuxsfb2bACtatdzkqfRSSg9Aca5L6gBKjNpQEJm2wQsjyb1Wd9F2r5vdodCuaE',
