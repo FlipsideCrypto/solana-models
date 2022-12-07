@@ -9,10 +9,6 @@ FROM
     {{ model }}
 WHERE
     tx_id IN(
-        SELECT
-            DISTINCT tx_id
-        FROM
-            {{ excluded_tx_ids }}
-
+        {{  "'" + excluded_tx_ids | join("','") + "'"}}
     )
 {% endtest %}

@@ -13,3 +13,5 @@ SELECT
     mint
 FROM
     {{ ref('silver__transfers') }}
+WHERE 
+    succeeded

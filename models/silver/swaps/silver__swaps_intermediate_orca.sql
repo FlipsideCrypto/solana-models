@@ -15,17 +15,17 @@ WITH base_events AS(
     WHERE
         (
             program_id IN (
-                --jupiter v2/v3 program_ids
-                'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo',
-                'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph',
-                -- saber
-                'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t',
-                'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ',
+                -- Orca
+                '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
+                'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
+                'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc',
                 --program ids for acct mapping
                 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
                 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
-                --solrise program id (small program but for completenesss...)
-                'SLrSmK5ykEhdLkZH8mEsrZsGtDvzrQLKYSwy7PVKQoj'
+                --program ids that identify the swapper in certain tx
+                '8rGFmebhhTikfJP5bUe2uLHcejSiukdJhiLEKoit962a',
+                'E16pm4Z4jiFxVEeBcSuYfJHy6TQYfYRAhGYt7cEUYfEV'
+                
             )
         )
         AND block_id > 111442741 -- token balances owner field not guaranteed to be populated before this slot
@@ -45,7 +45,7 @@ AND _inserted_timestamp >= (
 dex_txs AS (
     SELECT
         e.*,
-        IFF(array_size(signers) = 1, signers[0]::STRING, NULL) AS swapper,
+        IFF(ARRAY_SIZE(signers) = 1, signers [0] :: STRING, NULL) AS swapper,
         signers
     FROM
         base_events e
@@ -54,23 +54,13 @@ dex_txs AS (
         ON t.tx_id = e.tx_id
         AND t.block_timestamp :: DATE = e.block_timestamp :: DATE
     WHERE
-        (
-            program_id IN (
-                -- saber
-                'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t',
-                'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
-            ) -- jupiter v2,v3
-            OR (
-                program_id IN (
-                    'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo',
-                    'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph'
-                )
-                AND ARRAY_SIZE(
-                    e.instruction :accounts
-                ) > 6
-            )
+        program_id IN (
+            -- Orca
+            '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
+            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
+            'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
         )
-        AND inner_instruction_program_ids [0] <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB' --associated with wrapping of tokens
+        AND inner_instruction_program_ids [0] <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
 
 {% if is_incremental() %}
 -- AND t.block_timestamp :: DATE = '2022-11-01'
@@ -140,13 +130,28 @@ WHERE
     block_timestamp :: DATE >= '2021-12-14'
 {% endif %}
 ),
+swapper_map_temp as(
+    SELECT e.tx_id,
+    e.instruction :accounts[0] :: STRING AS swapper
+    from base_events e
+            INNER JOIN (
+            SELECT
+                DISTINCT tx_id
+            FROM
+                dex_txs
+        ) d
+        ON d.tx_id = e.tx_id
+    WHERE program_id in ('8rGFmebhhTikfJP5bUe2uLHcejSiukdJhiLEKoit962a','E16pm4Z4jiFxVEeBcSuYfJHy6TQYfYRAhGYt7cEUYfEV')
+    
+),
+
 swaps_temp AS(
     SELECT
         A.block_id,
         A.block_timestamp,
         A.tx_id,
         COALESCE(SPLIT_PART(INDEX :: text, '.', 1) :: INT, INDEX :: INT) AS INDEX,
-        COALESCE(SPLIT_PART(INDEX :: text, '.', 2), NULL) AS inner_index,
+        COALESCE(NULLIF(SPLIT_PART(INDEX :: text, '.', 2), '') :: INT, NULL) AS inner_index,
         A.program_id,
         A.tx_from,
         A.tx_to,
@@ -164,28 +169,33 @@ swaps_temp AS(
                 dex_txs
         )
 ),
-delegates_mappings as (
+multisig_account_mapping AS(
     SELECT
-        e.tx_id,
-        e.instruction :parsed :info :delegate :: STRING AS associated_account,
-        e.instruction :parsed :info :owner :: STRING AS owner
+        tx_id,
+        instruction :parsed :info :account :: STRING AS associated_account,
+        instruction :parsed :info :multisigOwner :: STRING AS owner
     FROM
-        base_events e
-        INNER JOIN (
-            SELECT
-                DISTINCT tx_id
-            FROM
-                dex_txs
-            WHERE program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
-        ) d
-        ON d.tx_id = e.tx_id
+        base_events
     WHERE
-        (
-            e.program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-            AND e.event_type = 'approve'
-        )
+        program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+        AND event_type = 'closeAccount'
+    UNION
+    SELECT
+        tx_id,
+        instruction :parsed :info :delegate :: STRING AS associated_account,
+        instruction :parsed :info :multisigOwner :: STRING AS owner
+    FROM
+        base_events
+    WHERE
+        program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+        AND event_type = 'approve'
 ),
 account_mappings AS (
+    SELECT
+        *
+    FROM
+        multisig_account_mapping
+    UNION
     SELECT
         tx_id,
         tx_to AS associated_account,
@@ -232,19 +242,9 @@ account_mappings AS (
         )
     UNION
     SELECT
-        dm.*
-    FROM
-        delegates_mappings dm
-        INNER JOIN dex_txs dt
-        ON dm.tx_id = dm.tx_id
-        AND dt.instruction :accounts [2] :: STRING = dm.associated_account
-    WHERE
-        dt.program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
-    UNION
-    SELECT
         e.tx_id,
-        e.instruction :accounts[3] :: STRING AS associated_account,
-        e.instruction :accounts[0] :: STRING AS owner
+        e.instruction :parsed :info :delegate :: STRING AS associated_account,
+        e.instruction :parsed :info :owner :: STRING AS owner
     FROM
         base_events e
         INNER JOIN (
@@ -255,8 +255,10 @@ account_mappings AS (
         ) d
         ON d.tx_id = e.tx_id
     WHERE
-        e.program_id = 'SLrSmK5ykEhdLkZH8mEsrZsGtDvzrQLKYSwy7PVKQoj'
-    AND instruction:data::string = 't'
+        (
+            e.program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+            AND e.event_type = 'approve'
+        )
 ),
 swaps_w_destination AS (
     SELECT
@@ -277,7 +279,10 @@ swaps_w_destination AS (
         s.mint,
         s.succeeded,
         s._inserted_timestamp,
-        e.swapper as tmp_swapper,
+        COALESCE(
+            sm.swapper,
+            e.swapper
+        ) AS tmp_swapper,
         e.signers,
         e.program_id
     FROM
@@ -293,20 +298,25 @@ swaps_w_destination AS (
         ON s.tx_id = m2.tx_id
         AND s.tx_to = m2.associated_account
         AND s.tx_from <> m2.owner
+    left outer join swapper_map_temp sm
+    on s.tx_id = sm.tx_id
     WHERE
         s.program_id <> '11111111111111111111111111111111'
 ),
-multi_signer_swapper as (
-    select 
+multi_signer_swapper AS (
+    SELECT
         tx_id,
-        silver.udf_get_multi_signers_swapper(array_agg(tx_from), array_agg(tx_to), array_agg(signers)[0]) as swapper
-    from swaps_w_destination
-    where succeeded
-    and array_size(signers) > 1
-    and tmp_swapper is null
-    group by 1
+        silver.udf_get_multi_signers_swapper(ARRAY_AGG(tx_from), ARRAY_AGG(tx_to), ARRAY_AGG(signers) [0]) AS swapper
+    FROM
+        swaps_w_destination
+    WHERE
+        succeeded
+        AND ARRAY_SIZE(signers) > 1
+        AND tmp_swapper IS NULL
+    GROUP BY
+        1
 ),
-unique_tx_from_and_to AS (
+unique_tx_from_and_to AS(
     SELECT
         tx_id,
         INDEX,
@@ -319,12 +329,14 @@ unique_tx_from_and_to AS (
         2
     HAVING
         num_tx_from > 1
-        AND num_tx_to > 1
-),
+        AND num_tx_to > 1),
 swaps_filtered_temp AS(
     SELECT
         s.*,
-        coalesce(s.tmp_swapper,m.swapper) as swapper
+        COALESCE(
+            s.tmp_swapper,
+            m.swapper
+        ) AS swapper
     FROM
         swaps_w_destination s
         INNER JOIN unique_tx_from_and_to u
@@ -462,12 +474,6 @@ SELECT
 FROM
     final_temp
 WHERE
-    (COALESCE(
-        to_amt,
-        0
-    ) > 0
-    OR COALESCE(
-        from_amt,
-        0
-    ) > 0)
-AND program_id is not null
+    (COALESCE(to_amt, 0) > 0
+    OR COALESCE(from_amt, 0) > 0)
+    AND program_id IS NOT NULL

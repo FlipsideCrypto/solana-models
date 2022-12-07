@@ -23,7 +23,7 @@
             schema = "silver"
         ) }}
         {{ 
-            create_udf_get_jupv4_inner_programs(
+            create_udf_get_multi_signers_swapper(
             schema = "silver"
         ) }}
         {% endset %}

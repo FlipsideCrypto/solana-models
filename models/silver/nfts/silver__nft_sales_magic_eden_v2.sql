@@ -300,7 +300,8 @@ SELECT
     b.program_id,
     COALESCE(
         b.nft_account_mint,
-        p.mint
+        p.mint, 
+        b.nft_account
     ) AS mint,
     b.purchaser,
     ss.seller, 
@@ -326,7 +327,8 @@ GROUP BY
     b.program_id,
     COALESCE(
         b.nft_account_mint,
-        p.mint
+        p.mint, 
+        b.nft_account
     ),
     b.purchaser,
     ss.seller, 
