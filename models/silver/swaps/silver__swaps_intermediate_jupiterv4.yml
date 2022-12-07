@@ -50,6 +50,13 @@ models:
           '2Nf5PPNT1PgTWgaRMJSTLYsGByL7vwQdnb1hNwqGwYNxGNAqTswbagr7DSskU7E7rVbmg7HNWtSMBp1bpHF2C57D',
           '5iL9vkTUMB4DgLjS8aWMKzffcbw54RsANFmqAEoVgt3BgNCSbQAczgd1P3ZwVNjkEboiBg5PBNLQADPFhU9eeaGi',
           '5Bde5J48pvBj5JdgwGbXebmCR8Djrk2fZajHtWevSLWskDJSw2gJ5SvzWvMujsVgAMZ16yLyGY1aisDCWEUW31i3')"
+      - tx_excluded:
+          name: silver__swaps_intermediate_jupiterv4_tx_excluded_test
+          excluded_tx_ids:
+            - 3SfteqdcnzmA69Jb9YLqeddZHKLNwJYeyHnLVjaUuzwAx1if6zzfvtRVUbn6B7NfSvxUaciXSQoMdhiFKA2AidKL
+            - 3Erjg9Rr3hx8DqBsDDNSWXXwgnCeSpWgmLL6MzGguJuBVJpTKC84xt9jaPo3w5afsQCGoxeX3gxTsfQEkaC7gnCT
+            - 2W5w6podtufyADsBYKXJ7NS9ZkxMsYy6ZHMhHCHRsKCnA4LCemRPoV3aap7FM6bfHwYWzCMM1pkgGf2QPKjBPbZw
+            - WKTdmmBML6113txMDXmA9C6HsnMVPjEdPrhfjgT5wif85a2SRXrTQbgR6DjBFwR4oBtrBAG9FFjQ122BoXg7Cpu
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

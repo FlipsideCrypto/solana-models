@@ -124,7 +124,7 @@ swaps_temp AS(
         A.block_timestamp,
         A.tx_id,
         COALESCE(SPLIT_PART(INDEX :: text, '.', 1) :: INT, INDEX :: INT) AS INDEX,
-        COALESCE(NULLIF(SPLIT_PART(INDEX :: text, '.', 2), '') :: INT, NULL) AS inner_index,
+        NULLIF(SPLIT_PART(INDEX :: text, '.', 2), '') :: INT AS inner_index,
         A.program_id,
         A.tx_from,
         A.tx_to,
@@ -300,6 +300,21 @@ multi_signer_swapper as (
     and tmp_swapper is null
     group by 1
 ),
+unique_tx_from_and_to AS (
+    SELECT
+        tx_id,
+        INDEX,
+        COUNT(DISTINCT(tx_from)) AS num_tx_from,
+        COUNT(DISTINCT(tx_to)) AS num_tx_to
+    FROM
+        swaps_w_destination
+    GROUP BY
+        1,
+        2
+    HAVING
+        num_tx_from > 1
+        AND num_tx_to > 1
+),
 swaps_filtered_temp AS(
     SELECT
         s.*,
@@ -309,6 +324,9 @@ swaps_filtered_temp AS(
         ) AS swapper
     FROM
         swaps_w_destination s
+        INNER JOIN unique_tx_from_and_to u
+        ON s.tx_id = u.tx_id
+        AND s.index = u.index
         LEFT OUTER JOIN multi_signer_swapper m
         ON s.tx_id = m.tx_id
 ),
