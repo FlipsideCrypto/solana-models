@@ -36,10 +36,11 @@ AND _inserted_timestamp >= (
 dex_txs AS (
     SELECT
         e.*,
-        signers [0] :: STRING AS swapper,
+        IFF(ARRAY_SIZE(signers) = 1, signers [0] :: STRING, NULL) AS swapper,
         silver.udf_get_jupv4_inner_programs(
             inner_instruction :instructions
-        ) AS inner_programs
+        ) AS inner_programs,
+        signers
     FROM
         base_events e
         INNER JOIN {{ ref('silver__transactions') }}
@@ -265,7 +266,8 @@ swaps_w_destination AS (
         s.mint,
         s.succeeded,
         s._inserted_timestamp,
-        e.swapper,
+        e.swapper as tmp_swapper,
+        e.signers,
         e.program_id,
         s.inner_swap_program_id,
         s.swap_program_inner_index_start
@@ -288,6 +290,28 @@ swaps_w_destination AS (
             'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
         )
 ),
+multi_signer_swapper as (
+    select 
+        tx_id,
+        solana_dev.silver.udf_get_multi_signers_swapper(array_agg(tx_from), array_agg(tx_to), array_agg(signers)[0]) as swapper
+    from swaps_w_destination
+    where succeeded
+    and array_size(signers) > 1
+    and tmp_swapper is null
+    group by 1
+),
+swaps_filtered_temp AS(
+    SELECT
+        s.*,
+        COALESCE(
+            s.tmp_swapper,
+            m.swapper
+        ) AS swapper
+    FROM
+        swaps_w_destination s
+        LEFT OUTER JOIN multi_signer_swapper m
+        ON s.tx_id = m.tx_id
+),
 transfers_from_swapper AS (
     SELECT
         d.*,
@@ -300,7 +324,7 @@ transfers_from_swapper AS (
         ) AS sum_from_amount,
         NULL AS sum_to_amount
     FROM
-        swaps_w_destination d
+        swaps_filtered_temp d
     WHERE
         tx_from = d.swapper
         AND tx_from <> tx_to qualify(ROW_NUMBER() over (PARTITION BY tx_id, tx_from, INDEX, mint, inner_swap_program_id
@@ -318,7 +342,7 @@ transfers_from_swapper AS (
             inner_swap_program_id
         ) AS sum_to_amount
     FROM
-        swaps_w_destination d
+        swaps_filtered_temp d
     WHERE
         tx_to = d.swapper
         AND tx_from <> tx_to qualify(ROW_NUMBER() over (PARTITION BY tx_id, tx_to, INDEX, mint, inner_swap_program_id
@@ -370,6 +394,7 @@ final_temp AS(
         s.swapper,
         s.mint AS from_mint,
         s.sum_from_amount AS from_amt,
+        s.index,
         s.rn,
         s._inserted_timestamp,
         s.to_mint,
@@ -387,6 +412,7 @@ final_temp AS(
         s.swapper,
         s.mint AS from_mint,
         s.sum_from_amount AS from_amt,
+        s.index,
         s.inner_index AS rn,
         s._inserted_timestamp,
         NULL AS to_mint,
@@ -414,6 +440,7 @@ final_temp AS(
         s.swapper,
         NULL AS from_mint,
         NULL AS from_amt,
+        s.index,
         s.inner_index AS rn,
         s._inserted_timestamp,
         s.mint AS to_mint,
@@ -447,6 +474,7 @@ SELECT
     ROW_NUMBER() over (
         PARTITION BY tx_id
         ORDER BY
+            index,
             rn
     ) AS swap_index
 FROM
