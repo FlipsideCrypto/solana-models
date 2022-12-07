@@ -49,6 +49,7 @@ models:
     relation: true
     columns: true
   +on_schema_change: "append_new_columns"
+  +query_tag: "{{ 'solana_dbt_prod' if target.database == 'SOLANA' else 'solana_dbt_dev' }}"
 
 vars:
   "dbt_date:time_zone": GMT
