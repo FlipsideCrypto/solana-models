@@ -81,7 +81,7 @@ temp_inner_program_ids AS (
             SELECT
                 *
             FROM
-                {{ ref('silver__transfers2') }}
+                {{ ref('silver__transfers') }}
                 tr
 
 {% if is_incremental() %}
