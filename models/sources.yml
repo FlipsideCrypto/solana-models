@@ -48,3 +48,4 @@ sources:
     schema: bronze_api
     tables:
       - name: solscan_token_list
+      - name: token_metadata

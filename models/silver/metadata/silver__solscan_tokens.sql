@@ -35,21 +35,21 @@ WHERE
 {% endif %}
 UNION ALL
 SELECT
-    COALESCE(
-        token_address,
-        mint
-    ) AS token_address,
-    coingecko_Id,
-    NAME,
-    symbol,
-    decimals,
-    tags,
-    icon,
-    twitter,
-    website,
+    address AS token_address,
+    DATA :data :"coingeckoId" :: STRING AS coingecko_Id,
+    DATA :data :name :: STRING AS NAME,
+    DATA :data :symbol :: STRING AS symbol,
+    DATA :data :decimals :: INT AS decimals,
+    DATA :data :tag AS tags,
+    DATA :data :icon :: STRING AS icon,
+    DATA :data :twitter :: STRING AS twitter,
+    DATA :data :website :: STRING AS website,
     _inserted_timestamp
 FROM
-    {{ ref('bronze_api__solscan_token') }}
+    {{ source(
+        'bronze_api',
+        'token_metadata'
+    ) }}
 
 {% if is_incremental() %}
 WHERE
