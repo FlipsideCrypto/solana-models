@@ -89,8 +89,8 @@ fin AS (
     SELECT
         A.token_address,
         COALESCE(
-            solscan.coingecko_id,
-            cg.id
+            cg.id,
+            solscan.coingecko_id
         ) AS coin_gecko_id,
         cmc.cmc_id AS coin_market_cap_id,
         solscan.name AS ss_name,
