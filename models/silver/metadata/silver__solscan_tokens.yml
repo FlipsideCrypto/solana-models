@@ -1,0 +1,27 @@
+version: 2
+models:
+  - name: silver__solscan_tokens
+    columns:
+      - name: TOKEN_ADDRESS
+        description: "The token address"
+        tests:
+          - not_null
+          - unique
+      - name: COINGECKO_ID
+        description: "The unique id from coin gecko"
+      - name: NAME
+        description: "The token name"
+      - name: SYMBOL
+        description: "The token symbol" 
+      - name: DECIMALS
+        description: "The number of decimals of the token"
+      - name: TAGS
+        description: "Tags for the coin"
+      - name: ICON
+        description: "The image of the token"
+      - name: TWITTER
+        description: "The twitter account for the project"
+      - name: TAGS
+        description: "The website for the project"
+      - name: _inserted_timestamp
+   

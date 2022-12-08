@@ -3,10 +3,6 @@ models:
   - name: core__fact_swaps
     description: Records with swaps on Jupiter, Orca, Raydium, and Saber. 
     columns:
-      - name: SWAP_PROGRAM
-        description: name of decentralized exchange used to perform the swap
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
@@ -43,3 +39,11 @@ models:
         description: Token being received or swapped for 
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: PROGRAM_ID
+        description: Token being received or swapped for 
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SWAP_PROGRAM
+        description: name of decentralized exchange used to perform the swap
+        tests:
+          - not_null

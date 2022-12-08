@@ -1,0 +1,27 @@
+version: 2
+models:
+  - name: core__dim_tokens
+    description: Dimension table that provides a name, symbol, and other attributes for a token address
+    columns:
+      - name: TOKEN_ADDRESS
+        description: "The token address"
+      - name: TOKEN_NAME
+        description: "The token name"
+      - name: SYMBOL
+        description:  "The token symbol" 
+      - name: DECIMALS
+        description: "The number of decimals for the token"
+      - name: COIN_GECKO_ID
+        description: "The unique id from coin gecko"
+      - name: COIN_MARKET_CAP_ID
+        description: "The unique id from coin market cap"
+      - name: TAGS
+        description:  "Tags for the coin"
+      - name: LOGO
+        description:  "The image of the token"
+      - name: TWITTER
+        description: "The twitter account for the project"
+      - name: WEBSITE
+        description: "The website for the project"
+      - name: DECRIPTION
+        description: "The coin market cap description for the token"

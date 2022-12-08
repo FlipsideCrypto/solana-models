@@ -1,16 +1,9 @@
 {{ config(
     materialized = 'view',
-    meta={
-        'database_tags':{
-            'table': {
-                'PURPOSE': 'SWAPS'
-            }
-        }
-    }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'SWAPS' }}}
 ) }}
 
 SELECT
-    'jupiter aggregator v2' AS swap_program,
     block_timestamp,
     block_id,
     tx_id,
@@ -19,48 +12,12 @@ SELECT
     from_amt AS swap_from_amount,
     from_mint AS swap_from_mint,
     to_amt AS swap_to_amount,
-    to_mint AS swap_to_mint
+    to_mint AS swap_to_mint,
+    program_id,
+    l.address_name AS swap_program
 FROM
-    {{ ref('silver__swaps_jupiter_dex') }}
-UNION
-SELECT
-    'orca' AS swap_program,
-    block_timestamp,
-    block_id,
-    tx_id,
-    succeeded,
-    swapper,
-    from_amt,
-    from_mint,
-    to_amt,
-    to_mint
-FROM
-    {{ ref('silver__swaps_orca_dex') }}
-UNION
-SELECT
-    'raydium v4' AS swap_program,
-    block_timestamp,
-    block_id,
-    tx_id,
-    succeeded,
-    swapper,
-    from_amt,
-    from_mint,
-    to_amt,
-    to_mint
-FROM
-    {{ ref('silver__swaps_raydium_dex') }}
-UNION
-SELECT
-    'saber' AS swap_program,
-    block_timestamp,
-    block_id,
-    tx_id,
-    succeeded,
-    swapper,
-    from_amt,
-    from_mint,
-    to_amt,
-    to_mint
-FROM
-    {{ ref('silver__swaps_saber_dex') }}
+    {{ ref('silver__swaps') }}
+    s
+    LEFT OUTER JOIN {{ ref('core__dim_labels') }}
+    l
+    ON s.program_id = l.address
