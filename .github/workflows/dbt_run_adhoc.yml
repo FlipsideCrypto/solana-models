@@ -1,5 +1,5 @@
-name: adhoc_dbt_run
-run-name: adhoc_dbt_run
+name: dbt_run_adhoc
+run-name: dbt_run_adhoc
 
 on:
   workflow_dispatch:
