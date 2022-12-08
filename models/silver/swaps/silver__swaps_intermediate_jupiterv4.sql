@@ -293,7 +293,7 @@ swaps_w_destination AS (
 multi_signer_swapper as (
     select 
         tx_id,
-        solana_dev.silver.udf_get_multi_signers_swapper(array_agg(tx_from), array_agg(tx_to), array_agg(signers)[0]) as swapper
+        silver.udf_get_multi_signers_swapper(array_agg(tx_from), array_agg(tx_to), array_agg(signers)[0]) as swapper
     from swaps_w_destination
     where succeeded
     and array_size(signers) > 1
