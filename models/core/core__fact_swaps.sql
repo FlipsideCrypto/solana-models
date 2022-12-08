@@ -1,12 +1,6 @@
 {{ config(
     materialized = 'view',
-    meta={
-        'database_tags':{
-            'table': {
-                'PURPOSE': 'SWAPS'
-            }
-        }
-    }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'SWAPS' }}}
 ) }}
 
 SELECT

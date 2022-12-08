@@ -1,6 +1,11 @@
 version: 2
 models:
   - name: silver__token_prices_coin_market_cap_hourly
+    tests:
+     - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - RECORDED_HOUR
+            - ID
     columns:
       - name: RECORDED_HOUR
         description: Hour that the price was recorded at
