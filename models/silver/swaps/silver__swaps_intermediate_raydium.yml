@@ -58,22 +58,23 @@ models:
           - not_null
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null
       - name: SWAPPER
-        description: Address that initiated the swap 
+        description: "{{ doc('swaps_swapper') }}"
+        tests: 
+          - not_null:
+              where: succeeded = TRUE
       - name: FROM_AMT
-        description: Total amount of the token sent in to initiate the swap 
-        tests: 
+        description:  "{{ doc('swaps_from_amt') }}"
       - name: FROM_MINT
-        description: Token being sent or swapped from
-        tests: 
+        description:  "{{ doc('swaps_from_mint') }}"
       - name: TO_AMT
-        description: Total amount of the token received in the swap
-        tests: 
+        description:  "{{ doc('swaps_to_amt') }}"
       - name: TO_MINT
-        description: Token being received or swapped for 
-        tests: 
+        description:  "{{ doc('swaps_to_mint') }}"
       - name: SWAP_INDEX
-        description: Order in which the intermediate swap was executed
+        description: "{{ doc('swaps_swap_index') }}"
         tests: 
           - not_null: 
               where: succeeded = TRUE

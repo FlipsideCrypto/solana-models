@@ -1,0 +1,103 @@
+version: 2
+models:
+  - name: silver__swaps_intermediate_orca
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+            - TX_ID
+            - SWAP_INDEX
+      - compare_model_subset:
+          name: silver__swaps_intermediate_orca_business_logic_test
+          compare_model: ref('testing__swaps_intermediate_orca')
+          compare_columns: 
+            - tx_id
+            - succeeded
+            - swapper
+            - from_mint
+            - from_amt
+            - to_mint
+            - to_amt
+            - swap_index
+          model_condition: "where tx_id in ('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')"
+      - tx_excluded:
+          name: silver__swaps_intermediate_orca_tx_excluded_test
+          excluded_tx_ids:
+            - 4VroTTqAjpsxYMTgnBzBSJG2P9uB2orenKxiEfvxbTBnAficioUuCijnAYotMmAH4pB6kgziKHvMgHNf7nU8g646
+            - 5JHjPkrTy1bWJv6ph8n1Tpk5ABBBuD89NZdyANUpbjdY8Zr2HKUyhJEjSrffQVEfAwYA3d9kVqK84qwuqVSZELp8
+            - 5e9ATFzcta5RfXB9tjCZfpE7qV1cBUh5H5ocNrwxSfC4D7KqRXTCRL3om4FTwNprwUmn9VMAUJAKm5qVYaJ8vsq6
+            - 3wSxtF5Mqeh5ybZVH1U4nE577pZSrhCr3td8GbJeCfwZfanpP7wrDXMiCUdhd5njhkWW6FKGgEzptDKsY8CW33RA
+            - 5hgT6wotqHT6c49iwJXexnvnCToteo5npbRStjFveMerx4RtR75azqXWKoaFyEWbXmLcEXR68EWwFgj5BzxjjXuy
+            - 3PdQf87gUGqRKrTXWzqpuduUVhe2cCfSFbmDbbJWQg4MwmsQu43esBRz3HQPsGZ98a8ZjtcNsxNDsrxhV1LBWNJn
+            - 4BhhKEKu1z7qXGPaoX1114oQ5Beqa2VWfgBvoW2dzcU6CmpAGPfztJZim2ZeF6MQsjdAAaiyr4ToChr3fa88mJpA
+            - 2Mnf63t8QQr4K59nC2UHunvuVirmASru4R3dsnpT6GNs2ZbGBhjS7NHAFrnTHScVYsjo2EivsqPgBMfvrTxL6dtC
+            - uxyRadaVq9gkEP7Z77iuDaHHbBpVeDh7pd6vn4ggzHhEpZEJAT7tT4L1TA6jVD5CAt6HhFipaygKKsZeHtEEmtM
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null
+      - name: SWAPPER
+        description: "{{ doc('swaps_swapper') }}"
+        tests: 
+          - not_null:
+              where: succeeded = TRUE
+      - name: FROM_AMT
+        description:  "{{ doc('swaps_from_amt') }}"
+      - name: FROM_MINT
+        description:  "{{ doc('swaps_from_mint') }}"
+      - name: TO_AMT
+        description:  "{{ doc('swaps_to_amt') }}"
+      - name: TO_MINT
+        description:  "{{ doc('swaps_to_mint') }}"
+      - name: SWAP_INDEX
+        description: "{{ doc('swaps_swap_index') }}"
+        tests: 
+          - not_null: 
+              where: succeeded = TRUE
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null

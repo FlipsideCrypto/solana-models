@@ -15,20 +15,32 @@ env:
   USER: "${{ secrets.USER }}"
   PASSWORD: "${{ secrets.PASSWORD }}"
   REGION: "${{ secrets.REGION }}"
-  DATABASE_DEV: "${{ secrets.DATABASE_DEV }}"
-  DATABASE_PROD: "${{ secrets.DATABASE_PROD }}"
-  WAREHOUSE_DEV: "${{ secrets.WAREHOUSE_DEV }}"
-  WAREHOUSE_PROD: "${{ secrets.WAREHOUSE_PROD }}"
+  DATABASE: "${{ secrets.DATABASE }}"
+  WAREHOUSE: "${{ secrets.WAREHOUSE }}"
   SCHEMA: "${{ secrets.SCHEMA }}"
 
 
 jobs:
-  called_workflow_template:
-    uses: FlipsideCrypto/analytics-workflow-templates/.github/workflows/dbt_run_template.yml@main
-    with:
-      dbt_command: ["dbt run-operation run_sp_refresh_external_tables_full -t prod",
-      "dbt run -s models/silver/silver__transactions.sql models/silver/silver__blocks.sql models/silver/silver__votes.sql models/silver/silver___inner_instructions.sql models/silver/silver___instructions.sql models/silver/silver__events.sql models/silver/silver___all_undecoded_instructions_data.sql -t prod",
-      "dbt run-operation run_sp_refresh_external_tables_full -t prod",
-      "dbt run -s ./models --exclude models/silver/silver__transactions.sql models/silver/silver__blocks.sql models/silver/silver__votes.sql models/silver/silver___inner_instructions.sql models/silver/silver___instructions.sql models/silver/silver__events.sql models/silver/silver___all_undecoded_instructions_data.sql tag:share models/streamline models/silver/silver__daily_signers.sql models/silver/silver__signers.sql models/core/core__ez_signers.sql models/silver/swaps/silver__swaps_intermediate_generic.sql models/silver/swaps/silver__swaps_intermediate_raydium.sql -t prod",
-      "dbt run -s models/silver/nfts/silver__nft_mints.sql --full-refresh -t prod"]
-    secrets: inherit
+  run_dbt_jobs:
+    runs-on: ubuntu-latest
+    environment: 
+      name: workflow_prod
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v1
+        with:
+          python-version: "3.7.x"
+
+      - name: install dependencies
+        run: |
+          pip3 install dbt-snowflake cli_passthrough requests click
+          dbt deps
+      - name: Run DBT Jobs
+        run: |
+          dbt run-operation run_sp_refresh_external_tables_full
+          dbt run -s models/silver/silver__transactions.sql models/silver/silver__blocks.sql models/silver/silver__votes.sql models/silver/silver___inner_instructions.sql models/silver/silver___instructions.sql models/silver/silver__events.sql models/silver/silver___all_undecoded_instructions_data.sql
+          dbt run-operation run_sp_refresh_external_tables_full
+          dbt run -s ./models --exclude models/silver/silver__transactions.sql models/silver/silver__blocks.sql models/silver/silver__votes.sql models/silver/silver___inner_instructions.sql models/silver/silver___instructions.sql models/silver/silver__events.sql models/silver/silver___all_undecoded_instructions_data.sql tag:share models/streamline models/silver/silver__daily_signers.sql models/silver/silver__signers.sql models/core/core__ez_signers.sql models/silver/swaps/silver__swaps_intermediate_orca.sql models/silver/swaps/silver__swaps_intermediate_jupiterv4.sql models/silver/swaps/silver__swaps.sql models/core/core__fact_swaps.sql
+          dbt run -s models/silver/nfts/silver__nft_mints.sql --full-refresh

@@ -99,3 +99,25 @@ def get_multi_signers_swapper(tx_to, tx_from, signers):
     return signers[0]
 $$;
 {% endmacro %}
+
+{% macro create_udf_get_jupv4_inner_programs(schema) %}
+create or replace function {{ schema }}.udf_get_jupv4_inner_programs(inner_instruction array)
+returns array
+language python
+runtime_version = '3.8'
+handler = 'get_jupv4_inner_programs'
+as
+$$
+def get_jupv4_inner_programs(inner_instruction) -> list:
+    inner_programs = [] 
+    if inner_instruction:
+        for i, v in enumerate(inner_instruction):
+            if type(v) is dict and v.get("programId") not in ['TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA','11111111111111111111111111111111']:
+                inner_programs.append({
+                    "inner_index": i,
+                    "program_id": v.get("programId")
+                })
+
+    return inner_programs
+$$;
+{% endmacro %}

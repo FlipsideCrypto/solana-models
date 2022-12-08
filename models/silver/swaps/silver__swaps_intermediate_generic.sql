@@ -146,7 +146,7 @@ swaps_temp AS(
         A.block_timestamp,
         A.tx_id,
         COALESCE(SPLIT_PART(INDEX :: text, '.', 1) :: INT, INDEX :: INT) AS INDEX,
-        COALESCE(SPLIT_PART(INDEX :: text, '.', 2), NULL) AS inner_index,
+        NULLIF(SPLIT_PART(INDEX :: text, '.', 2), '') :: INT AS inner_index,
         A.program_id,
         A.tx_from,
         A.tx_to,
