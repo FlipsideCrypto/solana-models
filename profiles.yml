@@ -13,7 +13,6 @@ solana:
       warehouse: "{{ env_var('WAREHOUSE') }}"
       threads: 8
       client_session_keep_alive: False
-      query_tag: solana_dbt_dev
     prod:
       type: snowflake
       account: "{{ env_var('ACCOUNT') }}"
@@ -26,6 +25,5 @@ solana:
       warehouse: "{{ env_var('WAREHOUSE') }}"
       threads: 8
       client_session_keep_alive: False
-      query_tag: solana_dbt_prod
   config:
     send_anonymous_usage_stats: False
