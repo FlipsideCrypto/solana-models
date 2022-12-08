@@ -41,7 +41,8 @@ models:
           '51aYyFt2b9dWKWHpS5VU3eFuuW1Ep7pNzT37vPkcDmzREQHP1HAWxnCdx2GU4hfS75aHZnkd1NqQiGaLM18Myq9P',
           'JpE6Qx8PGvcEDqitoSEgqSBGPxfm6EntvtUhz6JNB9cnYh26ErGWFLge6atiywH4NeMNjLWAj91QN7EHyVNjmBs',
           'Ki2PGcudggRqtb3B9SnufSgGJkSwxdjAvEhBqAyVatXxaUcuzzxX3eKvJpUGykUDr1cYxwhJJppTZvia4Lx9dF2',
-          '3X1fHTehR6UMfUMH9uPJir5YW6LjzgNfKr7QhKqnCq74VoY6jJHcmCL2YvNi2PA2CLjPLpCQaq3UKDxUyzQoxv3A')"
+          '3X1fHTehR6UMfUMH9uPJir5YW6LjzgNfKr7QhKqnCq74VoY6jJHcmCL2YvNi2PA2CLjPLpCQaq3UKDxUyzQoxv3A',
+          '4vnF6WX4Zcu4AskYsh79GcrJ2vHbuNpxshqYuSAJGWPegsULsmGFakoLYHkv3M2d6RZ4innAUfVPcknk5ToEuGtq')"
       - tx_excluded:
           name: silver__swaps_intermediate_orca_tx_excluded_test
           excluded_tx_ids:
@@ -76,22 +77,23 @@ models:
           - not_null
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null
       - name: SWAPPER
-        description: Address that initiated the swap 
+        description: "{{ doc('swaps_swapper') }}"
+        tests: 
+          - not_null:
+              where: succeeded = TRUE
       - name: FROM_AMT
-        description: Total amount of the token sent in to initiate the swap 
-        tests: 
+        description:  "{{ doc('swaps_from_amt') }}"
       - name: FROM_MINT
-        description: Token being sent or swapped from
-        tests: 
+        description:  "{{ doc('swaps_from_mint') }}"
       - name: TO_AMT
-        description: Total amount of the token received in the swap
-        tests: 
+        description:  "{{ doc('swaps_to_amt') }}"
       - name: TO_MINT
-        description: Token being received or swapped for 
-        tests: 
+        description:  "{{ doc('swaps_to_mint') }}"
       - name: SWAP_INDEX
-        description: Order in which the intermediate swap was executed
+        description: "{{ doc('swaps_swap_index') }}"
         tests: 
           - not_null: 
               where: succeeded = TRUE
