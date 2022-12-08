@@ -2,6 +2,11 @@ version: 2
 models:
   - name: silver__swaps
     tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+            - TX_ID
+            - PROGRAM_ID
       - compare_model_subset:
           name: silver__swaps_business_logic_test
           compare_model: ref('testing__swaps')
@@ -58,10 +63,134 @@ models:
           'Zn4aQD6ScgbNfmcKRSYAuyDJ4AWibjwmKGLW2W4QrvMpWtxvHxTta7cxUYMgWTKTHHACF9hV78yKFdkG3CddKju',
           '5eCovtQh92hfW16oLWCv82uBkbXbkR1GJV6DvYYqik7mSoiJftUy39TqGgJqzkkMD2SpVYNWJPsuxGFHPGn9iVnb',
           '3UrFWezXZNQKf1uScXa7ZWuLW1xGvTwT8zexhP4STWfjkHW22cpUBNVRfn82wZGo1LYVMsrRKiaH3FV3NfzrSssH',
-          '3FpKL3EjTkSEyRhYakEqZ9ErDPHVGzZZ6upyba3wYkmshus4hPoM5NZEgzkMGefPcLrtX9iANWnbA5KA6WERktk2')"
+          '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')"
       - tx_excluded:
           name: silver__swaps_tx_excluded_test
           excluded_tx_ids:
             - 4WX8oi39gn2dH5jK2AqeNDY93ofuYssmDtMJeyErJzhjvkc4jTcJmDetueQQ9FmcR2UzAxzTvjcPVq7HHQkUoggp
             - 3c9M2C4mE3Q14PmiTMTHkQNMkzPRZSCdMXRc1oYooV8iiFJGLyfSMRgsZVWrXVWqsgvsaw6cgv21DXxCRamK8JHJ
             - nmN84qNUcZtGpCCxm1r8Qct3Z8vgPMRXFfd7QFohE28dVociEgbSA9xrkn44WgKa8GbTH86u3EiicCakCsbKiya
+            - 2FhZ9SjAJQgWqHPNBBBpz9dsX5JbsZVhmEcdDuSs1WwnLaPstFzZtY6p2cnwQhuutHGgS1rkoAq2ZkFpSTdbwF5X
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: SWAPPER
+        description: "{{ doc('swaps_swapper') }}"
+        tests: 
+          - not_null
+      - name: FROM_AMT
+        description:  "{{ doc('swaps_from_amt') }}"
+        tests: 
+          - not_null: 
+              where: succeeded = TRUE
+      - name: FROM_MINT
+        description:  "{{ doc('swaps_from_mint') }}"
+        tests: 
+          - not_null:
+              where: succeeded = TRUE
+      - name: TO_AMT
+        description:  "{{ doc('swaps_to_amt') }}"
+        tests: 
+          - not_null: 
+              where: succeeded = TRUE
+      - name: TO_MINT
+        description:  "{{ doc('swaps_to_mint') }}"
+        tests: 
+          - not_null: 
+              where: succeeded = TRUE
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null

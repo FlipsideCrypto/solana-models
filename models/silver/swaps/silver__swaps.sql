@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ["block_id","tx_id"],
+    unique_key = ["block_id","tx_id","program_id"],
     incremental_strategy = 'merge',
     cluster_by = ['block_timestamp::DATE'],
 ) }}
@@ -8,7 +8,23 @@
 WITH base AS (
 
     SELECT
-        *
+        block_id,
+        block_timestamp,
+        tx_id,
+        succeeded,
+        program_id,
+        case when program_id in ('Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t','SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ') then 
+            'saber'
+        else 
+            'jupiter'
+        end as program_name,
+        swapper,
+        from_mint,
+        from_amt,
+        to_mint,
+        to_amt,
+        swap_index,
+        _inserted_timestamp
     FROM
         {{ ref('silver__swaps_intermediate_generic') }}
 
@@ -21,11 +37,77 @@ WHERE
             {{ this }}
     )
 {% endif %}
-    UNION
-    SELECT
-        *
-    FROM
-        {{ ref('silver__swaps_intermediate_raydium') }}
+UNION
+SELECT
+    block_id,
+    block_timestamp,
+    tx_id,
+    succeeded,
+    program_id,
+    'raydium' as program_name,
+    swapper,
+    from_mint,
+    from_amt,
+    to_mint,
+    to_amt,
+    swap_index,
+    _inserted_timestamp
+FROM
+    {{ ref('silver__swaps_intermediate_raydium') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+{% endif %}
+UNION
+SELECT
+    block_id,
+    block_timestamp,
+    tx_id,
+    succeeded,
+    program_id,
+    'orca' as program_name,
+    swapper,
+    from_mint,
+    from_amt,
+    to_mint,
+    to_amt,
+    swap_index,
+    _inserted_timestamp
+FROM
+    {{ ref('silver__swaps_intermediate_orca') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+{% endif %}
+UNION
+SELECT
+    block_id,
+    block_timestamp,
+    tx_id,
+    succeeded,
+    program_id,
+    'jupiter' as program_name,
+    swapper,
+    from_mint,
+    from_amt,
+    to_mint,
+    to_amt,
+    swap_index,
+    _inserted_timestamp
+FROM
+    {{ ref('silver__swaps_intermediate_jupiterv4') }}
 
 {% if is_incremental() %}
 WHERE
@@ -44,6 +126,7 @@ base_swaps AS (
         tx_id,
         succeeded,
         program_id,
+        program_name,
         swapper,
         from_mint,
         to_mint,
@@ -65,7 +148,8 @@ base_swaps AS (
         6,
         7,
         8,
-        9
+        9,
+        10
 ),
 intermediate_swaps AS (
     SELECT
@@ -79,31 +163,38 @@ intermediate_swaps AS (
 refunds AS (
     SELECT
         tx_id,
-        to_amt,
-        to_mint
+        to_mint,
+        SUM(to_amt) AS to_amt
     FROM
         base
     WHERE
         from_amt IS NULL
         AND from_mint IS NULL
         AND to_amt IS NOT NULL
+    GROUP BY
+        1,
+        2
 ),
 fees AS (
     SELECT
         tx_id,
-        from_amt,
-        from_mint
+        from_mint,
+        SUM(from_amt) AS from_amt
     FROM
         base
     WHERE
         to_amt IS NULL
         AND to_mint IS NULL
         AND from_amt IS NOT NULL
+    GROUP BY
+        1,
+        2
 ),
 pre_final AS (
     SELECT
         b1.block_id,
         b1.block_timestamp,
+        b1.program_id,
         b1.tx_id,
         b1.succeeded,
         b1.swapper,
@@ -124,6 +215,7 @@ pre_final AS (
         ON b2.tx_id = b1.tx_id
         AND b2.swap_index <> b1.swap_index
         AND b2.swap_index > 1
+        AND b1.program_name = b2.program_name
     WHERE
         b1.swap_index = 1
         AND (
@@ -134,27 +226,22 @@ pre_final AS (
 SELECT
     pf.block_id,
     pf.block_timestamp,
+    pf.program_id,
     pf.tx_id,
     pf.succeeded,
     pf.swapper,
-    CASE
-        WHEN succeeded THEN pf.from_amt - COALESCE(
-            r.to_amt,
-            0
-        ) + COALESCE(
-            f.from_amt,
-            0
-        )
-        ELSE 0
-    END AS from_amt,
+    pf.from_amt - COALESCE(
+        r.to_amt,
+        0
+    ) + COALESCE(
+        f.from_amt,
+        0
+    ) AS from_amt,
     pf.from_mint,
-    CASE
-        WHEN succeeded THEN pf.to_amt - COALESCE(
-            f2.from_amt,
-            0
-        )
-        ELSE 0
-    END AS to_amt,
+    pf.to_amt - COALESCE(
+        f2.from_amt,
+        0
+    ) AS to_amt,
     pf.to_mint,
     pf._inserted_timestamp
 FROM
@@ -168,3 +255,24 @@ FROM
     LEFT OUTER JOIN fees f2
     ON f2.tx_id = pf.tx_id
     AND f2.from_mint = pf.to_mint
+WHERE
+    pf.succeeded
+UNION
+SELECT
+    pf.block_id,
+    pf.block_timestamp,
+    pf.program_id,
+    pf.tx_id,
+    pf.succeeded,
+    pf.swapper,
+    0 AS from_amt,
+    pf.from_mint,
+    0 AS to_amt,
+    pf.to_mint,
+    pf._inserted_timestamp
+FROM
+    pre_final pf
+WHERE
+    succeeded = FALSE qualify(ROW_NUMBER() over (PARTITION BY block_id, tx_id, program_id, from_mint, to_mint
+ORDER BY
+    block_timestamp)) = 1
