@@ -35,13 +35,11 @@ jobs:
         run: |
           pip install dbt-snowflake==1.2.0
           dbt deps
-      - name: delete existing docs branch
-        run: git push origin --delete docs || true
 
       - name: checkout docs branch
         run: |
-          git checkout -b docs
-          git push --set-upstream origin docs
+          git checkout -B docs origin/main
+          
       - name: generate dbt docs
         run: dbt docs generate -t prod
 
@@ -65,4 +63,4 @@ jobs:
           git commit -am "Auto-update docs"
       - name: push changes to docs
         run: |
-          git push
+          git push -f --set-upstream origin docs
