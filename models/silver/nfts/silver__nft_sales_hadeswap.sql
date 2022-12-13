@@ -69,6 +69,7 @@ buys AS (
   WHERE
     block_timestamp :: DATE >= '2022-09-22'
     AND i.value :programId :: STRING = 'hadeK9DLv9eA7ya5KCTqSvSvRZeJC3JgD5a9Y3CNbvu'
+    AND i.value :accounts [2] :: STRING = signers [0] :: string
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -154,6 +155,7 @@ lp_buys AS (
     LEFT JOIN TABLE(FLATTEN(instructions)) i
   WHERE
     block_timestamp :: DATE >= '2022-09-22'
+    AND i.value :accounts [3] :: STRING = signers [0] :: string
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
