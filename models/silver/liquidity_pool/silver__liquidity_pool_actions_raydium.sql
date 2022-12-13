@@ -34,7 +34,7 @@ AND _inserted_timestamp >= (
 dex_lp_txs AS (
     SELECT
         e.*,
-        signers [0] :: STRING AS swapper,
+        signers [0] :: STRING AS liquidity_provider,
         IFF(ARRAY_SIZE(instruction :accounts) > 21, 'withdraw', 'deposit') AS action
     FROM
         base_events e
@@ -239,6 +239,7 @@ lp_actions_w_destination AS (
         s.tx_id,
         s.index,
         s.inner_index,
+        e.liquidity_provider,
         COALESCE(
             m1.owner,
             s.tx_from
@@ -257,8 +258,8 @@ lp_actions_w_destination AS (
             WHEN action = 'deposit' THEN e.instruction :accounts [8] :: STRING
             WHEN action = 'withdraw' THEN e.instruction :accounts [11] :: STRING
             ELSE NULL
-        END AS stake_pool,
-        e.instruction :accounts [5] :: STRING AS address,
+        END AS liquidity_pool_address,
+        e.instruction :accounts [5] :: STRING AS lp_mint_address,
         ii.value :parsed :info :amount :: INT AS lp_amount
     FROM
         lp_transfers_temp s
@@ -281,27 +282,45 @@ lp_actions_w_destination AS (
         )
         AND s.program_id <> '11111111111111111111111111111111'
 )
-SELECT
+SELECT 
     block_id,
     block_timestamp,
     tx_id,
     succeeded,
     program_id,
-    inner_index,
     action,
-    stake_pool,
-    address,
-    lp_amount,
+    liquidity_provider,
+    liquidity_pool_address,
     amount,
     mint,
-    -- ROW_NUMBER() over (
-    --     PARTITION BY tx_id
-    --     ORDER BY
-    --         rn
-    -- ) AS swap_index
-     _inserted_timestamp
-FROM
-    lp_actions_w_destination
+    ROW_NUMBER() over (
+        PARTITION BY tx_id
+        ORDER BY
+            index,
+            inner_index
+    ) AS action_index,
+    _inserted_timestamp
+from lp_actions_w_destination
+union
+SELECT 
+-- get the lp token transfer as separate row
+    block_id,
+    block_timestamp,
+    tx_id,
+    succeeded,
+    program_id,
+    CASE
+        WHEN action = 'deposit' THEN 'mint_LP_tokens'
+        WHEN action = 'withdraw' THEN 'burn_LP_tokens'
+        ELSE null
+    END AS action,
+    liquidity_provider,
+    liquidity_pool_address,
+    lp_amount as amount,
+    lp_mint_address as mint,
+    3 as action_index,
+    _inserted_timestamp
+from lp_actions_w_destination
 WHERE
     COALESCE(
         amount,

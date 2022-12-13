@@ -6,17 +6,16 @@ models:
           combination_of_columns:
             - BLOCK_ID
             - TX_ID
-            - SWAP_INDEX
+            - ACTION_INDEX
       - compare_model_subset:
-          name: silver__silver__liquidity_pool_actions_raydium_business_logic_test
-          compare_model: ref('testing__silver__liquidity_pool_actions_raydium')
+          name: silver__liquidity_pool_actions_raydium_business_logic_test
+          compare_model: ref('testing__liquidity_pool_actions_raydium')
           compare_columns: 
             - tx_id
             - action
-            - stake_pool
-            - address
-            - round(pool_token_amount,8)
-            - round(token_amount,8)
+            - liquidity_provider
+            - liquidity_pool_address
+            - round(amount,8)
             - mint
           model_condition: "where tx_id in ('eVjgXuTfgg34HqnsNqmc9LT5VJ1p3f37W4VfdcRR3QBvr2YnZPRLA5nA3bSLGqZK6FG8BGTtfRqwQSqpfdVzir8',
           '4SaK3Ws5EsAKTC8QDJ5gSe9Xv9pY2gqXEMrsvqUz5f8Y2fX1tNuVDdogc8Sphn7yW2n6qmsnf8imozdmLcYJWLcp',
@@ -56,20 +55,16 @@ models:
         description: "{{ doc('stake_pool_action') }}"
         tests: 
           - not_null 
-      - name: STAKE_POOL
-        description: "{{ doc('stake_pool') }}"
+      - name: LIQUIDITY_PROVIDER
+        description: "Address withdrawing or depositing liquidity"
         tests: 
           - not_null
-      - name: ADDRESS
-        description: "{{ doc('stake_pool_address') }}"
-        tests: 
-          - not_null
-      - name: LP_AMOUNT
-        description: "Amount of Liquidity Pool tokens"
+      - name: LIQUIDITY_POOL_ADDRESS
+        description: "Address of lp"
         tests: 
           - not_null
       - name: AMOUNT
-        description: "{{ doc('stake_pool_amount') }}"
+        description: "amount of tokens"
         tests: 
           - not_null
       - name: MINT

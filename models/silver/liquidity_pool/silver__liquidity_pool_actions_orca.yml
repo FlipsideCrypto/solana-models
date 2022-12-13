@@ -1,0 +1,78 @@
+version: 2
+models:
+  - name: silver__liquidity_pool_actions_orca
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+            - TX_ID
+            - ACTION_INDEX
+      # - compare_model_subset:
+      #     name: silver__liquidity_pool_actions_orca_business_logic_test
+      #     compare_model: ref('testing__liquidity_pool_actions_orca')
+      #     compare_columns: 
+      #       - tx_id
+      #       - action
+      #       - liquidity_provider
+      #       - liquidity_pool_address
+      #       - round(amount,8)
+      #       - mint
+          # model_condition: "where tx_id in ('eVjgXuTfgg34HqnsNqmc9LT5VJ1p3f37W4VfdcRR3QBvr2YnZPRLA5nA3bSLGqZK6FG8BGTtfRqwQSqpfdVzir8',
+          # '4SaK3Ws5EsAKTC8QDJ5gSe9Xv9pY2gqXEMrsvqUz5f8Y2fX1tNuVDdogc8Sphn7yW2n6qmsnf8imozdmLcYJWLcp',
+          # '4F2g7EbnrpKdjbuW3ougkAdjgasMDBTse1fphD5Y2MvwyAoYcxkSxRny828Jd4D78cP2KkBkwv9JJBWsCoqoNjXi',
+          # '63qiuJpEfJihyyR8ZBJ84qsq5DD1LDC4tNTzprAV1zwHmX12h1b79pScPHU3Rpf6qs8oN89MFpuj7GWmRVMNmZuA')"
+      # - tx_excluded:
+      #     name: silver__liquidity_pool_actions_orca_tx_excluded_test
+      #     excluded_tx_ids:
+      #       - 4XMga64PPam74iSFPqnXohswejwtdxL1Dj5azTjBfYwE97PfGcP6JSastTwRFHdnzXTcdyRsMwD7t5ZZdpYzjqJj,
+      #       - 4bEAGZx3EkCyuh3arFg1k3hx7CgR2L9aFdxGg3ihWvwdB4KQiheF6JiyRCQcT6LpeJovYdajDg9fsJ3Lor8pN3kk
+      #       - fACqZJ8hmUjLoBX2wzUS2gfwQUmV4HfJbXeQ5QbrZKTs2qdYZVREZxZbTaCy7brZT2Ck7QDqVLDBXVvbrLdYkk6
+    # columns:
+    #   - name: BLOCK_TIMESTAMP
+    #     description: "{{ doc('block_timestamp') }}"
+    #     tests:
+    #       - not_null
+    #       - dbt_expectations.expect_row_values_to_have_recent_data:
+    #           datepart: day
+    #           interval: 2
+    #   - name: BLOCK_ID
+    #     description: "{{ doc('block_id') }}"
+    #     tests:
+    #       - not_null
+    #   - name: TX_ID
+    #     description: "{{ doc('tx_id') }}"
+    #     tests:
+    #       - not_null
+    #   - name: SUCCEEDED
+    #     description: "{{ doc('tx_succeeded') }}"
+    #     tests: 
+    #       - not_null
+    #   - name: PROGRAM_ID
+    #     description: "{{ doc('program_id') }}"
+    #     tests: 
+    #       - not_null
+    #   - name: ACTION
+    #     description: "{{ doc('stake_pool_action') }}"
+    #     tests: 
+    #       - not_null 
+    #   - name: LIQUIDITY_PROVIDER
+    #     description: "Address withdrawing or depositing liquidity"
+    #     tests: 
+    #       - not_null
+    #   - name: LIQUIDITY_POOL_ADDRESS
+    #     description: "Address of lp"
+    #     tests: 
+    #       - not_null
+    #   - name: AMOUNT
+    #     description: "amount of tokens"
+    #     tests: 
+    #       - not_null
+    #   - name: MINT
+    #     description: "{{ doc('mint') }}"
+    #     tests: 
+    #       - not_null
+    #   - name: _INSERTED_TIMESTAMP
+    #     description: "{{ doc('_inserted_timestamp') }}"
+    #     tests: 
+    #       - not_null
+    
