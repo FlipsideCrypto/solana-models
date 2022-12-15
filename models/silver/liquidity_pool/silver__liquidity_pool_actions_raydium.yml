@@ -15,12 +15,19 @@ models:
             - action
             - liquidity_provider
             - liquidity_pool_address
-            - round(amount,8)
+            - amount
             - mint
           model_condition: "where tx_id in ('eVjgXuTfgg34HqnsNqmc9LT5VJ1p3f37W4VfdcRR3QBvr2YnZPRLA5nA3bSLGqZK6FG8BGTtfRqwQSqpfdVzir8',
           '4SaK3Ws5EsAKTC8QDJ5gSe9Xv9pY2gqXEMrsvqUz5f8Y2fX1tNuVDdogc8Sphn7yW2n6qmsnf8imozdmLcYJWLcp',
           '4F2g7EbnrpKdjbuW3ougkAdjgasMDBTse1fphD5Y2MvwyAoYcxkSxRny828Jd4D78cP2KkBkwv9JJBWsCoqoNjXi',
-          '63qiuJpEfJihyyR8ZBJ84qsq5DD1LDC4tNTzprAV1zwHmX12h1b79pScPHU3Rpf6qs8oN89MFpuj7GWmRVMNmZuA')"
+          '63qiuJpEfJihyyR8ZBJ84qsq5DD1LDC4tNTzprAV1zwHmX12h1b79pScPHU3Rpf6qs8oN89MFpuj7GWmRVMNmZuA',
+          '27RZXeyZWYhbxHWj183goMWDf7ZBUhQXw47dhWd2G4TcstEmqxnb75jg5NQSYw3aPeQjdQNE3p2DMmBX6BYbk1pf',
+          '3ap2xKDy5WThMmLTQqq6F8RzAxDwLskV1qkd4vRLqGxjSPpHVX5Cu1Ssyh7ttAu1uefny8XDJZYR9uRwGPz41LGd',
+          '3wSxtF5Mqeh5ybZVH1U4nE577pZSrhCr3td8GbJeCfwZfanpP7wrDXMiCUdhd5njhkWW6FKGgEzptDKsY8CW33RA',
+          '45cTRniWofPep8Wt2JmdtP8jVhU9sBBVHtwxa6BkFXUsLq36KW77hFpRTjnLGBYzNnPfxMHGfrNxJhJXonjFAcUt',
+          '4FAxdegpkoT9NaEDdbDQ3ZL8aZcJeyRRRrNCbG9H6H5bG7oagjWxEwiV3ob5s2DRi9x34WtzeaomTFZPvapBwX3n',
+          '4UGPAu9ATzW3xtL5CJMTBefND3EZLd8TQESQsvSkHczF8tH9sVS5hr8CLigFbMQReqqogVaoFvJpieaDW8qiyU8S',
+          'sprytoDuW7hJsN6vWbv63fjJHPxZVDatX7oUUB32Gp5GfmrzQWdJcGnMiBFYXMnodn35oFwgr95C7xtrT4qTpRG')"
       - tx_excluded:
           name: silver__liquidity_pool_actions_raydium_tx_excluded_test
           excluded_tx_ids:
@@ -60,11 +67,9 @@ models:
         tests: 
           - not_null
       - name: LIQUIDITY_POOL_ADDRESS
-        description: "Address of lp"
-        tests: 
-          - not_null
+        description: "Address of Liquidity Pool"
       - name: AMOUNT
-        description: "amount of tokens"
+        description: "{{ doc('amount') }}"
         tests: 
           - not_null
       - name: MINT

@@ -18,7 +18,7 @@ WITH base_events AS(
             'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
             'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
         )
-        AND block_id > 111442741 -- token balances owner field not guaranteed to be populated before this slot
+        AND block_id > 70102882 -- first appearance of Raydium program id
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -28,7 +28,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND block_timestamp :: DATE >= '2021-12-14'
+    AND block_timestamp :: DATE >= '2021-03-21'
 {% endif %}
 ),
 dex_lp_txs AS (
@@ -76,7 +76,7 @@ AND t._inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND t.block_timestamp :: DATE >= '2021-12-14'
+    AND t.block_timestamp :: DATE >= '2021-03-21'
 {% endif %}
 ),
 base_transfers AS (
@@ -103,7 +103,7 @@ WHERE
     )
 {% else %}
 WHERE
-    block_timestamp :: DATE >= '2021-12-14'
+    block_timestamp :: DATE >= '2021-03-21'
 {% endif %}
 ),
 base_post_token_balances AS (
@@ -130,7 +130,7 @@ WHERE
     )
 {% else %}
 WHERE
-    block_timestamp :: DATE >= '2021-12-14'
+    block_timestamp :: DATE >= '2021-03-21'
 {% endif %}
 ),
 lp_transfers_temp AS(

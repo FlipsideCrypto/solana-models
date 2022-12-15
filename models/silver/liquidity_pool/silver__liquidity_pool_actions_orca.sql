@@ -24,7 +24,7 @@ WITH base_events AS(
             '8rGFmebhhTikfJP5bUe2uLHcejSiukdJhiLEKoit962a',
             'E16pm4Z4jiFxVEeBcSuYfJHy6TQYfYRAhGYt7cEUYfEV'
         )
-        AND block_id > 111442741 -- token balances owner field not guaranteed to be populated before this slot
+        AND block_id > 65303193 -- first appearance of Orca program id
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -34,7 +34,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND block_timestamp :: DATE >= '2021-12-14'
+    AND block_timestamp :: DATE >= '2021-02-14'
 {% endif %}
 ),
 dex_lp_txs AS (
@@ -54,11 +54,15 @@ dex_lp_txs AS (
             WHEN ARRAY_SIZE(
                 e.instruction :accounts
             ) = 11
-            AND program_id = '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP' THEN 'withdraw' -- dje
+            AND program_id = '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP' THEN 'withdraw'
             WHEN ARRAY_SIZE(
                 e.instruction :accounts
             ) = 11
             AND program_id = 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1' THEN 'withdraw'
+            WHEN ARRAY_SIZE(
+                e.instruction :accounts
+            ) = 10
+            AND program_id = 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1' THEN 'deposit'
             ELSE NULL
         END AS action,
         signers
@@ -85,7 +89,7 @@ AND t._inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND t.block_timestamp :: DATE >= '2021-12-14'
+    AND t.block_timestamp :: DATE >= '2021-02-14'
 {% endif %}
 ),
 base_transfers AS (
@@ -112,7 +116,7 @@ WHERE
     )
 {% else %}
 WHERE
-    block_timestamp :: DATE >= '2021-12-14'
+    block_timestamp :: DATE >= '2021-02-14'
 {% endif %}
 ),
 base_post_token_balances AS (
@@ -139,7 +143,7 @@ WHERE
     )
 {% else %}
 WHERE
-    block_timestamp :: DATE >= '2021-12-14'
+    block_timestamp :: DATE >= '2021-02-14'
 {% endif %}
 ),
 lp_transfers_temp AS(
@@ -283,38 +287,34 @@ lp_transfers_with_amounts AS(
             sm.liquidity_provider,
             e.liquidity_provider
         ) AS tmp_liquidity_provider,
+        e.instruction :accounts [0] :: STRING AS liquidity_pool_address,
         CASE
-            WHEN e.action = 'lp_action' THEN e.instruction :accounts [0] :: STRING
+            -- 9w95
+            -- WHEN action = 'deposit' and e.program_id = '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP' THEN e.instruction:accounts[7] :: string
+            -- WHEN action = 'withdraw' and e.program_id = '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP' THEN e.instruction:accounts[4] :: string
             WHEN e.program_id IN (
                 '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
                 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1'
-            ) THEN e.instruction :accounts [0] :: STRING
-            ELSE NULL
-        END AS liquidity_pool_address,
-        -- lp token address
-        CASE
-            -- 9w95
-            WHEN action = 'deposit'
-            AND e.program_id = '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP' THEN e.instruction :accounts [7] :: STRING
-            WHEN action = 'withdraw'
-            AND e.program_id = '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP' THEN e.instruction :accounts [4] :: STRING -- dje
-            -- for withdrawals but need examples for deposits...
-            WHEN e.program_id = 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1' THEN e.instruction :accounts [3] :: STRING
+            ) THEN ii.value :parsed :info :mint :: STRING
             ELSE NULL
         END AS lp_mint_address,
         -- lp amount
         CASE
             -- 9w95
-            WHEN e.program_id IN (
-                'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
-                '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
-            ) THEN ii.value :parsed :info :amount :: INT
+            WHEN e.program_id = 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1' THEN ii.value :parsed :info :amount / pow(
+                10,
+                9
+            ) :: INT
+            WHEN e.program_id = '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP' THEN ii.value :parsed :info :amount / pow(
+                10,
+                6
+            ) :: INT
             WHEN e.program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc' THEN 1
             ELSE NULL
         END AS lp_amount,
         e.signers,
         e.program_id,
-        e.action -- ii.*
+        e.action
     FROM
         lp_transfers_temp s
         INNER JOIN dex_lp_txs e
@@ -370,6 +370,7 @@ lp_actions_w_destination AS (
         AND s.tx_to = m2.associated_account
         AND s.tx_from <> m2.owner
 ),
+-- used to find swaps that were not filtered out initially
 cnt_distinct_tx_from AS (
     SELECT
         COUNT(
@@ -414,6 +415,56 @@ lp_actions_with_liquidity_provider AS(
         lp_actions_filtered s
         LEFT OUTER JOIN multi_signer_liquidity_provider m
         ON s.tx_id = m.tx_id
+),
+temp_final AS(
+    SELECT
+        block_id,
+        block_timestamp,
+        tx_id,
+        succeeded,
+        program_id,
+        CASE
+            WHEN action = 'lp_action'
+            AND tx_to = liquidity_provider THEN 'withdraw'
+            WHEN action = 'lp_action'
+            AND tx_from = liquidity_provider THEN 'deposit'
+            ELSE action
+        END AS action,
+        liquidity_provider,
+        liquidity_pool_address,
+        amount,
+        mint,
+        INDEX,
+        inner_index,
+        _inserted_timestamp
+    FROM
+        lp_actions_with_liquidity_provider
+    UNION
+        -- get the lp mint/amount as separate records
+    SELECT
+        block_id,
+        block_timestamp,
+        tx_id,
+        succeeded,
+        program_id,
+        CASE
+            WHEN action = 'deposit' THEN 'mint_LP_tokens'
+            WHEN action = 'withdraw' THEN 'burn_LP_tokens'
+            WHEN action = 'lp_action'
+            AND tx_from = liquidity_provider THEN 'mint_LP_tokens'
+            WHEN action = 'lp_action'
+            AND tx_to = liquidity_provider THEN 'burn_LP_tokens'
+            ELSE NULL
+        END AS action,
+        liquidity_provider,
+        liquidity_pool_address,
+        lp_amount AS amount,
+        lp_mint_address AS mint,
+        INDEX,
+        NULL AS inner_index,
+        _inserted_timestamp
+    FROM
+        lp_actions_with_liquidity_provider
 )
 SELECT
     block_id,
@@ -421,13 +472,7 @@ SELECT
     tx_id,
     succeeded,
     program_id,
-    CASE
-        WHEN action = 'lp_action'
-        AND tx_to = liquidity_provider THEN 'withdraw'
-        WHEN action = 'lp_action'
-        AND tx_from = liquidity_provider THEN 'deposit'
-        ELSE action
-    END AS action,
+    action,
     liquidity_provider,
     liquidity_pool_address,
     amount,
@@ -440,32 +485,4 @@ SELECT
     ) AS action_index,
     _inserted_timestamp
 FROM
-    lp_actions_with_liquidity_provider
-UNION
-    -- get the lp mint/amount as separate records
-SELECT
-    block_id,
-    block_timestamp,
-    tx_id,
-    succeeded,
-    program_id,
-    CASE
-        WHEN action = 'deposit' THEN 'mint_LP_tokens'
-        WHEN action = 'withdraw' THEN 'burn_LP_tokens'
-        WHEN action = 'lp_action'
-        AND tx_from = liquidity_provider THEN 'mint_LP_tokens'
-        WHEN action = 'lp_action'
-        AND tx_to = liquidity_provider THEN 'burn_LP_tokens'
-        ELSE NULL
-    END AS action,
-    liquidity_provider,
-    liquidity_pool_address,
-    lp_amount AS amount,
-    lp_mint_address AS mint,
-    3 AS action_index,
-    _inserted_timestamp
-FROM
-    lp_actions_with_liquidity_provider
-ORDER BY
-    tx_id,
-    action_index
+    temp_final
