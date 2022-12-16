@@ -1,11 +1,27 @@
-name: adhoc_dbt_run
-run-name: call_workflow_template
+name: dbt_run_adhoc
+run-name: dbt_run_adhoc
 
 on:
   workflow_dispatch:
     branches:
       - "main"
     inputs:
+      environment:
+        type: choice 
+        description: DBT Run Environment
+        required: true
+        options:
+          - dev
+          - prod
+        default: dev
+      warehouse:
+        type: choice 
+        description: Snowflake warehouse
+        required: true 
+        options:
+          - DBT
+          - DBT_CLOUD
+          - DBT_EMERGENCY
       dbt_command:
         type: string
         description: 'DBT Run Command'
@@ -19,17 +35,32 @@ env:
   USER: "${{ secrets.USER }}"
   PASSWORD: "${{ secrets.PASSWORD }}"
   REGION: "${{ secrets.REGION }}"
-  DATABASE_DEV: "${{ secrets.DATABASE_DEV }}"
-  DATABASE_PROD: "${{ secrets.DATABASE_PROD }}"
-  WAREHOUSE_DEV: "${{ secrets.WAREHOUSE_DEV }}"
-  WAREHOUSE_PROD: "${{ secrets.WAREHOUSE_PROD }}"
+  DATABASE: "${{ secrets.DATABASE }}"
+  WAREHOUSE: "${{ inputs.warehouse }}"
   SCHEMA: "${{ secrets.SCHEMA }}"
 
 
 jobs:
-  called_workflow_template:
-    uses: FlipsideCrypto/analytics-workflow-templates/.github/workflows/dbt_run_template.yml@main
-    with:
-      dbt_command: ${{ inputs.dbt_command }}
-    secrets: inherit # pass all secrets
+  run_dbt_jobs:
+    runs-on: ubuntu-latest
+    environment: 
+      name: workflow_${{ inputs.environment }}
+    strategy:
+      matrix:
+        command: ${{fromJson(inputs.dbt_command)}}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v1
+        with:
+          python-version: "3.7.x"
+
+      - name: install dependencies
+        run: |
+          pip3 install dbt-snowflake==1.2.0 cli_passthrough requests click
+          dbt deps
+      - name: Run DBT Jobs
+        run: |
+          ${{ matrix.command }}
   

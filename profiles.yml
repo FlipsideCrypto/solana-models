@@ -9,11 +9,10 @@ solana:
       role: "{{ env_var('ROLE') }}"
       schema: "{{ env_var('SCHEMA') }}"
       region: "{{ env_var('REGION') }}"
-      database: "{{ env_var('DATABASE_DEV') }}"
-      warehouse: "{{ env_var('WAREHOUSE_DEV') }}"
+      database: "{{ env_var('DATABASE') }}"
+      warehouse: "{{ env_var('WAREHOUSE') }}"
       threads: 8
       client_session_keep_alive: False
-      query_tag: solana_dbt_dev
     prod:
       type: snowflake
       account: "{{ env_var('ACCOUNT') }}"
@@ -22,10 +21,9 @@ solana:
       role: "{{ env_var('ROLE') }}"
       schema: "{{ env_var('SCHEMA') }}"
       region: "{{ env_var('REGION') }}"
-      database: "{{ env_var('DATABASE_PROD') }}"
-      warehouse: "{{ env_var('WAREHOUSE_PROD') }}"
+      database: "{{ env_var('DATABASE') }}"
+      warehouse: "{{ env_var('WAREHOUSE') }}"
       threads: 8
       client_session_keep_alive: False
-      query_tag: solana_dbt_prod
   config:
     send_anonymous_usage_stats: False

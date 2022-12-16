@@ -6,6 +6,22 @@ models:
           combination_of_columns:
             - TX_ID
             - MINT
+      - compare_model_subset:
+          name: silver__nft_sales_hadeswap_business_logic_test
+          compare_model: ref('testing__nft_sales_hadeswap')
+          compare_columns: 
+            - tx_id
+            - purchaser
+            - seller
+            - mint
+            - sales_amount
+          model_condition: "where tx_id in ('5RtXVH7vZMEyKrf3M1mm31AUBaBkK6dH2frpbHyhbt7oBMevWKLT8LeS3NBEwSNzKik4hDbF1x9gY3qkgbEnR3EY',
+          '5GaJip8wTmyRT1cSbNRs6cF61YG9fAxko6Cqrt6ox5b7XDYKM6RH7Dxivz9T5EGoQ21SGwSWsSfG7hpucRaJPNBt',
+          '2CHMyQYu4gNCESvqVS3SxNHL9VArq9UNWbFjYjhQ3bdF2RM1gFzyFAtdu1QVWJtXSAWyDUDzVA1LvYbvLC1ciD3J',
+          '127fAuDiNxX9YX6ZbYXTza9ASXunGtDVBoU6vQRcsEcgLAsd5JnUErFYr6sU7yfgf8fWAgFDe9WheuWqq6Q554vY',
+          '124y71JFhG1CSCitqMqBRb6GkvQZd25YfazmFdDVJ6Bt7m1wYDRf27ZJDNPwRVHuPShCanfDy4g6EmqeQBbxo81n',
+          '126zdfjWUNmtqMfUM4YtLnJhoaRHBaD5eEACUscsezkWDx2khXRZLALsxG8MWLTGVmd3EcjCgVhY8Kci5vPKQAY9',
+          '5o1JD7tDY5m1o3FUrvArZHNRJevNXCHXG7PsJPovKV3NjnBe2PrWYf4RqtFrXDp83hcjqHEZJH4sdThB61f8np8Y')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
