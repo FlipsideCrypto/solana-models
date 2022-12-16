@@ -39,6 +39,7 @@ models:
           excluded_tx_ids:
             - 2D2v7i3mPmXzihkXSQYX8sr7bNEDotBrnPp9MoJyq7KGeWo87Vf4xmafbWpfxC6EGxaprEB7RyGJnfD2GJteFSG5
             - 2D2UC82LacJHga2EaXFYtiuWp4ztSKB9NzHbXvfYBpZUE2GN71frzLWs3RYEJyZfYJdQAST9SBvJJGqKHHEcRjEQ
+            - 5XgNjYNgxG7r2VWcXmSfs2ZFxYCxksmzPN9ceEEqHhS1X8KJeajaiNJo1vhEVBsiEWfvwSJNyXUma2Yth6HCCVii
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -65,8 +66,6 @@ models:
           - not_null
       - name: ACTION
         description: "{{ doc('stake_pool_action') }}"
-        tests: 
-          - not_null 
       - name: LIQUIDITY_PROVIDER
         description: "Address withdrawing or depositing liquidity"
         tests: 

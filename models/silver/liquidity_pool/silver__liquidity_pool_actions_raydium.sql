@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ["block_id","tx_id","swap_index"],
+    unique_key = ["block_id","tx_id","action_index"],
     merge_predicates = ["DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from {{ this }}__dbt_tmp))"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
 ) }}
@@ -106,33 +106,33 @@ WHERE
     block_timestamp :: DATE >= '2021-03-21'
 {% endif %}
 ),
-base_post_token_balances AS (
-    SELECT
-        pb.*
-    FROM
-        {{ ref('silver___post_token_balances') }}
-        pb
-        INNER JOIN (
-            SELECT
-                DISTINCT tx_id
-            FROM
-                dex_lp_txs
-        ) d
-        ON d.tx_id = pb.tx_id
+-- base_post_token_balances AS (
+--     SELECT
+--         pb.*
+--     FROM
+--         {{ ref('silver___post_token_balances') }}
+--         pb
+--         INNER JOIN (
+--             SELECT
+--                 DISTINCT tx_id
+--             FROM
+--                 dex_lp_txs
+--         ) d
+--         ON d.tx_id = pb.tx_id
 
-{% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
-{% else %}
-WHERE
-    block_timestamp :: DATE >= '2021-03-21'
-{% endif %}
-),
+-- {% if is_incremental() %}
+-- WHERE
+--     _inserted_timestamp >= (
+--         SELECT
+--             MAX(_inserted_timestamp)
+--         FROM
+--             {{ this }}
+--     )
+-- {% else %}
+-- WHERE
+--     block_timestamp :: DATE >= '2021-03-21'
+-- {% endif %}
+-- ),
 lp_transfers_temp AS(
     SELECT
         A.block_id,
@@ -178,13 +178,13 @@ account_mappings AS (
     FROM
         raydium_account_mapping
     UNION
-    SELECT
-        tx_id,
-        account AS associated_account,
-        owner
-    FROM
-        base_post_token_balances
-    UNION
+    -- SELECT
+    --     tx_id,
+    --     account AS associated_account,
+    --     owner
+    -- FROM
+    --     base_post_token_balances
+    -- UNION
     SELECT
         e.tx_id,
         e.instruction :parsed :info :account :: STRING AS associated_account,
@@ -212,25 +212,25 @@ account_mappings AS (
                 AND e.event_type = 'closeAccount'
             )
         )
-    UNION
-    SELECT
-        e.tx_id,
-        e.instruction :parsed :info :delegate :: STRING AS associated_account,
-        e.instruction :parsed :info :owner :: STRING AS owner
-    FROM
-        base_events e
-        INNER JOIN (
-            SELECT
-                DISTINCT tx_id
-            FROM
-                dex_lp_txs
-        ) d
-        ON d.tx_id = e.tx_id
-    WHERE
-        (
-            e.program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-            AND e.event_type = 'approve'
-        )
+    -- UNION
+    -- SELECT
+    --     e.tx_id,
+    --     e.instruction :parsed :info :delegate :: STRING AS associated_account,
+    --     e.instruction :parsed :info :owner :: STRING AS owner
+    -- FROM
+    --     base_events e
+    --     INNER JOIN (
+    --         SELECT
+    --             DISTINCT tx_id
+    --         FROM
+    --             dex_lp_txs
+    --     ) d
+    --     ON d.tx_id = e.tx_id
+    -- WHERE
+    --     (
+    --         e.program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+    --         AND e.event_type = 'approve'
+    --     )
 ),
 lp_actions_w_destination AS (
     SELECT
@@ -281,8 +281,49 @@ lp_actions_w_destination AS (
             'mintTo'
         )
         AND s.program_id <> '11111111111111111111111111111111'
+),
+temp_final AS(
+    SELECT
+        block_id,
+        block_timestamp,
+        tx_id,
+        succeeded,
+        program_id,
+        action,
+        liquidity_provider,
+        liquidity_pool_address,
+        amount,
+        mint,
+        INDEX,
+        inner_index,
+        _inserted_timestamp
+    FROM
+        lp_actions_w_destination
+    UNION
+    SELECT
+        l.block_id,
+        l.block_timestamp,
+        l.tx_id,
+        l.succeeded,
+        l.program_id,
+        CASE
+            WHEN action = 'deposit' THEN 'mint_LP_tokens'
+            WHEN action = 'withdraw' THEN 'burn_LP_tokens'
+            ELSE NULL
+        END AS action,
+        l.liquidity_provider,
+        l.liquidity_pool_address,
+        COALESCE(l.lp_amount / pow(10, m.decimals), l.lp_amount) AS amount,
+        l.lp_mint_address AS mint,
+        l.index,
+        NULL AS inner_index,
+        l._inserted_timestamp
+    FROM
+        lp_actions_w_destination l
+        LEFT OUTER JOIN solana_dev.silver.token_metadata m
+        ON l.lp_mint_address = m.token_address
 )
-SELECT 
+SELECT
     block_id,
     block_timestamp,
     tx_id,
@@ -296,31 +337,12 @@ SELECT
     ROW_NUMBER() over (
         PARTITION BY tx_id
         ORDER BY
-            index,
+            INDEX,
             inner_index
     ) AS action_index,
     _inserted_timestamp
-from lp_actions_w_destination
-union
-SELECT 
--- get the lp token transfer as separate row
-    block_id,
-    block_timestamp,
-    tx_id,
-    succeeded,
-    program_id,
-    CASE
-        WHEN action = 'deposit' THEN 'mint_LP_tokens'
-        WHEN action = 'withdraw' THEN 'burn_LP_tokens'
-        ELSE null
-    END AS action,
-    liquidity_provider,
-    liquidity_pool_address,
-    lp_amount as amount,
-    lp_mint_address as mint,
-    3 as action_index,
-    _inserted_timestamp
-from lp_actions_w_destination
+FROM
+    temp_final
 WHERE
     COALESCE(
         amount,
