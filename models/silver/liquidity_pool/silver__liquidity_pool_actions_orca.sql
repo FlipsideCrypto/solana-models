@@ -57,12 +57,12 @@ dex_lp_txs AS (
             AND program_id = '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP' THEN 'withdraw'
             WHEN ARRAY_SIZE(
                 e.instruction :accounts
-            ) = 11
-            AND program_id = 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1' THEN 'withdraw'
-            WHEN ARRAY_SIZE(
-                e.instruction :accounts
             ) = 10
             AND program_id = 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1' THEN 'deposit'
+            WHEN ARRAY_SIZE(
+                e.instruction :accounts
+            ) = 11
+            AND program_id = 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1' THEN 'withdraw'
             ELSE NULL
         END AS action,
         signers
@@ -310,14 +310,10 @@ lp_transfers_with_amounts AS(
         -- END AS lp_amount,
         CASE
             -- 9w95
-            WHEN e.program_id = 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1' THEN ii.value :parsed :info :amount / pow(
-                10,
-                9
-            ) :: INT
-            WHEN e.program_id = '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP' THEN ii.value :parsed :info :amount / pow(
-                10,
-                6
-            ) :: INT
+            WHEN e.program_id IN (
+                'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
+                '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
+            ) THEN ii.value :parsed :info :amount :: INT
             WHEN e.program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc' THEN 1
             ELSE NULL
         END AS lp_amount,
@@ -330,7 +326,6 @@ lp_transfers_with_amounts AS(
         ON s.tx_id = e.tx_id
         AND s.index = e.index
         LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii -- LEFT OUTER JOIN liquidity_provider_map_temp sm
-        -- ON s.tx_id = sm.tx_id
     WHERE
         ii.value :parsed :type :: STRING IN(
             'burn',
@@ -397,7 +392,9 @@ lp_actions_filtered AS(
         lp_actions_w_destination l
         INNER JOIN cnt_distinct_tx_from C
         ON l.tx_id = C.tx_id
-        AND C.cnt_tx_from = 1
+    WHERE
+        C.cnt_tx_from = 1
+        OR program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
 ),
 -- multi_signer_liquidity_provider AS (
 --     SELECT
@@ -466,14 +463,16 @@ temp_final AS(
         END AS action,
         l.liquidity_provider,
         l.liquidity_pool_address,
-        l.lp_amount AS amount,
+        COALESCE(l.lp_amount / pow(10, m.decimals), l.lp_amount) AS amount,
         l.lp_mint_address AS mint,
         l.index,
         NULL AS inner_index,
         l._inserted_timestamp
     FROM
         lp_actions_filtered l
-
+        LEFT OUTER JOIN {{ ref('silver__token_metadata') }}
+        m
+        ON l.lp_mint_address = m.token_address
 )
 SELECT
     block_id,
