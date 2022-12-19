@@ -14,11 +14,12 @@ WITH base_events AS(
     WHERE
         program_id IN (
             '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+            '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv',
             --program ids for acct mapping
             'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
             'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
         )
-        AND block_id > 70102882 -- first appearance of Raydium program id
+        AND block_id > 67919748 -- first appearance of Raydium LP program id
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -28,14 +29,20 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND block_timestamp :: DATE >= '2021-03-21'
+    AND block_timestamp :: DATE >= '2021-03-06'
 {% endif %}
 ),
 dex_lp_txs AS (
     SELECT
         e.*,
         signers [0] :: STRING AS liquidity_provider,
-        IFF(ARRAY_SIZE(instruction :accounts) > 21, 'withdraw', 'deposit') AS action
+        CASE
+            WHEN program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8' and ARRAY_SIZE(instruction :accounts) > 21 THEN 'withdraw'
+            WHEN program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8' and ARRAY_SIZE(instruction :accounts) < 21 THEN 'deposit'
+            WHEN program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv' and ARRAY_SIZE(instruction :accounts) > 18 THEN 'withdraw'
+            WHEN program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv' and ARRAY_SIZE(instruction :accounts) < 18 THEN 'deposit'
+            ELSE NULL
+        END AS action
     FROM
         base_events e
         INNER JOIN {{ ref('silver__transactions') }}
@@ -55,8 +62,9 @@ dex_lp_txs AS (
                     13
                 )
             )
-        ) -- withdraws/remove liquidity
+        )
         OR (
+             -- withdraws/remove liquidity
             (
                 program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
                 AND instruction :accounts [0] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
@@ -67,6 +75,9 @@ dex_lp_txs AS (
                 ) > 21
             )
         )
+        OR (
+                program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
+        )
 
 {% if is_incremental() %}
 AND t._inserted_timestamp >= (
@@ -76,7 +87,7 @@ AND t._inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND t.block_timestamp :: DATE >= '2021-03-21'
+    AND t.block_timestamp :: DATE >= '2021-03-06'
 {% endif %}
 ),
 base_transfers AS (
@@ -103,7 +114,7 @@ WHERE
     )
 {% else %}
 WHERE
-    block_timestamp :: DATE >= '2021-03-21'
+    block_timestamp :: DATE >= '2021-03-06'
 {% endif %}
 ),
 -- base_post_token_balances AS (
@@ -254,11 +265,12 @@ lp_actions_w_destination AS (
         s._inserted_timestamp,
         e.action,
         e.program_id,
-        CASE
-            WHEN action = 'deposit' THEN e.instruction :accounts [8] :: STRING
-            WHEN action = 'withdraw' THEN e.instruction :accounts [11] :: STRING
-            ELSE NULL
-        END AS liquidity_pool_address,
+        -- CASE
+        --     WHEN action = 'deposit' THEN e.instruction :accounts [8] :: STRING
+        --     WHEN action = 'withdraw' THEN e.instruction :accounts [11] :: STRING
+        --     ELSE NULL
+        -- END AS liquidity_pool_address,
+        e.instruction :accounts [1] :: STRING AS liquidity_pool_address,
         e.instruction :accounts [5] :: STRING AS lp_mint_address,
         ii.value :parsed :info :amount :: INT AS lp_amount
     FROM
@@ -299,6 +311,7 @@ temp_final AS(
         _inserted_timestamp
     FROM
         lp_actions_w_destination
+    where (tx_to = liquidity_provider or tx_from = liquidity_provider)
     UNION
     SELECT
         l.block_id,
@@ -320,7 +333,7 @@ temp_final AS(
         l._inserted_timestamp
     FROM
         lp_actions_w_destination l
-        LEFT OUTER JOIN solana_dev.silver.token_metadata m
+        LEFT OUTER JOIN {{ ref('silver__token_metadata') }} m
         ON l.lp_mint_address = m.token_address
 )
 SELECT

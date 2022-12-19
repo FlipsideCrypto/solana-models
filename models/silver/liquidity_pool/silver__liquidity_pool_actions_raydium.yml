@@ -27,13 +27,18 @@ models:
           '45cTRniWofPep8Wt2JmdtP8jVhU9sBBVHtwxa6BkFXUsLq36KW77hFpRTjnLGBYzNnPfxMHGfrNxJhJXonjFAcUt',
           '4FAxdegpkoT9NaEDdbDQ3ZL8aZcJeyRRRrNCbG9H6H5bG7oagjWxEwiV3ob5s2DRi9x34WtzeaomTFZPvapBwX3n',
           '4UGPAu9ATzW3xtL5CJMTBefND3EZLd8TQESQsvSkHczF8tH9sVS5hr8CLigFbMQReqqogVaoFvJpieaDW8qiyU8S',
-          'sprytoDuW7hJsN6vWbv63fjJHPxZVDatX7oUUB32Gp5GfmrzQWdJcGnMiBFYXMnodn35oFwgr95C7xtrT4qTpRG')"
+          'sprytoDuW7hJsN6vWbv63fjJHPxZVDatX7oUUB32Gp5GfmrzQWdJcGnMiBFYXMnodn35oFwgr95C7xtrT4qTpRG',
+          '5qm6roLvPmFy7FCx1Uj5mPLZ46KXrpTwQSn1hSKjdMvSM4P6hxyZ8aXe3qEqdipm3C6gpJdBapvjLiu4TXWe4pEG',
+          '3e9SiF8RXs9KDSmRDJLdXBPKXYCStm2XjUMBbEPiQwbwfvBJ9AG4BfJqDtQeTPvGZeEY6R6o2YddmZbytC3JVQuT',
+          '5QS5syBH2K7zzXXzi6uXyVpE8eh7UJ7iepr4nNHENL7AEmFhVeR1gFPn5T7yaoz9RpL26rPEryYSBEf8z2Z3uiwG',
+          '27AMYCXzrtYZEzFrf7MDVgX8iZZZMq5NCSjRkBsWhE7ou54XbhBnAiZ4WnpPhnDspJ6chLmYY2s1oWvA9W75fivD')"
       - tx_excluded:
           name: silver__liquidity_pool_actions_raydium_tx_excluded_test
           excluded_tx_ids:
             - 4XMga64PPam74iSFPqnXohswejwtdxL1Dj5azTjBfYwE97PfGcP6JSastTwRFHdnzXTcdyRsMwD7t5ZZdpYzjqJj,
             - 4bEAGZx3EkCyuh3arFg1k3hx7CgR2L9aFdxGg3ihWvwdB4KQiheF6JiyRCQcT6LpeJovYdajDg9fsJ3Lor8pN3kk
             - fACqZJ8hmUjLoBX2wzUS2gfwQUmV4HfJbXeQ5QbrZKTs2qdYZVREZxZbTaCy7brZT2Ck7QDqVLDBXVvbrLdYkk6
+            - EdDzKMQYwjYuBCV8AmpbUKpuXtcgAnTfZzduNx7j1CZ4NQAmiZMDQk2zZK9qhH2WfudYTwdzdoz1jpgTTLXELqo
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
