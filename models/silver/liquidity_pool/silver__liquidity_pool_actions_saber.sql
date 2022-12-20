@@ -19,7 +19,7 @@ WITH base_events AS(
             'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
             'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
         )
-        AND block_id > 117839429 -- first appearance of Saber LP action
+        AND block_id > 80172009 -- first appearance of Saber LP action
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -29,7 +29,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND block_timestamp :: DATE >= '2022-01-24'
+    AND block_timestamp :: DATE >= '2021-05-27'
 {% endif %}
 ),
 dex_lp_txs AS (
@@ -52,6 +52,7 @@ dex_lp_txs AS (
                     e.instruction :accounts
                 ) IN (
                     10,
+                    11,
                     12
                 )
                 AND e.instruction :accounts [9] :: STRING <> 'SysvarC1ock11111111111111111111111111111111'
@@ -66,7 +67,7 @@ AND t._inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND t.block_timestamp :: DATE >= '2022-01-24'
+    AND t.block_timestamp :: DATE >= '2021-05-27'
 {% endif %}
 ),
 base_transfers AS (
@@ -93,7 +94,7 @@ WHERE
     )
 {% else %}
 WHERE
-    block_timestamp :: DATE >= '2022-01-24'
+    block_timestamp :: DATE >= '2021-05-27'
 {% endif %}
 ),
 -- base_post_token_balances AS (

@@ -25,7 +25,13 @@ models:
           '4wkr31yK4pUdybd6gDDt9BUSg6gQrBpPDQMXcz2mGRBU5G2Py9Ldj2a7YA4SBkf6yuUSjJRLuAet4ZSk1QegssNT',
           '5wBABFQDN4GmeEDr2moJiw5G8cHfrzHGFF2zBBj8tZGss5dvCDu715fbfXDTa541DgueMhE3wkSeMjg7hQRUe56a',
           'gMHYSs2jtBibGwCxP8Moo1zhHHqef7ZgvZZHnmusriLcUJwKQd6G1FeWXJLTt6GuEFBPR3qbpPWmz9kvhgZKsi9',
-          'kTF14Sm9MQWZzc9Rm1cW6geq79cr8b7ETRp6T1MjMXcNjiYdowBdSQThnxhJWQugBncx7XR3aJ8BWuih1fSJbrh')"
+          'kTF14Sm9MQWZzc9Rm1cW6geq79cr8b7ETRp6T1MjMXcNjiYdowBdSQThnxhJWQugBncx7XR3aJ8BWuih1fSJbrh',
+          '2Nz119Txhc2yz3u32ReKBKq5HPKGvoM1V2mZEZZng2HV7rpQR7dBjRZr8PkpHWpnHVJpZRj5bbVdDrFPzyf84bAK',
+          '3Eh3zpwTGfMXAAiwufZmghhwGiuqpkLmPw8iZsyhPKemZ6X4bTA9on21hMN8ZrRAvU65Y5fr2Y7crdoFhHhtt5wU')"
+      - tx_excluded:
+          name: silver__liquidity_pool_actions_saber_tx_excluded_test
+          excluded_tx_ids:
+            - 2S5L2ybzhSfEF51KLfcGyaTu1d5T69HUZK5wvZpHGFHGWPVpLd9ZxSVgE7UVZzQ2at1GJXQ3Sw5q4LRPTj8E664t
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
