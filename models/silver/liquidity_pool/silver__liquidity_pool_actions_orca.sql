@@ -19,10 +19,10 @@ WITH base_events AS(
             'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
             --program ids for acct mapping
             'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
-            'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+            'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
             --program ids that identify the swapper in certain tx
-            '8rGFmebhhTikfJP5bUe2uLHcejSiukdJhiLEKoit962a',
-            'E16pm4Z4jiFxVEeBcSuYfJHy6TQYfYRAhGYt7cEUYfEV'
+            -- '8rGFmebhhTikfJP5bUe2uLHcejSiukdJhiLEKoit962a',
+            -- 'E16pm4Z4jiFxVEeBcSuYfJHy6TQYfYRAhGYt7cEUYfEV'
         )
         AND block_id > 65303193 -- first appearance of Orca program id
 
@@ -119,6 +119,28 @@ WHERE
     block_timestamp :: DATE >= '2021-02-14'
 {% endif %}
 ),
+nft_lp_mint_address AS (
+    SELECT
+        e.tx_id,
+        e.index,
+        ii.value :parsed :info :mint :: text AS mint,
+        ROW_NUMBER() over (
+            PARTITION BY tx_id
+            ORDER BY
+                e.index
+        ) AS temp_rn
+    FROM
+        base_events e
+        LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
+    WHERE
+        program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
+        AND (
+            ii.value :parsed :type = 'burnChecked'
+        )
+        OR (
+            ii.value :parsed :type = 'initializeMint'
+        )
+),
 -- base_post_token_balances AS (
 --     SELECT
 --         pb.*
@@ -188,40 +210,40 @@ lp_transfers_temp AS(
 --             'E16pm4Z4jiFxVEeBcSuYfJHy6TQYfYRAhGYt7cEUYfEV'
 --         )
 -- ),
--- multisig_account_mapping AS(
---     SELECT
---         tx_id,
---         instruction :parsed :info :account :: STRING AS associated_account,
---         instruction :parsed :info :multisigOwner :: STRING AS owner
---     FROM
---         base_events
---     WHERE
---         program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
---         AND event_type = 'closeAccount'
---     UNION
---     SELECT
---         tx_id,
---         instruction :parsed :info :delegate :: STRING AS associated_account,
---         instruction :parsed :info :multisigOwner :: STRING AS owner
---     FROM
---         base_events
---     WHERE
---         program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
---         AND event_type = 'approve'
--- ),
+multisig_account_mapping AS(
+    SELECT
+        tx_id,
+        instruction :parsed :info :account :: STRING AS associated_account,
+        instruction :parsed :info :multisigOwner :: STRING AS owner
+    FROM
+        base_events
+    WHERE
+        program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+        AND event_type = 'closeAccount'
+    UNION
+    SELECT
+        tx_id,
+        instruction :parsed :info :delegate :: STRING AS associated_account,
+        instruction :parsed :info :multisigOwner :: STRING AS owner
+    FROM
+        base_events
+    WHERE
+        program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+        AND event_type = 'approve'
+),
 account_mappings AS (
-    -- SELECT
-    --     *
-    -- FROM
-    --     multisig_account_mapping
-    -- UNION
-    -- SELECT
-    --     tx_id,
-    --     account AS associated_account,
-    --     owner
-    -- FROM
-    --     base_post_token_balances
-    -- UNION
+    SELECT
+        *
+    FROM
+        multisig_account_mapping
+    UNION
+        -- SELECT
+        --     tx_id,
+        --     account AS associated_account,
+        --     owner
+        -- FROM
+        --     base_post_token_balances
+        -- UNION
     SELECT
         e.tx_id,
         e.instruction :parsed :info :account :: STRING AS associated_account,
@@ -319,7 +341,12 @@ lp_transfers_with_amounts AS(
         END AS lp_amount,
         e.signers,
         e.program_id,
-        e.action
+        e.action,
+        DENSE_RANK() over (
+            PARTITION BY e.tx_id
+            ORDER BY
+                e.index
+        ) AS temp_rn
     FROM
         lp_transfers_temp s
         INNER JOIN dex_lp_txs e
@@ -361,7 +388,8 @@ lp_actions_w_destination AS (
         s.lp_mint_address,
         s.lp_amount,
         s.signers,
-        s.program_id
+        s.program_id,
+        s.temp_rn
     FROM
         lp_transfers_with_amounts s
         LEFT OUTER JOIN account_mappings m1
@@ -373,7 +401,7 @@ lp_actions_w_destination AS (
         AND s.tx_to = m2.associated_account
         AND s.tx_from <> m2.owner
 ),
--- filter out swaps that passed initially filters
+-- catch-all to remove swaps that passed initial filters
 cnt_distinct_tx_from AS (
     SELECT
         COUNT(
@@ -387,9 +415,32 @@ cnt_distinct_tx_from AS (
 ),
 lp_actions_filtered AS(
     SELECT
-        l.*
+        l.block_id,
+        l.block_timestamp,
+        l.tx_id,
+        l.index,
+        l.inner_index,
+        l.tx_from,
+        l.tx_to,
+        l.amount,
+        l.mint,
+        l.action,
+        l.succeeded,
+        l._inserted_timestamp,
+        l.liquidity_provider,
+        l.liquidity_pool_address,
+        COALESCE(
+            l.lp_mint_address,
+            n.mint
+        ) AS lp_mint_address,
+        l.lp_amount,
+        l.signers,
+        l.program_id
     FROM
         lp_actions_w_destination l
+        LEFT JOIN nft_lp_mint_address n
+        ON l.tx_id = n.tx_id
+        AND l.temp_rn = n.temp_rn
         INNER JOIN cnt_distinct_tx_from C
         ON l.tx_id = C.tx_id
     WHERE
@@ -473,6 +524,8 @@ temp_final AS(
         LEFT OUTER JOIN {{ ref('silver__token_metadata') }}
         m
         ON l.lp_mint_address = m.token_address
+    WHERE
+        l.lp_mint_address IS NOT NULL
 )
 SELECT
     block_id,
