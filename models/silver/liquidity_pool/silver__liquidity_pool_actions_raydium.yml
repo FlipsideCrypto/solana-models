@@ -15,7 +15,7 @@ models:
             - action
             - liquidity_provider
             - liquidity_pool_address
-            - amount
+            - round(amount,7)
             - mint
           model_condition: "where tx_id in ('eVjgXuTfgg34HqnsNqmc9LT5VJ1p3f37W4VfdcRR3QBvr2YnZPRLA5nA3bSLGqZK6FG8BGTtfRqwQSqpfdVzir8',
           '4SaK3Ws5EsAKTC8QDJ5gSe9Xv9pY2gqXEMrsvqUz5f8Y2fX1tNuVDdogc8Sphn7yW2n6qmsnf8imozdmLcYJWLcp',
@@ -31,14 +31,16 @@ models:
           '5qm6roLvPmFy7FCx1Uj5mPLZ46KXrpTwQSn1hSKjdMvSM4P6hxyZ8aXe3qEqdipm3C6gpJdBapvjLiu4TXWe4pEG',
           '3e9SiF8RXs9KDSmRDJLdXBPKXYCStm2XjUMBbEPiQwbwfvBJ9AG4BfJqDtQeTPvGZeEY6R6o2YddmZbytC3JVQuT',
           '5QS5syBH2K7zzXXzi6uXyVpE8eh7UJ7iepr4nNHENL7AEmFhVeR1gFPn5T7yaoz9RpL26rPEryYSBEf8z2Z3uiwG',
-          '27AMYCXzrtYZEzFrf7MDVgX8iZZZMq5NCSjRkBsWhE7ou54XbhBnAiZ4WnpPhnDspJ6chLmYY2s1oWvA9W75fivD')"
+          '27AMYCXzrtYZEzFrf7MDVgX8iZZZMq5NCSjRkBsWhE7ou54XbhBnAiZ4WnpPhnDspJ6chLmYY2s1oWvA9W75fivD',
+          '2vEcFuQTQABDQRKA9hBXewZZnuUfasiPzozR6ubnsysmnzBxCUCNR4sEQ5W3JqL1kppTVrvcuwWjHzL8piF3jSi3')"
       - tx_excluded:
           name: silver__liquidity_pool_actions_raydium_tx_excluded_test
           excluded_tx_ids:
-            - 4XMga64PPam74iSFPqnXohswejwtdxL1Dj5azTjBfYwE97PfGcP6JSastTwRFHdnzXTcdyRsMwD7t5ZZdpYzjqJj,
+            - 4XMga64PPam74iSFPqnXohswejwtdxL1Dj5azTjBfYwE97PfGcP6JSastTwRFHdnzXTcdyRsMwD7t5ZZdpYzjqJj
             - 4bEAGZx3EkCyuh3arFg1k3hx7CgR2L9aFdxGg3ihWvwdB4KQiheF6JiyRCQcT6LpeJovYdajDg9fsJ3Lor8pN3kk
             - fACqZJ8hmUjLoBX2wzUS2gfwQUmV4HfJbXeQ5QbrZKTs2qdYZVREZxZbTaCy7brZT2Ck7QDqVLDBXVvbrLdYkk6
             - EdDzKMQYwjYuBCV8AmpbUKpuXtcgAnTfZzduNx7j1CZ4NQAmiZMDQk2zZK9qhH2WfudYTwdzdoz1jpgTTLXELqo
+            - 2og2S8BvcxCnE6GhQ6PrvYPxFTN6YLLLB6YfEx1CwG8kvgpDhkqEqon7y9GBDb9M49M3thHKQMECLptd3Z3zVWD7
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

@@ -37,10 +37,29 @@ dex_lp_txs AS (
         e.*,
         signers [0] :: STRING AS liquidity_provider,
         CASE
-            WHEN program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8' and ARRAY_SIZE(instruction :accounts) > 21 THEN 'withdraw'
-            WHEN program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8' and ARRAY_SIZE(instruction :accounts) < 21 THEN 'deposit'
-            WHEN program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv' and ARRAY_SIZE(instruction :accounts) > 18 THEN 'withdraw'
-            WHEN program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv' and ARRAY_SIZE(instruction :accounts) < 18 THEN 'deposit'
+            WHEN program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
+            AND ARRAY_SIZE(
+                instruction :accounts
+            ) > 21 THEN 'withdraw'
+            WHEN program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
+            AND ARRAY_SIZE(
+                instruction :accounts
+            ) < 21
+            AND ARRAY_SIZE(
+                instruction :accounts
+            ) <> 16 THEN 'deposit'
+            WHEN program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
+            AND ARRAY_SIZE(
+                instruction :accounts
+            ) = 16 THEN 'withdrawpnl'
+            WHEN program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
+            AND ARRAY_SIZE(
+                instruction :accounts
+            ) > 18 THEN 'withdraw'
+            WHEN program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
+            AND ARRAY_SIZE(
+                instruction :accounts
+            ) < 18 THEN 'deposit'
             ELSE NULL
         END AS action
     FROM
@@ -64,7 +83,7 @@ dex_lp_txs AS (
             )
         )
         OR (
-             -- withdraws/remove liquidity
+            -- withdraws/remove liquidity
             (
                 program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
                 AND instruction :accounts [0] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
@@ -76,7 +95,14 @@ dex_lp_txs AS (
             )
         )
         OR (
-                program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
+            program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
+            AND ARRAY_SIZE(
+                instruction :accounts
+            ) = 16
+            AND instruction :accounts [1] <> 'SysvarRent111111111111111111111111111111111'
+        )
+        OR (
+            program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
         )
 
 {% if is_incremental() %}
@@ -130,7 +156,6 @@ WHERE
 --                 dex_lp_txs
 --         ) d
 --         ON d.tx_id = pb.tx_id
-
 -- {% if is_incremental() %}
 -- WHERE
 --     _inserted_timestamp >= (
@@ -189,13 +214,13 @@ account_mappings AS (
     FROM
         raydium_account_mapping
     UNION
-    -- SELECT
-    --     tx_id,
-    --     account AS associated_account,
-    --     owner
-    -- FROM
-    --     base_post_token_balances
-    -- UNION
+        -- SELECT
+        --     tx_id,
+        --     account AS associated_account,
+        --     owner
+        -- FROM
+        --     base_post_token_balances
+        -- UNION
     SELECT
         e.tx_id,
         e.instruction :parsed :info :account :: STRING AS associated_account,
@@ -222,26 +247,26 @@ account_mappings AS (
                 e.program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
                 AND e.event_type = 'closeAccount'
             )
-        )
-    -- UNION
-    -- SELECT
-    --     e.tx_id,
-    --     e.instruction :parsed :info :delegate :: STRING AS associated_account,
-    --     e.instruction :parsed :info :owner :: STRING AS owner
-    -- FROM
-    --     base_events e
-    --     INNER JOIN (
-    --         SELECT
-    --             DISTINCT tx_id
-    --         FROM
-    --             dex_lp_txs
-    --     ) d
-    --     ON d.tx_id = e.tx_id
-    -- WHERE
-    --     (
-    --         e.program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-    --         AND e.event_type = 'approve'
-    --     )
+        ) 
+        -- UNION
+        -- SELECT
+        --     e.tx_id,
+        --     e.instruction :parsed :info :delegate :: STRING AS associated_account,
+        --     e.instruction :parsed :info :owner :: STRING AS owner
+        -- FROM
+        --     base_events e
+        --     INNER JOIN (
+        --         SELECT
+        --             DISTINCT tx_id
+        --         FROM
+        --             dex_lp_txs
+        --     ) d
+        --     ON d.tx_id = e.tx_id
+        -- WHERE
+        --     (
+        --         e.program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+        --         AND e.event_type = 'approve'
+        --     )
 ),
 lp_actions_w_destination AS (
     SELECT
@@ -288,11 +313,16 @@ lp_actions_w_destination AS (
         AND s.tx_to = m2.associated_account
         AND s.tx_from <> m2.owner
     WHERE
-        ii.value :parsed :type :: STRING IN(
-            'burn',
-            'mintTo'
+        (
+            ii.value :parsed :type :: STRING IN(
+                'burn',
+                'mintTo'
+            )
+            AND s.program_id <> '11111111111111111111111111111111'
         )
-        AND s.program_id <> '11111111111111111111111111111111'
+        OR (
+            action = 'withdrawpnl'
+        )
 ),
 temp_final AS(
     SELECT
@@ -311,7 +341,15 @@ temp_final AS(
         _inserted_timestamp
     FROM
         lp_actions_w_destination
-    where (tx_to = liquidity_provider or tx_from = liquidity_provider)
+    WHERE
+        (
+            tx_to = liquidity_provider
+            OR tx_from = liquidity_provider
+        )
+        OR program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
+        OR (
+            action = 'withdrawpnl'
+        )
     UNION
     SELECT
         l.block_id,
@@ -333,8 +371,11 @@ temp_final AS(
         l._inserted_timestamp
     FROM
         lp_actions_w_destination l
-        LEFT OUTER JOIN {{ ref('silver__token_metadata') }} m
+        LEFT OUTER JOIN {{ ref('silver__token_metadata') }}
+        m
         ON l.lp_mint_address = m.token_address
+    WHERE
+        action <> 'withdrawpnl'
 )
 SELECT
     block_id,
