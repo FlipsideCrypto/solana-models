@@ -40,11 +40,11 @@ dex_lp_txs AS (
             WHEN program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
             AND ARRAY_SIZE(
                 instruction :accounts
-            ) > 21 THEN 'withdraw'
+            ) > 18 THEN 'withdraw'
             WHEN program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
             AND ARRAY_SIZE(
                 instruction :accounts
-            ) < 21
+            ) < 18
             AND ARRAY_SIZE(
                 instruction :accounts
             ) <> 16 THEN 'deposit'
@@ -341,15 +341,15 @@ temp_final AS(
         _inserted_timestamp
     FROM
         lp_actions_w_destination
-    WHERE
-        (
-            tx_to = liquidity_provider
-            OR tx_from = liquidity_provider
-        )
-        OR program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
-        OR (
-            action = 'withdrawpnl'
-        )
+    -- WHERE
+    --     (
+    --         tx_to = liquidity_provider
+    --         OR tx_from = liquidity_provider
+    --     )
+    --     OR program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
+    --     OR (
+    --         action = 'withdrawpnl'
+    --     )
     UNION
     SELECT
         l.block_id,
