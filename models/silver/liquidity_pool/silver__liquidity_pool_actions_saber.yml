@@ -27,7 +27,8 @@ models:
           'gMHYSs2jtBibGwCxP8Moo1zhHHqef7ZgvZZHnmusriLcUJwKQd6G1FeWXJLTt6GuEFBPR3qbpPWmz9kvhgZKsi9',
           'kTF14Sm9MQWZzc9Rm1cW6geq79cr8b7ETRp6T1MjMXcNjiYdowBdSQThnxhJWQugBncx7XR3aJ8BWuih1fSJbrh',
           '2Nz119Txhc2yz3u32ReKBKq5HPKGvoM1V2mZEZZng2HV7rpQR7dBjRZr8PkpHWpnHVJpZRj5bbVdDrFPzyf84bAK',
-          '3Eh3zpwTGfMXAAiwufZmghhwGiuqpkLmPw8iZsyhPKemZ6X4bTA9on21hMN8ZrRAvU65Y5fr2Y7crdoFhHhtt5wU')"
+          '3Eh3zpwTGfMXAAiwufZmghhwGiuqpkLmPw8iZsyhPKemZ6X4bTA9on21hMN8ZrRAvU65Y5fr2Y7crdoFhHhtt5wU',
+          '57JQZ4KadnBiFEiyRkvpqoHptEigCwZTAsLup1rFuVqxMqiEreBeGM7uEBbZdFELVrgzqdCaY3n4P8qnisaJegcX')"
       - tx_excluded:
           name: silver__liquidity_pool_actions_saber_tx_excluded_test
           excluded_tx_ids:

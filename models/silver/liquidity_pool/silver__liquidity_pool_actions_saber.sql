@@ -35,7 +35,7 @@ AND _inserted_timestamp >= (
 dex_lp_txs AS (
     SELECT
         e.*,
-        signers [0] :: STRING AS liquidity_provider,
+        IFF(ARRAY_SIZE(signers) = 1, signers [0] :: STRING, NULL) AS liquidity_provider,
         signers
     FROM
         base_events e
@@ -53,7 +53,8 @@ dex_lp_txs AS (
                 ) IN (
                     10,
                     11,
-                    12
+                    12,
+                    13
                 )
                 AND e.instruction :accounts [9] :: STRING <> 'SysvarC1ock11111111111111111111111111111111'
             )
@@ -110,7 +111,6 @@ WHERE
 --                 dex_lp_txs
 --         ) d
 --         ON d.tx_id = pb.tx_id
-
 -- {% if is_incremental() %}
 -- WHERE
 --     _inserted_timestamp >= (
@@ -204,17 +204,16 @@ account_mappings AS (
                 e.program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
                 AND e.event_type = 'closeAccount'
             )
-        )
-    -- UNION
-    -- SELECT
-    --     dm.*
-    -- FROM
-    --     delegates_mappings dm
-    --     INNER JOIN dex_lp_txs dt
-    --     ON dm.tx_id = dm.tx_id
-    --     AND dt.instruction :accounts [2] :: STRING = dm.associated_account
-    -- WHERE
-    --     dt.program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
+        ) -- UNION
+        -- SELECT
+        --     dm.*
+        -- FROM
+        --     delegates_mappings dm
+        --     INNER JOIN dex_lp_txs dt
+        --     ON dm.tx_id = dm.tx_id
+        --     AND dt.instruction :accounts [2] :: STRING = dm.associated_account
+        -- WHERE
+        --     dt.program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
 ),
 lp_transfers_with_amounts AS(
     SELECT
@@ -229,7 +228,8 @@ lp_transfers_with_amounts AS(
         s.mint,
         s.succeeded,
         s._inserted_timestamp,
-        e.liquidity_provider,
+        e.liquidity_provider AS tmp_liquidity_provider,
+        e.signers,
         e.program_id,
         ii.value :parsed :type :: STRING AS action,
         CASE
@@ -278,11 +278,12 @@ lp_actions_w_destination AS (
         s.action,
         s.succeeded,
         s._inserted_timestamp,
-        s.liquidity_provider,
+        s.tmp_liquidity_provider,
         s.liquidity_pool_address,
         s.lp_mint_address,
         s.lp_amount,
         s.temp_wrapped_mint,
+        s.signers,
         s.program_id
     FROM
         lp_transfers_with_amounts s
@@ -293,16 +294,40 @@ lp_actions_w_destination AS (
         LEFT OUTER JOIN account_mappings m2
         ON s.tx_id = m2.tx_id
         AND s.tx_to = m2.associated_account
-        AND s.tx_from <> m2.owner
+        AND s.tx_from <> m2.owner -- WHERE
+        --     (
+        --         action = 'burn'
+        --         AND liquidity_provider = tx_to
+        --     )
+        --     OR (
+        --         action = 'mintTo'
+        --         AND liquidity_provider = tx_from
+        --     )
+),
+multi_signer_swapper AS (
+    SELECT
+        tx_id,
+        silver.udf_get_multi_signers_swapper(ARRAY_AGG(tx_from), ARRAY_AGG(tx_to), ARRAY_AGG(signers) [0]) AS liquidity_provider
+    FROM
+        lp_actions_w_destination
     WHERE
-        (
-            action = 'burn'
-            AND liquidity_provider = tx_to
-        )
-        OR (
-            action = 'mintTo'
-            AND liquidity_provider = tx_from
-        )
+        succeeded
+        AND ARRAY_SIZE(signers) > 1
+        AND tmp_liquidity_provider IS NULL
+    GROUP BY
+        1
+),
+lp_actions_w_liq_provider AS (
+    SELECT
+        l.*,
+        COALESCE(
+            l.tmp_liquidity_provider,
+            m.liquidity_provider
+        ) AS liquidity_provider
+    FROM
+        lp_actions_w_destination l
+        LEFT OUTER JOIN multi_signer_swapper m
+        ON l.tx_id = m.tx_id
 ),
 lp_actions_w_unwrapped_tokens AS (
     SELECT
@@ -331,7 +356,7 @@ lp_actions_w_unwrapped_tokens AS (
         l1.temp_wrapped_mint,
         l1.program_id
     FROM
-        lp_actions_w_destination l1
+        lp_actions_w_liq_provider l1
         LEFT JOIN lp_actions_w_destination l2
         ON l1.tx_id = l2.tx_id
         AND l1.lp_mint_address IS NOT NULL
@@ -340,6 +365,16 @@ lp_actions_w_unwrapped_tokens AS (
     WHERE
         l1.program_id <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
         AND l1.amount <> 0
+        -- AND (
+        --     (
+        --         l1.action = 'burn'
+        --         AND l1.liquidity_provider = l1.tx_to
+        --     )
+        --     OR (
+        --         l1.action = 'mintTo'
+        --         AND l1.liquidity_provider = l1.tx_from
+        --     )
+        -- )
 ),
 temp_final AS (
     SELECT
