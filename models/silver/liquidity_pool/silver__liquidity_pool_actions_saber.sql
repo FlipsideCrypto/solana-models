@@ -350,7 +350,8 @@ lp_actions_w_destination AS (
         s.lp_amount,
         s.temp_wrapped_mint,
         s.signers,
-        s.program_id
+        s.program_id,
+        round(amount,2) as temp_round_amt
     FROM
         lp_transfers_with_amounts s
         LEFT OUTER JOIN account_mappings m1
@@ -435,6 +436,7 @@ lp_actions_w_unwrapped_tokens AS (
         AND l1.mint <> l3.mint
         AND l3.lp_mint_address IS NULL
         AND l3.program_id <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
+        and l1.temp_round_amt = l3.temp_round_amt
     WHERE
         l1.program_id <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
         AND l1.lp_mint_address IS NOT NULL
