@@ -1,12 +1,6 @@
 {{ config(
     materialized = 'view',
-    meta={
-        'database_tags':{
-            'table': {
-                'PURPOSE': 'NFT'
-            }
-        }
-    }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }}}
 ) }}
 
 SELECT
@@ -17,11 +11,14 @@ SELECT
     succeeded,
     program_id,
     purchaser,
-    seller, 
+    seller,
     mint,
     sales_amount
 FROM
-    {{ ref('silver__nft_sales_magic_eden_v1') }}
+    {{ source(
+        'solana_silver',
+        'nft_sales_magic_eden_v1'
+    ) }}
 UNION
 SELECT
     'magic eden v2',
@@ -31,7 +28,7 @@ SELECT
     succeeded,
     program_id,
     purchaser,
-    seller, 
+    seller,
     mint,
     sales_amount
 FROM
@@ -45,11 +42,14 @@ SELECT
     succeeded,
     program_id,
     purchaser,
-    seller, 
+    seller,
     mint,
     sales_amount
 FROM
-    {{ ref('silver__nft_sales_solanart') }}
+    {{ source(
+        'solana_silver',
+        'nft_sales_solanart'
+    ) }}
 UNION
 SELECT
     'solana monkey business marketplace',
@@ -59,7 +59,7 @@ SELECT
     succeeded,
     program_id,
     purchaser,
-    seller, 
+    seller,
     mint,
     sales_amount
 FROM
@@ -73,7 +73,7 @@ SELECT
     succeeded,
     program_id,
     purchaser,
-    seller, 
+    seller,
     mint,
     sales_amount
 FROM
@@ -87,7 +87,7 @@ SELECT
     succeeded,
     program_id,
     purchaser,
-    seller, 
+    seller,
     mint,
     sales_amount
 FROM
@@ -101,7 +101,7 @@ SELECT
     succeeded,
     program_id,
     purchaser,
-    seller, 
+    seller,
     mint,
     sales_amount
 FROM
@@ -115,7 +115,7 @@ SELECT
     succeeded,
     program_id,
     purchaser,
-    seller, 
+    seller,
     mint,
     sales_amount
 FROM
@@ -129,12 +129,12 @@ SELECT
     succeeded,
     program_id,
     purchaser,
-    seller, 
+    seller,
     mint,
     sales_amount
 FROM
     {{ ref('silver__nft_sales_hyperspace') }}
-UNION 
+UNION
 SELECT
     'coral cube',
     block_timestamp,
@@ -143,22 +143,22 @@ SELECT
     succeeded,
     program_id,
     purchaser,
-    seller, 
+    seller,
     mint,
     sales_amount
 FROM
     {{ ref('silver__nft_sales_coral_cube') }}
-UNION 
-SELECT 
+UNION
+SELECT
     'exchange art',
-    block_timestamp, 
-    block_id, 
-    tx_id, 
-    succeeded, 
-    program_id, 
-    purchaser, 
-    seller, 
-    mint, 
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    purchaser,
+    seller,
+    mint,
     sales_amount
-FROM 
+FROM
     {{ ref('silver__nft_sales_exchange_art') }}
