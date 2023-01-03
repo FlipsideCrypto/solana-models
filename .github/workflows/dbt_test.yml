@@ -35,7 +35,7 @@ jobs:
 
       - name: install dependencies
         run: |
-          pip3 install dbt-snowflake==1.2.0 cli_passthrough requests click
+          pip3 install dbt-snowflake==1.3.0 cli_passthrough requests click
           dbt deps
       - name: Run DBT Jobs
         run: |
