@@ -49,3 +49,8 @@ sources:
     tables:
       - name: solscan_token_list
       - name: token_metadata
+  - name: solana_silver
+    schema: silver
+    tables:
+      - name: nft_sales_solanart
+      - name: nft_sales_magic_eden_v1
