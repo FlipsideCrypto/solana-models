@@ -36,7 +36,8 @@ models:
           'WHcqS4LHazrk8gH8r3L36oyB9scKNo8vPNQpzCJiZNydWgBr1EMtoBdGRa96CdGnqYGTJRe8rsv125p6FPi3E85',
           'wDJtMLsRfnD1bKXGTigcwMdFGJibZULDgfoAifGo9YeFTm31YDeESoE8FEGvuQS1ZcqeTC6rZ2EfpSU9GScJqEW',
           'jqz3ZYk1YKu7MsfuXFKNSo3EcQH292uhvqY9XNGLSwyeHJHhYkHqtvzAe6rX1PsuBrGm4FJ8HTxpuNc22c3LZkM',
-          '4yxURFgGKwq1rLCS3HsdZgM4xSe32geqEnbZXaei5xH9tiEF8SmBZxEsnFNEU3DqUoNes5PmSAucjgXex7EaCj6V')"
+          '4yxURFgGKwq1rLCS3HsdZgM4xSe32geqEnbZXaei5xH9tiEF8SmBZxEsnFNEU3DqUoNes5PmSAucjgXex7EaCj6V',
+          '55VitbtZPCzePLUQpW4NrrdWCutphTSVhN8NRCRgdosjVPxBQWQX99kcSApkH4xhsf5cH2wBy9K5wMNJzB1oD35X')"
       - tx_excluded:
           name: silver__liquidity_pool_actions_orca_tx_excluded_test
           excluded_tx_ids:
@@ -44,6 +45,7 @@ models:
             - 2D2UC82LacJHga2EaXFYtiuWp4ztSKB9NzHbXvfYBpZUE2GN71frzLWs3RYEJyZfYJdQAST9SBvJJGqKHHEcRjEQ
             - 5XgNjYNgxG7r2VWcXmSfs2ZFxYCxksmzPN9ceEEqHhS1X8KJeajaiNJo1vhEVBsiEWfvwSJNyXUma2Yth6HCCVii
             - 4BcdEFUUgLmda1yZvwuAvREC9S7L7t2TEDHztje2fuVDk2uZsLg7bSLy3QmqeV8Yw7jF4acNwCCw2uxNzH9KEmi
+            - 4duJw2HAtkoU1e9v4Ea7hfo9rn2e2B9vLAwVzEmvqc3YVYTQRAT4uWnDgnmc7ivuFn16zPCoG7Xk5YyPfZMueW2k
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

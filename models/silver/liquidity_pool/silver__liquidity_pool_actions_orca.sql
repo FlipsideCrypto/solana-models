@@ -17,10 +17,10 @@ WITH base_events AS(
             'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc',
             '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
             'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
+            'FoNqK2xudK7TfKjPFxpzAcTaU2Wwyt81znT4RjJBLFQp',
             --program ids for acct mapping
             'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
-            'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-            --program ids that identify the swapper in certain tx
+            'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' --program ids that identify the swapper in certain tx
             -- '8rGFmebhhTikfJP5bUe2uLHcejSiukdJhiLEKoit962a',
             -- 'E16pm4Z4jiFxVEeBcSuYfJHy6TQYfYRAhGYt7cEUYfEV'
         )
@@ -63,6 +63,10 @@ dex_lp_txs AS (
                 e.instruction :accounts
             ) = 11
             AND program_id = 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1' THEN 'withdraw'
+            WHEN ARRAY_SIZE(
+                e.instruction :accounts
+            ) = 17
+            AND program_id = 'FoNqK2xudK7TfKjPFxpzAcTaU2Wwyt81znT4RjJBLFQp' THEN 'deposit'
             ELSE NULL
         END AS action,
         signers
@@ -76,7 +80,8 @@ dex_lp_txs AS (
         program_id IN (
             'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc',
             '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
-            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1'
+            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
+            'FoNqK2xudK7TfKjPFxpzAcTaU2Wwyt81znT4RjJBLFQp'
         )
         AND inner_instruction_program_ids [0] <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
         AND action IS NOT NULL
@@ -309,14 +314,18 @@ lp_transfers_with_amounts AS(
         --     e.liquidity_provider
         -- ) AS tmp_liquidity_provider,
         e.liquidity_provider,
-        e.instruction :accounts [0] :: STRING AS liquidity_pool_address,
+        CASE
+            WHEN e.program_id = 'FoNqK2xudK7TfKjPFxpzAcTaU2Wwyt81znT4RjJBLFQp' THEN e.instruction :accounts [10]
+            ELSE e.instruction :accounts [0] :: STRING
+        END AS liquidity_pool_address,
         CASE
             -- 9w95
             -- WHEN action = 'deposit' and e.program_id = '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP' THEN e.instruction:accounts[7] :: string
             -- WHEN action = 'withdraw' and e.program_id = '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP' THEN e.instruction:accounts[4] :: string
             WHEN e.program_id IN (
                 '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
-                'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1'
+                'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
+                'FoNqK2xudK7TfKjPFxpzAcTaU2Wwyt81znT4RjJBLFQp'
             ) THEN ii.value :parsed :info :mint :: STRING
             ELSE NULL
         END AS lp_mint_address,
@@ -334,7 +343,8 @@ lp_transfers_with_amounts AS(
             -- 9w95
             WHEN e.program_id IN (
                 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
-                '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
+                '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
+                'FoNqK2xudK7TfKjPFxpzAcTaU2Wwyt81znT4RjJBLFQp'
             ) THEN ii.value :parsed :info :amount :: INT
             WHEN e.program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc' THEN 1
             ELSE NULL
