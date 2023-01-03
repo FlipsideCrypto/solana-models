@@ -98,7 +98,7 @@ dex_lp_txs AS (
             program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
             AND ARRAY_SIZE(
                 instruction :accounts
-            ) = 16
+            ) in (16,19)
             AND instruction :accounts [1] <> 'SysvarRent111111111111111111111111111111111'
         )
         OR (

@@ -15,7 +15,7 @@ models:
             - action
             - liquidity_provider
             - liquidity_pool_address
-            - round(amount,7)
+            - round(amount,8)
             - mint
           model_condition: "where tx_id in ('eVjgXuTfgg34HqnsNqmc9LT5VJ1p3f37W4VfdcRR3QBvr2YnZPRLA5nA3bSLGqZK6FG8BGTtfRqwQSqpfdVzir8',
           '4SaK3Ws5EsAKTC8QDJ5gSe9Xv9pY2gqXEMrsvqUz5f8Y2fX1tNuVDdogc8Sphn7yW2n6qmsnf8imozdmLcYJWLcp',
