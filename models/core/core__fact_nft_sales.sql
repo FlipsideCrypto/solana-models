@@ -46,10 +46,7 @@ SELECT
     mint,
     sales_amount
 FROM
-    {{ source(
-        'solana_silver',
-        'nft_sales_solanart'
-    ) }}
+    {{ ref('silver__nft_sales_solanart') }}
 UNION
 SELECT
     'solana monkey business marketplace',
@@ -77,7 +74,10 @@ SELECT
     mint,
     sales_amount
 FROM
-    {{ ref('silver__nft_sales_solport') }}
+    {{ source(
+        'solana_silver',
+        'nft_sales_solport'
+    ) }}
 UNION
 SELECT
     'opensea',

@@ -52,5 +52,5 @@ sources:
   - name: solana_silver
     schema: silver
     tables:
-      - name: nft_sales_solanart
+      - name: nft_sales_solport
       - name: nft_sales_magic_eden_v1
