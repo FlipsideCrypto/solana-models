@@ -33,7 +33,8 @@ models:
           '5QS5syBH2K7zzXXzi6uXyVpE8eh7UJ7iepr4nNHENL7AEmFhVeR1gFPn5T7yaoz9RpL26rPEryYSBEf8z2Z3uiwG',
           '27AMYCXzrtYZEzFrf7MDVgX8iZZZMq5NCSjRkBsWhE7ou54XbhBnAiZ4WnpPhnDspJ6chLmYY2s1oWvA9W75fivD',
           '2vEcFuQTQABDQRKA9hBXewZZnuUfasiPzozR6ubnsysmnzBxCUCNR4sEQ5W3JqL1kppTVrvcuwWjHzL8piF3jSi3',
-          '3H65Hkz7oDrftsFn1fMPw5KgAZWa5NQFg9ztRvTRVBJpWQX3bkQorfaUB2brMi9CJa8YdTg4yyi5vv57U6dxZoq6')"
+          '3H65Hkz7oDrftsFn1fMPw5KgAZWa5NQFg9ztRvTRVBJpWQX3bkQorfaUB2brMi9CJa8YdTg4yyi5vv57U6dxZoq6',
+          '4Gz7gZvtDy9ig3x9mXTz1aE3da3DnFEZxfTEmshXkvkz1rfT5tB7W2YfvNAVjyzqjv9BtsDXvPDmzSujUehzDsDR')"
       - tx_excluded:
           name: silver__liquidity_pool_actions_raydium_tx_excluded_test
           excluded_tx_ids:

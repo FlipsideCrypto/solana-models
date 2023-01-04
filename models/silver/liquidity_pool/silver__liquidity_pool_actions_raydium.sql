@@ -98,7 +98,10 @@ dex_lp_txs AS (
             program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
             AND ARRAY_SIZE(
                 instruction :accounts
-            ) in (16,19)
+            ) IN (
+                16,
+                19
+            )
             AND instruction :accounts [1] <> 'SysvarRent111111111111111111111111111111111'
         )
         OR (
@@ -247,8 +250,7 @@ account_mappings AS (
                 e.program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
                 AND e.event_type = 'closeAccount'
             )
-        ) 
-        -- UNION
+        ) -- UNION
         -- SELECT
         --     e.tx_id,
         --     e.instruction :parsed :info :delegate :: STRING AS associated_account,
@@ -314,11 +316,13 @@ lp_actions_w_destination AS (
         AND s.tx_from <> m2.owner
     WHERE
         (
-            ii.value :parsed :type :: STRING IN(
-                'burn',
-                'mintTo'
-            )
+            ii.value :parsed :type :: STRING = 'mintTo'
             AND s.program_id <> '11111111111111111111111111111111'
+        )
+        OR (
+            ii.value :parsed :type :: STRING = 'burn'
+            AND s.program_id <> '11111111111111111111111111111111'
+            AND tx_to <> e.instruction :accounts [2]
         )
         OR (
             action = 'withdrawpnl'
@@ -340,16 +344,15 @@ temp_final AS(
         inner_index,
         _inserted_timestamp
     FROM
-        lp_actions_w_destination
-    -- WHERE
-    --     (
-    --         tx_to = liquidity_provider
-    --         OR tx_from = liquidity_provider
-    --     )
-    --     OR program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
-    --     OR (
-    --         action = 'withdrawpnl'
-    --     )
+        lp_actions_w_destination -- WHERE
+        --     (
+        --         tx_to = liquidity_provider
+        --         OR tx_from = liquidity_provider
+        --     )
+        --     OR program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
+        --     OR (
+        --         action = 'withdrawpnl'
+        --     )
     UNION
     SELECT
         l.block_id,
