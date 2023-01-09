@@ -78,7 +78,8 @@ dex_lp_txs AS (
                     instruction :accounts
                 ) IN (
                     12,
-                    13
+                    13,
+                    14
                 )
             )
         )
@@ -88,7 +89,7 @@ dex_lp_txs AS (
                 program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
                 AND instruction :accounts [0] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
                 AND instruction :accounts [2] :: STRING = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
-                AND instruction :accounts [10] :: STRING = '9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin'
+                AND instruction :accounts [10] :: STRING in ('9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin','srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX')
                 AND ARRAY_SIZE(
                     instruction :accounts
                 ) > 21
@@ -323,6 +324,7 @@ lp_actions_w_destination AS (
             ii.value :parsed :type :: STRING = 'burn'
             AND s.program_id <> '11111111111111111111111111111111'
             AND tx_to <> e.instruction :accounts [2]
+            and tx_from = e.instruction :accounts [2]
         )
         OR (
             action = 'withdrawpnl'
