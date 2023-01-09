@@ -11,17 +11,31 @@ WITH base_events AS(
         *
     FROM
         {{ ref('silver__events') }}
-    WHERE
-        program_id IN (
-            'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ',
-            'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB',
-            'TLPv2tuSVvn3fSk8RgW3yPddkp5oFivzZV3rA9hQxtX',
-            'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t',
-            -- used only for deposits in saber
-            'EzSXQ2BXf8m4y4jcQQGeZ6nnwXB3ARXP3YQ5SwjKLj82',
-            --program ids for acct mapping
-            'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
-            'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+    WHERE(
+            program_id IN (
+                -- saber
+                -- 'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t',
+                'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ',
+                'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB',
+                'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t',
+                -- program id with many deposits
+                -- 'EzSXQ2BXf8m4y4jcQQGeZ6nnwXB3ARXP3YQ5SwjKLj82',
+                --program ids for acct mapping
+                'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+                'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+            )
+            OR ARRAY_CONTAINS(
+                'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ' :: variant,
+                inner_instruction_program_ids
+            )
+            OR ARRAY_CONTAINS(
+                'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB' :: variant,
+                inner_instruction_program_ids
+            )
+            OR ARRAY_CONTAINS(
+                'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t' :: variant,
+                inner_instruction_program_ids
+            )
         )
         AND block_id > 80172009 -- first appearance of Saber LP action
 
@@ -50,40 +64,6 @@ dex_lp_txs AS (
         t
         ON t.tx_id = e.tx_id
         AND t.block_timestamp :: DATE = e.block_timestamp :: DATE
-    WHERE
-        (
-            program_id = 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
-            OR (
-                program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
-                AND ARRAY_SIZE(
-                    e.instruction :accounts
-                ) IN (
-                    10,
-                    11,
-                    12,
-                    13
-                )
-                AND e.instruction :accounts [9] :: STRING <> 'SysvarC1ock11111111111111111111111111111111'
-            ) -- crt withdraw 1
-            OR (
-                program_id = 'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t'
-                AND ARRAY_SIZE(
-                    e.instruction :accounts
-                ) > 12
-                AND e.instruction :accounts [2] :: STRING IN (
-                    'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ',
-                    'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
-                )
-            ) -- tulip deposit
-            OR (
-                program_id = 'TLPv2tuSVvn3fSk8RgW3yPddkp5oFivzZV3rA9hQxtX'
-                AND e.instruction :accounts [13] :: STRING = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
-            ) -- ezsx program id and its deposits/mints
-            OR (
-                program_id = 'EzSXQ2BXf8m4y4jcQQGeZ6nnwXB3ARXP3YQ5SwjKLj82'
-                AND e.instruction :accounts [2] :: STRING = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
-            )
-        )
 
 {% if is_incremental() %}
 AND t._inserted_timestamp >= (
@@ -107,19 +87,19 @@ temp_inner_program_ids AS (
     FROM
         dex_lp_txs,
         TABLE(FLATTEN(inner_programs)) i),
-base_transfers AS (
-    SELECT
-        tr.*
-    FROM
-        {{ ref('silver__transfers') }}
-        tr
-        INNER JOIN (
+        base_transfers AS (
             SELECT
-                DISTINCT tx_id
+                tr.*
             FROM
-                dex_lp_txs
-        ) d
-        ON d.tx_id = tr.tx_id
+                {{ ref('silver__transfers') }}
+                tr
+                INNER JOIN (
+                    SELECT
+                        DISTINCT tx_id
+                    FROM
+                        dex_lp_txs
+                ) d
+                ON d.tx_id = tr.tx_id
 
 {% if is_incremental() %}
 WHERE
@@ -166,7 +146,7 @@ lp_transfers_temp AS(
         A.block_timestamp,
         A.tx_id,
         COALESCE(SPLIT_PART(INDEX :: text, '.', 1) :: INT, INDEX :: INT) AS INDEX,
-        COALESCE(SPLIT_PART(INDEX :: text, '.', 2), NULL) AS inner_index,
+        NULLIF(SPLIT_PART(INDEX :: text, '.', 2), '') :: INT AS inner_index,
         A.program_id,
         A.tx_from,
         A.tx_to,
@@ -188,7 +168,8 @@ lp_action_w_inner_program_id AS(
     SELECT
         s.*,
         t.inner_swap_program_id,
-        t.swap_program_inner_index_start
+        t.swap_program_inner_index_start,
+        t.swap_program_inner_index_end
     FROM
         lp_transfers_temp s
         LEFT OUTER JOIN temp_inner_program_ids t
@@ -197,28 +178,6 @@ lp_action_w_inner_program_id AS(
         AND s.inner_index BETWEEN t.swap_program_inner_index_start
         AND t.swap_program_inner_index_end
 ),
--- delegates_mappings AS (
---     SELECT
---         e.tx_id,
---         e.instruction :parsed :info :delegate :: STRING AS associated_account,
---         e.instruction :parsed :info :owner :: STRING AS owner
---     FROM
---         base_events e
---         INNER JOIN (
---             SELECT
---                 DISTINCT tx_id
---             FROM
---                 dex_lp_txs
---             WHERE
---                 program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
---         ) d
---         ON d.tx_id = e.tx_id
---     WHERE
---         (
---             e.program_id = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
---             AND e.event_type = 'approve'
---         )
--- ),
 account_mappings AS (
     -- SELECT
     --     tx_id,
@@ -283,45 +242,78 @@ lp_transfers_with_amounts AS(
         ii.value :parsed :type :: STRING AS action,
         s.inner_swap_program_id,
         s.swap_program_inner_index_start,
+        s.swap_program_inner_index_end,
         CASE
             WHEN e.program_id = 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB' THEN e.instruction :accounts [1] :: STRING
             ELSE NULL
         END AS temp_wrapped_mint,
         CASE
-            -- 9w95
+            -- sswpk outer
             WHEN e.program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
             AND action = 'burn' THEN e.instruction :accounts [3] :: STRING
             WHEN e.program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
-            AND action = 'mintTo' THEN e.instruction :accounts [7] :: STRING --sswp for inner for Ezsx
+            AND action = 'mintTo' THEN e.instruction :accounts [7] :: STRING 
+            --sswpk inner
             WHEN s.inner_swap_program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
-            AND e.program_id = 'EzSXQ2BXf8m4y4jcQQGeZ6nnwXB3ARXP3YQ5SwjKLj82'
-            AND action = 'mintTo' THEN e.instruction :accounts [7] :: STRING --sswpk as inner for crt
+            AND action = 'burn' THEN e.inner_instruction :instructions [0] :accounts [3] :: STRING
             WHEN s.inner_swap_program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
-            AND action = 'burn' THEN e.instruction :accounts [7] :: STRING -- sswpk as inner for tulip
-            WHEN s.inner_swap_program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
-            AND action = 'mintTo' THEN e.instruction :accounts [11] :: STRING
+            AND action = 'mintTo' THEN e.inner_instruction :instructions [0] :accounts [7] :: STRING
             ELSE NULL
         END AS lp_mint_address,
         CASE
-            -- lp address for tulip
-            WHEN e.program_id IN (
-                'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t',
-                'TLPv2tuSVvn3fSk8RgW3yPddkp5oFivzZV3rA9hQxtX',
-                'EzSXQ2BXf8m4y4jcQQGeZ6nnwXB3ARXP3YQ5SwjKLj82'
-            ) THEN e.inner_instruction :instructions [0] :accounts [0] :: STRING
-            ELSE e.instruction :accounts [0] :: STRING
+            -- sswpk outer
+            WHEN e.program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ' THEN e.instruction :accounts [0] :: STRING --sswpk inner
+            WHEN s.inner_swap_program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ' THEN e.inner_instruction :instructions [0] :accounts [0] :: STRING
         END AS liquidity_pool_address,
-        ii.value :parsed :info :amount :: INT AS lp_amount
+        ii.value :parsed :info :amount :: INT AS lp_amount -- ii.*
     FROM
         lp_action_w_inner_program_id s
         INNER JOIN dex_lp_txs e
         ON s.tx_id = e.tx_id
         AND s.index = e.index
-        LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
+        LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii -- on s.inner_index = ii.index
     WHERE
         ii.value :parsed :type :: STRING IN(
             'burn',
             'mintTo'
+        )
+        AND(
+            (
+                e.program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
+                AND ARRAY_SIZE(
+                    e.instruction :accounts
+                ) IN (
+                    10,
+                    11,
+                    12,
+                    13
+                )
+                AND e.instruction :accounts [9] :: STRING <> 'SysvarC1ock11111111111111111111111111111111'
+                AND e.instruction :accounts [8] :: STRING <> 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' -- and e.instruction :accounts [1] :: STRING in (tx_from,tx_to)
+                AND e.instruction :accounts [1] :: STRING <> 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+            )
+            OR (
+                s.inner_swap_program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
+                AND ARRAY_SIZE(
+                    e.inner_instruction :instructions [0] :accounts
+                ) IN (
+                    10,
+                    11,
+                    12,
+                    13
+                )
+                AND e.inner_instruction :instructions [0] :accounts [9] :: STRING <> 'SysvarC1ock11111111111111111111111111111111'
+                AND e.inner_instruction :instructions [0] :accounts [8] :: STRING <> 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+                AND ii.index BETWEEN swap_program_inner_index_start
+                AND swap_program_inner_index_end
+            ) -- and e.inner_instruction:instructions[0]:accounts[1] :: STRING in (tx_from,tx_to)
+            -- and e.inner_instruction:instructions[0]:accounts[0] :: STRING <> 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
+            OR (
+                s.inner_swap_program_id = 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
+            )
+            OR (
+                e.program_id = 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
+            )
         )
 ),
 lp_actions_w_destination AS (
@@ -351,7 +343,10 @@ lp_actions_w_destination AS (
         s.temp_wrapped_mint,
         s.signers,
         s.program_id,
-        round(amount,2) as temp_round_amt
+        ROUND(
+            amount,
+            2
+        ) AS temp_round_amt
     FROM
         lp_transfers_with_amounts s
         LEFT OUTER JOIN account_mappings m1
@@ -361,15 +356,7 @@ lp_actions_w_destination AS (
         LEFT OUTER JOIN account_mappings m2
         ON s.tx_id = m2.tx_id
         AND s.tx_to = m2.associated_account
-        AND s.tx_from <> m2.owner -- WHERE
-        --     (
-        --         action = 'burn'
-        --         AND liquidity_provider = tx_to
-        --     )
-        --     OR (
-        --         action = 'mintTo'
-        --         AND liquidity_provider = tx_from
-        --     )
+        AND s.tx_from <> m2.owner
 ),
 multi_signer_swapper AS (
     SELECT
@@ -436,7 +423,7 @@ lp_actions_w_unwrapped_tokens AS (
         AND l1.mint <> l3.mint
         AND l3.lp_mint_address IS NULL
         AND l3.program_id <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
-        and l1.temp_round_amt = l3.temp_round_amt
+        AND l1.temp_round_amt = l3.temp_round_amt
     WHERE
         l1.program_id <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
         AND l1.lp_mint_address IS NOT NULL
