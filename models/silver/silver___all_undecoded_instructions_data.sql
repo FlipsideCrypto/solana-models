@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'view',
     post_hook = 'call silver.sp_bulk_get_decoded_instructions_data()',
+    full_refresh = false
 ) }}
 
 WITH create_validator_gauge_instruction_data AS (
