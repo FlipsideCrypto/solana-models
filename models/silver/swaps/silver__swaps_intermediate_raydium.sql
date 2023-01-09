@@ -65,10 +65,6 @@ dex_txs AS (
         END AS user_owner
     FROM
         base_events e
-        INNER JOIN {{ ref('silver__transactions') }}
-        t
-        ON t.tx_id = e.tx_id
-        AND t.block_timestamp :: DATE = e.block_timestamp :: DATE
     WHERE
         (
             (
@@ -100,17 +96,6 @@ dex_txs AS (
                 )
             )
         )
-
-{% if is_incremental() %}
-AND t._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND t.block_timestamp :: DATE >= '2021-12-14'
-{% endif %}
 ),
 base_transfers AS (
     SELECT

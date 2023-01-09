@@ -45,23 +45,19 @@ AND _inserted_timestamp >= (
 dex_txs AS (
     SELECT
         e.*,
-        IFF(array_size(signers) = 1, signers[0]::STRING, NULL) AS swapper,
-        signers
+        IFF(array_size(signers) = 1, signers[0]::STRING, NULL) AS swapper
     FROM
         base_events e
-        INNER JOIN {{ ref('silver__transactions') }}
-        t
-        ON t.tx_id = e.tx_id
-        AND t.block_timestamp :: DATE = e.block_timestamp :: DATE
     WHERE
         (
             program_id IN (
                 -- saber
                 'Crt7UoUR6QgrFrN7j8rmSQpUTNWNSitSwWvsWGf1qZ5t',
                 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
-            ) -- jupiter v2,v3
+            )
             OR (
                 program_id IN (
+                     -- jupiter v2,v3
                     'JUP2jxvXaqu7NQY1GmNF4m1vodw12LVXYxbFL2uJvfo',
                     'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph'
                 )
@@ -71,18 +67,6 @@ dex_txs AS (
             )
         )
         AND inner_instruction_program_ids [0] <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB' --associated with wrapping of tokens
-
-{% if is_incremental() %}
--- AND t.block_timestamp :: DATE = '2022-11-01'
-AND t._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND t.block_timestamp :: DATE >= '2021-12-14'
-{% endif %}
 ),
 base_transfers AS (
     SELECT
