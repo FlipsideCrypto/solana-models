@@ -50,27 +50,11 @@ dex_lp_txs AS (
     SELECT
         e.*,
         IFF(ARRAY_SIZE(signers) = 1, signers [0] :: STRING, NULL) AS liquidity_provider,
-        -- signers,
         silver.udf_get_jupv4_inner_programs(
             inner_instruction :instructions
         ) AS inner_programs
     FROM
         base_events e
-        -- INNER JOIN {{ ref('silver__transactions') }}
-        -- t
-        -- ON t.tx_id = e.tx_id
-        -- AND t.block_timestamp :: DATE = e.block_timestamp :: DATE
-
--- {% if is_incremental() %}
--- AND t._inserted_timestamp >= (
---     SELECT
---         MAX(_inserted_timestamp)
---     FROM
---         {{ this }}
--- )
--- {% else %}
---     AND t.block_timestamp :: DATE >= '2021-05-27'
--- {% endif %}
 ),
 temp_inner_program_ids AS (
     SELECT
@@ -177,7 +161,8 @@ account_mappings AS (
             )
         )
 ),
-lp_transfers_with_amounts AS(
+-- actions where saber programs are within instructions
+lp_actions_with_amounts_1 AS(
     SELECT
         s.block_id,
         s.block_timestamp,
@@ -191,42 +176,29 @@ lp_transfers_with_amounts AS(
         s.succeeded,
         s._inserted_timestamp,
         e.liquidity_provider AS tmp_liquidity_provider,
+        e.program_id,
         e.signers,
-        coalesce(s.inner_swap_program_id, e.program_id) as program_id,
         ii.value :parsed :type :: STRING AS action,
         s.inner_swap_program_id,
-        s.swap_program_inner_index_start,
-        s.swap_program_inner_index_end,
         CASE
             WHEN e.program_id = 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB' THEN e.instruction :accounts [1] :: STRING
-            ELSE NULL
         END AS temp_wrapped_mint,
         CASE
-            -- sswpk in outer instructions
             WHEN e.program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
             AND action = 'burn' THEN e.instruction :accounts [3] :: STRING
             WHEN e.program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
-            AND action = 'mintTo' THEN e.instruction :accounts [7] :: STRING 
-            -- sswpk in inner instructions
-            WHEN s.inner_swap_program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
-            AND action = 'burn' THEN e.inner_instruction :instructions [0] :accounts [3] :: STRING
-            WHEN s.inner_swap_program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
-            AND action = 'mintTo' THEN e.inner_instruction :instructions [0] :accounts [7] :: STRING
-            ELSE NULL
+            AND action = 'mintTo' THEN e.instruction :accounts [7] :: STRING
         END AS lp_mint_address,
         CASE
-            -- sswpk in outer instructions
             WHEN e.program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ' THEN e.instruction :accounts [0] :: STRING
-            -- sswpk in inner instructions
-            WHEN s.inner_swap_program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ' THEN e.inner_instruction :instructions [0] :accounts [0] :: STRING
         END AS liquidity_pool_address,
-        ii.value :parsed :info :amount :: INT AS lp_amount -- ii.*
+        ii.value :parsed :info :amount :: INT AS lp_amount
     FROM
         lp_action_w_inner_program_id s
         INNER JOIN dex_lp_txs e
         ON s.tx_id = e.tx_id
         AND s.index = e.index
-        LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii -- on s.inner_index = ii.index
+        LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
     WHERE
         ii.value :parsed :type :: STRING IN(
             'burn',
@@ -248,6 +220,58 @@ lp_transfers_with_amounts AS(
                 AND e.instruction :accounts [1] :: STRING <> 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
             )
             OR (
+                e.program_id = 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
+            )
+        )
+),
+-- actions where saber programs are within inner_instructions
+lp_actions_with_amounts_2 AS(
+    SELECT
+        s.block_id,
+        s.block_timestamp,
+        s.tx_id,
+        s.index,
+        s.inner_index,
+        s.tx_from,
+        s.tx_to,
+        s.amount,
+        s.mint,
+        s.succeeded,
+        s._inserted_timestamp,
+        e.liquidity_provider AS tmp_liquidity_provider,
+        e.signers,
+        COALESCE(
+            s.inner_swap_program_id,
+            e.program_id
+        ) AS program_id,
+        ii.value :parsed :type :: STRING AS action,
+        s.inner_swap_program_id,
+        CASE
+            WHEN s.inner_swap_program_id = 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB' THEN e.inner_instruction :instructions [0] :accounts [1] :: STRING
+        END AS temp_wrapped_mint,
+        CASE
+            WHEN s.inner_swap_program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
+            AND action = 'burn' THEN e.inner_instruction :instructions [0] :accounts [3] :: STRING
+            WHEN s.inner_swap_program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
+            AND action = 'mintTo' THEN e.inner_instruction :instructions [0] :accounts [7] :: STRING
+        END AS lp_mint_address,
+        CASE
+            WHEN s.inner_swap_program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ' THEN e.inner_instruction :instructions [0] :accounts [0] :: STRING
+        END AS liquidity_pool_address,
+        ii.value :parsed :info :amount :: INT AS lp_amount
+    FROM
+        lp_action_w_inner_program_id s
+        INNER JOIN dex_lp_txs e
+        ON s.tx_id = e.tx_id
+        AND s.index = e.index
+        LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
+    WHERE
+        ii.value :parsed :type :: STRING IN(
+            'burn',
+            'mintTo'
+        )
+        AND(
+            (
                 s.inner_swap_program_id = 'SSwpkEEcbUqx4vtoEByFjSkhKdCT862DNVb52nZg1UZ'
                 AND ARRAY_SIZE(
                     e.inner_instruction :instructions [0] :accounts
@@ -264,9 +288,6 @@ lp_transfers_with_amounts AS(
             )
             OR (
                 s.inner_swap_program_id = 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
-            )
-            OR (
-                e.program_id = 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
             )
         )
 ),
@@ -302,7 +323,48 @@ lp_actions_w_destination AS (
             2
         ) AS temp_round_amt
     FROM
-        lp_transfers_with_amounts s
+        lp_actions_with_amounts_1 s
+        LEFT OUTER JOIN account_mappings m1
+        ON s.tx_id = m1.tx_id
+        AND s.tx_from = m1.associated_account
+        AND s.tx_to <> m1.owner
+        LEFT OUTER JOIN account_mappings m2
+        ON s.tx_id = m2.tx_id
+        AND s.tx_to = m2.associated_account
+        AND s.tx_from <> m2.owner
+    UNION
+    SELECT
+        s.block_id,
+        s.block_timestamp,
+        s.tx_id,
+        s.index,
+        s.inner_index,
+        COALESCE(
+            m1.owner,
+            s.tx_from
+        ) AS tx_from,
+        COALESCE(
+            m2.owner,
+            s.tx_to
+        ) AS tx_to,
+        s.amount,
+        s.mint,
+        s.action,
+        s.succeeded,
+        s._inserted_timestamp,
+        s.tmp_liquidity_provider,
+        s.liquidity_pool_address,
+        s.lp_mint_address,
+        s.lp_amount,
+        s.temp_wrapped_mint,
+        s.signers,
+        s.program_id,
+        ROUND(
+            amount,
+            2
+        ) AS temp_round_amt
+    FROM
+        lp_actions_with_amounts_2 s
         LEFT OUTER JOIN account_mappings m1
         ON s.tx_id = m1.tx_id
         AND s.tx_from = m1.associated_account
@@ -405,7 +467,7 @@ temp_final AS (
     FROM
         lp_actions_w_unwrapped_tokens
     UNION
-        -- retrieving the lp mint/amount as separate records
+        -- retrieving the lp mint actions as separate rows
     SELECT
         l.block_id,
         l.block_timestamp,
