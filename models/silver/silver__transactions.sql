@@ -49,7 +49,7 @@ WITH pre_final AS (
 {% if is_incremental() %}
 AND _partition_id >= (
     SELECT
-        MAX(_partition_id) -1
+        MAX(_partition_id) -3
     FROM
         {{ this }}
 )

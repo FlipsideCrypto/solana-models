@@ -41,7 +41,7 @@ WITH pre_final AS (
     {% if is_incremental() %}
     AND 
         _partition_id >= (
-            select max(_partition_id)-1
+            select max(_partition_id)-3
             from {{this}}
         )
     AND
