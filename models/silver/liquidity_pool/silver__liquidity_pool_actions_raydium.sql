@@ -64,10 +64,10 @@ dex_lp_txs AS (
         END AS action
     FROM
         base_events e
-        INNER JOIN {{ ref('silver__transactions') }}
-        t
-        ON t.tx_id = e.tx_id
-        AND t.block_timestamp :: DATE = e.block_timestamp :: DATE
+        -- INNER JOIN {{ ref('silver__transactions') }}
+        -- t
+        -- ON t.tx_id = e.tx_id
+        -- AND t.block_timestamp :: DATE = e.block_timestamp :: DATE
     WHERE
         (
             --deposits/add liquidity
@@ -109,16 +109,16 @@ dex_lp_txs AS (
             program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
         )
 
-{% if is_incremental() %}
-AND t._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND t.block_timestamp :: DATE >= '2021-03-06'
-{% endif %}
+-- {% if is_incremental() %}
+-- AND t._inserted_timestamp >= (
+--     SELECT
+--         MAX(_inserted_timestamp)
+--     FROM
+--         {{ this }}
+-- )
+-- {% else %}
+--     AND t.block_timestamp :: DATE >= '2021-03-06'
+-- {% endif %}
 ),
 base_transfers AS (
     SELECT
