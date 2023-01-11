@@ -47,18 +47,18 @@ WITH pre_final AS (
         ) <> 'Vote111111111111111111111111111111111111111'
 
 {% if is_incremental() %}
-AND _partition_id >= (
-    SELECT
-        MAX(_partition_id) -3
-    FROM
-        {{ this }}
-)
-AND _partition_id <= (
-    SELECT
-        MAX(_partition_id) + 10
-    FROM
-        {{ this }}
-)
+    AND _partition_id >= (
+        SELECT
+            MAX(_partition_id) -3
+        FROM
+            {{ this }}
+    )
+    AND _partition_id <= (
+        SELECT 
+            MAX(_partition_id)
+        FROM 
+            {{ ref('streamline__complete_block_txs') }}
+    )
 -- AND t._inserted_timestamp > (
 --     SELECT
 --         MAX(_inserted_timestamp)
