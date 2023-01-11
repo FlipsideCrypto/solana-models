@@ -49,11 +49,11 @@ WITH pre_final AS (
             select max(_partition_id)+10
             from {{this}}
         )
-    AND 
-        t._inserted_timestamp > (
-            select max(_inserted_timestamp)
-            from {{this}}
-        )
+    -- AND 
+    --     t._inserted_timestamp > (
+    --         select max(_inserted_timestamp)
+    --         from {{this}}
+    --     )
     {% else %}
     AND 
         _partition_id in (1,2)
