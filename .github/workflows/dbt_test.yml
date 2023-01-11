@@ -19,6 +19,8 @@ env:
   WAREHOUSE: "${{ secrets.WAREHOUSE }}"
   SCHEMA: "${{ secrets.SCHEMA }}"
 
+concurrency:
+  group: ${{ github.workflow }}
 
 jobs:
   run_dbt_jobs:
