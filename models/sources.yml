@@ -54,3 +54,7 @@ sources:
     tables:
       - name: nft_sales_solport
       - name: nft_sales_magic_eden_v1
+  - name: solana_streamline
+    schema: streamline
+    tables:
+      - name: complete_block_txs

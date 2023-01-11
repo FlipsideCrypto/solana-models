@@ -49,7 +49,7 @@ WITH pre_final AS (
             SELECT 
                 MAX(_partition_id)
             FROM 
-                {{ ref('streamline__complete_block_txs') }}
+                {{ source('solana_streamline','complete_block_txs') }}
         )
     -- AND 
     --     t._inserted_timestamp > (
