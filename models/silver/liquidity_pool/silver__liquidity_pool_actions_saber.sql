@@ -285,6 +285,7 @@ lp_actions_with_amounts_2 AS(
                 AND e.inner_instruction :instructions [0] :accounts [8] :: STRING <> 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
                 AND ii.index BETWEEN swap_program_inner_index_start
                 AND swap_program_inner_index_end
+                and s.inner_index < ii.index
             )
             OR (
                 s.inner_swap_program_id = 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
