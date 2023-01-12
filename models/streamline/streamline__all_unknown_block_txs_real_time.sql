@@ -90,7 +90,7 @@ encoded_txs AS(
             FROM
                 {{ ref('bronze__transactions2') }}
         )
-)
+),
 SELECT
     block_id,
     (
