@@ -34,7 +34,7 @@ base_blocks AS (
     FROM
         {{ ref('silver__blocks') }}
     WHERE
-        block_id >= 154195836 -- this query wont give correct results prior to this block_id
+        block_id >= 170000000 -- all blocks prior have been confirmed as complete
         AND _inserted_date < CURRENT_DATE
 ),
 base_txs AS (
@@ -43,14 +43,14 @@ base_txs AS (
     FROM
         {{ ref('silver__transactions') }}
     WHERE
-        block_id >= 154195836
+        block_id >= 170000000
     UNION
     SELECT
         DISTINCT block_id
     FROM
         {{ ref('silver__votes') }}
     WHERE
-        block_id >= 154195836
+        block_id >= 170000000
 ),
 potential_missing_txs AS (
     SELECT
