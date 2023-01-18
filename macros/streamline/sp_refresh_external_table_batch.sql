@@ -3,6 +3,7 @@
 create or replace procedure streamline.refresh_external_table_next_batch(external_table_name string, streamline_table_name string)
 returns string
 language sql
+execute as caller
 as
 $$
     declare 
