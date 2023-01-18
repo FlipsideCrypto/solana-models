@@ -34,7 +34,7 @@ base_blocks AS (
     FROM
         {{ ref('silver__blocks') }}
     WHERE
-        block_id >= 154195836 -- this query wont give correct results prior to this block_id
+        block_id >= 170000000 -- all blocks prior have been confirmed as complete
         AND _inserted_date < CURRENT_DATE
 ),
 base_txs AS (
@@ -43,14 +43,14 @@ base_txs AS (
     FROM
         {{ ref('silver__transactions') }}
     WHERE
-        block_id >= 154195836
+        block_id >= 170000000
     UNION
     SELECT
         DISTINCT block_id
     FROM
         {{ ref('silver__votes') }}
     WHERE
-        block_id >= 154195836
+        block_id >= 170000000
 ),
 potential_missing_txs AS (
     SELECT
@@ -61,6 +61,35 @@ potential_missing_txs AS (
         ON base_blocks.block_id = base_txs.block_id
     WHERE
         base_txs.block_id IS NULL
+),
+encoded_txs AS(
+    SELECT
+        DISTINCT block_id
+    FROM
+        {{ ref('silver___inner_instructions') }}
+    WHERE
+        VALUE :instructions [0] :programIdIndex :: NUMBER IS NOT NULL
+        AND block_timestamp :: DATE >= CURRENT_DATE - 7
+    GROUP BY
+        1
+    EXCEPT
+    SELECT
+        DISTINCT block_id
+    FROM
+        {{ ref('bronze__transactions2') }}
+    WHERE
+        _partition_id BETWEEN (
+            SELECT
+                MAX(_partition_id) -3
+            FROM
+                {{ ref('bronze__transactions2') }}
+        )
+        AND (
+            SELECT
+                MAX(_partition_id)
+            FROM
+                {{ ref('bronze__transactions2') }}
+        )
 )
 SELECT
     block_id,
@@ -88,3 +117,14 @@ FROM
 WHERE
     cmp.error IS NOT NULL
     OR cmp.block_id IS NULL
+UNION
+SELECT
+    block_id,
+    (
+        SELECT
+            COALESCE(MAX(_partition_id) + 1, 1)
+        FROM
+            {{ ref('streamline__complete_block_txs') }}
+    ) AS batch_id
+FROM
+    encoded_txs

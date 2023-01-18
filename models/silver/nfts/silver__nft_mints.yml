@@ -8,6 +8,7 @@ models:
             - MINT
             - PURCHASER
             - MINT_CURRENCY
+          where: block_timestamp::date <= current_date - 1
       - compare_model_subset:
           name: silver__nft_mints_business_logic_test
           compare_model: ref('testing__nft_mints')

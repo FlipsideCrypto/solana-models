@@ -1,10 +1,11 @@
-name: dbt_run_scheduled_daily
-run-name: dbt_run_scheduled_daily
+name: dbt_test_scheduled_hourly
+run-name: dbt_test_scheduled_hourly
 
 on:
+  workflow_dispatch:
   schedule:
-    # Runs 00:35 daily (see https://crontab.guru)
-    - cron: '35 0 * * *'
+    # Run at xx:20 UTC hourly (see https://crontab.guru)
+    - cron: '20 */1 * * *'
     
 env:
   DBT_PROFILES_DIR: ./
@@ -40,5 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -s models/silver/silver__daily_signers.sql+
-          dbt run -s models/silver/nfts/silver__nft_mints.sql --full-refresh
+          dbt test --select tests/test_silver__transactions_partial_partitions.sql
