@@ -256,7 +256,7 @@ lp_transfers_with_amounts_1 AS(
         INNER JOIN dex_lp_txs e
         ON s.tx_id = e.tx_id
         AND s.index = e.index
-        LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii -- LEFT OUTER JOIN liquidity_provider_map_temp sm
+        LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
     WHERE
         (
             (
@@ -294,14 +294,12 @@ lp_transfers_with_amounts_2 AS(
         e.liquidity_provider,
         s.inner_swap_program_id,
         s.swap_program_inner_index_start,
-        -- s.swap_program_inner_index_end,
-        -- e.inner_instruction:instructions:accounts as acct_test_all,
-        -- e.inner_instruction:instructions[0]:accounts as acct_test_0,
-        -- e.inner_instruction:instructions[1]:accounts as acct_test_1,
-        --     e.inner_instruction:instructions[2]:accounts as acct_test_2,
         e.signers,
-        coalesce(s.inner_swap_program_id,e.program_id) as program_id,
-    e.inner_instruction:instructions[s.swap_program_inner_index_start]:accounts[0] :: STRING AS liquidity_pool_address,
+        COALESCE(
+            s.inner_swap_program_id,
+            e.program_id
+        ) AS program_id,
+        e.inner_instruction :instructions [s.swap_program_inner_index_start] :accounts [0] :: STRING AS liquidity_pool_address,
         CASE
             WHEN s.inner_swap_program_id IN (
                 '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
@@ -317,23 +315,31 @@ lp_transfers_with_amounts_2 AS(
             WHEN s.inner_swap_program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc' THEN 1
             ELSE NULL
         END AS lp_amount,
-
         CASE
-            WHEN e.inner_instruction:instructions[s.swap_program_inner_index_start]:accounts[1] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+            WHEN e.inner_instruction :instructions [s.swap_program_inner_index_start] :accounts [1] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
             AND s.inner_swap_program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc' THEN 'lp_action'
-    
             WHEN ARRAY_SIZE(
-                e.inner_instruction:instructions[s.swap_program_inner_index_start]:accounts
-            ) in (9,10)
-            AND s.inner_swap_program_id in ('DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1','9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP')
-            and ii.value :parsed :type :: STRING = 'mintTo' THEN 'deposit'
-    
+                e.inner_instruction :instructions [s.swap_program_inner_index_start] :accounts
+            ) IN (
+                9,
+                10
+            )
+            AND s.inner_swap_program_id IN (
+                'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
+                '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
+            )
+            AND ii.value :parsed :type :: STRING = 'mintTo' THEN 'deposit'
             WHEN ARRAY_SIZE(
-                e.inner_instruction:instructions[s.swap_program_inner_index_start]:accounts
-            ) in (10,11)
-            AND s.inner_swap_program_id in ('DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1','9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP')
-            and ii.value :parsed :type :: STRING = 'burn' THEN 'withdraw'
-
+                e.inner_instruction :instructions [s.swap_program_inner_index_start] :accounts
+            ) IN (
+                10,
+                11
+            )
+            AND s.inner_swap_program_id IN (
+                'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
+                '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
+            )
+            AND ii.value :parsed :type :: STRING = 'burn' THEN 'withdraw'
             ELSE NULL
         END AS action,
         DENSE_RANK() over (
@@ -341,36 +347,34 @@ lp_transfers_with_amounts_2 AS(
             ORDER BY
                 e.index
         ) AS temp_rn
-    
---     ,
---     'x' as start_inner_flat,
---     ii.*,
---     'z' as start_event_flat,
---     e.*
     FROM
         lp_action_w_inner_program_id s
         INNER JOIN dex_lp_txs e
         ON s.tx_id = e.tx_id
         AND s.index = e.index
-        LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii -- LEFT OUTER JOIN liquidity_provider_map_temp sm
+        LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
     WHERE
-    (
-        (s.inner_swap_program_id in ('DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1','9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP')
-     and lp_mint_address <> mint
-     and 
-        ii.value :parsed :type :: STRING IN(
-            'burn',
-            'mintTo'
-        ))
-        OR (
-            s.inner_swap_program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
-            AND e.inner_instruction:instructions[s.swap_program_inner_index_start]:accounts[1] = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-            AND s.inner_index = ii.index
-            and ARRAY_SIZE(
-                e.inner_instruction:instructions[s.swap_program_inner_index_start]:accounts
-            ) >10
+        (
+            (
+                s.inner_swap_program_id IN (
+                    'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
+                    '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
+                )
+                AND lp_mint_address <> mint
+                AND ii.value :parsed :type :: STRING IN(
+                    'burn',
+                    'mintTo'
+                )
+            )
+            OR (
+                s.inner_swap_program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
+                AND e.inner_instruction :instructions [s.swap_program_inner_index_start] :accounts [1] = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+                AND s.inner_index = ii.index
+                AND ARRAY_SIZE(
+                    e.inner_instruction :instructions [s.swap_program_inner_index_start] :accounts
+                ) > 10
+            )
         )
-)
 ),
 all_lp_transfers_with_amounts AS(
     SELECT
@@ -439,8 +443,6 @@ lp_actions_filtered AS(
             AND C.swap_program_inner_index_start IS NULL
         )
     WHERE
-        -- action = 'withdraw'
-        -- or (action = 'deposit' and (c.cnt_tx_from = 1 or c.cnt_tx_to = 1))
         (
             C.cnt_tx_from = 1
             OR C.cnt_tx_to = 1
@@ -455,11 +457,6 @@ temp_final AS(
         succeeded,
         program_id,
         CASE
-            -- WHEN action = 'lp_action'
-            -- AND tx_to = liquidity_provider THEN 'withdraw'
-            -- WHEN action = 'lp_action'
-            -- AND tx_from = liquidity_provider THEN 'deposit'
-            -- ELSE action
             WHEN action = 'lp_action'
             AND tx_to = liquidity_pool_address THEN 'deposit'
             WHEN action = 'lp_action'
@@ -504,7 +501,7 @@ temp_final AS(
         LEFT OUTER JOIN solana_dev.silver.token_metadata m
         ON l.lp_mint_address = m.token_address
     WHERE
-        l.lp_mint_address IS NOT NULL -- and l.action IS NOT NULL
+        l.lp_mint_address IS NOT NULL
 )
 SELECT
     block_id,

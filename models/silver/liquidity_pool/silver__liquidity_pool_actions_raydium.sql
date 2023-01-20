@@ -12,17 +12,27 @@ WITH base_events AS(
     FROM
         {{ ref('silver__events') }}
     WHERE
-        (program_id IN (
-            '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
-            '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv',
-            '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h',
-            --program ids for acct mapping
-            'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
-            'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-        )
-        or array_contains('27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'::variant, inner_instruction_program_ids)
-        or array_contains('675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'::variant, inner_instruction_program_ids)
-         or array_contains('5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'::variant, inner_instruction_program_ids)
+        (
+            program_id IN (
+                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+                '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv',
+                '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h',
+                --program ids for acct mapping
+                'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+                'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+            )
+            OR ARRAY_CONTAINS(
+                '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv' :: variant,
+                inner_instruction_program_ids
+            )
+            OR ARRAY_CONTAINS(
+                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8' :: variant,
+                inner_instruction_program_ids
+            )
+            OR ARRAY_CONTAINS(
+                '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h' :: variant,
+                inner_instruction_program_ids
+            )
         )
         AND block_id > 67919748 -- first appearance of Raydium LP program id
 
@@ -41,7 +51,7 @@ dex_lp_txs AS (
     SELECT
         e.*,
         signers [0] :: STRING AS liquidity_provider,
-         silver.udf_get_jupv4_inner_programs(
+        silver.udf_get_jupv4_inner_programs(
             inner_instruction :instructions
         ) AS inner_programs
     FROM
@@ -57,23 +67,20 @@ temp_inner_program_ids AS (
         swap_program_inner_index_start) -1, 999999) AS swap_program_inner_index_end
     FROM
         dex_lp_txs,
-        TABLE(FLATTEN(inner_programs)) i)
-        
-
-,
-base_transfers AS (
-    SELECT
-        tr.*
-    FROM
-        {{ ref('silver__transfers') }}
-        tr
-        INNER JOIN (
+        TABLE(FLATTEN(inner_programs)) i),
+        base_transfers AS (
             SELECT
-                DISTINCT tx_id
+                tr.*
             FROM
-                dex_lp_txs
-        ) d
-        ON d.tx_id = tr.tx_id
+                {{ ref('silver__transfers') }}
+                tr
+                INNER JOIN (
+                    SELECT
+                        DISTINCT tx_id
+                    FROM
+                        dex_lp_txs
+                ) d
+                ON d.tx_id = tr.tx_id
 
 {% if is_incremental() %}
 WHERE
@@ -117,7 +124,7 @@ lp_action_w_inner_program_id AS(
         s.*,
         t.inner_swap_program_id,
         t.swap_program_inner_index_start,
-            t.swap_program_inner_index_end
+        t.swap_program_inner_index_end
     FROM
         lp_transfers_temp s
         LEFT OUTER JOIN temp_inner_program_ids t
@@ -125,10 +132,9 @@ lp_action_w_inner_program_id AS(
         AND t.index = s.index
         AND s.inner_index BETWEEN t.swap_program_inner_index_start
         AND t.swap_program_inner_index_end
-    where s.program_id <> '11111111111111111111111111111111'
-)
-
-,
+    WHERE
+        s.program_id <> '11111111111111111111111111111111'
+),
 raydium_account_mapping AS(
     SELECT
         tx_id,
@@ -178,7 +184,7 @@ account_mappings AS (
             )
         )
 ),
-lp_actions_w_amounts_1 as(
+lp_actions_w_amounts_1 AS(
     SELECT
         s.block_id,
         s.block_timestamp,
@@ -193,42 +199,36 @@ lp_actions_w_amounts_1 as(
         s._inserted_timestamp,
         e.liquidity_provider,
         e.program_id,
-        -- e.*,
-        -- ii.*,
-        s.inner_swap_program_id,
-        s.swap_program_inner_index_start,
-        s.swap_program_inner_index_end,
         e.instruction :accounts [2] :: STRING AS temp_authority,
         e.instruction :accounts [1] :: STRING AS liquidity_pool_address,
         e.instruction :accounts [5] :: STRING AS lp_mint_address,
         ii.value :parsed :info :amount :: INT AS lp_amount,
         CASE
-            WHEN e.program_id in ('675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8','27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv')
+            WHEN e.program_id IN (
+                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+                '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
+            )
             AND ARRAY_SIZE(
                 e.instruction :accounts
             ) > 17 THEN 'withdraw'
-    
-            WHEN e.program_id in ('675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8','27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv')
+            WHEN e.program_id IN (
+                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+                '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
+            )
             AND ARRAY_SIZE(
                 e.instruction :accounts
-            ) < 15
-            THEN 'deposit'
-    
-    
-    
+            ) < 15 THEN 'deposit'
             WHEN e.program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
             AND ARRAY_SIZE(
                 e.instruction :accounts
             ) = 21 THEN 'withdraw'
-    
             WHEN e.program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
             AND ARRAY_SIZE(
                 e.instruction :accounts
-            ) in (14,15)
-            THEN 'deposit'
-    
-    
-    
+            ) IN (
+                14,
+                15
+            ) THEN 'deposit'
             WHEN e.program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
             AND ARRAY_SIZE(
                 e.instruction :accounts
@@ -237,64 +237,70 @@ lp_actions_w_amounts_1 as(
         END AS action
     FROM
         lp_action_w_inner_program_id s
-        inner JOIN dex_lp_txs e
+        INNER JOIN dex_lp_txs e
         ON s.tx_id = e.tx_id
         AND s.index = e.index
         LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
-    where (ii.value :parsed :type :: STRING in('burn','mintTo')
-    and (
+    WHERE
         (
-            --deposits/add liquidity
-            e.program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
+            ii.value :parsed :type :: STRING IN(
+                'burn',
+                'mintTo'
+            )
             AND (
-                e.instruction :accounts [2] :: STRING = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
-                AND ARRAY_SIZE(
-                    e.instruction :accounts
-                ) IN (
-                    12,
-                    13,
-                    14
+                (
+                    --deposits/add liquidity
+                    e.program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
+                    AND (
+                        e.instruction :accounts [2] :: STRING = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
+                        AND ARRAY_SIZE(
+                            e.instruction :accounts
+                        ) IN (
+                            12,
+                            13,
+                            14
+                        )
+                    )
+                )
+                OR (
+                    -- withdraws/remove liquidity
+                    (
+                        e.program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
+                        AND e.instruction :accounts [0] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+                        AND e.instruction :accounts [2] :: STRING = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
+                        AND e.instruction :accounts [10] :: STRING IN (
+                            '9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin',
+                            'srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX'
+                        )
+                        AND ARRAY_SIZE(
+                            e.instruction :accounts
+                        ) >= 19
+                    )
+                )
+                OR (
+                    e.program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
+                )
+                OR (
+                    e.program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+                    AND ARRAY_SIZE(
+                        e.instruction :accounts
+                    ) IN (
+                        14,
+                        15,
+                        21
+                    )
                 )
             )
         )
         OR (
-            -- withdraws/remove liquidity
-            (
-                e.program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
-                AND e.instruction :accounts [0] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-                AND e.instruction :accounts [2] :: STRING = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
-                AND e.instruction :accounts [10] :: STRING in ('9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin','srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX')
-                AND ARRAY_SIZE(
-                    e.instruction :accounts
-                ) >= 19
-            )
-        )
-
-        OR (
-            e.program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
-        )
-    
-               OR (
-            e.program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
-            AND ARRAY_SIZE(
-                e.instruction :accounts
-            ) in (14,15,21)
-        )
-    )
-    
-)
-           OR (
             e.program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
             AND ARRAY_SIZE(
                 e.instruction :accounts
             ) = 16
             AND e.instruction :accounts [1] <> 'SysvarRent111111111111111111111111111111111'
         )
-    
-
-)
-,
-lp_actions_w_amounts_2 as(
+),
+lp_actions_w_amounts_2 AS(
     SELECT
         s.block_id,
         s.block_timestamp,
@@ -308,90 +314,106 @@ lp_actions_w_amounts_2 as(
         s.succeeded,
         s._inserted_timestamp,
         e.liquidity_provider,
-        coalesce(s.inner_swap_program_id,e.program_id) as program_id,
+        COALESCE(
+            s.inner_swap_program_id,
+            e.program_id
+        ) AS program_id,
         s.inner_swap_program_id,
         s.swap_program_inner_index_start,
         s.swap_program_inner_index_end,
-        e.inner_instruction:instructions[0] :accounts[2] :: STRING AS temp_authority,
-        e.inner_instruction:instructions[0] :accounts[1] :: STRING AS liquidity_pool_address,
-        e.inner_instruction:instructions[0] :accounts[5] :: STRING AS lp_mint_address,
+        e.inner_instruction :instructions [0] :accounts [2] :: STRING AS temp_authority,
+        e.inner_instruction :instructions [0] :accounts [1] :: STRING AS liquidity_pool_address,
+        e.inner_instruction :instructions [0] :accounts [5] :: STRING AS lp_mint_address,
         ii.value :parsed :info :amount :: INT AS lp_amount,
         CASE
-            WHEN s.inner_swap_program_id in ('675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8','27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv')
+            WHEN s.inner_swap_program_id IN (
+                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+                '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
+            )
             AND ARRAY_SIZE(
-                e.inner_instruction:instructions[0] :accounts
+                e.inner_instruction :instructions [0] :accounts
             ) > 17 THEN 'withdraw'
-    
-            WHEN s.inner_swap_program_id in ('675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8','27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv')
+            WHEN s.inner_swap_program_id IN (
+                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+                '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
+            )
             AND ARRAY_SIZE(
-                e.inner_instruction:instructions[0] :accounts
-            ) < 15
-            THEN 'deposit'
-    
+                e.inner_instruction :instructions [0] :accounts
+            ) < 15 THEN 'deposit'
             WHEN e.program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
             AND ARRAY_SIZE(
-                e.inner_instruction:instructions[0] :accounts
+                e.inner_instruction :instructions [0] :accounts
             ) = 21 THEN 'withdraw'
-    
             WHEN e.program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
             AND ARRAY_SIZE(
-                e.inner_instruction:instructions[0] :accounts
-            ) in (14,15)
-            THEN 'deposit'
+                e.inner_instruction :instructions [0] :accounts
+            ) IN (
+                14,
+                15
+            ) THEN 'deposit'
             ELSE NULL
         END AS action
     FROM
         lp_action_w_inner_program_id s
-        inner JOIN dex_lp_txs e
+        INNER JOIN dex_lp_txs e
         ON s.tx_id = e.tx_id
         AND s.index = e.index
         LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
-    where (ii.value :parsed :type :: STRING in('burn','mintTo')
-       and lp_mint_address <> mint
-    and (
+    WHERE
         (
-            s.inner_swap_program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
+            ii.value :parsed :type :: STRING IN(
+                'burn',
+                'mintTo'
+            )
+            AND lp_mint_address <> mint
             AND (
-                e.inner_instruction:instructions[0] :accounts[2] :: STRING = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
-                AND ARRAY_SIZE(
-                    e.inner_instruction:instructions[0]:accounts
-                ) IN (
-                    12,
-                    13,
-                    14
+                (
+                    s.inner_swap_program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
+                    AND (
+                        e.inner_instruction :instructions [0] :accounts [2] :: STRING = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
+                        AND ARRAY_SIZE(
+                            e.inner_instruction :instructions [0] :accounts
+                        ) IN (
+                            12,
+                            13,
+                            14
+                        )
+                    )
+                )
+                OR (
+                    (
+                        s.inner_swap_program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
+                        AND e.inner_instruction :instructions [0] :accounts [0] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+                        AND e.inner_instruction :instructions [0] :accounts [2] :: STRING = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
+                        AND e.inner_instruction :instructions [0] :accounts [10] :: STRING IN (
+                            '9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin',
+                            'srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX'
+                        )
+                        AND ARRAY_SIZE(
+                            e.inner_instruction :instructions [0] :accounts
+                        ) >= 19
+                        AND ii.index BETWEEN swap_program_inner_index_start
+                        AND swap_program_inner_index_end
+                    )
+                )
+                OR (
+                    s.inner_swap_program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
+                    AND ii.index BETWEEN swap_program_inner_index_start
+                    AND swap_program_inner_index_end
+                )
+                OR (
+                    s.inner_swap_program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+                    AND ARRAY_SIZE(
+                        e.inner_instruction :instructions [0] :accounts
+                    ) IN (
+                        14,
+                        15,
+                        21
+                    )
                 )
             )
         )
-        OR (
-            (
-                s.inner_swap_program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
-                AND e.inner_instruction:instructions[0] :accounts[0] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-                AND e.inner_instruction:instructions[0] :accounts[2] :: STRING = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
-                AND e.inner_instruction:instructions[0] :accounts[10] :: STRING in ('9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin','srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX')
-                AND ARRAY_SIZE(
-                    e.inner_instruction:instructions[0] :accounts
-                ) >= 19
-                and ii.index between swap_program_inner_index_start and swap_program_inner_index_end
-            )
-        )
-
-        OR (
-            s.inner_swap_program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
-            and ii.index between swap_program_inner_index_start and swap_program_inner_index_end
-        )
-           OR (
-            s.inner_swap_program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
-            AND ARRAY_SIZE(
-                e.inner_instruction:instructions[0] :accounts
-            ) in (14,15,21)
-        )
-    )
-    
-)
-    
-
-)
-,
+),
 lp_actions_w_destination AS (
     SELECT
         s.block_id,
@@ -417,23 +439,27 @@ lp_actions_w_destination AS (
         s.liquidity_pool_address,
         s.lp_mint_address,
         s.lp_amount
-
     FROM
         lp_actions_w_amounts_1 s
         LEFT OUTER JOIN account_mappings m1
-            ON s.tx_id = m1.tx_id
-            AND s.tx_from = m1.associated_account
-            AND s.tx_to <> m1.owner
+        ON s.tx_id = m1.tx_id
+        AND s.tx_from = m1.associated_account
+        AND s.tx_to <> m1.owner
         LEFT OUTER JOIN account_mappings m2
-            ON s.tx_id = m2.tx_id
-            AND s.tx_to = m2.associated_account
-            AND s.tx_from <> m2.owner
-        WHERE
-    action in ('withdrawpnl','deposit')
-        or (action = 'withdraw'
-            and tx_to <> temp_authority
-            and tx_from = temp_authority)
-    union
+        ON s.tx_id = m2.tx_id
+        AND s.tx_to = m2.associated_account
+        AND s.tx_from <> m2.owner
+    WHERE
+        action IN (
+            'withdrawpnl',
+            'deposit'
+        )
+        OR (
+            action = 'withdraw'
+            AND tx_to <> temp_authority
+            AND tx_from = temp_authority
+        )
+    UNION
     SELECT
         s.block_id,
         s.block_timestamp,
@@ -458,22 +484,23 @@ lp_actions_w_destination AS (
         s.liquidity_pool_address,
         s.lp_mint_address,
         s.lp_amount
-
     FROM
         lp_actions_w_amounts_2 s
         LEFT OUTER JOIN account_mappings m1
-            ON s.tx_id = m1.tx_id
-            AND s.tx_from = m1.associated_account
-            AND s.tx_to <> m1.owner
+        ON s.tx_id = m1.tx_id
+        AND s.tx_from = m1.associated_account
+        AND s.tx_to <> m1.owner
         LEFT OUTER JOIN account_mappings m2
-            ON s.tx_id = m2.tx_id
-            AND s.tx_to = m2.associated_account
-            AND s.tx_from <> m2.owner
-        WHERE
-    action = 'deposit'
-        or (action = 'withdraw'
-            and tx_to <> temp_authority
-            and tx_from = temp_authority)
+        ON s.tx_id = m2.tx_id
+        AND s.tx_to = m2.associated_account
+        AND s.tx_from <> m2.owner
+    WHERE
+        action = 'deposit'
+        OR (
+            action = 'withdraw'
+            AND tx_to <> temp_authority
+            AND tx_from = temp_authority
+        )
 ),
 temp_final AS(
     SELECT
