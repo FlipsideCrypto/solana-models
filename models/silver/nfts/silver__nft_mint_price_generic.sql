@@ -114,7 +114,9 @@ metaplex_events AS (
         program_id = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
         AND succeeded
         AND (
-            (ARRAY_SIZE(accounts) = 7
+            (ARRAY_SIZE(accounts) = 6
+            AND accounts [5] = '11111111111111111111111111111111')
+            OR (ARRAY_SIZE(accounts) = 7
             AND accounts [5] = '11111111111111111111111111111111'
             AND accounts [6] = 'SysvarRent111111111111111111111111111111111')
             OR (ARRAY_SIZE(accounts) = 9
@@ -148,7 +150,9 @@ metaplex_events AS (
         i.value :programId :: STRING = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
         AND succeeded
         AND (
-            (ARRAY_SIZE(accounts) = 7
+            (ARRAY_SIZE(accounts) = 6
+            AND accounts [5] = '11111111111111111111111111111111')
+            OR (ARRAY_SIZE(accounts) = 7
             AND accounts [5] = '11111111111111111111111111111111'
             AND accounts [6] = 'SysvarRent111111111111111111111111111111111')
             OR (ARRAY_SIZE(accounts) = 9
