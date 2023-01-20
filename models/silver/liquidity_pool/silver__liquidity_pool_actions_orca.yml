@@ -77,7 +77,8 @@ models:
       - name: ACTION
         description: "{{ doc('stake_pool_action') }}"
         tests: 
-          - not_null
+          - not_null:
+              where: SUCCEEDED
       - name: LIQUIDITY_PROVIDER
         description: "Address withdrawing or depositing liquidity"
         tests: 
