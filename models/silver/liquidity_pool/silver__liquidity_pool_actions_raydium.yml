@@ -46,6 +46,7 @@ models:
             - fACqZJ8hmUjLoBX2wzUS2gfwQUmV4HfJbXeQ5QbrZKTs2qdYZVREZxZbTaCy7brZT2Ck7QDqVLDBXVvbrLdYkk6
             - EdDzKMQYwjYuBCV8AmpbUKpuXtcgAnTfZzduNx7j1CZ4NQAmiZMDQk2zZK9qhH2WfudYTwdzdoz1jpgTTLXELqo
             - 2og2S8BvcxCnE6GhQ6PrvYPxFTN6YLLLB6YfEx1CwG8kvgpDhkqEqon7y9GBDb9M49M3thHKQMECLptd3Z3zVWD7
+            - 5Xa5iGjdEfx4ART6rDBUkrfrSQdqx9UJxB9t8dsuzE6fMwMVmo7Kq837881YY1anRheyqeT42F2uS4h7HFuhddNW
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
