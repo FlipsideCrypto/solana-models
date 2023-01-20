@@ -54,4 +54,4 @@ models:
 vars:
   "dbt_date:time_zone": GMT
   UPDATE_SNOWFLAKE_TAGS: False
-  UPDATE_UDFS_AND_SPS: False 
+  UPDATE_UDFS_AND_SPS: True 
