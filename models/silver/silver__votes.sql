@@ -46,8 +46,10 @@ WITH pre_final AS (
         )
     AND
         _partition_id <= (
-            select max(_partition_id)+10
-            from {{this}}
+            SELECT 
+                MAX(_partition_id)
+            FROM 
+                {{ source('solana_streamline','complete_block_txs') }}
         )
     AND 
         t._inserted_timestamp > (

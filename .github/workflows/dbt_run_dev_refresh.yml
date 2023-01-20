@@ -2,6 +2,7 @@ name: dbt_run_dev_refresh
 run-name: dbt_run_dev_refresh
 
 on:
+  workflow_dispatch:
   schedule:
     # Runs 06:00 daily (see https://crontab.guru)
     - cron: '0 6 * * *'
@@ -18,6 +19,8 @@ env:
   WAREHOUSE: "${{ secrets.WAREHOUSE }}"
   SCHEMA: "${{ secrets.SCHEMA }}"
 
+concurrency:
+  group: ${{ github.workflow }}
 
 jobs:
   run_dbt_jobs:
