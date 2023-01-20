@@ -15,12 +15,15 @@ WITH base_events AS(
         (program_id IN (
             '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
             '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv',
+            '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h',
             --program ids for acct mapping
             'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
             'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
         )
         or array_contains('27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'::variant, inner_instruction_program_ids)
-        or array_contains('675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'::variant, inner_instruction_program_ids))
+        or array_contains('675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'::variant, inner_instruction_program_ids)
+         or array_contains('5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'::variant, inner_instruction_program_ids)
+        )
         AND block_id > 67919748 -- first appearance of Raydium LP program id
 
 {% if is_incremental() %}
@@ -190,7 +193,11 @@ lp_actions_w_amounts_1 as(
         s._inserted_timestamp,
         e.liquidity_provider,
         e.program_id,
+        -- e.*,
+        -- ii.*,
         s.inner_swap_program_id,
+        s.swap_program_inner_index_start,
+        s.swap_program_inner_index_end,
         e.instruction :accounts [2] :: STRING AS temp_authority,
         e.instruction :accounts [1] :: STRING AS liquidity_pool_address,
         e.instruction :accounts [5] :: STRING AS lp_mint_address,
@@ -206,6 +213,21 @@ lp_actions_w_amounts_1 as(
                 e.instruction :accounts
             ) < 15
             THEN 'deposit'
+    
+    
+    
+            WHEN e.program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+            AND ARRAY_SIZE(
+                e.instruction :accounts
+            ) = 21 THEN 'withdraw'
+    
+            WHEN e.program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+            AND ARRAY_SIZE(
+                e.instruction :accounts
+            ) in (14,15)
+            THEN 'deposit'
+    
+    
     
             WHEN e.program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
             AND ARRAY_SIZE(
@@ -250,7 +272,15 @@ lp_actions_w_amounts_1 as(
 
         OR (
             e.program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
-        ))
+        )
+    
+               OR (
+            e.program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+            AND ARRAY_SIZE(
+                e.instruction :accounts
+            ) in (14,15,21)
+        )
+    )
     
 )
            OR (
@@ -260,6 +290,8 @@ lp_actions_w_amounts_1 as(
             ) = 16
             AND e.instruction :accounts [1] <> 'SysvarRent111111111111111111111111111111111'
         )
+    
+
 )
 ,
 lp_actions_w_amounts_2 as(
@@ -278,6 +310,8 @@ lp_actions_w_amounts_2 as(
         e.liquidity_provider,
         coalesce(s.inner_swap_program_id,e.program_id) as program_id,
         s.inner_swap_program_id,
+        s.swap_program_inner_index_start,
+        s.swap_program_inner_index_end,
         e.inner_instruction:instructions[0] :accounts[2] :: STRING AS temp_authority,
         e.inner_instruction:instructions[0] :accounts[1] :: STRING AS liquidity_pool_address,
         e.inner_instruction:instructions[0] :accounts[5] :: STRING AS lp_mint_address,
@@ -294,10 +328,16 @@ lp_actions_w_amounts_2 as(
             ) < 15
             THEN 'deposit'
     
-            WHEN s.inner_swap_program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
+            WHEN e.program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
             AND ARRAY_SIZE(
                 e.inner_instruction:instructions[0] :accounts
-            ) = 16 THEN 'withdrawpnl'
+            ) = 21 THEN 'withdraw'
+    
+            WHEN e.program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+            AND ARRAY_SIZE(
+                e.inner_instruction:instructions[0] :accounts
+            ) in (14,15)
+            THEN 'deposit'
             ELSE NULL
         END AS action
     FROM
@@ -307,9 +347,9 @@ lp_actions_w_amounts_2 as(
         AND s.index = e.index
         LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
     where (ii.value :parsed :type :: STRING in('burn','mintTo')
+       and lp_mint_address <> mint
     and (
         (
-            --deposits/add liquidity
             s.inner_swap_program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
             AND (
                 e.inner_instruction:instructions[0] :accounts[2] :: STRING = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
@@ -320,11 +360,9 @@ lp_actions_w_amounts_2 as(
                     13,
                     14
                 )
-                and ii.index between swap_program_inner_index_start and swap_program_inner_index_end
             )
         )
         OR (
-            -- withdraws/remove liquidity
             (
                 s.inner_swap_program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
                 AND e.inner_instruction:instructions[0] :accounts[0] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
@@ -340,17 +378,18 @@ lp_actions_w_amounts_2 as(
         OR (
             s.inner_swap_program_id = '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
             and ii.index between swap_program_inner_index_start and swap_program_inner_index_end
-        ))
-    
-)
+        )
            OR (
-            s.inner_swap_program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
+            s.inner_swap_program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
             AND ARRAY_SIZE(
                 e.inner_instruction:instructions[0] :accounts
-            ) = 16
-            AND e.inner_instruction:instructions[0] :accounts[1] <> 'SysvarRent111111111111111111111111111111111'
-           and ii.index between swap_program_inner_index_start and swap_program_inner_index_end
+            ) in (14,15,21)
         )
+    )
+    
+)
+    
+
 )
 ,
 lp_actions_w_destination AS (
@@ -390,7 +429,7 @@ lp_actions_w_destination AS (
             AND s.tx_to = m2.associated_account
             AND s.tx_from <> m2.owner
         WHERE
-    action in ('withdrawPnL','deposit')
+    action in ('withdrawpnl','deposit')
         or (action = 'withdraw'
             and tx_to <> temp_authority
             and tx_from = temp_authority)
@@ -431,10 +470,7 @@ lp_actions_w_destination AS (
             AND s.tx_to = m2.associated_account
             AND s.tx_from <> m2.owner
         WHERE
-    action = 'withdrawPnL'
-        or (action = 'deposit'
-            and tx_to = temp_authority
-            and tx_from <> temp_authority)
+    action = 'deposit'
         or (action = 'withdraw'
             and tx_to <> temp_authority
             and tx_from = temp_authority)
