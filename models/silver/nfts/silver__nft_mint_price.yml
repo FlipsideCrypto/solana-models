@@ -8,6 +8,18 @@ models:
             - MINT
             - PAYER
             - MINT_CURRENCY
+      - compare_model_subset:
+          name: silver__nft_mint_price_business_logic_test
+          compare_model: ref('testing__nft_mint_price')
+          compare_columns: 
+            - program_id
+            - payer
+            - mint
+            - mint_currency
+            - round(mint_price,8)
+          model_condition: "where mint in ('5huRn5xdFZVi8TY2WEYyqimMiBJQPP1uQQcoFqNZb2oG',
+            '5AbpcVMnyxgK1UfZRrYDD5iiFWWBXUVnAqLifa9n7Bm8',
+            'A3PFimLjQFwFt9mHWLuXWQwfpaBBpp2CEp6uTR6yccKr')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "block timestamp of the latest transaction with a mint price"
