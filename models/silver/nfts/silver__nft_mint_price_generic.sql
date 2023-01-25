@@ -175,6 +175,8 @@ mint_price_events AS (
         me.index,
         i.index as inner_index,
         'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s' as program_id,
+        i.value:parsed:info:destination::string as temp_destination,
+        i.value:parsed:info:source::string as temp_source,
         CASE
             WHEN num_accounts in (14,17) THEN me.accounts [3] :: STRING
             ELSE me.accounts [1] :: STRING
@@ -196,7 +198,7 @@ mint_price_events AS (
     FROM
         metaplex_events me
         LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
-    group by 1,2,3,4,5,6,7,8,9,10
+    group by 1,2,3,4,5,6,7,8,9,10,11,12
 ),
 pre_final as (
     select 
@@ -208,6 +210,7 @@ pre_final as (
         COALESCE(p.decimal, 9) as decimal
     from mint_price_events e
     LEFT OUTER JOIN base_ptb p on e.token_account = p.account
+    where (temp_destination <> temp_source) or (temp_destination is null) or (temp_source is null)
 )
 SELECT
     p.mint,
