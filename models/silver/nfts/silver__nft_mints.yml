@@ -23,7 +23,8 @@ models:
             'FaC8SaDj6crwZA5JyucbKuTDbbTLbCSVpGbLVSXxaxJ4','BxGPRSEzHwEzX73Ep67a9u5xFc2BSuXSrAevqNMkzN8Z','HrbK1X3ooR2fBujtDSWeKQtbj1fUtptrEb7mWvsxeQQk',
             'CmejwsHB1hcQPbY7y4EjYD5gxWJEXn9G4PkXLpLoTus1','JBzLjej5DEtVupwVtn6y1mnG4HFEkm5PVxQYFNYMJzhc','J5EFUxYPxAyx5oCUUgmCrESHjhmXuzrYsscoxRvVW5Vz',
             'DCahWcCagbsW8HAqu4QMDaQZn212MrA7aN4yLNKYn3tY','58MAJPUgfSyehsKggYEeWjpNZaKw5qxnLNZ4EKeRicmq','Dq6H4jMXQkHEf3q3BocptwF7Nh6V9FZwABXuVRgRXtts',
-            'Ar9mEJ7qJ1uAgkWduKGo3UYVbPMdKrmWxs5z2wgZgbgN')"
+            'Ar9mEJ7qJ1uAgkWduKGo3UYVbPMdKrmWxs5z2wgZgbgN','4CLQnbNKynn6qXF1S4woTxbiuPYREoEYbkXtvoYyzvxQ','5huRn5xdFZVi8TY2WEYyqimMiBJQPP1uQQcoFqNZb2oG',
+            '5AbpcVMnyxgK1UfZRrYDD5iiFWWBXUVnAqLifa9n7Bm8','5Awi9epmw6EYXzLnzkSu7qJKiZ4HnnDsJ3ix9Wxrt6DC', 'AXJFRmLT11RnuFEgYC35F9tktdL77xX8y1b4HEbXPJkf')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
