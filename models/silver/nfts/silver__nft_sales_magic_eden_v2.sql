@@ -8,16 +8,12 @@
 WITH txs AS (
 
     SELECT
-        e.tx_id,
-        t.succeeded,
-        t.signers[0] :: STRING as signer, 
+        tx_id,
+        succeeded,
+        signers[0] :: STRING as signer, 
         MAX(INDEX) AS max_event_index
     FROM
         {{ ref('silver__events') }}
-        e
-        INNER JOIN {{ ref('silver__transactions') }}
-        t
-        ON t.tx_id = e.tx_id
     WHERE
         program_id = 'M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K' -- Magic Eden V2 Program ID
 {% if is_incremental() and env_var(
@@ -25,26 +21,7 @@ WITH txs AS (
     "false"
 ) == "true" %}
 AND
-    t.block_timestamp :: DATE BETWEEN (
-        SELECT
-            LEAST(DATEADD(
-                'day',
-                1,
-                COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
-                FROM
-                    {{ this }}
-        )
-        AND (
-        SELECT
-            LEAST(DATEADD(
-            'day',
-            30,
-            COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
-            FROM
-                {{ this }}
-        )
-AND
-    e.block_timestamp :: DATE BETWEEN (
+    block_timestamp :: DATE BETWEEN (
         SELECT
             LEAST(DATEADD(
                 'day',
@@ -63,24 +40,16 @@ AND
                 {{ this }}
         ) 
 {% elif is_incremental() %}
-AND e._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-AND t._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+-- AND _inserted_timestamp >= (
+--     SELECT
+--         MAX(_inserted_timestamp)
+--     FROM
+--         {{ this }}
+-- )
+AND _inserted_timestamp >= '2022-11-30'
 {% else %}
     AND 
-        e.block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
-        AND '2022-02-08'
-    AND 
-        t.block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
+        block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
         AND '2022-02-08'
 {% endif %}
 GROUP BY
@@ -89,7 +58,7 @@ GROUP BY
     3
 HAVING
     COUNT(
-        e.tx_id
+        tx_id
     ) >= 2
 ),
 base_tmp AS (
@@ -166,12 +135,13 @@ AND
                 {{ this }}
         )
 {% elif is_incremental() %}
-AND e._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+-- AND e._inserted_timestamp >= (
+--     SELECT
+--         MAX(_inserted_timestamp)
+--     FROM
+--         {{ this }}
+-- )
+AND e._inserted_timestamp >= '2022-11-30'
 {% else %}
     AND 
         e.block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
@@ -181,7 +151,11 @@ AND e._inserted_timestamp >= (
 sellers AS (
      SELECT
         e.tx_id,
-        instruction :accounts [1] :: STRING AS seller
+        CASE
+            WHEN instruction :accounts [0] = instruction :accounts [1]
+            THEN instruction :accounts [2] :: STRING
+            ELSE instruction :accounts [1] :: STRING
+        end as seller
     FROM
         {{ ref('silver__events') }}
         e
@@ -222,12 +196,13 @@ AND
         )
 {% elif is_incremental() %}
 AND
-    e._inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
+    -- e._inserted_timestamp >= (
+    --     SELECT
+    --         MAX(_inserted_timestamp)
+    --     FROM
+    --         {{ this }}
+    -- )
+    e._inserted_timestamp >= '2022-11-30'
 {% else %}
 AND
     e.block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
