@@ -18,7 +18,18 @@ models:
           model_condition: "where tx_id in ('m4Z84jUhtz8bJoVAv6NzAaqG4MLr8an5e1ofynziU94jANZYZrQgqs2QyE5RbSbHMhdYu3pEQf4VNEErkivoSAN',
             'KcQ2QT1Ck84ho3MRbfAbBLG69R48XskEwCLbav43sZFEqn7gxQ3HPuWX6aYdJvLNNtng82mYB7r2ASGQ4wtzF9k',
             '4CnhCbQnMqHGLq86eN3UWi4bg5e4iz4d1an7Stbn5g1n7GmbYWUYeXC9X22xYhCTN8EhGpNzEnPbEU8yedV8atdb', 
-            'w9ARwPqxJyqMsQs5o7ZfawpmhpjcMRRkic86aqj7ixPjRNvzW1Xeg3iMSCGd1xDfVbkG9dqD6nFAtpgAUpMxhgT')"
+            'w9ARwPqxJyqMsQs5o7ZfawpmhpjcMRRkic86aqj7ixPjRNvzW1Xeg3iMSCGd1xDfVbkG9dqD6nFAtpgAUpMxhgT',
+            '4XviPQ4rUE6GVt3VfZ6LwWtvxYiZSA5pmTTsVX1HKhebTbekkLruEFJg4pC1DLVXMBwv18uKVGGQKnSqfPH7bqEn',
+            'LoBw8ZMW2f7UAk4EB97eG6GV8uqtvw8aA7SoXgwRU2wPCznDGEZoiqwr5yixGidQUFdUfgHKnwi8TE9X3kQSxaM',
+            '4nXmwBuuGpyV41QmatkmjgYpkVUmcmHFG1vxkuNmtAUfagG8E9a9ZPDy2TCDDvJP9ocp789pacsY57MXMwnZNmE2')"
+      - tx_excluded:
+          name: silver__nft_sales_exchange_art_tx_excluded_test
+          excluded_tx_ids:
+            - 464JTdP9J2joPgA3A6YGxK2b9B5tKJE8gzDeUxdGUtdhwELR4ncZzkDc6U71ypFww9ZELwuQPAN8bfzgHve7nW1o
+            - s67gqc1LED5MupXrfvXctwoNeShM3gmgDvWZuQTmMnRBUWR1ktkcfazYbHQVnEmVTsKYAHQnRQduRc81mNtZonD
+            - GkrUBY7EqHdvcosYkSuNhLHQ2bXwsMYTwVXuoJnoVxjDVfVCCifxGSxn8W9bB6PfibGEWVHzVG7oUvXLpBy4RF8
+            - 2HBbrn21CdQYiJ9J74ZauBXYawjozbecqF7w3dFswp1SnzE5H8uFnqiU16LfQrY9DrkGsx9WQNkqW8vvZ4Q7tPeR
+            - 296LwbWf4EPx9CjD1w2Dr7ibsjYMn2E2smyTLBMsKsHb8hCA4Mc4QUxgfXMiU8qAbnPvSLBwtgjEM8uxFBH7ym6W
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
