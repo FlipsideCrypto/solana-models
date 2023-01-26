@@ -41,7 +41,8 @@ models:
           '3WfcTbkPEVvZy7S8CQWZ3xNLN8qNDkkrr68CSrhKV1As2AJfB68MrkXB6CHXhiFRkoBqy9q3E1RxAcrYV9eWV7kY',
           'ikZkjfPjxSf9Cn2e2krfAzcoPcofUddJcFHo2F1xc5GBJ5zhoWE148mSmww5tZAy7CE53BSxjsxupzpmaLtVxtF',
           '21sJgB4Ut6S9VrtHgy6P98bghpDBQxc4XdrJRSh7HcaocnHkMdquBzvMqfuwV8C6m9dJgfRHnFuNebis7KPJvgqH',
-          '18stFoYVDRCyRfUWpiqDi7bwavfqWrtMTLEvEk6RuH33ze2pYZAAAX6h6dtqoDvmigKpxmPRwuLGkavp2xrbMpD')"
+          '18stFoYVDRCyRfUWpiqDi7bwavfqWrtMTLEvEk6RuH33ze2pYZAAAX6h6dtqoDvmigKpxmPRwuLGkavp2xrbMpD',
+          '2qRPi8fXiwXVjvoDji7WJGTcrsFq7re3z6YsWJSY1WbLRiNJUntJK6GZ94PrH3UDHTY9cRYiNh8CP7bb7krqPpf8')"
       - tx_excluded:
           name: silver__liquidity_pool_actions_orca_tx_excluded_test
           excluded_tx_ids:
