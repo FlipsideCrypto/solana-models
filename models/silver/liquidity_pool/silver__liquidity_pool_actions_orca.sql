@@ -361,6 +361,7 @@ lp_transfers_with_amounts_2 AS(
                     '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
                 )
                 AND lp_mint_address <> mint
+                and ii.value:parsed:info:signers is null
                 AND ii.value :parsed :type :: STRING IN(
                     'burn',
                     'mintTo'
