@@ -40,13 +40,12 @@ AND
                 {{ this }}
         ) 
 {% elif is_incremental() %}
--- AND _inserted_timestamp >= (
---     SELECT
---         MAX(_inserted_timestamp)
---     FROM
---         {{ this }}
--- )
-AND _inserted_timestamp >= '2022-11-30'
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% else %}
     AND 
         block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
@@ -135,13 +134,12 @@ AND
                 {{ this }}
         )
 {% elif is_incremental() %}
--- AND e._inserted_timestamp >= (
---     SELECT
---         MAX(_inserted_timestamp)
---     FROM
---         {{ this }}
--- )
-AND e._inserted_timestamp >= '2022-11-30'
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% else %}
     AND 
         e.block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
@@ -196,13 +194,12 @@ AND
         )
 {% elif is_incremental() %}
 AND
-    -- e._inserted_timestamp >= (
-    --     SELECT
-    --         MAX(_inserted_timestamp)
-    --     FROM
-    --         {{ this }}
-    -- )
-    e._inserted_timestamp >= '2022-11-30'
+    e._inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% else %}
 AND
     e.block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
