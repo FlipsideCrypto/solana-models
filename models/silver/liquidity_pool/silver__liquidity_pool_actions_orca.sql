@@ -429,7 +429,9 @@ lp_actions_filtered AS(
         ) AS lp_mint_address,
         l.lp_amount,
         l.signers,
-        l.program_id
+        l.program_id,
+        c.cnt_tx_from,
+        c.cnt_tx_to
     FROM
         all_lp_transfers_with_amounts l
         LEFT JOIN nft_lp_mint_address n
@@ -448,7 +450,6 @@ lp_actions_filtered AS(
             C.cnt_tx_from = 1
             OR C.cnt_tx_to = 1
         )
-        OR program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
 ),
 temp_final AS(
     SELECT
@@ -473,6 +474,9 @@ temp_final AS(
         _inserted_timestamp
     FROM
         lp_actions_filtered
+        WHERE
+        (cnt_tx_from = 1 or cnt_tx_to = 1)
+        or program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
     UNION
         -- get the lp mint/amount as separate records
     SELECT
@@ -529,3 +533,4 @@ WHERE
         amount,
         0
     ) > 0
+    and action <> 'lp_action'
