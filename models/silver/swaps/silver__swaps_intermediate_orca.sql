@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = ["block_id","tx_id","swap_index"],
-    merge_predicates = ["DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from {{ this }}__dbt_tmp))"],
+    incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
@@ -45,14 +45,9 @@ AND _inserted_timestamp >= (
 dex_txs AS (
     SELECT
         e.*,
-        IFF(ARRAY_SIZE(signers) = 1, signers [0] :: STRING, NULL) AS swapper,
-        signers
+        IFF(ARRAY_SIZE(signers) = 1, signers [0] :: STRING, NULL) AS swapper
     FROM
         base_events e
-        INNER JOIN {{ ref('silver__transactions') }}
-        t
-        ON t.tx_id = e.tx_id
-        AND t.block_timestamp :: DATE = e.block_timestamp :: DATE
     WHERE
         program_id IN (
             -- Orca
@@ -61,18 +56,6 @@ dex_txs AS (
             'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
         )
         AND inner_instruction_program_ids [0] <> 'DecZY86MU5Gj7kppfUCEmd4LbXXuyZH1yHaP2NTqdiZB'
-
-{% if is_incremental() %}
--- AND t.block_timestamp :: DATE = '2022-11-01'
-AND t._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND t.block_timestamp :: DATE >= '2021-12-14'
-{% endif %}
 ),
 base_transfers AS (
     SELECT

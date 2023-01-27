@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = ["block_id","tx_id","swap_index"],
-    merge_predicates = ["DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from {{ this }}__dbt_tmp))"],
+    incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
 ) }}
 
@@ -65,10 +65,6 @@ dex_txs AS (
         END AS user_owner
     FROM
         base_events e
-        INNER JOIN {{ ref('silver__transactions') }}
-        t
-        ON t.tx_id = e.tx_id
-        AND t.block_timestamp :: DATE = e.block_timestamp :: DATE
     WHERE
         (
             (
@@ -100,17 +96,6 @@ dex_txs AS (
                 )
             )
         )
-
-{% if is_incremental() %}
-AND t._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND t.block_timestamp :: DATE >= '2021-12-14'
-{% endif %}
 ),
 base_transfers AS (
     SELECT

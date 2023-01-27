@@ -25,6 +25,10 @@ models:
         description: "{{ doc('tx_id') }}"
         tests:
           - not_null
+      - name: SIGNERS
+        description: List of accounts that signed the transaction
+        tests: 
+          - not_null
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests: 

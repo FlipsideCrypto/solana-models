@@ -18,7 +18,11 @@ models:
           model_condition: "where tx_id in ('28PWDFj8Cxb9YihmGqN6CeU5iNrNW1fiZ5mxVbu8Sox61uiTH2m57duJ4F5pv7DahNPr2oAN7umziBCHab6FCBXR',
             '2opUe8cZkhMrVQBNy9McDZThPdW7gFoFzf4J6TnX3QUKAQi9pfDZoYwAQFcvDrQBfzg2Jw7SXhx6D5Y6kdPh68oY',
             '4hr1zeCVBHT1FGgcHad19tp8Jp9Q6itcKHjRLK7uuVVwjhDbSDG2hrEm6Zfd73RiNnu9sqQbBfpo798viibFunWi',
-            '4iq2miqiFfJXw7gKHunTLnLyzFDom13vakh25DUXZRFDnZaUC9KztFbcqx9L9Up8WB7u6qd3NyuoCsHMNKHrBHYV')"
+            '4iq2miqiFfJXw7gKHunTLnLyzFDom13vakh25DUXZRFDnZaUC9KztFbcqx9L9Up8WB7u6qd3NyuoCsHMNKHrBHYV',
+            '3WsFjjoNNUH85N8qf3FkA5Qf8PVT2VT2BZJxjLLFq8qybh3TJqiz182aJz4mhydgcx1CoEpenRbZ28vrqMEWzPzn',
+            '2L6ki6khMddp56WYeNiKnS5ZVwtk63x3Y3RanP63kobANx51XbCFTyX97C2aoLQZMZ3P5kKSRZc1KxiB1DU2KuNs',
+            '3qp2hRooXJaatbBuNyfT271aNhmgvAa8iVqDkALxHTaaqS2BLXeZUB6eXWhJy3nDU4gMLwtP3UriqWRvUyeUfpmu',
+            '5eEkaFyoKGvuTRKbV6G8yKaJrsgqDMer1fXTR9tA4Ab3MTNuKkALKdT4Mdzs3K8sTbJmfB69UQuuDH54QREZhJHa')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

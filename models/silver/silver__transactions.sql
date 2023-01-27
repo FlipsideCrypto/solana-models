@@ -1,9 +1,10 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "tx_id",
-    merge_predicates = ["DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from {{ this }}__dbt_tmp))"],
+    incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     cluster_by = ['block_timestamp::DATE','block_id','_inserted_timestamp::DATE'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION", 
+    full_refresh = false
 ) }}
 
 WITH pre_final AS (
@@ -46,24 +47,24 @@ WITH pre_final AS (
         ) <> 'Vote111111111111111111111111111111111111111'
 
 {% if is_incremental() %}
-AND _partition_id >= (
-    SELECT
-        MAX(_partition_id) -1
-    FROM
-        {{ this }}
-)
-AND _partition_id <= (
-    SELECT
-        MAX(_partition_id) + 10
-    FROM
-        {{ this }}
-)
-AND t._inserted_timestamp > (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+    AND _partition_id >= (
+        SELECT
+            MAX(_partition_id) -1
+        FROM
+            {{ this }}
+    )
+    AND _partition_id <= (
+        SELECT 
+            MAX(_partition_id)
+        FROM 
+            {{ source('solana_streamline','complete_block_txs') }}
+    )
+    AND t._inserted_timestamp > (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% else %}
     AND _partition_id IN (
         1,

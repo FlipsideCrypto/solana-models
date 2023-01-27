@@ -83,6 +83,8 @@ b AS (
         t,
         TABLE(FLATTEN(signers)) s
     WHERE
+        b_date >= current_date - 7
+    AND
         b_date IN (
             SELECT
                 block_timestamp_date
@@ -120,6 +122,8 @@ C AS (
         {{ ref('silver__events') }}
         e
     WHERE
+        e.block_timestamp :: DATE >= current_date - 7
+    AND
         e.block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date

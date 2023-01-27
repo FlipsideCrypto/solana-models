@@ -6,7 +6,7 @@ on:
       - "main"
 
 env:
-  DBT_PROFILES_DIR: ./
+  DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
 
   ACCOUNT: "${{ secrets.ACCOUNT }}"
   ROLE: "${{ secrets.ROLE }}"
@@ -16,6 +16,9 @@ env:
   DATABASE: "${{ secrets.DATABASE }}"
   WAREHOUSE: "${{ secrets.WAREHOUSE }}"
   SCHEMA: "${{ secrets.SCHEMA }}"
+
+concurrency:
+  group: ${{ github.workflow }}
 
 jobs:
   scheduled_run:
@@ -33,7 +36,7 @@ jobs:
 
       - name: install dependencies
         run: |
-          pip install dbt-snowflake==1.2.0
+          pip install dbt-snowflake==${{ secrets.DBT_VERSION }}
           dbt deps
 
       - name: checkout docs branch

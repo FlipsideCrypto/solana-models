@@ -11,12 +11,12 @@ b as (
 ),
 a_minus_b as (
     select * from a
-    {{ dbt_utils.except() }}
+    except
     select * from b
 ),
 b_minus_a as (
     select * from b
-    {{ dbt_utils.except() }}
+    except
     select * from a
 ),
 unioned as (

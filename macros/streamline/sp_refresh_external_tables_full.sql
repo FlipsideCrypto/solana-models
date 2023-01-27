@@ -3,6 +3,7 @@
 create or replace procedure streamline.sp_refresh_external_tables_full()
 returns boolean
 language sql
+execute as caller
 as
 $$
     begin 

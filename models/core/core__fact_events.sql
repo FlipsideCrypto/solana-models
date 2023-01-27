@@ -6,6 +6,7 @@ SELECT
     block_timestamp,
     block_id,
     tx_id,
+    signers,
     succeeded,
     index,
     event_type,
