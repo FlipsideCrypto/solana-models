@@ -38,12 +38,13 @@ AND
                 {{ this }}
         )
 {% elif is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+-- AND _inserted_timestamp >= (
+--     SELECT
+--         MAX(_inserted_timestamp)
+--     FROM
+--         {{ this }}
+-- )
+and block_timestamp::date between '2022-10-31' and '2022-11-28'
 {% else %}
 AND 
     block_timestamp :: DATE BETWEEN '2021-06-02'
@@ -83,12 +84,14 @@ WHERE
                 {{ this }}
         ) 
 {% elif is_incremental() %}
-WHERE _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+-- WHERE _inserted_timestamp >= (
+--     SELECT
+--         MAX(_inserted_timestamp)
+--     FROM
+--         {{ this }}
+-- )
+where block_timestamp::date between '2022-10-31' and '2022-11-28'
+
 {% else %}
 WHERE
     block_timestamp :: DATE BETWEEN '2021-06-02'
@@ -198,6 +201,7 @@ mint_price_events AS (
     FROM
         metaplex_events me
         LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
+    where i.value:parsed:type <> 'burn'
     group by 1,2,3,4,5,6,7,8,9,10,11,12
 ),
 pre_final as (
