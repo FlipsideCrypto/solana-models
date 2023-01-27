@@ -24,7 +24,7 @@ AND
             LEAST(DATEADD(
                 'day',
                 1,
-                COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+                COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2023-01-23')
                 FROM
                     {{ this }}
         )
@@ -33,7 +33,7 @@ AND
             LEAST(DATEADD(
             'day',
             30,
-            COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+            COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2023-01-23')
             FROM
                 {{ this }}
         )
@@ -69,7 +69,7 @@ WHERE
             LEAST(DATEADD(
                 'day',
                 1,
-                COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+                COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2023-01-23')
                 FROM
                     {{ this }}
         )
@@ -78,7 +78,7 @@ WHERE
             LEAST(DATEADD(
             'day',
             30,
-            COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+            COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2023-01-23')
             FROM
                 {{ this }}
         ) 
