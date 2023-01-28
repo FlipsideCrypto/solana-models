@@ -45,7 +45,7 @@ AND
 --     FROM
 --         {{ this }}
 -- )
-and block_timestamp::date between '2022-10-31' and '2022-11-28'
+and block_timestamp::date >= '2022-04-01'
 {% else %}
 AND 
     block_timestamp :: DATE BETWEEN '2021-06-02'
@@ -91,7 +91,7 @@ WHERE
 --     FROM
 --         {{ this }}
 -- )
-where block_timestamp::date between '2022-10-31' and '2022-11-28'
+where block_timestamp::date >= '2022-04-01'
 
 {% else %}
 WHERE
