@@ -134,6 +134,12 @@ lp_action_w_inner_program_id AS(
         AND t.swap_program_inner_index_end
     WHERE
         s.program_id <> '11111111111111111111111111111111'
+        or inner_swap_program_id IS NULL
+        OR inner_swap_program_id IN (
+                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+                '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv',
+                '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+        )
 ),
 raydium_account_mapping AS(
     SELECT
