@@ -22,7 +22,8 @@ ownership_change_events as (
         instruction
     from base_events
     where event_type in ('assign','assignWithSeed','authorize','authorizeChecked',
-        'authorizeWithSeed','close','closeAccount','create','createAccount')
+        'authorizeWithSeed','close','closeAccount','create','createAccount','createAccountWithSeed','createIdempotent',
+        'initialize','initializeAccount','initializeAccount2','initializeAccount3')
     union 
     select 
         tx_id,
@@ -35,7 +36,8 @@ ownership_change_events as (
     TABLE(FLATTEN(e.inner_instruction :instructions)) ii
     WHERE
         ii.value :parsed :type :: STRING IN ('assign','assignWithSeed','authorize','authorizeChecked',
-        'authorizeWithSeed','close','closeAccount','create','createAccount')
+        'authorizeWithSeed','close','closeAccount','create','createAccount','createAccountWithSeed','createIdempotent',
+        'initialize','initializeAccount','initializeAccount2','initializeAccount3')
 )
 select 
     tx_id,
@@ -46,7 +48,7 @@ select
     instruction:parsed:info:account::string as account_address,
     instruction:parsed:info:owner::string as owner
 from ownership_change_events 
-where event_type in ('assign','assignWithSeed','closeAccount')
+where event_type in ('assign','assignWithSeed','closeAccount','initializeAccount','initializeAccount2','initializeAccount3')
 union 
 select 
     tx_id,
@@ -92,7 +94,7 @@ select
     instruction:parsed:info:account::string as account_address,
     instruction:parsed:info:wallet::string as owner
 from ownership_change_events 
-where event_type in ('create')
+where event_type in ('create','createIdempotent')
 union 
 select 
     tx_id,
@@ -103,4 +105,15 @@ select
     instruction:parsed:info:newAccount::string as account_address,
     instruction:parsed:info:owner::string as owner
 from ownership_change_events 
-where event_type in ('createAccount')
+where event_type in ('createAccount','createAccountWithSeed')
+union 
+select 
+    tx_id,
+    succeeded,
+    index,
+    inner_index,
+    event_type,
+    coalesce(instruction:parsed:info:stakeAccount::string,instruction:parsed:info:voteAccount::string) as account_address,
+    coalesce(instruction:parsed:info:authorized:withdrawer::string,instruction:parsed:info:authorizedWithdrawer::string) as owner,
+from ownership_change_events 
+where event_type in ('initialize')
