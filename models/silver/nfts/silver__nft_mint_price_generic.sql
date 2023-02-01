@@ -55,6 +55,7 @@ AND
 ),
 base_ptb AS (
     SELECT
+        tx_id,
         distinct mint AS mint_paid,
         account,
         DECIMAL
@@ -214,7 +215,7 @@ pre_final as (
         ) AS mint_currency,
         COALESCE(p.decimal, 9) as decimal
     from mint_price_events e
-    LEFT OUTER JOIN base_ptb p on e.token_account = p.account
+    LEFT OUTER JOIN base_ptb p on e.token_account = p.account and e.tx_id = p.tx_id
     where (temp_destination <> temp_source) or (temp_destination is null) or (temp_source is null)
 )
 SELECT
