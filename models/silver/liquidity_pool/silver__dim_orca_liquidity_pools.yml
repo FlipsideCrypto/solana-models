@@ -21,7 +21,7 @@ models:
         description: "{{ doc('tx_id') }}"
         tests:
           - not_null
-      - name: Liquidity_pool
+      - name: LIQUIDITY_POOL
         description: "{{ doc('tx_id') }}"
         tests: 
           - not_null

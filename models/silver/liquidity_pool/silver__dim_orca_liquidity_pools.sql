@@ -16,16 +16,17 @@ WITH base_events AS(
         program_id IN (
             'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc',
             '11111111111111111111111111111111'
-        ) -- {% if is_incremental() %}
-        -- AND _inserted_timestamp >= (
-        --     SELECT
-        --         MAX(_inserted_timestamp)
-        --     FROM
-        --         {{ this }}
-        -- )
-        -- {% else %}
-        --     AND block_timestamp :: DATE >= '2021-12-14'
-        -- {% endif %}
+        )
+-- {% if is_incremental() %}
+-- AND _inserted_timestamp >= (
+--     SELECT
+--         MAX(_inserted_timestamp)
+--     FROM
+--         {{ this }}
+-- )
+-- {% else %}
+--     AND block_timestamp :: DATE >= '2021-12-14'
+-- {% endif %}
 ),
 orca_pool_creation AS(
     SELECT
@@ -82,7 +83,7 @@ whirlpools AS (
         AND succeeded
         AND instruction :accounts [8] = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
         AND instruction :accounts [9] = '11111111111111111111111111111111'
-        AND instruction :accounts [10] = 'SysvarRent111111111111111111111111111111111' -- and block_timestamp::date = '2022-10-31'
+        AND instruction :accounts [10] = 'SysvarRent111111111111111111111111111111111'
 )
 SELECT
     *
