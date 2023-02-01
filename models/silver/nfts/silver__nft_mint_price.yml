@@ -22,7 +22,11 @@ models:
             'A3PFimLjQFwFt9mHWLuXWQwfpaBBpp2CEp6uTR6yccKr',
             '4CLQnbNKynn6qXF1S4woTxbiuPYREoEYbkXtvoYyzvxQ',
             '5Awi9epmw6EYXzLnzkSu7qJKiZ4HnnDsJ3ix9Wxrt6DC',
-            'AXJFRmLT11RnuFEgYC35F9tktdL77xX8y1b4HEbXPJkf')"
+            'AXJFRmLT11RnuFEgYC35F9tktdL77xX8y1b4HEbXPJkf',
+            '3SQcD75fEJsDPgGCPsqpbD4N2XyDHCCcLDB26UiUU6wa',
+            '7onpWcfER4oz1KLPJMB6mRCXx9EXvDAWsoy4ZnVCkWun',
+            '5f7x2JEiJ2jq1xwVTf4fMs8b5ecBt6s5HgAkajuiK5yh',
+            'SnFYS4FwpRyUziz9fQ68v5A2aGKqRDaNAv5AVaMPQja')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "block timestamp of the latest transaction with a mint price"

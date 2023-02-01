@@ -39,12 +39,13 @@ AND
                 {{ this }}
         )
 {% elif is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+-- AND _inserted_timestamp >= (
+--     SELECT
+--         MAX(_inserted_timestamp)
+--     FROM
+--         {{ this }}
+-- )
+and block_timestamp::date >= '2022-04-01'
 {% else %}
 AND 
     block_timestamp :: DATE BETWEEN '2021-06-02'
@@ -54,7 +55,8 @@ AND
 ),
 base_ptb AS (
     SELECT
-        distinct mint AS mint_paid,
+        mint AS mint_paid,
+        tx_id,
         account,
         DECIMAL
     FROM
@@ -84,12 +86,14 @@ WHERE
                 {{ this }}
         ) 
 {% elif is_incremental() %}
-WHERE _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
+-- WHERE _inserted_timestamp >= (
+--     SELECT
+--         MAX(_inserted_timestamp)
+--     FROM
+--         {{ this }}
+-- )
+where block_timestamp::date >= '2022-04-01'
+
 {% else %}
 WHERE
     block_timestamp :: DATE BETWEEN '2021-06-02'
@@ -199,6 +203,7 @@ mint_price_events AS (
     FROM
         metaplex_events me
         LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
+    where i.value:parsed:type <> 'burn'
     group by 1,2,3,4,5,6,7,8,9,10,11,12
 ),
 pre_final as (
@@ -210,7 +215,7 @@ pre_final as (
         ) AS mint_currency,
         COALESCE(p.decimal, 9) as decimal
     from mint_price_events e
-    LEFT OUTER JOIN base_ptb p on e.token_account = p.account
+    LEFT OUTER JOIN base_ptb p on e.token_account = p.account and e.tx_id = p.tx_id
     where (temp_destination <> temp_source) or (temp_destination is null) or (temp_source is null)
 )
 SELECT
