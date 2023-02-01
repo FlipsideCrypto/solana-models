@@ -41,8 +41,7 @@ FROM
     INNER JOIN burn_txs_sol_incinerator b
     ON b.tx_id = t.tx_id
 WHERE
-    event_type = 'burn'
-    OR program_id = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
+    program_id = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -70,6 +69,11 @@ FROM
     {{ ref('silver__events') }}
 WHERE
     event_type = 'burn'
+    AND mint IN (
+        SELECT 
+            DISTINCT mint
+        FROM {{ ref('silver__nft_mints') }}
+    )
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

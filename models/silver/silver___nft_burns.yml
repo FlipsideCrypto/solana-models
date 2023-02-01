@@ -1,6 +1,6 @@
  version: 2
 models:
-  - name: silver__token_burns
+  - name: silver___nft_burns
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
