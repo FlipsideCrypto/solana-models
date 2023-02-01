@@ -55,7 +55,7 @@ AND
 ),
 base_ptb AS (
     SELECT
-        distinct mint AS mint_paid,
+        mint AS mint_paid,
         tx_id,
         account,
         DECIMAL
