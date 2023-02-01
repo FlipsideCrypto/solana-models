@@ -3,6 +3,7 @@
     unique_key = "CONCAT_WS('-', mint, payer, mint_currency)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
+    full_refresh = false
 ) }}
 
 WITH base_events AS (
@@ -24,7 +25,7 @@ AND
             LEAST(DATEADD(
                 'day',
                 1,
-                COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+                COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2023-01-23')
                 FROM
                     {{ this }}
         )
@@ -33,7 +34,7 @@ AND
             LEAST(DATEADD(
             'day',
             30,
-            COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+            COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2023-01-23')
             FROM
                 {{ this }}
         )
@@ -69,7 +70,7 @@ WHERE
             LEAST(DATEADD(
                 'day',
                 1,
-                COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+                COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2023-01-23')
                 FROM
                     {{ this }}
         )
@@ -78,7 +79,7 @@ WHERE
             LEAST(DATEADD(
             'day',
             30,
-            COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+            COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2023-01-23')
             FROM
                 {{ this }}
         ) 

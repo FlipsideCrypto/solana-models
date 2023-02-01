@@ -3,6 +3,7 @@
     unique_key = "CONCAT_WS('-', tx_id, event_type, mint)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
+    full_refresh = false
 ) }}
 
 WITH base_events AS (

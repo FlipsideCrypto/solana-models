@@ -5,6 +5,8 @@ name: "solana_models"
 version: "1.0.0"
 config-version: 2
 
+require-dbt-version: ">=1.4.0"
+
 # This setting configures which "profile" dbt uses for this project.
 profile: "solana"
 
@@ -53,5 +55,5 @@ models:
 
 vars:
   "dbt_date:time_zone": GMT
-  UPDATE_SNOWFLAKE_TAGS: False
-  UPDATE_UDFS_AND_SPS: True 
+  UPDATE_SNOWFLAKE_TAGS: True
+  UPDATE_UDFS_AND_SPS: False 

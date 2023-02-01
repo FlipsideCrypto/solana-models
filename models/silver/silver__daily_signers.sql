@@ -2,7 +2,8 @@
     materialized = 'incremental',
     unique_key = "CONCAT_WS('-', signer, b_date)",
     incremental_strategy = 'delete+insert',
-    cluster_by = 'signer'
+    cluster_by = 'signer',
+    full_refresh = false
 ) }}
 
 WITH dates_changed AS (
