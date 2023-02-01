@@ -15,18 +15,20 @@ WITH base_events AS(
     WHERE
         program_id IN (
             'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc',
+            '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
+            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
             '11111111111111111111111111111111'
         )
--- {% if is_incremental() %}
--- AND _inserted_timestamp >= (
---     SELECT
---         MAX(_inserted_timestamp)
---     FROM
---         {{ this }}
--- )
--- {% else %}
---     AND block_timestamp :: DATE >= '2021-12-14'
--- {% endif %}
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% else %}
+    AND block_timestamp :: DATE >= '2021-02-14'
+{% endif %}
 ),
 orca_pool_creation AS(
     SELECT
@@ -76,7 +78,7 @@ whirlpools AS (
         NULL AS pool_token,
         _inserted_timestamp
     FROM
-        {{ ref('silver__events') }} e
+        base_events e
     WHERE
         program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
         AND event_type IS NULL
