@@ -22,27 +22,27 @@ models:
         tests:
           - not_null
       - name: LIQUIDITY_POOL
-        description: "{{ doc('tx_id') }}"
+        description: "Address of the liquidity pool"
         tests: 
           - not_null
       - name: OWNER
-        description: "{{ doc('tx_id') }}"
+        description: "Owner account address of the Liquidity Pool"
         tests: 
           - not_null
       - name: MINT_AUTHORITY
-        description: "{{ doc('tx_id') }}"
+        description: "Account address of the mint authority for the liquidity pool"
         tests: 
           - not_null
-      - name: TOKEN_A
-        description: "{{ doc('tx_id') }}"
+      - name: TOKEN_A_ACCOUNT
+        description: "Token address for first token used in the liquidity pool"
         tests: 
           - not_null 
-      - name: TOKEN_B 
-        description: "{{ doc('tx_id') }}"
+      - name: TOKEN_B_Account
+        description: "Token address for second token used in the liquidity pool"
         tests: 
           - not_null 
       - name: POOL_TOKEN
-        description: "{{ doc('tx_id') }}"
+        description: "Address for pool token associated with the liquidity pool"
         tests: 
           - not_null
       - name: _INSERTED_TIMESTAMP

@@ -52,8 +52,8 @@ orca_pools AS (
         l.liquidity_pool,
         l.owner,
         e.instruction :accounts [1] :: STRING AS mint_authority,
-        e.instruction :accounts [2] :: STRING AS token_a,
-        e.instruction :accounts [3] :: STRING AS token_b,
+        e.instruction :accounts [2] :: STRING AS token_a_account,
+        e.instruction :accounts [3] :: STRING AS token_b_account,
         e.instruction :accounts [4] :: STRING AS pool_token,
         l._inserted_timestamp
     FROM
@@ -71,8 +71,8 @@ whirlpools AS (
         instruction :accounts [4] :: STRING AS liquidity_pool,
         'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc' AS owner,
         liquidity_pool AS mint_authority,
-        instruction :accounts [5] :: STRING AS token_a,
-        instruction :accounts [6] :: STRING AS token_b,
+        instruction :accounts [5] :: STRING AS token_a_account,
+        instruction :accounts [6] :: STRING AS token_b_account,
         NULL AS pool_token,
         _inserted_timestamp
     FROM
