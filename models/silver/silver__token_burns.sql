@@ -8,21 +8,11 @@
 WITH burn_txs_sol_incinerator AS (
 
     SELECT
-        DISTINCT tx_id,
-        block_timestamp
+        DISTINCT tx_id
     FROM
         {{ ref('silver__events') }}
     WHERE
         program_id = 'F6fmDVCQfvnEq2KR8hhfZSEczfM9JK9fWbCsYJNbTGn7'
-        AND tx_id NOT IN (
-            SELECT
-                DISTINCT tx_id
-            FROM
-                {{ ref('silver__events') }}
-            WHERE
-                block_timestamp :: DATE >= '2022-08-09'
-                AND program_id = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s' --- eliminate NFT burns
-        )
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -40,16 +30,19 @@ SELECT
     block_id,
     b.tx_id,
     succeeded,
-    instruction :parsed :info :authority :: STRING AS burner,
-    instruction :parsed :info :mint :: STRING AS mint,
+    COALESCE(instruction :parsed :info :authority :: STRING, 
+    instruction :accounts [1] :: STRING) AS burner,
+    COALESCE(instruction :parsed :info :mint :: STRING, 
+    instruction :accounts [2] :: STRING) AS mint,
     _inserted_timestamp
 FROM
-    burn_txs_sol_incinerator b
-    INNER JOIN {{ ref('silver__events') }}
+    {{ ref('silver__events') }}
     t
+    INNER JOIN burn_txs_sol_incinerator b
     ON b.tx_id = t.tx_id
 WHERE
     event_type = 'burn'
+    OR program_id = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -77,14 +70,6 @@ FROM
     {{ ref('silver__events') }}
 WHERE
     event_type = 'burn'
-    AND mint IN (
-        SELECT
-            DISTINCT from_mint
-        FROM
-            {{ ref('silver__swaps') }}
-        WHERE
-            block_timestamp :: DATE >= '2020-10-11'
-    )
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
