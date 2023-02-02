@@ -3,9 +3,9 @@ run-name: dbt_run_dev_refresh
 
 on:
   workflow_dispatch:
-  schedule:
-    # Runs 06:00 daily (see https://crontab.guru)
-    - cron: '0 6 * * *'
+  # schedule:
+  #   # Runs 06:00 daily (see https://crontab.guru)
+  #   - cron: '0 6 * * *'
     
 env:
   DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
