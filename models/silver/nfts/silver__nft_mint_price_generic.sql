@@ -39,13 +39,12 @@ AND
                 {{ this }}
         )
 {% elif is_incremental() %}
--- AND _inserted_timestamp >= (
---     SELECT
---         MAX(_inserted_timestamp)
---     FROM
---         {{ this }}
--- )
-and block_timestamp::date >= '2022-04-01'
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% else %}
 AND 
     block_timestamp :: DATE BETWEEN '2021-06-02'
@@ -86,13 +85,12 @@ WHERE
                 {{ this }}
         ) 
 {% elif is_incremental() %}
--- WHERE _inserted_timestamp >= (
---     SELECT
---         MAX(_inserted_timestamp)
---     FROM
---         {{ this }}
--- )
-where block_timestamp::date >= '2022-04-01'
+WHERE _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 
 {% else %}
 WHERE
