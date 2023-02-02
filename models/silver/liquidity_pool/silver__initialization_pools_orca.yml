@@ -1,0 +1,52 @@
+version: 2
+models:
+  - name: silver__initialization_pools_orca
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+            - TX_ID
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: LIQUIDITY_POOL
+        description: "Address of the liquidity pool"
+        tests: 
+          - not_null
+      - name: OWNER
+        description: "Owner account address of the Liquidity Pool"
+        tests: 
+          - not_null
+      - name: MINT_AUTHORITY
+        description: "Account address of the mint authority for the liquidity pool"
+        tests: 
+          - not_null
+      - name: TOKEN_A_ACCOUNT
+        description: "Token address for first token used in the liquidity pool"
+        tests: 
+          - not_null 
+      - name: TOKEN_B_Account
+        description: "Token address for second token used in the liquidity pool"
+        tests: 
+          - not_null 
+      - name: POOL_TOKEN
+        description: "Address for pool token associated with the liquidity pool"
+        tests: 
+          - not_null:
+              where: owner <> 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('tx_id') }}"
+        tests: 
+          - not_null
