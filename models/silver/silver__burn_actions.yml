@@ -17,9 +17,8 @@ models:
             - TX_ID
             - EVENT_TYPE
             - MINT
-            - BURN_AMOUNT
             - BURN_AUTHORITY
-            - SIGNER
+            - BURN_AMOUNT
           model_condition: "where tx_id in ('4KrSQZq32joS7Cs4CXRq3yqpq94sBkvMZDYJA1uUSyzDH26qDnUdfxhPy4Skb8d1HBQvanuhkwMSiAWRS5ueStf5',
           '5Gw9kgQi1Qh2fs1QCz9gt3ZTvL6bYqJ2pmbEgWP6cC5mYfPpSkppvZBBuxfMqWt7HQBw26dJGQjWzMQEyyhXBEHj',
           '4q64pGRsu79AyCjF8Ty2hkJfPinxm7JJhqWrefw8WLpkvW8n5Eg4EXxpgmDZGPEjoCXsCYGz5EphjQ4bmmbjMf8M',

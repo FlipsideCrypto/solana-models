@@ -40,7 +40,7 @@ WHERE
 {% else %}
 WHERE
     -- block_id between 31310775 and 32310775
-    block_timestamp between '2022-11-12' and '2022-12-12'
+    block_timestamp between '2022-11-12' and '2022-12-13'
 {% endif %}
 )
 SELECT
