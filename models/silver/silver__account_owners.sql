@@ -1,8 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ["address","owner","start_block_id"],
-    incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
-    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
+    unique_key = ["account_address","owner","start_block_id"],
+    cluster_by = ['_inserted_timestamp::DATE'],
 ) }}
 
 /*
@@ -18,20 +17,48 @@ base as (
     select 
         account_address, 
         owner, 
-        block_id,
-        conditional_change_event(owner) over (partition by account_address order by block_id) as bucket
+        block_id
     from {{ ref('silver__account_ownership_events') }}
     /* incremental condition here */
-    /* incremental union here */
+    {% if is_incremental() %}
+        where _inserted_timestamp >= (select max(_inserted_timestamp) from {{ this }})
+    {% endif %}
 ),
+{% if is_incremental() %}
+current_ownership as (
+    select 
+        t.account_address, 
+        t.owner, 
+        t.start_block_id as block_id
+    from {{ this }} t
+    join (select distinct account_address from base) b on b.account_address = t.account_address
+    where t.end_block_id is null
+    union 
+    select 
+        *
+    from base
+),
+bucketed as (
+    select 
+        *,
+        conditional_change_event(owner) over (partition by account_address order by block_id) as bucket
+    from current_ownership
+),
+{% else %}
+bucketed as (
+    select 
+        *,
+        conditional_change_event(owner) over (partition by account_address order by block_id) as bucket
+    from base
+),
+{% endif %}
 c as (
     select 
         account_address, 
         owner, 
         bucket, 
         min(block_id) as start_block_id
-    from base 
-    where account_address = 'abc'
+    from bucketed
     group by 1,2,3
 )
 select 
@@ -45,4 +72,3 @@ select
     _inserted_timestamp
 from c
 join last_updated_at
-/* eliminate existing records here or could just re-merge them w/ a new last updated timestamp?*/;

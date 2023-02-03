@@ -3,14 +3,20 @@
     unique_key = ["block_id","tx_id","index","inner_index"],
     incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
+    full_refresh = false
 ) }}
 
 with base_events as (
     select *
     from {{ ref('silver__events')}}
     where succeeded 
-    and block_timestamp::date between '2023-01-01' and '2023-01-31'
-
+    {% if is_incremental() %}
+    -- and _inserted_timestamp >= (select max(_inserted_timestamp) from {{ this }})
+    and _inserted_timestamp between (select max(_inserted_timestamp) from {{ this }}) and (select dateadd('day',15,max(_inserted_timestamp)) from {{ this }})
+    -- and _inserted_timestamp between (select max(_inserted_timestamp) from {{ this }}) and (select dateadd('hour',4,max(_inserted_timestamp)) from {{ this }})
+    {% else %}
+    and _inserted_timestamp::date between '2022-08-12' and '2022-09-01'
+    {% endif %}
 ),
 ownership_change_events as (
     select
@@ -183,12 +189,13 @@ combined as (
         inner_index,
         event_type,
         instruction:parsed:info:account::string as account_address,
-        coalesce(instruction:parsed:info:authority::string,instruction:parsed:info:newAuthority::string) as owner,
+        instruction:parsed:info:newAuthority::string as owner,
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('setAuthority')
     and (instruction:parsed:info:authorityType::string is null 
         or instruction:parsed:info:authorityType::string = 'accountOwner')
+    and owner is not null /* some events have an invalid new authority object even though tx is successful, ex: 4oHAf4fmEFmdiYG6Rchh4FoMH4de97iwnZqHEYrvQ5oo3UgwumPxkkkX6KAWCwmk4e5GzsHXqFQYVa2VyoQUYyyD */
     union 
     select 
         block_timestamp,
