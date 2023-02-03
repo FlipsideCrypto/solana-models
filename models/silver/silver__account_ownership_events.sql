@@ -11,11 +11,11 @@ with base_events as (
     from {{ ref('silver__events')}}
     where succeeded 
     {% if is_incremental() %}
-    -- and _inserted_timestamp >= (select max(_inserted_timestamp) from {{ this }})
-    and _inserted_timestamp between (select max(_inserted_timestamp) from {{ this }}) and (select dateadd('day',15,max(_inserted_timestamp)) from {{ this }})
-    -- and _inserted_timestamp between (select max(_inserted_timestamp) from {{ this }}) and (select dateadd('hour',4,max(_inserted_timestamp)) from {{ this }})
+        {% if execute %}
+        {{ get_batch_load_logic(this) }}
+        {% endif %}
     {% else %}
-    and _inserted_timestamp::date between '2022-08-12' and '2022-09-01'
+        and _inserted_timestamp::date between '2022-08-12' and '2022-09-01'
     {% endif %}
 ),
 ownership_change_events as (
