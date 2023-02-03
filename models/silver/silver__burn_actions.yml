@@ -65,7 +65,9 @@ models:
           - not_null
       - name: BURN_AUTHORITY
         description: Account address authorizing burn
-      - name: SIGNER
+        tests: 
+          - not_null
+      - name: SIGNERS
         description: Account address authorizing burn
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
