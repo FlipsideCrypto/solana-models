@@ -57,7 +57,7 @@ models:
               where: event_type in ('mintTo','mintToChecked')
       - name: MINT_AUTHORITY
         description: "Account address authorizing mint"
-      - name: SIGNER
+      - name: SIGNERS
         description: "Account address signing off on mint"
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
