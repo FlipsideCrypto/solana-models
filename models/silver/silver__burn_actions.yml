@@ -1,7 +1,7 @@
 version: 2
 models:
-  - name: silver__mint_actions
-    description: table holding mint initialization or token minting events
+  - name: silver__burn_actions
+    description: table holding token burn events
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -10,6 +10,20 @@ models:
             - INNER_INDEX
             - EVENT_TYPE
             - MINT
+      - compare_model_subset:
+          name: silver__burn_actions_logic_test
+          compare_model: ref('testing__burn_actions')
+          compare_columns: 
+            - TX_ID
+            - EVENT_TYPE
+            - MINT
+            - BURN_AUTHORITY
+            - BURN_AMOUNT
+          model_condition: "where tx_id in ('4KrSQZq32joS7Cs4CXRq3yqpq94sBkvMZDYJA1uUSyzDH26qDnUdfxhPy4Skb8d1HBQvanuhkwMSiAWRS5ueStf5',
+          '5Gw9kgQi1Qh2fs1QCz9gt3ZTvL6bYqJ2pmbEgWP6cC5mYfPpSkppvZBBuxfMqWt7HQBw26dJGQjWzMQEyyhXBEHj',
+          '4q64pGRsu79AyCjF8Ty2hkJfPinxm7JJhqWrefw8WLpkvW8n5Eg4EXxpgmDZGPEjoCXsCYGz5EphjQ4bmmbjMf8M',
+          '5MBgE9rq527vcZK5fHzYE3XD5qQnzTmHZ1R4FnLCQGi3VK9LvroFNnKGpF7tpDtbYGZTUibJQbQXA1PquBq8rDHT',
+          '4oEuNB3GMvPPrhQDVmF52dkh2kHXdEpZC29xYN1H24Cq8apHEUk92VHQsLzCNhcEude8VJ2Z9tAWa8pXr9tBP27H')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -45,20 +59,16 @@ models:
         description: "{{ doc('mint') }}"
         tests: 
           - not_null
-      - name: DECIMAL
-        description: "{{ doc('decimal') }}"
+      - name: BURN_AMOUNT
+        description: Number of tokens burned
         tests: 
-          - not_null:
-              where: event_type in ('initializeMint','initializeMint2')
-      - name: MINT_AMOUNT
-        description: "{{ doc('mint_amount') }}"
+          - not_null
+      - name: BURN_AUTHORITY
+        description: Account address authorizing burn
         tests: 
-          - not_null:
-              where: event_type in ('mintTo','mintToChecked')
-      - name: MINT_AUTHORITY
-        description: "Account address authorizing mint"
+          - not_null
       - name: SIGNERS
-        description: "Account address signing off on mint"
+        description: Account address authorizing burn
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
