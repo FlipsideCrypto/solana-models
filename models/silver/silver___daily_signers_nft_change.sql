@@ -110,19 +110,7 @@ AND '2022-08-30'
 
 
 UNION
-SELECT
-    block_timestamp :: DATE AS b_date,
-    purchaser AS signer,
-    mint AS token_in,
-    NULL AS _inserted_timestamp
-FROM
-    {{ ref('core__fact_nft_sales') }}
-{# WHERE
-    purchaser IN (
-        '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H',
-        'Hsg1qaafF8FUoqrhRPTtmEX86Hsv3Tc8t33iE8tNqUSb'
-    ) #}
-UNION
+
 SELECT
     block_timestamp :: DATE AS b_date,
     tx_to AS signer,
@@ -209,21 +197,8 @@ AND _inserted_timestamp :: DATE BETWEEN '2022-08-12'
 AND '2022-08-30'
 {% endif %}
 
+UNION
 
-UNION
-SELECT
-    block_timestamp :: DATE AS b_date,
-    seller AS signer,
-    mint AS token_out,
-    NULL AS _inserted_timestamp
-FROM
-    {{ ref('core__fact_nft_sales') }}
-{# WHERE
-    seller IN (
-        '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H',
-        'Hsg1qaafF8FUoqrhRPTtmEX86Hsv3Tc8t33iE8tNqUSb'
-    ) #}
-UNION
 SELECT
     block_timestamp :: DATE AS b_date,
     tx_from AS signer,
