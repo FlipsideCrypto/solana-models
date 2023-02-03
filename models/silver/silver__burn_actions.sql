@@ -60,7 +60,7 @@ SELECT
         instruction :parsed :info :authority :: string,
         instruction :parsed :info :multisigAuthority :: string
     ) AS burn_authority,
-    instruction :parsed :info :signers[0] :: string AS signer,
+    instruction :parsed :info :signers :: string AS signers,
     _inserted_timestamp
 FROM
     base_events
@@ -87,7 +87,7 @@ SELECT
         i.value :parsed :info :authority :: string,
         i.value :parsed :info :multisigAuthority :: string
     ) AS burn_authority,
-    instruction :parsed :info :signers[0] :: string AS signer,
+    instruction :parsed :info :signers :: string AS signers,
     _inserted_timestamp
 FROM
     base_events e,
