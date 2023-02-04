@@ -5,7 +5,7 @@
     cluster_by = 'signer',
     full_refresh = false
 ) }} 
-WITH dates_changed AS (
+{# WITH dates_changed AS (
 
     SELECT
         DISTINCT block_timestamp :: DATE AS block_timestamp_date
@@ -55,8 +55,8 @@ WHERE
     _inserted_timestamp :: DATE BETWEEN '2022-08-12'
     AND '2022-08-30'
 {% endif %}
-),
-include_mints AS (
+), #}
+WITH include_mints AS (
     SELECT
         DISTINCT mint
     FROM
@@ -76,18 +76,18 @@ tokens_in AS (
     FROM
         {{ ref('silver__nft_mints') }}
     WHERE
-        {# purchaser IN (
+        purchaser IN (
             '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H',
-            'Hsg1qaafF8FUoqrhRPTtmEX86Hsv3Tc8t33iE8tNqUSb')  #}
-    block_timestamp :: DATE >= CURRENT_DATE - 7
+            'Hsg1qaafF8FUoqrhRPTtmEX86Hsv3Tc8t33iE8tNqUSb') 
+    {# block_timestamp :: DATE >= CURRENT_DATE - 7
         AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
             FROM
                 dates_changed
-        )
+        ) #}
 
-{% if is_incremental() and env_var(
+{# {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
     "false"
 ) == "true" %}
@@ -106,7 +106,7 @@ AND _inserted_timestamp < (
 ) {% elif not is_incremental() %}
 AND _inserted_timestamp :: DATE BETWEEN '2022-08-12'
 AND '2022-08-30'
-{% endif %}
+{% endif %} #}
 
 
 UNION
@@ -122,10 +122,10 @@ FROM
     INNER JOIN include_mints e
     ON e.mint = t.mint
 WHERE
-    {# tx_to IN (
+    tx_to IN (
         '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H',
-        'Hsg1qaafF8FUoqrhRPTtmEX86Hsv3Tc8t33iE8tNqUSb')  #}
-        e.block_timestamp :: DATE >= CURRENT_DATE - 7
+        'Hsg1qaafF8FUoqrhRPTtmEX86Hsv3Tc8t33iE8tNqUSb') 
+        {# e.block_timestamp :: DATE >= CURRENT_DATE - 7
     AND e.block_timestamp :: DATE IN (
         SELECT
             block_timestamp_date
@@ -152,23 +152,23 @@ AND e._inserted_timestamp < (
 ) {% elif not is_incremental() %}
 AND e._inserted_timestamp :: DATE BETWEEN '2022-08-12'
 AND '2022-08-30'
-{% endif %}
+{% endif %} #}
 
 
 ),
 tokens_out AS (
     SELECT
         block_timestamp :: DATE AS b_date,
-        burner AS signer,
+        burn_authority AS signer,
         mint AS token_out,
         _inserted_timestamp
     FROM
-        {{ ref('silver___nft_burns') }}
+        {{ ref('silver__burn_actions') }}
     WHERE
-        {# burner IN (
+        burner IN (
             '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H',
-            'Hsg1qaafF8FUoqrhRPTtmEX86Hsv3Tc8t33iE8tNqUSb')  #}
-        block_timestamp :: DATE >= CURRENT_DATE - 7
+            'Hsg1qaafF8FUoqrhRPTtmEX86Hsv3Tc8t33iE8tNqUSb') 
+        {# block_timestamp :: DATE >= CURRENT_DATE - 7
         AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
@@ -195,7 +195,7 @@ AND _inserted_timestamp < (
 ) {% elif not is_incremental() %}
 AND _inserted_timestamp :: DATE BETWEEN '2022-08-12'
 AND '2022-08-30'
-{% endif %}
+{% endif %} #}
 
 UNION
 
@@ -210,10 +210,10 @@ FROM
     INNER JOIN include_mints e
     ON e.mint = t.mint
 WHERE
-    {# tx_from IN (
+    tx_from IN (
         '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H',
-        'Hsg1qaafF8FUoqrhRPTtmEX86Hsv3Tc8t33iE8tNqUSb')  #}
-        block_timestamp :: DATE >= CURRENT_DATE - 7
+        'Hsg1qaafF8FUoqrhRPTtmEX86Hsv3Tc8t33iE8tNqUSb') 
+        {# block_timestamp :: DATE >= CURRENT_DATE - 7
     AND block_timestamp :: DATE IN (
         SELECT
             block_timestamp_date
@@ -240,7 +240,7 @@ AND _inserted_timestamp < (
 ) {% elif not is_incremental() %}
 AND _inserted_timestamp :: DATE BETWEEN '2022-08-12'
 AND '2022-08-30'
-{% endif %}
+{% endif %} #}
 
 
 ), 
