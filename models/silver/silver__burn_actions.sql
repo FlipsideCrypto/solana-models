@@ -19,13 +19,13 @@ WITH base_events AS (
 WHERE
     block_id BETWEEN (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 31310775)+1,175418104)
+            LEAST(COALESCE(MAX(block_id), 31319460)+1,175418104)
         FROM
             {{ this }}
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(block_id), 31310775)+4000000,175418104)
+            LEAST(COALESCE(MAX(block_id), 31319460)+8000000,175418104)
         FROM
             {{ this }}
         ) 
@@ -39,7 +39,7 @@ WHERE
     )
 {% else %}
 WHERE
-    block_id between 31310775 and 32310775
+    block_id between 31319460 and 32319460
 {% endif %}
 )
 SELECT
