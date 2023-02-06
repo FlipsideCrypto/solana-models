@@ -2,11 +2,9 @@
     materialized = 'incremental',
     unique_key = "CONCAT_WS('-', signer, b_date)",
     incremental_strategy = 'delete+insert',
-    cluster_by = 'signer',
-    full_refresh = false
+    cluster_by = 'signer'
 ) }} 
-{# WITH dates_changed AS (
-
+WITH dates_changed AS (
     SELECT
         DISTINCT block_timestamp :: DATE AS block_timestamp_date
     FROM
@@ -42,7 +40,8 @@ WHERE
             )
         FROM
             {{ this }}
-    ) {% elif is_incremental() %}
+    ) 
+{% elif is_incremental() %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -52,20 +51,8 @@ WHERE
     )
 {% else %}
 WHERE
-    _inserted_timestamp :: DATE BETWEEN '2022-08-12'
-    AND '2022-08-30'
+    _inserted_timestamp :: DATE BETWEEN '2022-08-12' AND '2022-08-30'
 {% endif %}
-), #}
-WITH include_mints AS (
-    SELECT
-        DISTINCT mint
-    FROM
-        {{ ref('core__fact_nft_mints') }}
-    UNION
-    SELECT
-        DISTINCT mint
-    FROM
-        {{ ref('core__fact_nft_sales') }}
 ),
 tokens_in AS (
     SELECT
@@ -76,18 +63,15 @@ tokens_in AS (
     FROM
         {{ ref('silver__nft_mints') }}
     WHERE
-        purchaser IN (
-            '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H',
-            'Hsg1qaafF8FUoqrhRPTtmEX86Hsv3Tc8t33iE8tNqUSb') 
-    {# block_timestamp :: DATE >= CURRENT_DATE - 7
+        block_timestamp :: DATE >= CURRENT_DATE - 7
         AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
             FROM
                 dates_changed
-        ) #}
+        ) 
 
-{# {% if is_incremental() and env_var(
+{% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
     "false"
 ) == "true" %}
@@ -106,7 +90,7 @@ AND _inserted_timestamp < (
 ) {% elif not is_incremental() %}
 AND _inserted_timestamp :: DATE BETWEEN '2022-08-12'
 AND '2022-08-30'
-{% endif %} #}
+{% endif %}
 
 
 UNION
@@ -119,14 +103,11 @@ SELECT
 FROM
     {{ ref('silver__transfers') }}
     t
-    INNER JOIN include_mints e
+    INNER JOIN {{ ref('silver__nft_distinct_mints') }} e
     ON e.mint = t.mint
 WHERE
-    tx_to IN (
-        '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H',
-        'Hsg1qaafF8FUoqrhRPTtmEX86Hsv3Tc8t33iE8tNqUSb') 
-        {# e.block_timestamp :: DATE >= CURRENT_DATE - 7
-    AND e.block_timestamp :: DATE IN (
+    t.block_timestamp :: DATE >= CURRENT_DATE - 7
+    AND t.block_timestamp :: DATE IN (
         SELECT
             block_timestamp_date
         FROM
@@ -137,6 +118,19 @@ WHERE
     'DBT_IS_BATCH_LOAD',
     "false"
 ) == "true" %}
+AND t._inserted_timestamp < (
+    SELECT
+        LEAST(
+            DATEADD(
+                'day',
+                2,
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
+            ),
+            CURRENT_DATE - 1
+        )
+    FROM
+        {{ this }}
+) 
 AND e._inserted_timestamp < (
     SELECT
         LEAST(
@@ -149,10 +143,11 @@ AND e._inserted_timestamp < (
         )
     FROM
         {{ this }}
-) {% elif not is_incremental() %}
-AND e._inserted_timestamp :: DATE BETWEEN '2022-08-12'
-AND '2022-08-30'
-{% endif %} #}
+) 
+{% elif not is_incremental() %}
+AND t._inserted_timestamp :: DATE BETWEEN '2022-08-12' AND '2022-08-30'
+AND e._inserted_timestamp :: DATE BETWEEN '2022-08-12' AND '2022-08-30'
+{% endif %}
 
 
 ),
@@ -165,10 +160,7 @@ tokens_out AS (
     FROM
         {{ ref('silver__burn_actions') }}
     WHERE
-        burner IN (
-            '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H',
-            'Hsg1qaafF8FUoqrhRPTtmEX86Hsv3Tc8t33iE8tNqUSb') 
-        {# block_timestamp :: DATE >= CURRENT_DATE - 7
+        block_timestamp :: DATE >= CURRENT_DATE - 7
         AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
@@ -195,7 +187,7 @@ AND _inserted_timestamp < (
 ) {% elif not is_incremental() %}
 AND _inserted_timestamp :: DATE BETWEEN '2022-08-12'
 AND '2022-08-30'
-{% endif %} #}
+{% endif %}
 
 UNION
 
@@ -207,13 +199,10 @@ SELECT
 FROM
     {{ ref('silver__transfers') }}
     t
-    INNER JOIN include_mints e
+    INNER JOIN {{ ref('silver__nft_distinct_mints') }} e
     ON e.mint = t.mint
 WHERE
-    tx_from IN (
-        '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H',
-        'Hsg1qaafF8FUoqrhRPTtmEX86Hsv3Tc8t33iE8tNqUSb') 
-        {# block_timestamp :: DATE >= CURRENT_DATE - 7
+    block_timestamp :: DATE >= CURRENT_DATE - 7
     AND block_timestamp :: DATE IN (
         SELECT
             block_timestamp_date
@@ -225,7 +214,7 @@ WHERE
     'DBT_IS_BATCH_LOAD',
     "false"
 ) == "true" %}
-AND _inserted_timestamp < (
+AND t._inserted_timestamp < (
     SELECT
         LEAST(
             DATEADD(
@@ -237,34 +226,51 @@ AND _inserted_timestamp < (
         )
     FROM
         {{ this }}
-) {% elif not is_incremental() %}
-AND _inserted_timestamp :: DATE BETWEEN '2022-08-12'
-AND '2022-08-30'
-{% endif %} #}
-
+)
+AND e._inserted_timestamp < (
+    SELECT
+        LEAST(
+            DATEADD(
+                'day',
+                2,
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
+            ),
+            CURRENT_DATE - 1
+        )
+    FROM
+        {{ this }}
+)  
+{% elif not is_incremental() %}
+AND t._inserted_timestamp :: DATE BETWEEN '2022-08-12' AND '2022-08-30'
+AND e._inserted_timestamp :: DATE BETWEEN '2022-08-12' AND '2022-08-30'
+{% endif %}
 
 ), 
 ins AS (
     SELECT
         b_date,
         signer,
-        ARRAY_AGG(token_in) AS nfts_in
+        ARRAY_AGG(token_in) AS nfts_in, 
+        _inserted_timestamp
     FROM
         tokens_in
     GROUP BY
         b_date,
-        signer
+        signer, 
+        _inserted_timestamp
 ),
 outs AS (
     SELECT
         b_date,
         signer,
-        ARRAY_AGG(token_out) AS nfts_out
+        ARRAY_AGG(token_out) AS nfts_out, 
+        _inserted_timestamp
     FROM
         tokens_out
     GROUP BY
         b_date,
-        signer
+        signer, 
+        _inserted_timestamp
 )
 SELECT
     COALESCE(
@@ -276,7 +282,8 @@ SELECT
         o.signer
     ) AS signer,
     nfts_in,
-    nfts_out
+    nfts_out, 
+    i._inserted_timestamp
 FROM
     ins i 
     FULL OUTER JOIN outs o

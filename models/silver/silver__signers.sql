@@ -120,6 +120,7 @@ SELECT
     s_agg.num_txs,
     s_agg.total_fees,
     s_agg.programs_used,
+    s_bal.nfts_held,
     s_agg._inserted_timestamp
 FROM
     final_min_signers s_min
