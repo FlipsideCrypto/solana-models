@@ -11,14 +11,14 @@ remove all accounts that have the same owner + start block + end block
 */
 with last_updated_at as (
     select max(_inserted_timestamp) as _inserted_timestamp
-    from {{ ref('silver__account_ownership_events') }}
+    from {{ ref('silver__token_account_ownership_events') }}
 ),
 base as (
     select 
         account_address, 
         owner, 
         block_id
-    from {{ ref('silver__account_ownership_events') }}
+    from {{ ref('silver__token_account_ownership_events') }}
     /* incremental condition here */
     {% if is_incremental() %}
         where _inserted_timestamp >= (select max(_inserted_timestamp) from {{ this }})

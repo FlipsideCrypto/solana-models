@@ -12,7 +12,7 @@ with base_events as (
     where succeeded 
     {% if is_incremental() %}
         {% if execute %}
-        {{ get_batch_load_logic(this) }}
+        {{ get_batch_load_logic(this,15,'2023-02-05') }}
         {% endif %}
     {% else %}
         and _inserted_timestamp::date between '2022-08-12' and '2022-09-01'
@@ -30,9 +30,8 @@ ownership_change_events as (
         instruction,
         _inserted_timestamp
     from base_events
-    where event_type in ('assign','assignWithSeed','authorize','authorizeChecked',
-        'authorizeWithSeed','close','closeAccount','create','createAccount','createAccountWithSeed','createIdempotent',
-        'initialize','initializeAccount','initializeAccount2','initializeAccount3','initializeChecked','revoke','setAuthority')
+    where event_type in ('assign','assignWithSeed','close','closeAccount','create','createAccount','createAccountWithSeed','createIdempotent',
+    'initializeAccount','initializeAccount2','initializeAccount3','revoke','setAuthority')
     union 
     select 
         block_timestamp,
@@ -47,9 +46,8 @@ ownership_change_events as (
     from base_events e,
     TABLE(FLATTEN(e.inner_instruction :instructions)) ii
     WHERE
-        ii.value :parsed :type :: STRING IN ('assign','assignWithSeed','authorize','authorizeChecked',
-        'authorizeWithSeed','close','closeAccount','create','createAccount','createAccountWithSeed','createIdempotent',
-        'initialize','initializeAccount','initializeAccount2','initializeAccount3','initializeChecked','revoke','setAuthority')
+        ii.value :parsed :type :: STRING IN ('assign','assignWithSeed','close','closeAccount','create','createAccount','createAccountWithSeed','createIdempotent',
+    'initializeAccount','initializeAccount2','initializeAccount3','revoke','setAuthority')
 ),
 combined as (
     select 
@@ -65,36 +63,6 @@ combined as (
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('assign','assignWithSeed','initializeAccount','initializeAccount2','initializeAccount3')
-    union 
-    select 
-        block_timestamp,
-        block_id,
-        tx_id,
-        succeeded,
-        index,
-        inner_index,
-        event_type,
-        instruction:parsed:info:stakeAccount::string as account_address,
-        instruction:parsed:info:newAuthority::string as owner,
-        _inserted_timestamp
-    from ownership_change_events 
-    where event_type in ('authorize','authorizeChecked')
-    and instruction:parsed:info:authorityType::string = 'Withdrawer' /* probably handle stake accounts differently and include both stake and withdraw authorities */
-    union 
-    select 
-        block_timestamp,
-        block_id,
-        tx_id,
-        succeeded,
-        index,
-        inner_index,
-        event_type,
-        coalesce(instruction:parsed:info:stakeAccount::string, instruction:parsed:info:voteAccount::string) as account_address,
-        coalesce(instruction:parsed:info:newAuthorized::string, instruction:parsed:info:newAuthority::string) as owner,
-        _inserted_timestamp
-    from ownership_change_events 
-    where event_type in ('authorizeWithSeed')
-    and instruction:parsed:info:authorityType::string = 'Withdrawer' /* This seems to involve both stake and vote accounts */
     union 
     select 
         block_timestamp,
@@ -137,34 +105,6 @@ combined as (
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('createAccount','createAccountWithSeed')
-    union 
-    select 
-        block_timestamp,
-        block_id,
-        tx_id,
-        succeeded,
-        index,
-        inner_index,
-        event_type,
-        coalesce(instruction:parsed:info:stakeAccount::string,instruction:parsed:info:voteAccount::string) as account_address,
-        coalesce(instruction:parsed:info:authorized:withdrawer::string,instruction:parsed:info:authorizedWithdrawer::string) as owner,
-        _inserted_timestamp
-    from ownership_change_events 
-    where event_type in ('initialize')
-    union 
-    select 
-        block_timestamp,
-        block_id,
-        tx_id,
-        succeeded,
-        index,
-        inner_index,
-        event_type,
-        instruction:parsed:info:stakeAccount::string as account_address,
-        instruction:parsed:info:withdrawer::string as owner,
-        _inserted_timestamp
-    from ownership_change_events 
-    where event_type in ('initializeChecked')
     union 
     select 
         block_timestamp,
