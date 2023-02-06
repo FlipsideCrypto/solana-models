@@ -21,7 +21,7 @@ WHERE
                 DATEADD(
                     'day',
                     1,
-                    COALESCE(MAX(_inserted_timestamp :: DATE), '2022-12-12')
+                    COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
                 ),
                 CURRENT_DATE - 1
             )
@@ -34,7 +34,7 @@ WHERE
                 DATEADD(
                     'day',
                     1,
-                    COALESCE(MAX(_inserted_timestamp :: DATE), '2022-12-12')
+                    COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
                 ),
                 CURRENT_DATE - 1
             )
@@ -51,7 +51,7 @@ WHERE
     )
 {% else %}
 WHERE
-    _inserted_timestamp :: DATE BETWEEN '2022-12-12' AND '2022-12-30'
+    _inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
 {% endif %}
 ),
 tokens_in AS (
@@ -81,14 +81,14 @@ AND _inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-12-12')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
             ),
             CURRENT_DATE - 1
         )
     FROM
         {{ this }}
 ) {% elif not is_incremental() %}
-AND _inserted_timestamp :: DATE BETWEEN '2022-12-12' AND '2022-12-30'
+AND _inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
 {% endif %}
 
 
@@ -123,7 +123,7 @@ AND t._inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-12-12')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
             ),
             CURRENT_DATE - 1
         )
@@ -136,7 +136,7 @@ AND e._inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-12-12')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
             ),
             CURRENT_DATE - 1
         )
@@ -144,8 +144,8 @@ AND e._inserted_timestamp < (
         {{ this }}
 ) 
 {% elif not is_incremental() %}
-AND t._inserted_timestamp :: DATE BETWEEN '2022-12-12' AND '2022-12-30'
-AND e._inserted_timestamp :: DATE BETWEEN '2022-12-12' AND '2022-12-30'
+AND t._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
+AND e._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
 {% endif %}
 ),
 tokens_out AS (
@@ -175,15 +175,15 @@ AND _inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-12-12')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
             ),
             CURRENT_DATE - 1
         )
     FROM
         {{ this }}
 ) {% elif not is_incremental() %}
-AND _inserted_timestamp :: DATE BETWEEN '2022-12-12'
-AND '2022-12-30'
+AND _inserted_timestamp :: DATE BETWEEN '2023-01-15'
+AND '2023-02-06'
 {% endif %}
 
 UNION
@@ -217,7 +217,7 @@ AND t._inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-12-12')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
             ),
             CURRENT_DATE - 1
         )
@@ -230,7 +230,7 @@ AND e._inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-12-12')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
             ),
             CURRENT_DATE - 1
         )
@@ -238,8 +238,8 @@ AND e._inserted_timestamp < (
         {{ this }}
 )  
 {% elif not is_incremental() %}
-AND t._inserted_timestamp :: DATE BETWEEN '2022-12-12' AND '2022-12-30'
-AND e._inserted_timestamp :: DATE BETWEEN '2022-12-12' AND '2022-12-30'
+AND t._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
+AND e._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
 {% endif %}
 
 ), 
