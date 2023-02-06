@@ -21,7 +21,7 @@ WHERE
                 DATEADD(
                     'day',
                     1,
-                    COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
+                    COALESCE(MAX(_inserted_timestamp :: DATE), '2022-12-12')
                 ),
                 CURRENT_DATE - 1
             )
@@ -34,7 +34,7 @@ WHERE
                 DATEADD(
                     'day',
                     1,
-                    COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
+                    COALESCE(MAX(_inserted_timestamp :: DATE), '2022-12-12')
                 ),
                 CURRENT_DATE - 1
             )
@@ -51,7 +51,7 @@ WHERE
     )
 {% else %}
 WHERE
-    _inserted_timestamp :: DATE BETWEEN '2022-08-12' AND '2022-08-30'
+    _inserted_timestamp :: DATE BETWEEN '2022-12-12' AND '2022-12-30'
 {% endif %}
 ),
 tokens_in AS (
@@ -81,15 +81,14 @@ AND _inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-12-12')
             ),
             CURRENT_DATE - 1
         )
     FROM
         {{ this }}
 ) {% elif not is_incremental() %}
-AND _inserted_timestamp :: DATE BETWEEN '2022-08-12'
-AND '2022-08-30'
+AND _inserted_timestamp :: DATE BETWEEN '2022-12-12' AND '2022-12-30'
 {% endif %}
 
 
@@ -99,11 +98,11 @@ SELECT
     block_timestamp :: DATE AS b_date,
     tx_to AS signer,
     t.mint AS token_in,
-    _inserted_timestamp
+    t._inserted_timestamp
 FROM
     {{ ref('silver__transfers') }}
     t
-    INNER JOIN {{ ref('silver__nft_distinct_mints') }} e
+    INNER JOIN {{ ref('silver___nft_distinct_mints') }} e
     ON e.mint = t.mint
 WHERE
     t.block_timestamp :: DATE >= CURRENT_DATE - 7
@@ -124,7 +123,7 @@ AND t._inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-12-12')
             ),
             CURRENT_DATE - 1
         )
@@ -137,7 +136,7 @@ AND e._inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-12-12')
             ),
             CURRENT_DATE - 1
         )
@@ -145,11 +144,9 @@ AND e._inserted_timestamp < (
         {{ this }}
 ) 
 {% elif not is_incremental() %}
-AND t._inserted_timestamp :: DATE BETWEEN '2022-08-12' AND '2022-08-30'
-AND e._inserted_timestamp :: DATE BETWEEN '2022-08-12' AND '2022-08-30'
+AND t._inserted_timestamp :: DATE BETWEEN '2022-12-12' AND '2022-12-30'
+AND e._inserted_timestamp :: DATE BETWEEN '2022-12-12' AND '2022-12-30'
 {% endif %}
-
-
 ),
 tokens_out AS (
     SELECT
@@ -178,15 +175,15 @@ AND _inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-12-12')
             ),
             CURRENT_DATE - 1
         )
     FROM
         {{ this }}
 ) {% elif not is_incremental() %}
-AND _inserted_timestamp :: DATE BETWEEN '2022-08-12'
-AND '2022-08-30'
+AND _inserted_timestamp :: DATE BETWEEN '2022-12-12'
+AND '2022-12-30'
 {% endif %}
 
 UNION
@@ -195,11 +192,11 @@ SELECT
     block_timestamp :: DATE AS b_date,
     tx_from AS signer,
     t.mint AS token_out,
-    _inserted_timestamp
+    t._inserted_timestamp
 FROM
     {{ ref('silver__transfers') }}
     t
-    INNER JOIN {{ ref('silver__nft_distinct_mints') }} e
+    INNER JOIN {{ ref('silver___nft_distinct_mints') }} e
     ON e.mint = t.mint
 WHERE
     block_timestamp :: DATE >= CURRENT_DATE - 7
@@ -220,7 +217,7 @@ AND t._inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-12-12')
             ),
             CURRENT_DATE - 1
         )
@@ -233,7 +230,7 @@ AND e._inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-08-12')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2022-12-12')
             ),
             CURRENT_DATE - 1
         )
@@ -241,8 +238,8 @@ AND e._inserted_timestamp < (
         {{ this }}
 )  
 {% elif not is_incremental() %}
-AND t._inserted_timestamp :: DATE BETWEEN '2022-08-12' AND '2022-08-30'
-AND e._inserted_timestamp :: DATE BETWEEN '2022-08-12' AND '2022-08-30'
+AND t._inserted_timestamp :: DATE BETWEEN '2022-12-12' AND '2022-12-30'
+AND e._inserted_timestamp :: DATE BETWEEN '2022-12-12' AND '2022-12-30'
 {% endif %}
 
 ), 
