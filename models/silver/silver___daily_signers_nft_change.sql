@@ -96,7 +96,10 @@ UNION
 
 SELECT
     block_timestamp :: DATE AS b_date,
-    tx_to AS signer,
+    COALESCE(
+        owner, 
+        tx_to
+    ) AS signer,
     t.mint AS token_in,
     t._inserted_timestamp
 FROM
@@ -104,6 +107,8 @@ FROM
     t
     INNER JOIN {{ ref('silver___nft_distinct_mints') }} e
     ON e.mint = t.mint
+    FULL OUTER JOIN {{ ref('silver.account_owners') }} a
+    ON t.source_token_account = a.account_address
 WHERE
     t.block_timestamp :: DATE >= CURRENT_DATE - 7
     AND t.block_timestamp :: DATE IN (
@@ -112,6 +117,8 @@ WHERE
         FROM
             dates_changed
     )
+    AND end_block_id IS NULL 
+    AND token_in IS NOT NULL
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -143,9 +150,23 @@ AND e._inserted_timestamp < (
     FROM
         {{ this }}
 ) 
+AND a._inserted_timestamp < (
+    SELECT
+        LEAST(
+            DATEADD(
+                'day',
+                2,
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
+            ),
+            CURRENT_DATE - 1
+        )
+    FROM
+        {{ this }}
+) 
 {% elif not is_incremental() %}
 AND t._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
 AND e._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
+AND a._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
 {% endif %}
 ),
 tokens_out AS (
@@ -190,7 +211,10 @@ UNION
 
 SELECT
     block_timestamp :: DATE AS b_date,
-    tx_from AS signer,
+    COALESCE(
+        owner, 
+        tx_from
+     ) AS signer,
     t.mint AS token_out,
     t._inserted_timestamp
 FROM
@@ -198,6 +222,8 @@ FROM
     t
     INNER JOIN {{ ref('silver___nft_distinct_mints') }} e
     ON e.mint = t.mint
+    FULL OUTER JOIN {{ ref('silver__account_owners') }} a
+    ON t.source_token_account = a.account_address
 WHERE
     block_timestamp :: DATE >= CURRENT_DATE - 7
     AND block_timestamp :: DATE IN (
@@ -206,6 +232,8 @@ WHERE
         FROM
             dates_changed
     )
+    AND end_block_id IS NOT NULL 
+    AND token_out IS NOT NULL 
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -237,9 +265,23 @@ AND e._inserted_timestamp < (
     FROM
         {{ this }}
 )  
+AND a._inserted_timestamp < (
+    SELECT
+        LEAST(
+            DATEADD(
+                'day',
+                2,
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
+            ),
+            CURRENT_DATE - 1
+        )
+    FROM
+        {{ this }}
+) 
 {% elif not is_incremental() %}
 AND t._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
 AND e._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
+AND a._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
 {% endif %}
 
 ), 
