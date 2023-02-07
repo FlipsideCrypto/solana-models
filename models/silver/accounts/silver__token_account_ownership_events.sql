@@ -25,7 +25,7 @@ ownership_change_events as (
         tx_id,
         succeeded,
         index,
-        null as inner_index,
+        -1 as inner_index,
         event_type,
         instruction,
         _inserted_timestamp
@@ -160,4 +160,4 @@ combined as (
 )
 select *
 from combined 
-qualify(row_number() over (partition by tx_id, account_address order by index desc, coalesce(inner_index,-1) desc)) = 1
+qualify(row_number() over (partition by tx_id, account_address order by index desc, inner_index desc)) = 1
