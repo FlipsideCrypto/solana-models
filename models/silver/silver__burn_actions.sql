@@ -57,7 +57,7 @@ SELECT
     ) AS burn_amount,
     COALESCE(
         instruction :parsed :info :authority :: string,
-        instruction :parsed :info :multisigMintAuthority :: string
+        instruction :parsed :info :multisigAuthority :: string
     ) AS burn_authority,
     instruction :parsed :info :signers :: string AS signers,
     _inserted_timestamp
@@ -84,7 +84,7 @@ SELECT
     ) AS burn_amount,
     COALESCE(
         i.value :parsed :info :authority :: string,
-        i.value :parsed :info :multisigMintAuthority :: string
+        i.value :parsed :info :multisigAuthority :: string
     ) AS burn_authority,
     instruction :parsed :info :signers :: string AS signers,
     _inserted_timestamp
