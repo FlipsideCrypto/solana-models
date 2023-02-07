@@ -47,7 +47,8 @@ WHERE
     AND instruction :accounts [0] = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
     AND instruction :accounts [1] = '11111111111111111111111111111111'
     AND instruction :accounts [2] = 'SysvarRent111111111111111111111111111111111'
-    AND instruction :accounts [4] = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
+    and instruction :accounts [4] = '5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1'
+    and instruction :accounts [8] <> '9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin'
 UNION
 SELECT
     block_timestamp,
