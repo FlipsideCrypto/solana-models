@@ -60,6 +60,7 @@ combined as (
         event_type,
         instruction:parsed:info:account::string as account_address,
         instruction:parsed:info:owner::string as owner,
+        null as mint,
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('assign','assignWithSeed','initializeAccount','initializeAccount2','initializeAccount3')
@@ -74,6 +75,7 @@ combined as (
         event_type,
         instruction:parsed:info:account::string as account_address,
         instruction:parsed:info:authority::string as owner,
+        null as mint,
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('close')
@@ -88,6 +90,7 @@ combined as (
         event_type,
         instruction:parsed:info:account::string as account_address,
         instruction:parsed:info:wallet::string as owner,
+        instruction:parsed:info:mint::string as mint,
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('create','createIdempotent')
@@ -102,6 +105,7 @@ combined as (
         event_type,
         instruction:parsed:info:newAccount::string as account_address,
         instruction:parsed:info:owner::string as owner,
+        null as mint,
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('createAccount','createAccountWithSeed')
@@ -116,6 +120,7 @@ combined as (
         event_type,
         instruction:parsed:info:source::string as account_address,
         coalesce(instruction:parsed:info:owner::string,instruction:parsed:info:multisigOwner::string) as owner,
+        null as mint,
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('revoke')
@@ -130,6 +135,7 @@ combined as (
         event_type,
         instruction:parsed:info:account::string as account_address,
         instruction:parsed:info:newAuthority::string as owner,
+        null as mint,
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('setAuthority')
@@ -147,6 +153,7 @@ combined as (
         event_type,
         instruction:parsed:info:account::string as account_address,
         coalesce(instruction:parsed:info:owner::string,instruction:parsed:info:multisigOwner::string) as owner,
+        null as mint,
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('closeAccount')
