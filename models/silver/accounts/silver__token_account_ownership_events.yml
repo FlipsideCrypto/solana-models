@@ -28,8 +28,6 @@ models:
           - not_null 
       - name: INNER_INDEX
         description: Specifies the inner_instruction location within the instruction identified by INDEX
-        tests: 
-          - not_null
       - name: EVENT_TYPE
         description: type of account change ownership event
         tests: 
@@ -41,6 +39,10 @@ models:
       - name: OWNER
         description: address of new owner
         tests: 
+          - not_null
+      - name: MINT
+        description: mint the account is holding
+        tests:
           - not_null
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
