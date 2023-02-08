@@ -4,7 +4,7 @@
     incremental_strategy = 'delete+insert',
     cluster_by = 'signer'
 ) }} 
-WITH dates_changed AS (
+{# WITH dates_changed AS (
     SELECT
         DISTINCT block_timestamp :: DATE AS block_timestamp_date
     FROM
@@ -53,8 +53,8 @@ WHERE
 WHERE
     _inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
 {% endif %}
-),
-tokens_in AS (
+), #}
+WITH tokens_in AS (
     SELECT
         block_timestamp :: DATE AS b_date,
         purchaser AS signer,
@@ -63,7 +63,8 @@ tokens_in AS (
     FROM
         {{ ref('silver__nft_mints') }}
     WHERE
-        block_timestamp :: DATE >= CURRENT_DATE - 7
+        purchaser = '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H'
+        {# block_timestamp :: DATE >= CURRENT_DATE - 7
         AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
@@ -89,7 +90,7 @@ AND _inserted_timestamp < (
         {{ this }}
 ) {% elif not is_incremental() %}
 AND _inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
-{% endif %}
+{% endif %} #}
 
 
 UNION
@@ -110,7 +111,8 @@ FROM
     FULL OUTER JOIN {{ ref('silver.account_owners') }} a
     ON t.source_token_account = a.account_address
 WHERE
-    t.block_timestamp :: DATE >= CURRENT_DATE - 7
+    COALESCE(owner, tx_to) = '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H'
+    {# t.block_timestamp :: DATE >= CURRENT_DATE - 7
     AND t.block_timestamp :: DATE IN (
         SELECT
             block_timestamp_date
@@ -167,7 +169,7 @@ AND a._inserted_timestamp < (
 AND t._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
 AND e._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
 AND a._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
-{% endif %}
+{% endif %} #}
 ),
 tokens_out AS (
     SELECT
@@ -178,7 +180,8 @@ tokens_out AS (
     FROM
         {{ ref('silver__burn_actions') }}
     WHERE
-        block_timestamp :: DATE >= CURRENT_DATE - 7
+        burn_authority = '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H'
+        {# block_timestamp :: DATE >= CURRENT_DATE - 7
         AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
@@ -205,7 +208,7 @@ AND _inserted_timestamp < (
 ) {% elif not is_incremental() %}
 AND _inserted_timestamp :: DATE BETWEEN '2023-01-15'
 AND '2023-02-06'
-{% endif %}
+{% endif %} #}
 
 UNION
 
@@ -225,7 +228,8 @@ FROM
     FULL OUTER JOIN {{ ref('silver__account_owners') }} a
     ON t.source_token_account = a.account_address
 WHERE
-    block_timestamp :: DATE >= CURRENT_DATE - 7
+    COALESCE(owner, tx_from) = '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H'
+    {# block_timestamp :: DATE >= CURRENT_DATE - 7
     AND block_timestamp :: DATE IN (
         SELECT
             block_timestamp_date
@@ -282,7 +286,7 @@ AND a._inserted_timestamp < (
 AND t._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
 AND e._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
 AND a._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
-{% endif %}
+{% endif %} #}
 
 ), 
 ins AS (
