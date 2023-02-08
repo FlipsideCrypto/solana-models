@@ -16,16 +16,17 @@ WITH base_events AS(
             '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
             '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h',
             '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv'
-        ) -- {% if is_incremental() %}
-        -- AND _inserted_timestamp >= (
-        --     SELECT
-        --         MAX(_inserted_timestamp)
-        --     FROM
-        --         {{ this }}
-        -- )
-        -- {% else %}
-        --     AND block_timestamp :: DATE >= '2021-03-06'
-        -- {% endif %}
+        )
+        {% if is_incremental() %}
+        AND _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp)
+            FROM
+                {{ this }}
+        )
+        {% else %}
+            AND block_timestamp :: DATE >= '2021-03-06'
+        {% endif %}
 )
 SELECT
     block_timestamp,
