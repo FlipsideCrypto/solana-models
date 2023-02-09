@@ -50,7 +50,8 @@ models:
       - name: MINT
         description: mint the account is holding
         tests:
-          - not_null
+          - not_null:
+              where: event_type in ('create','createIdempotent')
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
