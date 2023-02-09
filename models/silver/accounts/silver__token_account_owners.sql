@@ -34,15 +34,21 @@ regroup as (
         min(start_block_id) as start_block_id
     from rebucket
     group by 1,2,3
+),
+pre_final as (
+    select 
+        account_address,
+        owner,
+        start_block_id,
+        lead(start_block_id) ignore nulls over (
+                    PARTITION BY account_address
+                    ORDER BY bucket
+                ) as end_block_id,
+        _inserted_timestamp
+    from regroup 
+    join last_updated_at
 )
-select 
-    account_address,
-    owner,
-    start_block_id,
-    lead(start_block_id) ignore nulls over (
-                PARTITION BY account_address
-                ORDER BY bucket
-            ) as end_block_id,
-    _inserted_timestamp
-from regroup 
-join last_updated_at
+select *
+from pre_final
+where start_block_id <> end_block_id 
+or end_block_id is null

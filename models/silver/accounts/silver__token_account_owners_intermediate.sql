@@ -17,7 +17,14 @@ base as (
     select 
         account_address, 
         owner, 
-        block_id
+        block_id,
+        case 
+            when event_type in ('create','createIdempotent','createAccount','createAccountWithSeed') then 
+                0
+            when event_type in ('initializeAccount','initializeAccount2','initializeAccount3') then 
+                1
+            else 2
+        end as same_block_order_index
     from {{ ref('silver__token_account_ownership_events') }}
     /* incremental condition here */
     {% if is_incremental() %}
@@ -41,14 +48,14 @@ current_ownership as (
 bucketed as (
     select 
         *,
-        conditional_change_event(owner) over (partition by account_address order by block_id) as bucket
+        conditional_change_event(owner) over (partition by account_address order by block_id, same_block_order_index) as bucket
     from current_ownership
 ),
 {% else %}
 bucketed as (
     select 
         *,
-        conditional_change_event(owner) over (partition by account_address order by block_id) as bucket
+        conditional_change_event(owner) over (partition by account_address order by block_id, same_block_order_index) as bucket
     from base
 ),
 {% endif %}
