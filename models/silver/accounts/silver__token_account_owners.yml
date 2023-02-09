@@ -4,7 +4,7 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - ACCOUNT_ADDRES
+            - ACCOUNT_ADDRESS
             - OWNER
             - START_BLOCK_ID
     columns:
