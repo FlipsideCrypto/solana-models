@@ -58,7 +58,7 @@ SELECT
     ) AS mint_amount,
     COALESCE(
         instruction :parsed :info :mintAuthority :: string,
-        instruction :parsed :info :multisigAuthority :: string
+        instruction :parsed :info :multisigMintAuthority :: string
     ) AS mint_authority,
     instruction :parsed :info :signers :: string AS signers,
     _inserted_timestamp
@@ -88,7 +88,7 @@ SELECT
     ) AS mint_amount,
     COALESCE(
         i.value :parsed :info :mintAuthority :: string,
-        i.value :parsed :info :multisigAuthority :: string
+        i.value :parsed :info :multisigMintAuthority :: string
     ) AS mint_authority,
     i.value :parsed :info :signers :: string AS signers,
     _inserted_timestamp
