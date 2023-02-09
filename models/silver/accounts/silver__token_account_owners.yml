@@ -1,6 +1,12 @@
 version: 2
 models:
   - name: silver__token_account_owners
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - ACCOUNT_ADDRES
+            - OWNER
+            - START_BLOCK_ID
     columns:
       - name: ACCOUNT_ADDRESS
         description: address of token account
