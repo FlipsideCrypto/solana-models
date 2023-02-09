@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ["block_id","tx_id","index","inner_index"],
+    unique_key = ["block_id","tx_id","index","inner_index","authority_type"],
     incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE']
 ) }}
@@ -61,7 +61,7 @@ combined as (
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('authorize','authorizeChecked')
-    and instruction:parsed:info:authorityType::string = 'Withdrawer' /* probably handle stake accounts differently and include both stake and withdraw authorities */
+    and lower(instruction:parsed:info:authorityType::string) = 'withdrawer' /* probably handle stake accounts differently and include both stake and withdraw authorities */
     and instruction:parsed:info:voteAccount::string is null
     union
     select 
@@ -78,7 +78,7 @@ combined as (
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('authorize','authorizeChecked')
-    and instruction:parsed:info:authorityType::string = 'Staker' /* probably handle stake accounts differently and include both stake and withdraw authorities */
+    and lower(instruction:parsed:info:authorityType::string) = 'staker' /* probably handle stake accounts differently and include both stake and withdraw authorities */
     and instruction:parsed:info:voteAccount::string is null
     union 
     select 
@@ -161,4 +161,4 @@ combined as (
 )
 select *
 from combined 
-qualify(row_number() over (partition by tx_id, account_address order by index desc, inner_index desc)) = 1
+qualify(row_number() over (partition by tx_id, account_address, authority_type order by index desc, inner_index desc)) = 1

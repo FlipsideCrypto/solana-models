@@ -1,64 +1,39 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ["account_address","owner","start_block_id"],
+    incremental_strategy = 'delete+insert',
+    unique_key = ["account_address"],
     cluster_by = ['_inserted_timestamp::DATE'],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
 ) }}
 
-/*
-for incrementals also select all null end date accounts and combine
-join to eliminate accounts that are not in the subset
-remove all accounts that have the same owner + start block + end block
-*/
+/* need to rebucket and regroup the intermediate model due to possibility of change events coming in out of order */
 with last_updated_at as (
     select max(_inserted_timestamp) as _inserted_timestamp
-    from {{ ref('silver__token_account_ownership_events') }}
-),
-base as (
-    select 
-        account_address, 
-        owner, 
-        block_id
-    from {{ ref('silver__token_account_ownership_events') }}
-    /* incremental condition here */
+    from {{ ref('silver__token_account_owners_intermediate') }}
+)
+, changed_addresses as (
+    select distinct account_address
+    from {{ ref('silver__token_account_owners_intermediate') }}
     {% if is_incremental() %}
-        where _inserted_timestamp >= (select max(_inserted_timestamp) from {{ this }})
+    where _inserted_timestamp > (select max(_inserted_timestamp) from {{ this }})
     {% endif %}
 ),
-{% if is_incremental() %}
-current_ownership as (
-    select 
-        t.account_address, 
-        t.owner, 
-        t.start_block_id as block_id
-    from {{ this }} t
-    join (select distinct account_address from base) b on b.account_address = t.account_address
-    where t.end_block_id is null
-    union 
-    select 
-        *
-    from base
+rebucket as (
+select 
+    o.account_address, 
+    o.owner, 
+    o.start_block_id,
+    conditional_change_event(owner) over (partition by o.account_address order by o.start_block_id) as bucket
+from {{ ref('silver__token_account_owners_intermediate') }} o
+inner join changed_addresses c on o.account_address = c.account_address
 ),
-bucketed as (
-    select 
-        *,
-        conditional_change_event(owner) over (partition by account_address order by block_id) as bucket
-    from current_ownership
-),
-{% else %}
-bucketed as (
-    select 
-        *,
-        conditional_change_event(owner) over (partition by account_address order by block_id) as bucket
-    from base
-),
-{% endif %}
-c as (
+regroup as (
     select 
         account_address, 
         owner, 
         bucket, 
-        min(block_id) as start_block_id
-    from bucketed
+        min(start_block_id) as start_block_id
+    from rebucket
     group by 1,2,3
 )
 select 
@@ -70,5 +45,5 @@ select
                 ORDER BY bucket
             ) as end_block_id,
     _inserted_timestamp
-from c
+from regroup 
 join last_updated_at
