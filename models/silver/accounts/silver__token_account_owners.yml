@@ -1,0 +1,28 @@
+version: 2
+models:
+  - name: silver__token_account_owners
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - ACCOUNT_ADDRESS
+            - OWNER
+            - START_BLOCK_ID
+    columns:
+      - name: ACCOUNT_ADDRESS
+        description: address of token account
+        tests:
+          - not_null
+      - name: OWNER
+        description: address of owner
+        tests:
+          - not_null
+      - name: START_BLOCK_ID
+        description: block where this ownership begins 
+        tests:
+          - not_null
+      - name: END_BLOCK_ID
+        description:   block where this ownership ends, null value represents current ownership 
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
