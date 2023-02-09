@@ -60,11 +60,26 @@ combined as (
         event_type,
         instruction:parsed:info:account::string as account_address,
         instruction:parsed:info:owner::string as owner,
+        instruction:parsed:info:mint::string as mint,
+        _inserted_timestamp
+    from ownership_change_events 
+    where event_type in ('assign','assignWithSeed')
+    union 
+    select 
+        block_timestamp,
+        block_id,
+        tx_id,
+        succeeded,
+        index,
+        inner_index,
+        event_type,
+        instruction:parsed:info:account::string as account_address,
+        instruction:parsed:info:owner::string as owner,
         null as mint,
         _inserted_timestamp
     from ownership_change_events 
-    where event_type in ('assign','assignWithSeed','initializeAccount','initializeAccount2','initializeAccount3')
-    union 
+    where event_type in ('initializeAccount','initializeAccount2','initializeAccount3')
+    union
     select 
         block_timestamp,
         block_id,
