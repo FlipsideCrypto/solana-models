@@ -41,4 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -s models/silver/accounts/silver__token_account_ownership_events.sql models/silver/accounts/silver__token_account_owners.sql models/silver/accounts/silver__stake_account_ownership_events.sql
+          dbt run -s models/silver/accounts
