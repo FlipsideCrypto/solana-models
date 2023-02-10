@@ -4,7 +4,7 @@
     incremental_strategy = 'delete+insert',
     cluster_by = 'signer'
 ) }} 
-{# WITH dates_changed AS (
+WITH dates_changed AS (
     SELECT
         DISTINCT block_timestamp :: DATE AS block_timestamp_date
     FROM
@@ -53,8 +53,8 @@ WHERE
 WHERE
     _inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
 {% endif %}
-), #}
-WITH tokens_in AS (
+),
+tokens_in AS (
     SELECT
         block_timestamp :: DATE AS b_date,
         purchaser AS signer,
@@ -63,8 +63,7 @@ WITH tokens_in AS (
     FROM
         {{ ref('silver__nft_mints') }}
     WHERE
-        purchaser = '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H'
-        {# block_timestamp :: DATE >= CURRENT_DATE - 7
+        block_timestamp :: DATE >= CURRENT_DATE - 7
         AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
@@ -90,17 +89,14 @@ AND _inserted_timestamp < (
         {{ this }}
 ) {% elif not is_incremental() %}
 AND _inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
-{% endif %} #}
+{% endif %}
 
 
 UNION
 
 SELECT
     block_timestamp :: DATE AS b_date,
-    COALESCE(
-        owner, 
-        tx_to
-    ) AS signer,
+    tx_to AS signer,
     t.mint AS token_in,
     t._inserted_timestamp
 FROM
@@ -108,19 +104,14 @@ FROM
     t
     INNER JOIN {{ ref('silver___nft_distinct_mints') }} e
     ON e.mint = t.mint
-    FULL OUTER JOIN {{ ref('silver.account_owners') }} a
-    ON t.source_token_account = a.account_address
 WHERE
-    COALESCE(owner, tx_to) = '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H'
-    {# t.block_timestamp :: DATE >= CURRENT_DATE - 7
+    t.block_timestamp :: DATE >= CURRENT_DATE - 7
     AND t.block_timestamp :: DATE IN (
         SELECT
             block_timestamp_date
         FROM
             dates_changed
     )
-    AND end_block_id IS NULL 
-    AND token_in IS NOT NULL
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -152,24 +143,49 @@ AND e._inserted_timestamp < (
     FROM
         {{ this }}
 ) 
-AND a._inserted_timestamp < (
-    SELECT
-        LEAST(
-            DATEADD(
-                'day',
-                2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
-            ),
-            CURRENT_DATE - 1
-        )
-    FROM
-        {{ this }}
-) 
 {% elif not is_incremental() %}
 AND t._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
 AND e._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
-AND a._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
-{% endif %} #}
+{% endif %}
+
+UNION 
+
+SELECT 
+    block_timestamp :: DATE as b_date, 
+    owner AS signer, 
+    mint AS token_in, 
+    _inserted_timestamp
+FROM 
+    {{ ref('silver__token_account_ownership_events') }} 
+WHERE 
+    event_type = 'initializeAccount3'
+    AND block_timestamp :: DATE >= CURRENT_DATE - 7
+            AND block_timestamp :: DATE IN (
+                SELECT
+                    block_timestamp_date
+                FROM
+                    dates_changed
+            ) 
+
+    {% if is_incremental() and env_var(
+        'DBT_IS_BATCH_LOAD',
+        "false"
+    ) == "true" %}
+    AND _inserted_timestamp < (
+        SELECT
+            LEAST(
+                DATEADD(
+                    'day',
+                    2,
+                    COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
+                ),
+                CURRENT_DATE - 1
+            )
+        FROM
+            {{ this }}
+    ) {% elif not is_incremental() %}
+    AND _inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
+    {% endif %}
 ),
 tokens_out AS (
     SELECT
@@ -180,8 +196,7 @@ tokens_out AS (
     FROM
         {{ ref('silver__burn_actions') }}
     WHERE
-        burn_authority = '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H'
-        {# block_timestamp :: DATE >= CURRENT_DATE - 7
+        block_timestamp :: DATE >= CURRENT_DATE - 7
         AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
@@ -208,16 +223,13 @@ AND _inserted_timestamp < (
 ) {% elif not is_incremental() %}
 AND _inserted_timestamp :: DATE BETWEEN '2023-01-15'
 AND '2023-02-06'
-{% endif %} #}
+{% endif %}
 
 UNION
 
 SELECT
     block_timestamp :: DATE AS b_date,
-    COALESCE(
-        owner, 
-        tx_from
-     ) AS signer,
+    tx_from AS signer,
     t.mint AS token_out,
     t._inserted_timestamp
 FROM
@@ -225,19 +237,14 @@ FROM
     t
     INNER JOIN {{ ref('silver___nft_distinct_mints') }} e
     ON e.mint = t.mint
-    FULL OUTER JOIN {{ ref('silver__account_owners') }} a
-    ON t.source_token_account = a.account_address
 WHERE
-    COALESCE(owner, tx_from) = '2L6j3wZXEByg8jycytabZitDh9VVMhKiMYv7EeJh6R2H'
-    {# block_timestamp :: DATE >= CURRENT_DATE - 7
+    block_timestamp :: DATE >= CURRENT_DATE - 7
     AND block_timestamp :: DATE IN (
         SELECT
             block_timestamp_date
         FROM
             dates_changed
     )
-    AND end_block_id IS NOT NULL 
-    AND token_out IS NOT NULL 
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -269,7 +276,34 @@ AND e._inserted_timestamp < (
     FROM
         {{ this }}
 )  
-AND a._inserted_timestamp < (
+{% elif not is_incremental() %}
+AND t._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
+AND e._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
+{% endif %}
+UNION 
+
+SELECT 
+    block_timestamp :: DATE as b_date, 
+    owner AS signer, 
+    mint AS token_in, 
+    _inserted_timestamp
+FROM 
+    {{ ref('silver__token_account_ownership_events') }} 
+WHERE 
+    event_type = 'closeAccount'
+    AND block_timestamp :: DATE >= CURRENT_DATE - 7
+        AND block_timestamp :: DATE IN (
+            SELECT
+                block_timestamp_date
+            FROM
+                dates_changed
+        ) 
+
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+AND _inserted_timestamp < (
     SELECT
         LEAST(
             DATEADD(
@@ -281,39 +315,33 @@ AND a._inserted_timestamp < (
         )
     FROM
         {{ this }}
-) 
-{% elif not is_incremental() %}
-AND t._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
-AND e._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
-AND a._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
-{% endif %} #}
-
+) {% elif not is_incremental() %}
+AND _inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
+{% endif %}
 ), 
 ins AS (
     SELECT
         b_date,
         signer,
         ARRAY_AGG(token_in) AS nfts_in, 
-        _inserted_timestamp
+        MAX(_inserted_timestamp) as _inserted_timestamp
     FROM
         tokens_in
     GROUP BY
         b_date,
-        signer, 
-        _inserted_timestamp
+        signer
 ),
 outs AS (
     SELECT
         b_date,
         signer,
         ARRAY_AGG(token_out) AS nfts_out, 
-        _inserted_timestamp
+        MAX(_inserted_timestamp) as _inserted_timestamp
     FROM
         tokens_out
     GROUP BY
         b_date,
-        signer, 
-        _inserted_timestamp
+        signer
 )
 SELECT
     COALESCE(

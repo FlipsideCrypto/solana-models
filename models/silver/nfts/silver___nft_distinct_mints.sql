@@ -209,6 +209,7 @@ SELECT
     _inserted_timestamp
 FROM
     base 
+WHERE mint is not null
     qualify(ROW_NUMBER() over (PARTITION BY mint
 ORDER BY
     _inserted_timestamp DESC)) = 1
