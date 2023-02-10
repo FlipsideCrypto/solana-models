@@ -36,7 +36,8 @@ current_ownership as (
     select 
         t.account_address, 
         t.owner, 
-        t.start_block_id as block_id
+        t.start_block_id as block_id,
+        2 as same_block_order_index
     from {{ this }} t
     join (select distinct account_address from base) b on b.account_address = t.account_address
     where t.end_block_id is null
