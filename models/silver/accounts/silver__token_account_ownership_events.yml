@@ -1,0 +1,58 @@
+version: 2
+models:
+  - name: silver__token_account_ownership_events
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+            - TX_ID
+            - INDEX
+            - INNER_INDEX
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null:
+              where: block_id > 39824213
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description:  "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null 
+      - name: INDEX
+        description: Location of the instruction within a transaction
+        tests: 
+          - not_null 
+      - name: INNER_INDEX
+        description: Specifies the inner_instruction location within the instruction identified by INDEX
+      - name: EVENT_TYPE
+        description: type of account change ownership event
+        tests: 
+          - not_null
+      - name: ACCOUNT_ADDRESS
+        description: address of token account
+        tests: 
+          - not_null
+      - name: OWNER
+        description: address of new owner
+        tests: 
+          - not_null
+      - name: MINT
+        description: mint the account is holding
+        tests:
+          - not_null:
+              where: event_type in ('create','createIdempotent','initializeAccount','initializeAccount2','initializeAccount3')
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
