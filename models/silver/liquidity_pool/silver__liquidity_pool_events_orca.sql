@@ -10,7 +10,7 @@ WITH base_events AS(
     SELECT
         *
     FROM
-        solana.silver.events
+        {{ ref('silver__events') }}
     WHERE
         (
             program_id IN (

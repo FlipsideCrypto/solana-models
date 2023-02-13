@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__liquidity_pool_transfers_orca_whirlpool
+  - name: silver__pool_transfers_orca_whirlpool
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

@@ -4,8 +4,20 @@
     incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE']
 ) }}
-base_transfers AS (
 
+WITH base_orca_pool_events AS (
+
+    SELECT
+        *
+    FROM
+        {{ ref('silver__liquidity_pool_events_orca') }}
+    WHERE
+        program_id IN (
+            '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
+            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1'
+        )
+),
+base_transfers AS (
     SELECT
         t.block_id,
         t.block_timestamp,
@@ -21,17 +33,16 @@ base_transfers AS (
         t.succeeded,
         t._inserted_timestamp
     FROM
-        solana.silver.transfers t
+        {{ ref('silver__transfers') }} t
     WHERE
         tx_id IN (
             SELECT
                 tx_id
             FROM
-                solana_dev.silver.liquidity_pool_events_orca
+                base_orca_pool_events
         )
 ),
-
-whirlpool_txfers AS (
+non_whirlpool_txfers AS (
     SELECT
         t.*,
         COALESCE(
@@ -59,34 +70,52 @@ whirlpool_txfers AS (
         AND t.inner_index BETWEEN l2.swap_program_inner_index_start
         AND l2.swap_program_inner_index_end
     WHERE
-        l1.program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
-        OR l2.program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
-)
+        l1.program_id IN (
+            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
+            '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
+        )
+        OR l2.program_id IN (
+            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
+            '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
+        )
+),
+pre_final as (
 SELECT
     t.*,
     COALESCE(
         p1.liquidity_pool,
         p2.liquidity_pool
-    ) AS liquidity_pool_address,
-    CASE
-        WHEN t.action = 'whirlpool_fee_withdraw' THEN 'withdraw'
-        WHEN t.action = 'whirlpool_unknown'
-        AND p1.tx_id IS NOT NULL THEN 'deposit'
-        WHEN t.action = 'whirlpool_unknown'
-        AND p2.tx_id IS NOT NULL THEN 'withdraw'
-    END AS action_true
+    ) AS liquidity_pool_address
 FROM
-    whirlpool_txfers t
-    LEFT JOIN solana_dev.silver.initialization_pools_orca p1
+    non_whirlpool_txfers t
+    LEFT JOIN {{ ref('silver__initialization_pools_orca') }} p1
     ON (
         t.dest_token_account = p1.token_a_account
         OR t.dest_token_account = p1.token_b_account
     )
-    LEFT JOIN solana_dev.silver.initialization_pools_orca p2
+    AND t.action = 'deposit'
+    LEFT JOIN {{ ref('silver__initialization_pools_orca') }} p2
     ON (
         t.source_token_account = p2.token_a_account
         OR t.source_token_account = p2.token_b_account
     )
+    AND t.action = 'withdraw'
 WHERE
     p1.tx_id IS NOT NULL
-    OR p2.tx_id IS NOT NULL
+    OR p2.tx_id IS NOT NULL)
+SELECT
+    block_id,
+    block_timestamp,
+    tx_id,
+    succeeded,
+    INDEX,
+    inner_index,
+    program_id,
+action,
+    mint,
+    amount,
+    liquidity_provider,
+    liquidity_pool_address,
+    _inserted_timestamp
+FROM
+    pre_final
