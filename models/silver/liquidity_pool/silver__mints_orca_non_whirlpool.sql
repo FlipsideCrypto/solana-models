@@ -89,7 +89,7 @@ mints_in_swaps AS(
         b.liquidity_pool AS liquidity_pool_address,
         A._inserted_timestamp
     FROM
-        solana_dev.silver.mint_actions A
+        base_mint_actions A
         INNER JOIN {{ ref('silver__initialization_pools_orca') }}
         b
         ON A.mint = b.pool_token

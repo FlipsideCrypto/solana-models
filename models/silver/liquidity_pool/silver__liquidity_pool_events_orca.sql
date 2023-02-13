@@ -149,7 +149,7 @@ lp_events_with_swaps_removed AS (
         C.*
     FROM
         combined C
-        LEFT JOIN solana_dev.silver.initialization_pools_orca p1
+        LEFT JOIN {{ ref('silver__initialization_pools_orca') }} p1
         ON (
             temp_instructions :accounts [6] :: STRING = p1.token_a_account
             OR temp_instructions :accounts [6] :: STRING = p1.token_b_account
@@ -212,11 +212,11 @@ SELECT
     END AS action
 FROM
     lp_events_with_swaps_removed A
-    LEFT JOIN solana_dev.silver.initialization_pools_orca p1
+    LEFT JOIN {{ ref('silver__initialization_pools_orca') }}  p1
     ON (
         A.temp_instructions :accounts [3] :: STRING = p1.pool_token
     )
-    LEFT JOIN solana_dev.silver.initialization_pools_orca p2
+    LEFT JOIN {{ ref('silver__initialization_pools_orca') }}  p2
     ON (
         A.temp_instructions :accounts [7] :: STRING = p2.pool_token
     )

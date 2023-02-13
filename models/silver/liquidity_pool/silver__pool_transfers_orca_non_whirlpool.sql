@@ -59,11 +59,11 @@ non_whirlpool_txfers AS (
         ) AS action
     FROM
         base_transfers t
-        LEFT JOIN solana_dev.silver.liquidity_pool_events_orca l1
+        LEFT JOIN base_orca_pool_events l1
         ON t.tx_id = l1.tx_id
         AND t.index = l1.index
         AND l1.inner_index IS NULL
-        LEFT JOIN solana_dev.silver.liquidity_pool_events_orca l2
+        LEFT JOIN base_orca_pool_events l2
         ON t.tx_id = l2.tx_id
         AND t.index = l2.index
         AND l2.inner_index IS NOT NULL
