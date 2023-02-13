@@ -21,7 +21,7 @@ WHERE
                 DATEADD(
                     'day',
                     1,
-                    COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
+                    COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
                 ),
                 CURRENT_DATE - 1
             )
@@ -34,7 +34,7 @@ WHERE
                 DATEADD(
                     'day',
                     1,
-                    COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
+                    COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
                 ),
                 CURRENT_DATE - 1
             )
@@ -51,7 +51,7 @@ WHERE
     )
 {% else %}
 WHERE
-    _inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
+    _inserted_timestamp :: DATE BETWEEN '2023-01-30' AND '2023-02-13'
 {% endif %}
 ),
 tokens_in AS (
@@ -81,16 +81,15 @@ AND _inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
             ),
             CURRENT_DATE - 1
         )
     FROM
         {{ this }}
 ) {% elif not is_incremental() %}
-AND _inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
+AND _inserted_timestamp :: DATE BETWEEN '2023-01-30' AND '2023-02-13'
 {% endif %}
-
 
 UNION
 
@@ -123,7 +122,7 @@ AND t._inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
             ),
             CURRENT_DATE - 1
         )
@@ -136,7 +135,7 @@ AND e._inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
             ),
             CURRENT_DATE - 1
         )
@@ -144,8 +143,8 @@ AND e._inserted_timestamp < (
         {{ this }}
 ) 
 {% elif not is_incremental() %}
-AND t._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
-AND e._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
+AND t._inserted_timestamp :: DATE BETWEEN '2023-01-30' AND '2023-02-13'
+AND e._inserted_timestamp :: DATE BETWEEN '2023-01-30' AND '2023-02-13'
 {% endif %}
 
 UNION 
@@ -177,14 +176,14 @@ WHERE
                 DATEADD(
                     'day',
                     2,
-                    COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
+                    COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
                 ),
                 CURRENT_DATE - 1
             )
         FROM
             {{ this }}
     ) {% elif not is_incremental() %}
-    AND _inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
+    AND _inserted_timestamp :: DATE BETWEEN '2023-01-30' AND '2023-02-13'
     {% endif %}
 ),
 tokens_out AS (
@@ -214,15 +213,15 @@ AND _inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
             ),
             CURRENT_DATE - 1
         )
     FROM
         {{ this }}
 ) {% elif not is_incremental() %}
-AND _inserted_timestamp :: DATE BETWEEN '2023-01-15'
-AND '2023-02-06'
+AND _inserted_timestamp :: DATE BETWEEN '2023-01-30'
+AND '2023-02-13'
 {% endif %}
 
 UNION
@@ -256,7 +255,7 @@ AND t._inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
             ),
             CURRENT_DATE - 1
         )
@@ -269,7 +268,7 @@ AND e._inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
             ),
             CURRENT_DATE - 1
         )
@@ -277,8 +276,8 @@ AND e._inserted_timestamp < (
         {{ this }}
 )  
 {% elif not is_incremental() %}
-AND t._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
-AND e._inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
+AND t._inserted_timestamp :: DATE BETWEEN '2023-01-30' AND '2023-02-13'
+AND e._inserted_timestamp :: DATE BETWEEN '2023-01-30' AND '2023-02-13'
 {% endif %}
 UNION 
 
@@ -309,15 +308,54 @@ AND _inserted_timestamp < (
             DATEADD(
                 'day',
                 2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-15')
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
             ),
             CURRENT_DATE - 1
         )
     FROM
         {{ this }}
 ) {% elif not is_incremental() %}
-AND _inserted_timestamp :: DATE BETWEEN '2023-01-15' AND '2023-02-06'
+AND _inserted_timestamp :: DATE BETWEEN '2023-01-30' AND '2023-02-13'
 {% endif %}
+
+UNION 
+
+SELECT 
+    block_timestamp :: date as b_date, 
+    seller as signer, 
+    mint as token_out, 
+    _inserted_timestamp
+FROM 
+    {{ ref('silver__nft_sales_magic_eden_v2')}}
+WHERE 
+ block_timestamp :: DATE >= CURRENT_DATE - 7
+        AND block_timestamp :: DATE IN (
+            SELECT
+                block_timestamp_date
+            FROM
+                dates_changed
+        ) 
+
+{% if is_incremental() and env_var(
+    'DBT_IS_BATCH_LOAD',
+    "false"
+) == "true" %}
+AND _inserted_timestamp < (
+    SELECT
+        LEAST(
+            DATEADD(
+                'day',
+                2,
+                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
+            ),
+            CURRENT_DATE - 1
+        )
+    FROM
+        {{ this }}
+) {% elif not is_incremental() %}
+AND _inserted_timestamp :: DATE BETWEEN '2023-01-30' AND '2023-02-13'
+{% endif %}
+
 ), 
 ins AS (
     SELECT
