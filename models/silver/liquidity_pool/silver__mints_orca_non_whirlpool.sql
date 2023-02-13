@@ -14,7 +14,6 @@ WITH base_mint_actions AS (
     WHERE
         block_timestamp :: DATE >= '2021-02-14'
 ),
-
 base_whirlpool_events AS (
     SELECT
         *
@@ -51,6 +50,56 @@ orca_mint_actions AS (
             e1.tx_id IS NOT NULL
             OR e2.tx_id IS NOT NULL
         )
+),
+pre_final_orca_mints AS(
+    SELECT
+        A.block_id,
+        A.block_timestamp,
+        A.tx_id,
+        A.succeeded,
+        A.index,
+        A.inner_index,
+        b.owner AS program_id,
+        A.event_type AS action,
+        A.mint,
+        A.mint_amount,
+        A.liquidity_provider,
+        b.liquidity_pool AS liquidity_pool_address,
+        A._inserted_timestamp
+    FROM
+        orca_mint_actions A
+        INNER JOIN {{ ref('silver__initialization_pools_orca') }}
+        b
+        ON A.mint = b.pool_token
+),
+-- mints in swaps aren't captured in 'liqudity_pool_events' so they are accounted for here
+mints_in_swaps AS(
+    SELECT
+        A.block_id,
+        A.block_timestamp,
+        A.tx_id,
+        A.succeeded,
+        A.index,
+        A.inner_index,
+        b.owner AS program_id,
+        A.event_type AS action,
+        A.mint,
+        A.mint_amount,
+        A.mint_authority AS liquidity_provider,
+        b.liquidity_pool AS liquidity_pool_address,
+        A._inserted_timestamp
+    FROM
+        solana_dev.silver.mint_actions A
+        INNER JOIN {{ ref('silver__initialization_pools_orca') }}
+        b
+        ON A.mint = b.pool_token
+    WHERE
+        A.tx_id NOT IN (
+            SELECT
+                tx_id
+            FROM
+                pre_final_orca_mints
+        )
 )
 SELECT
     A.block_id,
@@ -59,16 +108,35 @@ SELECT
     A.succeeded,
     A.index,
     A.inner_index,
-    b.owner AS program_id,
-    A.event_type AS action,
+    A.program_id,
+    A.action,
     A.mint,
     COALESCE(A.mint_amount / pow(10, m.decimals), A.mint_amount) AS amount,
     A.liquidity_provider,
-    b.liquidity_pool AS liquidity_pool_address,
+    A.liquidity_pool_address,
     A._inserted_timestamp
 FROM
-    orca_mint_actions A
-    INNER JOIN {{ ref('silver__initialization_pools_orca') }} b
-    ON A.mint = b.pool_token
-    LEFT JOIN {{ ref('silver__token_metadata') }} m
+    pre_final_orca_mints A
+    LEFT JOIN {{ ref('silver__token_metadata') }}
+    m
+    ON A.mint = m.token_address
+UNION
+SELECT
+    A.block_id,
+    A.block_timestamp,
+    A.tx_id,
+    A.succeeded,
+    A.index,
+    A.inner_index,
+    A.program_id,
+    A.action,
+    A.mint,
+    COALESCE(A.mint_amount / pow(10, m.decimals), A.mint_amount) AS amount,
+    A.liquidity_provider,
+    A.liquidity_pool_address,
+    A._inserted_timestamp
+FROM
+    mints_in_swaps A
+    LEFT JOIN {{ ref('silver__token_metadata') }}
+    m
     ON A.mint = m.token_address
