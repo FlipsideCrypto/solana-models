@@ -10,6 +10,6 @@
     {% elif max_date >= '2022-09-05' and max_date < end_date %}
         {{ "and _inserted_timestamp between (select max(_inserted_timestamp) from " ~ model_name ~ ") and (select dateadd('day',"~ batch_size_days ~",max(_inserted_timestamp)) from " ~ model_name ~ ")" }}
     {% else %}
-        {{ "and _inserted_timestamp >= (select max(_inserted_timestamp) from " ~ model_name}}
+        {{ "and _inserted_timestamp >= (select max(_inserted_timestamp) from " ~ model_name ~ ")"}}
     {% endif %}
 {%- endmacro %}
