@@ -73,7 +73,7 @@ outer_withdraws_and_deposits AS (
         tx_id,
         succeeded,
         INDEX,
-        NULL AS inner_index,
+        -1 as inner_index,
         liquidity_provider,
         program_id,
         NULL AS lp_program_inner_index_start,
