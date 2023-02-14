@@ -44,7 +44,7 @@ SELECT
     b.tx_id,
     b.succeeded,
     b.index,
-    b.inner_index,
+    COALESCE(b.inner_index, -1) AS inner_index,
     m.program_id,
     b.event_type AS action,
     b.mint,

@@ -33,6 +33,8 @@ models:
           - not_null
       - name: INNER_INDEX
         description: "Position of event within inner instructions"
+        tests:
+          - not_null
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
         tests: 

@@ -57,11 +57,11 @@ orca_burn_actions AS (
         LEFT JOIN base_whirlpool_events e1
         ON b.tx_id = e1.tx_id
         AND b.index = e1.index
-        AND e1.inner_index IS NULL
+        AND e1.inner_index = -1
         LEFT JOIN base_whirlpool_events e2
         ON b.tx_id = e2.tx_id
         AND b.index = e2.index
-        AND e2.inner_index IS NOT NULL
+        AND e2.inner_index <> -1
         AND b.inner_index BETWEEN e2.lp_program_inner_index_start
         AND e2.lp_program_inner_index_end
     WHERE

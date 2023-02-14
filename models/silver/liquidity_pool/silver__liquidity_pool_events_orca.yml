@@ -33,6 +33,8 @@ models:
           - not_null
       - name: INNER_INDEX
         description: "Position of event within inner instructions"
+        tests:
+          - not_null
       - name: LIQUIDITY_PROVIDER
         description: "{{ doc('liquidity_provider') }}"
         tests: 

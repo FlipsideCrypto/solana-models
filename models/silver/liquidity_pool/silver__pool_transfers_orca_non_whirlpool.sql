@@ -87,11 +87,11 @@ non_whirlpool_txfers AS (
         LEFT JOIN base_orca_pool_events l1
         ON t.tx_id = l1.tx_id
         AND t.index = l1.index
-        AND l1.inner_index IS NULL
+        AND l1.inner_index = -1
         LEFT JOIN base_orca_pool_events l2
         ON t.tx_id = l2.tx_id
         AND t.index = l2.index
-        AND l2.inner_index IS NOT NULL
+        AND l2.inner_index <> -1
         AND t.inner_index BETWEEN l2.lp_program_inner_index_start
         AND l2.lp_program_inner_index_end
     WHERE
