@@ -41,8 +41,8 @@ orca_burn_actions AS (
         ON b.tx_id = e2.tx_id
         AND b.index = e2.index
         AND e2.inner_index IS NOT NULL
-        AND b.inner_index BETWEEN e2.swap_program_inner_index_start
-        AND e2.swap_program_inner_index_end
+        AND b.inner_index BETWEEN e2.lp_program_inner_index_start
+        AND e2.lp_program_inner_index_end
     WHERE
         b.event_type = 'burn'
         AND(

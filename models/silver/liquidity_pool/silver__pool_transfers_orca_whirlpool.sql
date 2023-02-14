@@ -56,8 +56,8 @@ whirlpool_txfers AS (
         ON t.tx_id = l2.tx_id
         AND t.index = l2.index
         AND l2.inner_index IS NOT NULL
-        AND t.inner_index BETWEEN l2.swap_program_inner_index_start
-        AND l2.swap_program_inner_index_end
+        AND t.inner_index BETWEEN l2.lp_program_inner_index_start
+        AND l2.lp_program_inner_index_end
     WHERE
         l1.program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
         OR l2.program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'

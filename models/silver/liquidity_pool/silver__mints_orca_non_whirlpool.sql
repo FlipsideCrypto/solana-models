@@ -42,8 +42,8 @@ orca_mint_actions AS (
         ON m.tx_id = e2.tx_id
         AND m.index = e2.index
         AND e2.inner_index IS NOT NULL
-        AND m.inner_index BETWEEN e2.swap_program_inner_index_start
-        AND e2.swap_program_inner_index_end
+        AND m.inner_index BETWEEN e2.lp_program_inner_index_start
+        AND e2.lp_program_inner_index_end
     WHERE
         m.event_type = 'mintTo'
         AND(

@@ -46,17 +46,16 @@ lp_events AS (
 lp_events_w_inner_program_ids AS (
     SELECT
         lp_events.*,
-        i.value :program_id :: STRING AS inner_swap_program_id,
-        i.value :inner_index :: INT AS swap_program_inner_index_start,
-        COALESCE(LEAD(swap_program_inner_index_start) over (PARTITION BY tx_id, lp_events.index
+        i.value :program_id :: STRING AS inner_lp_program_id,
+        i.value :inner_index :: INT AS lp_program_inner_index_start,
+        COALESCE(LEAD(lp_program_inner_index_start) over (PARTITION BY tx_id, lp_events.index
     ORDER BY
-        swap_program_inner_index_start) -1, 999999) AS swap_program_inner_index_end
+        lp_program_inner_index_start) -1, 999999) AS lp_program_inner_index_end
     FROM
         lp_events,
         TABLE(FLATTEN(inner_programs)) i),
 outer_withdraws_and_deposits AS (
     SELECT
-        -- *
         block_timestamp,
         block_id,
         tx_id,
@@ -65,12 +64,12 @@ outer_withdraws_and_deposits AS (
         NULL AS inner_index,
         liquidity_provider,
         program_id,
-        NULL AS swap_program_inner_index_start,
-        NULL AS swap_program_inner_index_end,
-        instruction AS temp_instructions,
+        NULL AS lp_program_inner_index_start,
+        NULL AS lp_program_inner_index_end,
+        instruction AS event_instructions,
         ARRAY_SIZE(
             instruction :accounts
-        ) AS temp_num_accts,
+        ) AS num_accts,
         _inserted_timestamp
     FROM
         lp_events
@@ -101,36 +100,31 @@ inner_withdraws_and_deposits AS (
         A.index,
         ii.index AS inner_index,
         A.liquidity_provider,
-        A.inner_swap_program_id AS program_id,
-        A.swap_program_inner_index_start,
-        A.swap_program_inner_index_end,
-        ii.value AS temp_instructions,
+        A.inner_lp_program_id AS program_id,
+        A.lp_program_inner_index_start,
+        A.lp_program_inner_index_end,
+        ii.value AS event_instructions,
         ARRAY_SIZE(
             ii.value :accounts
-        ) AS temp_num_accts,
+        ) AS num_accts,
         A._inserted_timestamp
     FROM
         lp_events_w_inner_program_ids A
         LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
-        ON A.swap_program_inner_index_start = ii.index
+        ON A.lp_program_inner_index_start = ii.index
     WHERE
         (
-            A.inner_swap_program_id IN (
+            A.inner_lp_program_id IN (
                 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
                 '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
             )
             OR (
-                A.inner_swap_program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
+                A.inner_lp_program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
                 AND ii.value :accounts [1] = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
                 AND ARRAY_SIZE(
                     ii.value :accounts
                 ) > 10
-            ) -- OR (
-            --     program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
-            --     AND ARRAY_SIZE(
-            --         instruction :accounts
-            --     ) = 9
-            -- )
+            )
         )
 ),
 combined AS(
@@ -151,8 +145,8 @@ lp_events_with_swaps_removed AS (
         combined C
         LEFT JOIN {{ ref('silver__initialization_pools_orca') }} p1
         ON (
-            temp_instructions :accounts [6] :: STRING = p1.token_a_account
-            OR temp_instructions :accounts [6] :: STRING = p1.token_b_account
+            event_instructions :accounts [6] :: STRING = p1.token_a_account
+            OR event_instructions :accounts [6] :: STRING = p1.token_b_account
         )
     WHERE
         C.program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
@@ -161,14 +155,14 @@ lp_events_with_swaps_removed AS (
                 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
                 '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
             )
-            AND temp_num_accts = 9
+            AND num_accts = 9
         )
         OR(
             C.program_id IN (
                 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
                 '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
             )
-            AND temp_num_accts = 10
+            AND num_accts = 10
             AND p1.tx_id IS NOT NULL
         )
         OR(
@@ -176,7 +170,7 @@ lp_events_with_swaps_removed AS (
                 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
                 '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
             )
-            AND temp_num_accts = 11
+            AND num_accts = 11
             AND p1.tx_id IS NOT NULL
         )
 )
@@ -184,26 +178,26 @@ SELECT
     A.*,
     CASE
         WHEN program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
-        AND temp_num_accts = 9 THEN 'whirlpool_fee_withdraw'
+        AND num_accts = 9 THEN 'whirlpool_fee_withdraw'
         WHEN program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
-        AND temp_num_accts > 9 THEN 'whirlpool_unknown'
-        WHEN temp_num_accts = 9
+        AND num_accts > 9 THEN 'whirlpool_unknown'
+        WHEN num_accts = 9
         AND A.program_id IN (
             'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
             '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
         ) THEN 'deposit'
-        WHEN temp_num_accts = 11
+        WHEN num_accts = 11
         AND A.program_id IN (
             'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
             '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
         ) THEN 'withdraw'
-        WHEN temp_num_accts = 10
+        WHEN num_accts = 10
         AND A.program_id IN (
             'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
             '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
         )
         AND p2.pool_token IS NOT NULL THEN 'deposit'
-        WHEN temp_num_accts = 10
+        WHEN num_accts = 10
         AND A.program_id IN (
             'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
             '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
@@ -214,9 +208,9 @@ FROM
     lp_events_with_swaps_removed A
     LEFT JOIN {{ ref('silver__initialization_pools_orca') }}  p1
     ON (
-        A.temp_instructions :accounts [3] :: STRING = p1.pool_token
+        A.event_instructions :accounts [3] :: STRING = p1.pool_token
     )
     LEFT JOIN {{ ref('silver__initialization_pools_orca') }}  p2
     ON (
-        A.temp_instructions :accounts [7] :: STRING = p2.pool_token
+        A.event_instructions :accounts [7] :: STRING = p2.pool_token
     )
