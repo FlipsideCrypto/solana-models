@@ -10,60 +10,30 @@ WITH dates_changed AS (
     FROM
         {{ ref('silver__transactions') }}
 
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-WHERE
-    _inserted_timestamp :: DATE BETWEEN (
-        SELECT
-            LEAST(
-                DATEADD(
-                    'day',
-                    1,
-                    COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
-                ),
-                CURRENT_DATE - 1
-            )
-        FROM
-            {{ this }}
-    )
-    AND (
-        SELECT
-            LEAST(
-                DATEADD(
-                    'day',
-                    1,
-                    COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
-                ),
-                CURRENT_DATE - 1
-            )
-        FROM
-            {{ this }}
-    ) 
-{% elif is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
-{% else %}
-WHERE
-    _inserted_timestamp :: DATE BETWEEN '2023-01-30' AND '2023-02-13'
-{% endif %}
+{% if is_incremental() %}
+        {% if execute %}
+        {{ get_batch_load_logic(this,30,'2023-02-14') }}
+        {% endif %}
+    {% else %}
+        AND _inserted_timestamp::date between '2023-02-05' and '2023-02-14'
+    {% endif %}
 ),
 tokens_in AS (
     SELECT
         block_timestamp :: DATE AS b_date,
-        purchaser AS signer,
+        COALESCE(
+            owner, 
+            purchaser
+         ) AS signer,
         mint AS token_in,
-        _inserted_timestamp
+        m._inserted_timestamp
     FROM
-        {{ ref('silver__nft_mints') }}
+        {{ ref('silver__nft_mints') }} m
+    LEFT OUTER JOIN {{ ref('silver__token_account_owners') }} o
+    ON m.token_account = o.account_address 
     WHERE
-        block_timestamp :: DATE >= CURRENT_DATE - 7
+        end_block_id IS NULL
+        AND block_timestamp :: DATE >= CURRENT_DATE - 7
         AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
@@ -71,25 +41,15 @@ tokens_in AS (
                 dates_changed
         ) 
 
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-AND _inserted_timestamp < (
-    SELECT
-        LEAST(
-            DATEADD(
-                'day',
-                2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
-            ),
-            CURRENT_DATE - 1
-        )
-    FROM
-        {{ this }}
-) {% elif not is_incremental() %}
-AND _inserted_timestamp :: DATE BETWEEN '2023-01-30' AND '2023-02-13'
-{% endif %}
+{% if is_incremental() %}
+        {% if execute %}
+        {{ get_batch_load_logic(this,30,'2023-02-14') }}
+        {% endif %}
+    {% else %}
+        AND m._inserted_timestamp::date between '2023-02-05' and '2023-02-14'
+        AND o._inserted_timestamp::date between '2023-02-05' and '2023-02-14'
+    {% endif %} 
+
 
 UNION
 
@@ -112,50 +72,27 @@ WHERE
             dates_changed
     )
 
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-AND t._inserted_timestamp < (
-    SELECT
-        LEAST(
-            DATEADD(
-                'day',
-                2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
-            ),
-            CURRENT_DATE - 1
-        )
-    FROM
-        {{ this }}
-) 
-AND e._inserted_timestamp < (
-    SELECT
-        LEAST(
-            DATEADD(
-                'day',
-                2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
-            ),
-            CURRENT_DATE - 1
-        )
-    FROM
-        {{ this }}
-) 
-{% elif not is_incremental() %}
-AND t._inserted_timestamp :: DATE BETWEEN '2023-01-30' AND '2023-02-13'
-AND e._inserted_timestamp :: DATE BETWEEN '2023-01-30' AND '2023-02-13'
-{% endif %}
+{% if is_incremental() %}
+        {% if execute %}
+        {{ get_batch_load_logic(this,30,'2023-02-14') }}
+        {% endif %}
+    {% else %}
+        AND t._inserted_timestamp::date between '2023-02-05' and '2023-02-14'
+        AND e._inserted_timestamp::date between '2023-02-05' and '2023-02-14'
+    {% endif %}
 
 UNION 
 
 SELECT 
     block_timestamp :: DATE as b_date, 
     owner AS signer, 
-    mint AS token_in, 
-    _inserted_timestamp
+    o.mint AS token_in, 
+    o._inserted_timestamp
 FROM 
-    {{ ref('silver__token_account_ownership_events') }} 
+    {{ ref('silver__token_account_ownership_events') }} o
+    INNER JOIN {{ ref('silver___nft_distinct_mints') }} e
+    ON e.mint = o.mint
+
 WHERE 
     event_type = 'initializeAccount3'
     AND block_timestamp :: DATE >= CURRENT_DATE - 7
@@ -166,24 +103,13 @@ WHERE
                     dates_changed
             ) 
 
-    {% if is_incremental() and env_var(
-        'DBT_IS_BATCH_LOAD',
-        "false"
-    ) == "true" %}
-    AND _inserted_timestamp < (
-        SELECT
-            LEAST(
-                DATEADD(
-                    'day',
-                    2,
-                    COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
-                ),
-                CURRENT_DATE - 1
-            )
-        FROM
-            {{ this }}
-    ) {% elif not is_incremental() %}
-    AND _inserted_timestamp :: DATE BETWEEN '2023-01-30' AND '2023-02-13'
+    {% if is_incremental() %}
+        {% if execute %}
+        {{ get_batch_load_logic(this,30,'2023-02-14') }}
+        {% endif %}
+    {% else %}
+        AND o._inserted_timestamp::date between '2023-02-05' and '2023-02-14'
+        AND e._inserted_timestamp::date between '2023-02-05' and '2023-02-14'
     {% endif %}
 ),
 tokens_out AS (
@@ -203,26 +129,13 @@ tokens_out AS (
                 dates_changed
         )
 
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-AND _inserted_timestamp < (
-    SELECT
-        LEAST(
-            DATEADD(
-                'day',
-                2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
-            ),
-            CURRENT_DATE - 1
-        )
-    FROM
-        {{ this }}
-) {% elif not is_incremental() %}
-AND _inserted_timestamp :: DATE BETWEEN '2023-01-30'
-AND '2023-02-13'
-{% endif %}
+{% if is_incremental() %}
+        {% if execute %}
+        {{ get_batch_load_logic(this,30,'2023-02-14') }}
+        {% endif %}
+    {% else %}
+        AND _inserted_timestamp::date between '2023-02-05' and '2023-02-14'
+    {% endif %}
 
 UNION
 
@@ -245,40 +158,14 @@ WHERE
             dates_changed
     )
 
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-AND t._inserted_timestamp < (
-    SELECT
-        LEAST(
-            DATEADD(
-                'day',
-                2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
-            ),
-            CURRENT_DATE - 1
-        )
-    FROM
-        {{ this }}
-)
-AND e._inserted_timestamp < (
-    SELECT
-        LEAST(
-            DATEADD(
-                'day',
-                2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
-            ),
-            CURRENT_DATE - 1
-        )
-    FROM
-        {{ this }}
-)  
-{% elif not is_incremental() %}
-AND t._inserted_timestamp :: DATE BETWEEN '2023-01-30' AND '2023-02-13'
-AND e._inserted_timestamp :: DATE BETWEEN '2023-01-30' AND '2023-02-13'
-{% endif %}
+{% if is_incremental() %}
+        {% if execute %}
+        {{ get_batch_load_logic(this,30,'2023-02-14') }}
+        {% endif %}
+    {% else %}
+        AND t._inserted_timestamp::date between '2023-02-05' and '2023-02-14'
+        AND e._inserted_timestamp::date between '2023-02-05' and '2023-02-14'
+    {% endif %}
 UNION 
 
 SELECT 
@@ -298,25 +185,13 @@ WHERE
                 dates_changed
         ) 
 
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-AND _inserted_timestamp < (
-    SELECT
-        LEAST(
-            DATEADD(
-                'day',
-                2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
-            ),
-            CURRENT_DATE - 1
-        )
-    FROM
-        {{ this }}
-) {% elif not is_incremental() %}
-AND _inserted_timestamp :: DATE BETWEEN '2023-01-30' AND '2023-02-13'
-{% endif %}
+{% if is_incremental() %}
+        {% if execute %}
+        {{ get_batch_load_logic(this,30,'2023-02-14') }}
+        {% endif %}
+    {% else %}
+        AND _inserted_timestamp::date between '2023-02-05' and '2023-02-14'
+    {% endif %} 
 
 UNION 
 
@@ -328,7 +203,7 @@ SELECT
 FROM 
     {{ ref('silver__nft_sales_magic_eden_v2')}}
 WHERE 
- block_timestamp :: DATE >= CURRENT_DATE - 7
+    block_timestamp :: DATE >= CURRENT_DATE - 7
         AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
@@ -336,25 +211,13 @@ WHERE
                 dates_changed
         ) 
 
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-AND _inserted_timestamp < (
-    SELECT
-        LEAST(
-            DATEADD(
-                'day',
-                2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-01-30')
-            ),
-            CURRENT_DATE - 1
-        )
-    FROM
-        {{ this }}
-) {% elif not is_incremental() %}
-AND _inserted_timestamp :: DATE BETWEEN '2023-01-30' AND '2023-02-13'
-{% endif %}
+{% if is_incremental() %}
+        {% if execute %}
+        {{ get_batch_load_logic(this,30,'2023-02-14') }}
+        {% endif %}
+    {% else %}
+        AND _inserted_timestamp::date between '2023-02-05' and '2023-02-14'
+    {% endif %} 
 
 ), 
 ins AS (
