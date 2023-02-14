@@ -56,3 +56,4 @@ FROM
     base_burn_actions b
     INNER JOIN base_whirlpool_mints m
     ON b.mint = m.mint
+qualify(row_number() over (partition by b.block_id, b.tx_id, b.index,b.inner_index order by b.index,b.inner_index)) = 1
