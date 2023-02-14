@@ -4,14 +4,24 @@
     incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE']
 ) }}
-with base_burn_actions AS (
+
+WITH base_burn_actions AS (
 
     SELECT
         *
     FROM
         {{ ref('silver__burn_actions') }}
-    WHERE
-        block_timestamp :: DATE >= '2021-02-14'
+
+{% if is_incremental() %}
+where _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% else %}
+where block_timestamp :: DATE >= '2021-02-14'
+{% endif %}
 ),
 base_whirlpool_events AS (
     SELECT
@@ -23,6 +33,17 @@ base_whirlpool_events AS (
             '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
             'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1'
         )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% else %}
+    AND block_timestamp :: DATE >= '2021-02-14'
+{% endif %}
 ),
 orca_burn_actions AS (
     SELECT

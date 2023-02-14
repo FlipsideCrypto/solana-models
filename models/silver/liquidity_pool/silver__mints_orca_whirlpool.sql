@@ -11,8 +11,18 @@ WITH base_mint_actions AS (
         *
     FROM
         {{ ref('silver__mint_actions') }}
-    WHERE
-        block_timestamp :: DATE >= '2022-03-10'
+
+{% if is_incremental() %}
+where _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+
+{% else %}
+where block_timestamp :: date >= '2022-03-10'
+{% endif %}
 ),
 base_whirlpool_events AS (
     SELECT
@@ -21,6 +31,18 @@ base_whirlpool_events AS (
         {{ ref('silver__liquidity_pool_events_orca') }}
     WHERE
         program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+
+{% else %}
+    AND block_timestamp :: date >= '2022-03-10'
+{% endif %}
 ),
 orca_mint_actions AS (
     SELECT
@@ -52,5 +74,6 @@ SELECT
     A._inserted_timestamp
 FROM
     orca_mint_actions A
-    INNER JOIN {{ ref('silver__initialization_pools_orca') }} b
+    INNER JOIN {{ ref('silver__initialization_pools_orca') }}
+    b
     ON A.liquidity_pool_address = b.liquidity_pool

@@ -16,6 +16,18 @@ WITH base_orca_pool_events AS (
             '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
             'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1'
         )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+
+{% else %}
+    AND block_timestamp :: date >= '2021-02-14'
+{% endif %}
 ),
 base_transfers AS (
     SELECT
@@ -33,7 +45,8 @@ base_transfers AS (
         t.succeeded,
         t._inserted_timestamp
     FROM
-        {{ ref('silver__transfers') }} t
+        {{ ref('silver__transfers') }}
+        t
     WHERE
         tx_id IN (
             SELECT
@@ -41,6 +54,18 @@ base_transfers AS (
             FROM
                 base_orca_pool_events
         )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+
+{% else %}
+    AND block_timestamp :: date >= '2021-02-14'
+{% endif %}
 ),
 non_whirlpool_txfers AS (
     SELECT
@@ -79,30 +104,33 @@ non_whirlpool_txfers AS (
             '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
         )
 ),
-pre_final as (
-SELECT
-    t.*,
-    COALESCE(
-        p1.liquidity_pool,
-        p2.liquidity_pool
-    ) AS liquidity_pool_address
-FROM
-    non_whirlpool_txfers t
-    LEFT JOIN {{ ref('silver__initialization_pools_orca') }} p1
-    ON (
-        t.dest_token_account = p1.token_a_account
-        OR t.dest_token_account = p1.token_b_account
-    )
-    AND t.action = 'deposit'
-    LEFT JOIN {{ ref('silver__initialization_pools_orca') }} p2
-    ON (
-        t.source_token_account = p2.token_a_account
-        OR t.source_token_account = p2.token_b_account
-    )
-    AND t.action = 'withdraw'
-WHERE
-    p1.tx_id IS NOT NULL
-    OR p2.tx_id IS NOT NULL)
+pre_final AS (
+    SELECT
+        t.*,
+        COALESCE(
+            p1.liquidity_pool,
+            p2.liquidity_pool
+        ) AS liquidity_pool_address
+    FROM
+        non_whirlpool_txfers t
+        LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
+        p1
+        ON (
+            t.dest_token_account = p1.token_a_account
+            OR t.dest_token_account = p1.token_b_account
+        )
+        AND t.action = 'deposit'
+        LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
+        p2
+        ON (
+            t.source_token_account = p2.token_a_account
+            OR t.source_token_account = p2.token_b_account
+        )
+        AND t.action = 'withdraw'
+    WHERE
+        p1.tx_id IS NOT NULL
+        OR p2.tx_id IS NOT NULL
+)
 SELECT
     block_id,
     block_timestamp,
@@ -111,7 +139,7 @@ SELECT
     INDEX,
     inner_index,
     program_id,
-action,
+    action,
     mint,
     amount,
     liquidity_provider,

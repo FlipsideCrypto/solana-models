@@ -31,7 +31,18 @@ WITH base_events AS(
                 inner_instruction_program_ids
             )
         )
-        AND block_id > 65303193 -- first appearance of Orca program id
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+
+{% else %}
+    AND block_id > 65303193 -- first appearance of Orca program id
+{% endif %}
 ),
 lp_events AS (
     SELECT
@@ -54,6 +65,7 @@ lp_events_w_inner_program_ids AS (
     FROM
         lp_events,
         TABLE(FLATTEN(inner_programs)) i),
+
 outer_withdraws_and_deposits AS (
     SELECT
         block_timestamp,
@@ -143,7 +155,8 @@ lp_events_with_swaps_removed AS (
         C.*
     FROM
         combined C
-        LEFT JOIN {{ ref('silver__initialization_pools_orca') }} p1
+        LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
+        p1
         ON (
             event_instructions :accounts [6] :: STRING = p1.token_a_account
             OR event_instructions :accounts [6] :: STRING = p1.token_b_account
@@ -206,11 +219,13 @@ SELECT
     END AS action
 FROM
     lp_events_with_swaps_removed A
-    LEFT JOIN {{ ref('silver__initialization_pools_orca') }}  p1
+    LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
+    p1
     ON (
         A.event_instructions :accounts [3] :: STRING = p1.pool_token
     )
-    LEFT JOIN {{ ref('silver__initialization_pools_orca') }}  p2
+    LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
+    p2
     ON (
         A.event_instructions :accounts [7] :: STRING = p2.pool_token
     )

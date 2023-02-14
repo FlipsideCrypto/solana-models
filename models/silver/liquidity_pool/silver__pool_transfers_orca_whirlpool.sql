@@ -22,7 +22,8 @@ WITH base_transfers AS (
         t.succeeded,
         t._inserted_timestamp
     FROM
-         {{ ref('silver__transfers') }} t
+        {{ ref('silver__transfers') }}
+        t
     WHERE
         tx_id IN (
             SELECT
@@ -30,6 +31,18 @@ WITH base_transfers AS (
             FROM
                 {{ ref('silver__liquidity_pool_events_orca') }}
         )
+
+{% if is_incremental() %}
+and _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+
+{% else %}
+and block_timestamp :: date >= '2022-03-10'
+{% endif %}
 ),
 whirlpool_txfers AS (
     SELECT
@@ -48,11 +61,13 @@ whirlpool_txfers AS (
         ) AS action
     FROM
         base_transfers t
-        LEFT JOIN {{ ref('silver__liquidity_pool_events_orca') }} l1
+        LEFT JOIN {{ ref('silver__liquidity_pool_events_orca') }}
+        l1
         ON t.tx_id = l1.tx_id
         AND t.index = l1.index
         AND l1.inner_index IS NULL
-        LEFT JOIN {{ ref('silver__liquidity_pool_events_orca') }} l2
+        LEFT JOIN {{ ref('silver__liquidity_pool_events_orca') }}
+        l2
         ON t.tx_id = l2.tx_id
         AND t.index = l2.index
         AND l2.inner_index IS NOT NULL
@@ -78,12 +93,14 @@ pre_final AS (
         END AS action_true
     FROM
         whirlpool_txfers t
-        LEFT JOIN {{ ref('silver__initialization_pools_orca') }} p1
+        LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
+        p1
         ON (
             t.dest_token_account = p1.token_a_account
             OR t.dest_token_account = p1.token_b_account
         )
-        LEFT JOIN {{ ref('silver__initialization_pools_orca') }} p2
+        LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
+        p2
         ON (
             t.source_token_account = p2.token_a_account
             OR t.source_token_account = p2.token_b_account

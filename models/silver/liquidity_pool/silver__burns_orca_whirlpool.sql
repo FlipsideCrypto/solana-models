@@ -11,14 +11,32 @@ WITH base_burn_actions AS (
         *
     FROM
         {{ ref('silver__burn_actions') }}
-    WHERE
-        block_timestamp :: DATE >= '2022-03-10'
+{% if is_incremental() %}
+where _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% else %}
+where block_timestamp :: DATE >= '2022-03-10'
+{% endif %}
 ),
 base_whirlpool_mints AS (
     SELECT
         *
     FROM
         {{ ref('silver__mints_orca_whirlpool') }}
+{% if is_incremental() %}
+where _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% else %}
+    where block_timestamp :: DATE >= '2022-03-10'
+{% endif %}
 )
 SELECT
     b.block_id,
