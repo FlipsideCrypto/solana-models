@@ -6,6 +6,8 @@ models:
           combination_of_columns:
             - BLOCK_ID
             - TX_ID
+            - INDEX
+            - INNER_INDEX
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -26,13 +28,11 @@ models:
         tests:
           - not_null
       - name: INDEX
-        description: "{{ doc('tx_id') }}"
+        description: "{{ doc('index') }}"
         tests:
           - not_null
       - name: INNER_INDEX
-        description: "{{ doc('tx_id') }}"
-        tests:
-          - not_null
+        description: "Position of event within inner instructions"
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
         tests: 
@@ -53,7 +53,7 @@ models:
         description: "{{ doc('liquidity_provider') }}"
         tests: 
           - not_null
-      - name: LIQUDITY_POOL_ADDRESS
+      - name: LIQUIDITY_POOL_ADDRESS
         description: "{{ doc('liquidity_pool_address') }}"
         tests: 
           - not_null
