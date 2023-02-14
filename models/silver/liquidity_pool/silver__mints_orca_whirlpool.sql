@@ -77,3 +77,4 @@ FROM
     INNER JOIN {{ ref('silver__initialization_pools_orca') }}
     b
     ON A.liquidity_pool_address = b.liquidity_pool
+    qualify(row_number() over (partition by a.block_id, a.tx_id, a.index,a.inner_index order by a.index,a.inner_index)) = 1

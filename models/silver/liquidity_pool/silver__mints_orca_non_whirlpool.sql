@@ -142,6 +142,7 @@ FROM
     LEFT JOIN {{ ref('silver__token_metadata') }}
     m
     ON A.mint = m.token_address
+    where liquidity_provider is not null
 UNION
 SELECT
     A.block_id,
@@ -162,3 +163,4 @@ FROM
     LEFT JOIN {{ ref('silver__token_metadata') }}
     m
     ON A.mint = m.token_address
+    where liquidity_provider is not null
