@@ -86,22 +86,10 @@ outer_withdraws_and_deposits AS (
     FROM
         lp_events
     WHERE
-        (
-            program_id IN (
-                'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
-                '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
-            )
-            OR (
-                program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
-                AND instruction :accounts [1] = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-            )
-            OR (
-                program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
-                AND ARRAY_SIZE(
-                    instruction :accounts
-                ) = 9
-            )
-        )
+        program_id IN (
+                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+                '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv',
+                '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h')
 ),
 inner_withdraws_and_deposits AS (
     SELECT
@@ -125,19 +113,11 @@ inner_withdraws_and_deposits AS (
         LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
         ON A.lp_program_inner_index_start = ii.index
     WHERE
-        (
             A.inner_lp_program_id IN (
-                'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
-                '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
+                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+                '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv',
+                '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
             )
-            OR (
-                A.inner_lp_program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
-                AND ii.value :accounts [1] = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-                AND ARRAY_SIZE(
-                    ii.value :accounts
-                ) > 10
-            )
-        )
 ),
 combined AS(
     SELECT
