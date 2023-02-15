@@ -36,7 +36,7 @@ models:
         tests:
           - not_null
       - name: LIQUIDITY_PROVIDER
-        description: "xxx"
+        description: "{{ doc('liquidity_provider') }}"
         tests: 
           - not_null
       - name: PROGRAM_ID
@@ -56,7 +56,7 @@ models:
         tests: 
           - not_null
       - name: ACTION
-        description: "xxx"
+        description: "{{ doc('action') }}"
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
