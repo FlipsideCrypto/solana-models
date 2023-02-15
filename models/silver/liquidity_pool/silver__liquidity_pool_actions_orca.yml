@@ -8,6 +8,23 @@ models:
             - TX_ID
             - INDEX
             - INNER_INDEX
+      - compare_model_subset:
+          name: silver__liquidity_pool_actions_orca_business_logic_test
+          compare_model: ref('testing__liquidity_pool_actions_orca')
+          compare_columns: 
+            - tx_id
+            - program_id
+            - action
+            - mint
+            - amount
+            - liquidity_provider
+            - liquidity_pool_address
+          model_condition: "where tx_id in ('277JGMpfmeFv3LJ1zCpi2JPdmwbwUDKxsz1ZjhxtT7dHgAb8FmKogSdNRkfnyxjmTnkijjWTfa76v6AELV2VkeAv',
+          '29P5nj6g5ePUCHZRnEfJhzNWDaCeLeGP2p6D8udbxb2t5wuBXW8hdrzJ1m6ULsGk3PW3MwAvn2aurUck37sc7HDj',
+          '3PdQf87gUGqRKrTXWzqpuduUVhe2cCfSFbmDbbJWQg4MwmsQu43esBRz3HQPsGZ98a8ZjtcNsxNDsrxhV1LBWNJn',
+          '4yxURFgGKwq1rLCS3HsdZgM4xSe32geqEnbZXaei5xH9tiEF8SmBZxEsnFNEU3DqUoNes5PmSAucjgXex7EaCj6V',
+          '5aw1saTnwJAaGLmmCXuGE5Q5UgPdd5C4UZDNgPo5Nt2S8Po7BW2ThyCLBQ1rpWwFtpKQE1qC1rbPgK4ecE1Kwuwf',
+          'CyMWi3QBdS7UrCygx6GZbvYDiD8vREbNKxs5FRMeqnShnZ5ASoYWaYqgdU6Vk561khbdaRYoif7WtD8oLKjLqpG')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
