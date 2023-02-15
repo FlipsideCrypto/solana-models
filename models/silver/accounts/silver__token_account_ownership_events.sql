@@ -60,7 +60,7 @@ combined as (
         event_type,
         instruction:parsed:info:account::string as account_address,
         instruction:parsed:info:owner::string as owner,
-        instruction:parsed:info:mint::string as mint,
+        null as mint,
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('assign','assignWithSeed')
@@ -75,7 +75,7 @@ combined as (
         event_type,
         instruction:parsed:info:account::string as account_address,
         instruction:parsed:info:owner::string as owner,
-        null as mint,
+        instruction:parsed:info:mint::string as mint,
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('initializeAccount','initializeAccount2','initializeAccount3')
