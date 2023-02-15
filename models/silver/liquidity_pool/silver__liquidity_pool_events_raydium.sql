@@ -147,3 +147,4 @@ WHERE
         OR C.num_accts < 17
     )
     AND p1.tx_id IS NOT NULL
+    qualify(row_number() over (partition by c.block_id, c.tx_id, c.index,c.inner_index order by c.index,c.inner_index)) = 1

@@ -88,3 +88,4 @@ FROM
     LEFT JOIN {{ ref('silver__token_metadata') }}
     m
     ON A.mint = m.token_address
+    qualify(row_number() over (partition by a.block_id, a.tx_id, a.index,a.inner_index order by a.index,a.inner_index)) = 1

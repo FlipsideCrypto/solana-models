@@ -88,6 +88,7 @@ pre_final_raydium_mints AS(
         INNER JOIN {{ ref('silver__initialization_pools_raydium') }}
         b
         ON A.mint = b.pool_token
+        qualify(row_number() over (partition by a.block_id, a.tx_id, a.index,a.inner_index order by a.index,a.inner_index)) = 1
 ),
 -- mints in swaps aren't captured in 'liqudity_pool_events' so they are accounted for here
 mints_in_swaps AS(
@@ -97,7 +98,10 @@ mints_in_swaps AS(
         A.tx_id,
         A.succeeded,
         A.index,
-        A.inner_index,
+        COALESCE(
+            A.inner_index,
+            -1
+        ) AS inner_index,
         b.owner AS program_id,
         A.event_type AS action,
         A.mint,
@@ -117,6 +121,8 @@ mints_in_swaps AS(
             FROM
                 pre_final_raydium_mints
         )
+        and a.event_type = 'mintTo'
+        qualify(row_number() over (partition by a.block_id, a.tx_id, a.index,a.inner_index order by a.index,a.inner_index)) = 1
 )
 SELECT
     A.block_id,
