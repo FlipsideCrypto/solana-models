@@ -13,7 +13,7 @@ WITH base_raydium_pool_events AS (
         {{ ref('silver__liquidity_pool_events_raydium') }}
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+where _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
@@ -21,7 +21,7 @@ AND _inserted_timestamp >= (
 )
 
 {% else %}
-    AND block_timestamp :: date >= '2021-03-06'
+    where block_timestamp :: date >= '2021-03-06'
 {% endif %}
 ),
 base_transfers AS (
@@ -89,15 +89,6 @@ raydium_txfers AS (
         AND l2.inner_index <> -1
         AND t.inner_index BETWEEN l2.lp_program_inner_index_start
         AND l2.lp_program_inner_index_end
-    WHERE
-        l1.program_id IN (
-            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
-            '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
-        )
-        OR l2.program_id IN (
-            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
-            '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
-        )
 ),
 pre_final AS (
     SELECT

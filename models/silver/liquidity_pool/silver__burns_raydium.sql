@@ -30,14 +30,14 @@ base_raydium_events AS (
         {{ ref('silver__liquidity_pool_events_raydium') }}
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+where _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
         {{ this }}
 )
 {% else %}
-    AND block_timestamp :: DATE >= '2021-03-06'
+    where block_timestamp :: DATE >= '2021-03-06'
 {% endif %}
 ),
 raydium_burn_actions AS (
