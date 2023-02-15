@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ["block_id","tx_id"],
+    unique_key = ["block_id","tx_id","index","inner_index"],
     incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE']
 ) }}
@@ -39,9 +39,8 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
-
 {% else %}
-    AND block_id > 65303193 -- first appearance of Orca program id
+    AND block_id > 67919748 -- first appearance of Raydium LP program id
 {% endif %}
 ),
 lp_events AS (
@@ -65,7 +64,6 @@ lp_events_w_inner_program_ids AS (
     FROM
         lp_events,
         TABLE(FLATTEN(inner_programs)) i),
-
 outer_withdraws_and_deposits AS (
     SELECT
         block_timestamp,
@@ -73,7 +71,7 @@ outer_withdraws_and_deposits AS (
         tx_id,
         succeeded,
         INDEX,
-        NULL AS inner_index,
+        -1 AS inner_index,
         liquidity_provider,
         program_id,
         NULL AS lp_program_inner_index_start,
@@ -87,9 +85,10 @@ outer_withdraws_and_deposits AS (
         lp_events
     WHERE
         program_id IN (
-                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
-                '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv',
-                '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h')
+            '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+            '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv',
+            '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+        )
 ),
 inner_withdraws_and_deposits AS (
     SELECT
@@ -113,11 +112,11 @@ inner_withdraws_and_deposits AS (
         LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
         ON A.lp_program_inner_index_start = ii.index
     WHERE
-            A.inner_lp_program_id IN (
-                '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
-                '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv',
-                '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
-            )
+        A.inner_lp_program_id IN (
+            '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+            '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv',
+            '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+        )
 ),
 combined AS(
     SELECT
@@ -129,83 +128,22 @@ combined AS(
         *
     FROM
         inner_withdraws_and_deposits
-),
-lp_events_with_swaps_removed AS (
-    SELECT
-        C.*
-    FROM
-        combined C
-        LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
-        p1
-        ON (
-            event_instructions :accounts [6] :: STRING = p1.token_a_account
-            OR event_instructions :accounts [6] :: STRING = p1.token_b_account
-        )
-    WHERE
-        C.program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
-        OR (
-            C.program_id IN (
-                'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
-                '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
-            )
-            AND num_accts = 9
-        )
-        OR(
-            C.program_id IN (
-                'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
-                '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
-            )
-            AND num_accts = 10
-            AND p1.tx_id IS NOT NULL
-        )
-        OR(
-            C.program_id IN (
-                'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
-                '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
-            )
-            AND num_accts = 11
-            AND p1.tx_id IS NOT NULL
-        )
 )
 SELECT
-    A.*,
+    C.*,
     CASE
-        WHEN program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
-        AND num_accts = 9 THEN 'whirlpool_fee_withdraw'
-        WHEN program_id = 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
-        AND num_accts > 9 THEN 'whirlpool_unknown'
-        WHEN num_accts = 9
-        AND A.program_id IN (
-            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
-            '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
-        ) THEN 'deposit'
-        WHEN num_accts = 11
-        AND A.program_id IN (
-            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
-            '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
-        ) THEN 'withdraw'
-        WHEN num_accts = 10
-        AND A.program_id IN (
-            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
-            '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
-        )
-        AND p2.pool_token IS NOT NULL THEN 'deposit'
-        WHEN num_accts = 10
-        AND A.program_id IN (
-            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1',
-            '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP'
-        )
-        AND p1.pool_token IS NOT NULL THEN 'withdraw'
+        WHEN num_accts > 17 THEN 'withdraw'
+        WHEN num_accts < 17 THEN 'deposit'
     END AS action
 FROM
-    lp_events_with_swaps_removed A
-    LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
-    p1
+    combined C
+    LEFT JOIN {{ ref('silver__initialization_pools_raydium') }} p1
     ON (
-        A.event_instructions :accounts [3] :: STRING = p1.pool_token
+        event_instructions :accounts [5] :: STRING = p1.pool_token
     )
-    LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
-    p2
-    ON (
-        A.event_instructions :accounts [7] :: STRING = p2.pool_token
+WHERE
+    (
+        C.num_accts > 17
+        OR C.num_accts < 17
     )
+    AND p1.tx_id IS NOT NULL

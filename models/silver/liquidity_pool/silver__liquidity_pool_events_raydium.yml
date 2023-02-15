@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__liquidity_pool_events_orca
+  - name: silver__liquidity_pool_events_raydium
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -33,8 +33,10 @@ models:
           - not_null
       - name: INNER_INDEX
         description: "Position of event within inner instructions"
+        tests:
+          - not_null
       - name: LIQUIDITY_PROVIDER
-        description: "{{ doc('liquidity_provider') }}"
+        description: "xxx"
         tests: 
           - not_null
       - name: PROGRAM_ID
@@ -54,7 +56,7 @@ models:
         tests: 
           - not_null
       - name: ACTION
-        description: "{{ doc('action') }}"
+        description: "xxx"
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
