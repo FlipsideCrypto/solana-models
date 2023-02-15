@@ -1,0 +1,67 @@
+version: 2
+models:
+  - name: silver__pool_transfers_orca_non_whirlpool
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+            - TX_ID
+            - INDEX
+            - INNER_INDEX
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - not_null
+      - name: INDEX
+        description: "{{ doc('index') }}"
+        tests:
+          - not_null
+      - name: INNER_INDEX
+        description: "Position of event within inner instructions"
+        tests:
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null
+      - name: ACTION
+        description: "{{ doc('action') }}"
+        tests: 
+          - not_null
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        tests: 
+          - not_null:
+              where: block_id > 69393037
+      - name: AMOUNT
+        description: "{{ doc('amount') }}"
+        tests: 
+          - not_null
+      - name: LIQUIDITY_PROVIDER
+        description: "{{ doc('liquidity_provider') }}"
+        tests: 
+          - not_null
+      - name: LIQUIDITY_POOL_ADDRESS
+        description: "{{ doc('liquidity_pool_address') }}"
+        tests: 
+          - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
+
