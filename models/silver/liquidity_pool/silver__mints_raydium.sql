@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ["block_id","tx_id"],
+    unique_key = ["block_id","tx_id","index","inner_index"],
     incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE']
 ) }}
@@ -21,19 +21,14 @@ where _inserted_timestamp >= (
 )
 
 {% else %}
-    where block_timestamp :: date >= '2021-02-14'
+    where block_timestamp :: date >= '2021-03-06'
 {% endif %}
 ),
-base_whirlpool_events AS (
+base_raydium_events AS (
     SELECT
         *
     FROM
-        {{ ref('silver__liquidity_pool_events_orca') }}
-    WHERE
-        program_id IN (
-            '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
-            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1'
-        )
+        {{ ref('silver__liquidity_pool_events_raydium') }}
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -44,10 +39,10 @@ AND _inserted_timestamp >= (
 )
 
 {% else %}
-    AND block_timestamp :: date >= '2021-02-14'
+    AND block_timestamp :: date >= '2021-03-06'
 {% endif %}
 ),
-orca_mint_actions AS (
+raydium_mint_actions AS (
     SELECT
         m.*,
         COALESCE(
@@ -56,14 +51,14 @@ orca_mint_actions AS (
         ) AS liquidity_provider
     FROM
         base_mint_actions m
-        LEFT JOIN base_whirlpool_events e1
+        LEFT JOIN base_raydium_events e1
         ON m.tx_id = e1.tx_id
         AND m.index = e1.index
-        AND e1.inner_index IS NULL
-        LEFT JOIN base_whirlpool_events e2
+        AND e1.inner_index = -1
+        LEFT JOIN base_raydium_events e2
         ON m.tx_id = e2.tx_id
         AND m.index = e2.index
-        AND e2.inner_index IS NOT NULL
+        AND e2.inner_index <> -1
         AND m.inner_index BETWEEN e2.lp_program_inner_index_start
         AND e2.lp_program_inner_index_end
     WHERE
@@ -73,7 +68,7 @@ orca_mint_actions AS (
             OR e2.tx_id IS NOT NULL
         )
 ),
-pre_final_orca_mints AS(
+pre_final_raydium_mints AS(
     SELECT
         A.block_id,
         A.block_timestamp,
@@ -89,8 +84,8 @@ pre_final_orca_mints AS(
         b.liquidity_pool AS liquidity_pool_address,
         A._inserted_timestamp
     FROM
-        orca_mint_actions A
-        INNER JOIN {{ ref('silver__initialization_pools_orca') }}
+        raydium_mint_actions A
+        INNER JOIN {{ ref('silver__initialization_pools_raydium') }}
         b
         ON A.mint = b.pool_token
 ),
@@ -112,7 +107,7 @@ mints_in_swaps AS(
         A._inserted_timestamp
     FROM
         base_mint_actions A
-        INNER JOIN {{ ref('silver__initialization_pools_orca') }}
+        INNER JOIN {{ ref('silver__initialization_pools_raydium') }}
         b
         ON A.mint = b.pool_token
     WHERE
@@ -120,7 +115,7 @@ mints_in_swaps AS(
             SELECT
                 tx_id
             FROM
-                pre_final_orca_mints
+                pre_final_raydium_mints
         )
 )
 SELECT
@@ -138,7 +133,7 @@ SELECT
     A.liquidity_pool_address,
     A._inserted_timestamp
 FROM
-    pre_final_orca_mints A
+    pre_final_raydium_mints A
     LEFT JOIN {{ ref('silver__token_metadata') }}
     m
     ON A.mint = m.token_address

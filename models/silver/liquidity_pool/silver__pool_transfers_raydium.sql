@@ -1,21 +1,16 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ["block_id","tx_id"],
+    unique_key = ["block_id","tx_id","index","inner_index"],
     incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE']
 ) }}
 
-WITH base_orca_pool_events AS (
+WITH base_raydium_pool_events AS (
 
     SELECT
         *
     FROM
-        {{ ref('silver__liquidity_pool_events_orca') }}
-    WHERE
-        program_id IN (
-            '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
-            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1'
-        )
+        {{ ref('silver__liquidity_pool_events_raydium') }}
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -26,7 +21,7 @@ AND _inserted_timestamp >= (
 )
 
 {% else %}
-    AND block_timestamp :: date >= '2021-02-14'
+    AND block_timestamp :: date >= '2021-03-06'
 {% endif %}
 ),
 base_transfers AS (
@@ -52,7 +47,7 @@ base_transfers AS (
             SELECT
                 tx_id
             FROM
-                base_orca_pool_events
+                base_raydium_pool_events
         )
 
 {% if is_incremental() %}
@@ -64,10 +59,10 @@ AND _inserted_timestamp >= (
 )
 
 {% else %}
-    AND block_timestamp :: date >= '2021-02-14'
+    AND block_timestamp :: date >= '2021-03-06'
 {% endif %}
 ),
-non_whirlpool_txfers AS (
+raydium_txfers AS (
     SELECT
         t.*,
         COALESCE(
@@ -84,14 +79,14 @@ non_whirlpool_txfers AS (
         ) AS action
     FROM
         base_transfers t
-        LEFT JOIN base_orca_pool_events l1
+        LEFT JOIN base_raydium_pool_events l1
         ON t.tx_id = l1.tx_id
         AND t.index = l1.index
-        AND l1.inner_index IS NULL
-        LEFT JOIN base_orca_pool_events l2
+        AND l1.inner_index = -1
+        LEFT JOIN base_raydium_pool_events l2
         ON t.tx_id = l2.tx_id
         AND t.index = l2.index
-        AND l2.inner_index IS NOT NULL
+        AND l2.inner_index <> -1
         AND t.inner_index BETWEEN l2.lp_program_inner_index_start
         AND l2.lp_program_inner_index_end
     WHERE
@@ -112,15 +107,15 @@ pre_final AS (
             p2.liquidity_pool
         ) AS liquidity_pool_address
     FROM
-        non_whirlpool_txfers t
-        LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
+        raydium_txfers t
+        LEFT JOIN {{ ref('silver__initialization_pools_raydium') }}
         p1
         ON (
             t.dest_token_account = p1.token_a_account
             OR t.dest_token_account = p1.token_b_account
         )
         AND t.action = 'deposit'
-        LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
+        LEFT JOIN {{ ref('silver__initialization_pools_raydium') }}
         p2
         ON (
             t.source_token_account = p2.token_a_account

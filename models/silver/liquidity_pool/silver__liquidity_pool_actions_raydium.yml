@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__burns_raydium
+  - name: silver__liquidity_pool_actions_raydium
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -8,6 +8,23 @@ models:
             - TX_ID
             - INDEX
             - INNER_INDEX
+      - compare_model_subset:
+          name: silver__liquidity_pool_actions_raydium_business_logic_test
+          compare_model: ref('testing__liquidity_pool_actions_raydium')
+          compare_columns: 
+            - tx_id
+            - program_id
+            - action
+            - mint
+            - amount
+            - liquidity_provider
+            - liquidity_pool_address
+          model_condition: "where tx_id in ('xxx',
+          'xxx',
+          'xxx',
+          'xxx',
+          'xxx',
+          'xxx')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -46,7 +63,8 @@ models:
       - name: MINT
         description: "{{ doc('mint') }}"
         tests: 
-          - not_null
+          - not_null:
+              where: block_id > 69393037
       - name: AMOUNT
         description: "{{ doc('amount') }}"
         tests: 

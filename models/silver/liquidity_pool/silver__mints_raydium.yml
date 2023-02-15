@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__mints_orca_non_whirlpool
+  - name: silver__mints_raydium
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -33,12 +33,14 @@ models:
           - not_null
       - name: INNER_INDEX
         description: "Position of event within inner instructions"
+        tests:
+          - not_null
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
         tests: 
           - not_null
       - name: ACTION
-        description: "{{ doc('action') }}"
+        description: "xxx"
         tests: 
           - not_null
       - name: MINT
@@ -50,11 +52,11 @@ models:
         tests: 
           - not_null
       - name: LIQUIDITY_PROVIDER
-        description: "{{ doc('liquidity_provider') }}"
+        description: "xxx"
         tests: 
           - not_null
       - name: LIQUIDITY_POOL_ADDRESS
-        description: "{{ doc('liquidity_pool_address') }}"
+        description: "xxx"
         tests: 
           - not_null
       - name: _INSERTED_TIMESTAMP

@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ["block_id","tx_id"],
+    unique_key = ["block_id","tx_id","index","inner_index"],
     incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE']
 ) }}
@@ -20,19 +20,14 @@ where _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-where block_timestamp :: DATE >= '2021-02-14'
+where block_timestamp :: DATE >= '2021-03-06'
 {% endif %}
 ),
-base_whirlpool_events AS (
+base_raydium_events AS (
     SELECT
         *
     FROM
-        {{ ref('silver__liquidity_pool_events_orca') }}
-    WHERE
-        program_id IN (
-            '9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP',
-            'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1'
-        )
+        {{ ref('silver__liquidity_pool_events_raydium') }}
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -42,10 +37,10 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND block_timestamp :: DATE >= '2021-02-14'
+    AND block_timestamp :: DATE >= '2021-03-06'
 {% endif %}
 ),
-orca_burn_actions AS (
+raydium_burn_actions AS (
     SELECT
         b.*,
         COALESCE(
@@ -54,14 +49,14 @@ orca_burn_actions AS (
         ) AS liquidity_provider
     FROM
         base_burn_actions b
-        LEFT JOIN base_whirlpool_events e1
+        LEFT JOIN base_raydium_events e1
         ON b.tx_id = e1.tx_id
         AND b.index = e1.index
-        AND e1.inner_index IS NULL
-        LEFT JOIN base_whirlpool_events e2
+        AND e1.inner_index = -1
+        LEFT JOIN base_raydium_events e2
         ON b.tx_id = e2.tx_id
         AND b.index = e2.index
-        AND e2.inner_index IS NOT NULL
+        AND e2.inner_index <> -1
         AND b.inner_index BETWEEN e2.lp_program_inner_index_start
         AND e2.lp_program_inner_index_end
     WHERE
@@ -86,8 +81,8 @@ SELECT
     b.liquidity_pool AS liquidity_pool_address,
     A._inserted_timestamp
 FROM
-    orca_burn_actions A
-    INNER JOIN {{ ref('silver__initialization_pools_orca') }}
+    raydium_burn_actions A
+    INNER JOIN {{ ref('silver__initialization_pools_raydium') }}
     b
     ON A.mint = b.pool_token
     LEFT JOIN {{ ref('silver__token_metadata') }}
