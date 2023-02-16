@@ -1,0 +1,83 @@
+version: 2
+models:
+  - name: silver__liquidity_pool_actions_raydium
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+            - TX_ID
+            - INDEX
+            - INNER_INDEX
+      - compare_model_subset:
+          name: silver__liquidity_pool_actions_raydium_business_logic_test
+          compare_model: ref('testing__liquidity_pool_actions_raydium')
+          compare_columns: 
+            - tx_id
+            - program_id
+            - action
+            - mint
+            - amount
+            - liquidity_provider
+            - liquidity_pool_address
+          model_condition: "where tx_id in ('63qiuJpEfJihyyR8ZBJ84qsq5DD1LDC4tNTzprAV1zwHmX12h1b79pScPHU3Rpf6qs8oN89MFpuj7GWmRVMNmZuA',
+          '27RZXeyZWYhbxHWj183goMWDf7ZBUhQXw47dhWd2G4TcstEmqxnb75jg5NQSYw3aPeQjdQNE3p2DMmBX6BYbk1pf',
+          '3e9SiF8RXs9KDSmRDJLdXBPKXYCStm2XjUMBbEPiQwbwfvBJ9AG4BfJqDtQeTPvGZeEY6R6o2YddmZbytC3JVQuT',
+          '3wSxtF5Mqeh5ybZVH1U4nE577pZSrhCr3td8GbJeCfwZfanpP7wrDXMiCUdhd5njhkWW6FKGgEzptDKsY8CW33RA',
+          '4UGPAu9ATzW3xtL5CJMTBefND3EZLd8TQESQsvSkHczF8tH9sVS5hr8CLigFbMQReqqogVaoFvJpieaDW8qiyU8S')"
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - not_null
+      - name: INDEX
+        description: "{{ doc('index') }}"
+        tests:
+          - not_null
+      - name: INNER_INDEX
+        description: "Position of event within inner instructions"
+        tests:
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null
+      - name: ACTION
+        description: "{{ doc('action') }}"
+        tests: 
+          - not_null
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        tests: 
+          - not_null:
+              where: block_id > 69401268
+      - name: AMOUNT
+        description: "{{ doc('amount') }}"
+        tests: 
+          - not_null
+      - name: LIQUIDITY_PROVIDER
+        description: "{{ doc('liquidity_provider') }}"
+        tests: 
+          - not_null
+      - name: LIQUIDITY_POOL_ADDRESS
+        description: "{{ doc('liquidity_pool_address') }}"
+        tests: 
+          - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
+

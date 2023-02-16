@@ -3,6 +3,7 @@
     unique_key = "CONCAT_WS('-', tx_id, event_type, mint)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
+    full_refresh = false
 ) }}
 
 WITH base_events AS (
@@ -55,6 +56,11 @@ SELECT
         instruction :parsed :info :amount :: INTEGER,
         instruction :parsed :info :tokenAmount: amount :: INTEGER
     ) AS mint_amount,
+    COALESCE(
+        instruction :parsed :info :mintAuthority :: string,
+        instruction :parsed :info :multisigMintAuthority :: string
+    ) AS mint_authority,
+    instruction :parsed :info :signers :: string AS signers,
     _inserted_timestamp
 FROM
     base_events
@@ -80,6 +86,11 @@ SELECT
         i.value :parsed :info :amount :: INTEGER,
         i.value :parsed :info :tokenAmount: amount :: INTEGER
     ) AS mint_amount,
+    COALESCE(
+        i.value :parsed :info :mintAuthority :: string,
+        i.value :parsed :info :multisigMintAuthority :: string
+    ) AS mint_authority,
+    i.value :parsed :info :signers :: string AS signers,
     _inserted_timestamp
 FROM
     base_events e,

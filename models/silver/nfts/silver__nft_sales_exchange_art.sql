@@ -18,7 +18,7 @@ WITH buys AS (
                 i.value :parsed :info :lamports :: NUMBER,
                 0
             )
-        ) / POW(
+        ) / pow(
             10,
             9
         ) AS sales_amount,
@@ -32,6 +32,10 @@ WITH buys AS (
         LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
     WHERE
         program_id = 'AmK5g2XcyptVLCFESBCJqoSfwV3znGoVYQnqEnaAZKWn' -- Exchange Art Buys
+        AND NOT ARRAY_CONTAINS(
+            'EXBuYPNgBUXMTsjCbezENRUtFQzjUNZxvPGTd11Pznk5' :: variant,
+            instruction :accounts
+        )
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -53,6 +57,70 @@ GROUP BY
     instruction :accounts [3] :: STRING,
     instruction :accounts [6] :: STRING,
     _inserted_timestamp
+),
+buy_nows AS (
+    SELECT
+        e.block_timestamp,
+        e.block_id,
+        e.tx_id,
+        e.succeeded,
+        program_id,
+        SUM(
+            COALESCE(
+                i.value :parsed :info :lamports :: NUMBER,
+                0
+            )
+        ) / pow(
+            10,
+            9
+        ) AS sales_amount,
+        instruction :accounts [0] :: STRING AS purchaser,
+        instruction :accounts [1] :: STRING AS seller,
+        instruction :accounts [3] :: STRING AS mint,
+        e._inserted_timestamp
+    FROM
+        {{ ref('silver__events') }}
+        e
+        LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
+        INNER JOIN {{ ref('silver__transactions') }}
+        t
+        ON e.tx_id = t.tx_id
+        LEFT JOIN TABLE(FLATTEN(t.log_messages)) l
+    WHERE
+        e.program_id = 'EXBuYPNgBUXMTsjCbezENRUtFQzjUNZxvPGTd11Pznk5' -- Exchange Art Buy Nows
+        AND l.value :: STRING = 'Program log: Instruction: ExecuteBuynowSale'
+        AND e.succeeded = TRUE
+        AND t.succeeded = TRUE
+
+{% if is_incremental() %}
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+AND t._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% else %}
+    AND e.block_timestamp :: DATE >= '2021-10-30'
+    AND t.block_timestamp :: DATE >= '2021-10-30'
+{% endif %}
+GROUP BY
+    e.block_timestamp,
+    e.block_id,
+    e.tx_id,
+    e.succeeded,
+    program_id,
+    instruction :accounts [0] :: STRING,
+    instruction :accounts [1] :: STRING,
+    instruction :accounts [3] :: STRING,
+    e._inserted_timestamp
+HAVING
+    sales_amount <> 0
 ),
 redeems AS (
     SELECT
@@ -99,7 +167,7 @@ bid_txs AS (
         e.tx_id,
         instruction :accounts [0] :: STRING AS purchaser,
         instruction :accounts [2] :: STRING AS acct_1,
-        i.value :parsed :info :lamports / POW(
+        i.value :parsed :info :lamports / pow(
             10,
             9
         ) AS bid_amount
@@ -115,7 +183,7 @@ bid_txs AS (
         program_id = 'exAuvFHqXXbiLrM4ce9m1icwuSyXytRnfBkajukDFuB'
         AND l.value :: STRING ILIKE 'Program log: processing AuctionInstruction::RegisterBid%'
         AND i.value :parsed :info :lamports IS NOT NULL
-        AND e.succeeded = TRUE 
+        AND e.succeeded = TRUE
         AND t.succeeded = TRUE
 
 {% if is_incremental() %}
@@ -160,7 +228,21 @@ FROM
     buys
 WHERE
     sales_amount > 0 -- removes transfers
-UNION
+UNION ALL
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    sales_amount,
+    purchaser,
+    seller,
+    mint,
+    _inserted_timestamp
+FROM
+    buy_nows
+UNION ALL
 SELECT
     block_timestamp,
     block_id,

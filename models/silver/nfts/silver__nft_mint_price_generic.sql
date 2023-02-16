@@ -3,6 +3,7 @@
     unique_key = "CONCAT_WS('-', mint, payer, mint_currency)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
+    full_refresh = false
 ) }}
 
 WITH base_events AS (
@@ -24,7 +25,7 @@ AND
             LEAST(DATEADD(
                 'day',
                 1,
-                COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+                COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2023-01-23')
                 FROM
                     {{ this }}
         )
@@ -33,10 +34,10 @@ AND
             LEAST(DATEADD(
             'day',
             30,
-            COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+            COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2023-01-23')
             FROM
                 {{ this }}
-        ) 
+        )
 {% elif is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -53,7 +54,8 @@ AND
 ),
 base_ptb AS (
     SELECT
-        distinct mint AS mint_paid,
+        mint AS mint_paid,
+        tx_id,
         account,
         DECIMAL
     FROM
@@ -69,7 +71,7 @@ WHERE
             LEAST(DATEADD(
                 'day',
                 1,
-                COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+                COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2023-01-23')
                 FROM
                     {{ this }}
         )
@@ -78,7 +80,7 @@ WHERE
             LEAST(DATEADD(
             'day',
             30,
-            COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2022-10-05')
+            COALESCE(MAX(block_timestamp) :: DATE, '2021-06-02')),'2023-01-23')
             FROM
                 {{ this }}
         ) 
@@ -89,6 +91,7 @@ WHERE _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+
 {% else %}
 WHERE
     block_timestamp :: DATE BETWEEN '2021-06-02'
@@ -114,7 +117,9 @@ metaplex_events AS (
         program_id = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
         AND succeeded
         AND (
-            (ARRAY_SIZE(accounts) = 7
+            (ARRAY_SIZE(accounts) = 6
+            AND accounts [5] = '11111111111111111111111111111111')
+            OR (ARRAY_SIZE(accounts) = 7
             AND accounts [5] = '11111111111111111111111111111111'
             AND accounts [6] = 'SysvarRent111111111111111111111111111111111')
             OR (ARRAY_SIZE(accounts) = 9
@@ -148,7 +153,9 @@ metaplex_events AS (
         i.value :programId :: STRING = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
         AND succeeded
         AND (
-            (ARRAY_SIZE(accounts) = 7
+            (ARRAY_SIZE(accounts) = 6
+            AND accounts [5] = '11111111111111111111111111111111')
+            OR (ARRAY_SIZE(accounts) = 7
             AND accounts [5] = '11111111111111111111111111111111'
             AND accounts [6] = 'SysvarRent111111111111111111111111111111111')
             OR (ARRAY_SIZE(accounts) = 9
@@ -171,6 +178,8 @@ mint_price_events AS (
         me.index,
         i.index as inner_index,
         'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s' as program_id,
+        i.value:parsed:info:destination::string as temp_destination,
+        i.value:parsed:info:source::string as temp_source,
         CASE
             WHEN num_accounts in (14,17) THEN me.accounts [3] :: STRING
             ELSE me.accounts [1] :: STRING
@@ -192,7 +201,8 @@ mint_price_events AS (
     FROM
         metaplex_events me
         LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
-    group by 1,2,3,4,5,6,7,8,9,10
+    where i.value:parsed:type <> 'burn'
+    group by 1,2,3,4,5,6,7,8,9,10,11,12
 ),
 pre_final as (
     select 
@@ -203,7 +213,8 @@ pre_final as (
         ) AS mint_currency,
         COALESCE(p.decimal, 9) as decimal
     from mint_price_events e
-    LEFT OUTER JOIN base_ptb p on e.token_account = p.account
+    LEFT OUTER JOIN base_ptb p on e.token_account = p.account and e.tx_id = p.tx_id
+    where (temp_destination <> temp_source) or (temp_destination is null) or (temp_source is null)
 )
 SELECT
     p.mint,

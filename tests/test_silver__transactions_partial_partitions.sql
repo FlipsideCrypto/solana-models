@@ -1,6 +1,6 @@
 WITH max_loaded_part as (
     SELECT 
-        GREATEST(
+        LEAST(
             (SELECT 
                 max(_partition_id)
             FROM 

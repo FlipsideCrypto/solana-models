@@ -8,7 +8,7 @@ on:
     - cron: '0 */1 * * *'
     
 env:
-  DBT_PROFILES_DIR: ./
+  DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
 
   ACCOUNT: "${{ secrets.ACCOUNT }}"
   ROLE: "${{ secrets.ROLE }}"
@@ -37,13 +37,13 @@ jobs:
 
       - name: install dependencies
         run: |
-          pip3 install dbt-snowflake==1.2.0 cli_passthrough requests click
+          pip3 install dbt-snowflake==${{ secrets.DBT_VERSION }} cli_passthrough requests click
           dbt deps
       - name: Run DBT Jobs
         run: |
           dbt run-operation run_sp_refresh_external_tables_full
           dbt run -s models/silver/silver__transactions.sql models/silver/silver__blocks.sql models/silver/silver__votes.sql models/silver/silver___inner_instructions.sql models/silver/silver___instructions.sql models/silver/silver__events.sql models/silver/silver___all_undecoded_instructions_data.sql
           dbt run-operation run_sp_refresh_external_tables_full
-          dbt run -s ./models --exclude models/core models/silver/silver__transactions.sql models/silver/silver__blocks.sql models/silver/silver__votes.sql models/silver/silver___inner_instructions.sql models/silver/silver___instructions.sql models/silver/silver__events.sql models/silver/silver___all_undecoded_instructions_data.sql tag:share models/streamline models/silver/silver__daily_signers.sql models/silver/silver__signers.sql models/silver/liquidity_pool/silver__liquidity_pool_actions_saber.sql
+          dbt run -s ./models --exclude models/core models/silver/silver__transactions.sql models/silver/silver__blocks.sql models/silver/silver__votes.sql models/silver/silver___inner_instructions.sql models/silver/silver___instructions.sql models/silver/silver__events.sql models/silver/silver___all_undecoded_instructions_data.sql tag:share models/streamline models/silver/silver__daily_signers.sql models/silver/silver__signers.sql models/silver/liquidity_pool
           dbt run --var '{"UPDATE_SNOWFLAKE_TAGS":True}' -s ./models/core --exclude models/core/core__ez_signers.sql
           

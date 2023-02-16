@@ -2,7 +2,8 @@
     materialized = 'incremental',
     unique_key = "CONCAT_WS('-', signer, b_date)",
     incremental_strategy = 'delete+insert',
-    cluster_by = 'signer'
+    cluster_by = 'signer',
+    full_refresh = false
 ) }}
 
 WITH dates_changed AS (
@@ -83,6 +84,8 @@ b AS (
         t,
         TABLE(FLATTEN(signers)) s
     WHERE
+        b_date >= current_date - 7
+    AND
         b_date IN (
             SELECT
                 block_timestamp_date
@@ -120,6 +123,8 @@ C AS (
         {{ ref('silver__events') }}
         e
     WHERE
+        e.block_timestamp :: DATE >= current_date - 7
+    AND
         e.block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
