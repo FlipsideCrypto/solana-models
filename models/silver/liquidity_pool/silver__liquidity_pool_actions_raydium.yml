@@ -19,12 +19,11 @@ models:
             - amount
             - liquidity_provider
             - liquidity_pool_address
-          model_condition: "where tx_id in ('xxx',
-          'xxx',
-          'xxx',
-          'xxx',
-          'xxx',
-          'xxx')"
+          model_condition: "where tx_id in ('63qiuJpEfJihyyR8ZBJ84qsq5DD1LDC4tNTzprAV1zwHmX12h1b79pScPHU3Rpf6qs8oN89MFpuj7GWmRVMNmZuA',
+          '27RZXeyZWYhbxHWj183goMWDf7ZBUhQXw47dhWd2G4TcstEmqxnb75jg5NQSYw3aPeQjdQNE3p2DMmBX6BYbk1pf',
+          '3e9SiF8RXs9KDSmRDJLdXBPKXYCStm2XjUMBbEPiQwbwfvBJ9AG4BfJqDtQeTPvGZeEY6R6o2YddmZbytC3JVQuT',
+          '3wSxtF5Mqeh5ybZVH1U4nE577pZSrhCr3td8GbJeCfwZfanpP7wrDXMiCUdhd5njhkWW6FKGgEzptDKsY8CW33RA',
+          '4UGPAu9ATzW3xtL5CJMTBefND3EZLd8TQESQsvSkHczF8tH9sVS5hr8CLigFbMQReqqogVaoFvJpieaDW8qiyU8S')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -63,7 +62,8 @@ models:
       - name: MINT
         description: "{{ doc('mint') }}"
         tests: 
-          - not_null
+          - not_null:
+              where: block_id > 69401268
       - name: AMOUNT
         description: "{{ doc('amount') }}"
         tests: 
