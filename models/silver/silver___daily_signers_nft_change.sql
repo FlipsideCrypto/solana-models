@@ -391,3 +391,6 @@ FROM
     FULL OUTER JOIN outs o
     ON i.signer = o.signer
     AND i.b_date = o.b_date
+WHERE 
+    (i.signer IS NOT NULL 
+    OR o.signer IS NOT NULL)
