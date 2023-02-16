@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__daily_signers_nft_change
+  - name: silver___daily_signers_nft_change
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
