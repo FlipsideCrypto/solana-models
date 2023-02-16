@@ -11,6 +11,7 @@ SELECT
     num_days_active,
     num_txs,
     total_fees,
-    programs_used
+    programs_used, 
+    nfts_held
 FROM
     {{ ref('silver__signers') }}

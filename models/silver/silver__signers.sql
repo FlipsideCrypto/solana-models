@@ -75,6 +75,20 @@ final_signers_agg AS (
         2,
         3
 ),
+nft_bals AS (
+    SELECT 
+        signer, 
+        ARRAY_UNION_AGG(nfts_in) as nftin, 
+        ARRAY_UNION_AGG(nfts_out) as nftout
+    FROM {{ ref('silver___daily_signers_nft_change') }}
+    GROUP BY signer    
+),
+final_nft_bals AS (
+    SELECT
+        signer, 
+        ARRAY_EXCEPT(ARRAY_DISTINCT(nftin), ARRAY_DISTINCT(nftout)) as nfts_held
+    FROM nft_bals
+), 
 final_min_signers AS (
     SELECT
         ms.signer,
@@ -106,6 +120,7 @@ SELECT
     s_agg.num_txs,
     s_agg.total_fees,
     s_agg.programs_used,
+    s_bal.nfts_held,
     s_agg._inserted_timestamp
 FROM
     final_min_signers s_min
@@ -113,3 +128,5 @@ FROM
     ON s_max.signer = s_min.signer
     JOIN final_signers_agg s_agg
     ON s_agg.signer = s_min.signer
+    JOIN final_nft_bals s_bal
+    ON s_bal.signer = s_min.signer

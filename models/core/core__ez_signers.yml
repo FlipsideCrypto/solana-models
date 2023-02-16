@@ -38,4 +38,8 @@ models:
         description: An array containing all program IDs a user interacted with on a given day.
         tests: 
           - dbt_expectations.expect_column_to_exist
+      - name: NFTS_HELD
+        description: A list of NFT mints that are currently held by the signer
+        tests: 
+          - dbt_expectations.expect_column_to_exist 
           
