@@ -12,6 +12,8 @@ WITH base_events AS (
         *
     FROM
         {{ ref('silver__events') }}
+    WHERE 
+        1 = 1
     {% if is_incremental() %}
         {% if execute %}
         {{ get_batch_load_logic(this,30,'2023-02-14') }}
