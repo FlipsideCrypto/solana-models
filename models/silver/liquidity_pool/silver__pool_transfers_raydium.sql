@@ -106,6 +106,7 @@ pre_final AS (
             OR t.dest_token_account = p1.token_b_account
         )
         AND t.action = 'deposit'
+        and p1.pool_token not in ('Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB','USDH1SM1ojwWUga67PGrgFWUHibbjqMvuMaDkRJTgkX')
         LEFT JOIN {{ ref('silver__initialization_pools_raydium') }}
         p2
         ON (
@@ -113,9 +114,12 @@ pre_final AS (
             OR t.source_token_account = p2.token_b_account
         )
         AND t.action = 'withdraw'
+        and p2.pool_token not in ('Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB','USDH1SM1ojwWUga67PGrgFWUHibbjqMvuMaDkRJTgkX')
     WHERE
         p1.tx_id IS NOT NULL
         OR p2.tx_id IS NOT NULL
+    qualify(row_number() over (partition by t.block_id, t.tx_id, t.index,t.inner_index order by t.index,t.inner_index)) = 1
+
 )
 SELECT
     block_id,
