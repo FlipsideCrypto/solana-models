@@ -10,7 +10,7 @@ WITH dates_changed AS (
     FROM
         {{ ref('silver__transactions') }}
     WHERE succeeded
-{% if is_incremental() %}
+    {% if is_incremental() %}
         {% if execute %}
         {{ get_batch_load_logic(this,30,'2023-02-16') }}
         {% endif %}
@@ -33,7 +33,7 @@ tokens_in AS (
     ON m.token_account = o.account_address 
     WHERE
         end_block_id IS NULL
-        AND block_timestamp :: DATE >= CURRENT_DATE - 7
+        -- AND block_timestamp :: DATE >= CURRENT_DATE - 7
         AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
@@ -41,40 +41,15 @@ tokens_in AS (
                 dates_changed
         ) 
 
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-AND m._inserted_timestamp < (
-    SELECT
-        LEAST(
-            DATEADD(
-                'day',
-                2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-02-09')
-            ),
-            CURRENT_DATE - 1
-        )
-    FROM
-        {{ this }}
-) 
-AND o._inserted_timestamp < (
-    SELECT
-        LEAST(
-            DATEADD(
-                'day',
-                2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-02-09')
-            ),
-            CURRENT_DATE - 1
-        )
-    FROM
-        {{ this }}
-) 
-{% elif not is_incremental() %}
-AND m._inserted_timestamp :: DATE BETWEEN '2023-02-09' AND '2023-02-16'
-AND o._inserted_timestamp :: DATE BETWEEN '2023-02-09' AND '2023-02-16'
-{% endif %} 
+    {% if is_incremental() %}
+        {% if execute %}
+        {{ get_batch_load_logic_with_alias(this,30,'2023-02-16','m') }}
+        {{ get_batch_load_logic_with_alias(this,30,'2023-02-16','o') }}
+        {% endif %}
+    {% else %}
+        AND m._inserted_timestamp::date between '2023-02-09' and '2023-02-16'
+        AND o._inserted_timestamp::date between '2023-02-09' and '2023-02-16'
+    {% endif %}
 
 
 UNION
