@@ -15,7 +15,7 @@ WITH dates_changed AS (
         {{ get_batch_load_logic(this,30,'2023-02-16') }}
         {% endif %}
     {% else %}
-        AND _inserted_timestamp::date between '2023-02-09' and '2023-02-16'
+        AND _inserted_timestamp::date between '2022-08-12' and '2022-09-05'
     {% endif %}
 ),
 tokens_in AS (
@@ -47,8 +47,8 @@ tokens_in AS (
         {{ get_batch_load_logic_with_alias(this,30,'2023-02-16','o') }}
         {% endif %}
     {% else %}
-        AND m._inserted_timestamp::date between '2023-02-09' and '2023-02-16'
-        AND o._inserted_timestamp::date between '2023-02-09' and '2023-02-16'
+        AND m._inserted_timestamp::date between '2022-08-12' and '2022-09-05'
+        AND o._inserted_timestamp::date between '2022-08-12' and '2022-09-05'
     {% endif %}
 
 
@@ -65,48 +65,23 @@ FROM
     INNER JOIN {{ ref('silver___nft_distinct_mints') }} e
     ON e.mint = t.mint
 WHERE
-    t.block_timestamp :: DATE >= CURRENT_DATE - 7
-    AND t.block_timestamp :: DATE IN (
+    --t.block_timestamp :: DATE >= CURRENT_DATE - 7
+    t.block_timestamp :: DATE IN (
         SELECT
             block_timestamp_date
         FROM
             dates_changed
     )
 
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-AND t._inserted_timestamp < (
-    SELECT
-        LEAST(
-            DATEADD(
-                'day',
-                2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-02-09')
-            ),
-            CURRENT_DATE - 1
-        )
-    FROM
-        {{ this }}
-) 
-AND e._inserted_timestamp < (
-    SELECT
-        LEAST(
-            DATEADD(
-                'day',
-                2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-02-09')
-            ),
-            CURRENT_DATE - 1
-        )
-    FROM
-        {{ this }}
-) 
-{% elif not is_incremental() %}
-AND t._inserted_timestamp :: DATE BETWEEN '2023-02-09' AND '2023-02-16'
-AND e._inserted_timestamp :: DATE BETWEEN '2023-02-09' AND '2023-02-16'
-{% endif %}
+{% if is_incremental() %}
+        {% if execute %}
+        {{ get_batch_load_logic_with_alias(this,30,'2023-02-16','t') }}
+        {{ get_batch_load_logic_with_alias(this,30,'2023-02-16','e') }}
+        {% endif %}
+    {% else %}
+        AND t._inserted_timestamp::date between '2022-08-12' and '2022-09-05'
+        AND e._inserted_timestamp::date between '2022-08-12' and '2022-09-05'
+    {% endif %}
 
 UNION 
 
@@ -122,47 +97,22 @@ FROM
 
 WHERE 
     event_type = 'initializeAccount3'
-    AND block_timestamp :: DATE >= CURRENT_DATE - 7
+    --AND block_timestamp :: DATE >= CURRENT_DATE - 7
             AND block_timestamp :: DATE IN (
                 SELECT
                     block_timestamp_date
                 FROM
                     dates_changed
             ) 
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-AND o._inserted_timestamp < (
-    SELECT
-        LEAST(
-            DATEADD(
-                'day',
-                2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-02-09')
-            ),
-            CURRENT_DATE - 1
-        )
-    FROM
-        {{ this }}
-) 
-AND e._inserted_timestamp < (
-    SELECT
-        LEAST(
-            DATEADD(
-                'day',
-                2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-02-09')
-            ),
-            CURRENT_DATE - 1
-        )
-    FROM
-        {{ this }}
-) 
-{% elif not is_incremental() %}
-AND o._inserted_timestamp :: DATE BETWEEN '2023-02-09' AND '2023-02-16'
-AND e._inserted_timestamp :: DATE BETWEEN '2023-02-09' AND '2023-02-16'
-{% endif %} 
+{% if is_incremental() %}
+        {% if execute %}
+        {{ get_batch_load_logic_with_alias(this,30,'2023-02-16','e') }}
+        {{ get_batch_load_logic_with_alias(this,30,'2023-02-16','o') }}
+        {% endif %}
+    {% else %}
+        AND e._inserted_timestamp::date between '2022-08-12' and '2022-09-05'
+        AND o._inserted_timestamp::date between '2022-08-12' and '2022-09-05'
+    {% endif %}
 
 UNION 
 
@@ -174,8 +124,8 @@ SELECT
 FROM 
     {{ ref('silver__nft_sales_magic_eden_v2')}}
 WHERE 
-    block_timestamp :: DATE >= CURRENT_DATE - 7
-        AND block_timestamp :: DATE IN (
+    --block_timestamp :: DATE >= CURRENT_DATE - 7
+        block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
             FROM
@@ -187,7 +137,7 @@ WHERE
         {{ get_batch_load_logic(this,30,'2023-02-16') }}
         {% endif %}
     {% else %}
-        AND _inserted_timestamp::date between '2023-02-09' and '2023-02-16'
+        AND _inserted_timestamp::date between '2022-08-12' and '2022-09-05'
     {% endif %} 
  
 ),
@@ -200,8 +150,8 @@ tokens_out AS (
     FROM
         {{ ref('silver__burn_actions') }}
     WHERE
-        block_timestamp :: DATE >= CURRENT_DATE - 7
-        AND block_timestamp :: DATE IN (
+        --block_timestamp :: DATE >= CURRENT_DATE - 7
+        block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
             FROM
@@ -213,7 +163,7 @@ tokens_out AS (
         {{ get_batch_load_logic(this,30,'2023-02-16') }}
         {% endif %}
     {% else %}
-        AND _inserted_timestamp::date between '2023-02-09' and '2023-02-16'
+        AND _inserted_timestamp::date between '2022-08-12' and '2022-09-05'
     {% endif %} 
 
 UNION
@@ -229,48 +179,23 @@ FROM
     INNER JOIN {{ ref('silver___nft_distinct_mints') }} e
     ON e.mint = t.mint
 WHERE
-    block_timestamp :: DATE >= CURRENT_DATE - 7
-    AND block_timestamp :: DATE IN (
+    --block_timestamp :: DATE >= CURRENT_DATE - 7
+    block_timestamp :: DATE IN (
         SELECT
             block_timestamp_date
         FROM
             dates_changed
     )
 
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-AND t._inserted_timestamp < (
-    SELECT
-        LEAST(
-            DATEADD(
-                'day',
-                2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-02-09')
-            ),
-            CURRENT_DATE - 1
-        )
-    FROM
-        {{ this }}
-) 
-AND e._inserted_timestamp < (
-    SELECT
-        LEAST(
-            DATEADD(
-                'day',
-                2,
-                COALESCE(MAX(_inserted_timestamp :: DATE), '2023-02-09')
-            ),
-            CURRENT_DATE - 1
-        )
-    FROM
-        {{ this }}
-) 
-{% elif not is_incremental() %}
-AND t._inserted_timestamp :: DATE BETWEEN '2023-02-09' AND '2023-02-16'
-AND e._inserted_timestamp :: DATE BETWEEN '2023-02-09' AND '2023-02-16'
-{% endif %} 
+{% if is_incremental() %}
+        {% if execute %}
+        {{ get_batch_load_logic_with_alias(this,30,'2023-02-16','e') }}
+        {{ get_batch_load_logic_with_alias(this,30,'2023-02-16','t') }}
+        {% endif %}
+    {% else %}
+        AND e._inserted_timestamp::date between '2022-08-12' and '2022-09-05'
+        AND t._inserted_timestamp::date between '2022-08-12' and '2022-09-05'
+    {% endif %}
 UNION 
 
 SELECT 
@@ -282,7 +207,7 @@ FROM
     {{ ref('silver__token_account_ownership_events') }} 
 WHERE 
     event_type = 'closeAccount'
-   AND block_timestamp :: DATE >= CURRENT_DATE - 7
+    --AND block_timestamp :: DATE >= CURRENT_DATE - 7
         AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
@@ -295,7 +220,7 @@ WHERE
         {{ get_batch_load_logic(this,30,'2023-02-16') }}
         {% endif %}
     {% else %}
-        AND _inserted_timestamp::date between '2023-02-09' and '2023-02-16'
+        AND _inserted_timestamp::date between '2022-08-12' and '2022-09-05'
     {% endif %}  
 
 UNION 
@@ -308,8 +233,8 @@ SELECT
 FROM 
     {{ ref('silver__nft_sales_magic_eden_v2')}}
 WHERE 
-    block_timestamp :: DATE >= CURRENT_DATE - 7
-        AND block_timestamp :: DATE IN (
+    --block_timestamp :: DATE >= CURRENT_DATE - 7
+        block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
             FROM
@@ -321,7 +246,7 @@ WHERE
         {{ get_batch_load_logic(this,30,'2023-02-16') }}
         {% endif %}
     {% else %}
-        AND _inserted_timestamp::date between '2023-02-09' and '2023-02-16'
+        AND _inserted_timestamp::date between '2022-08-12' and '2022-09-05'
     {% endif %}  
 
 ), 
