@@ -12,35 +12,13 @@ WITH base_events AS (
         *
     FROM
         {{ ref('silver__events') }}
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-WHERE
-    block_id BETWEEN (
-        SELECT
-            LEAST(COALESCE(MAX(block_id), 31310775)+1,151386092)
-        FROM
-            {{ this }}
-        )
-        AND (
-        SELECT
-            LEAST(COALESCE(MAX(block_id), 31310775)+4000000,151386092)
-        FROM
-            {{ this }}
-        ) 
-{% elif is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
-{% else %}
-WHERE
-    block_id between 31310775 and 32310775
-{% endif %}
+    {% if is_incremental() %}
+        {% if execute %}
+        {{ get_batch_load_logic(this,30,'2023-02-14') }}
+        {% endif %}
+    {% else %}
+        AND _inserted_timestamp::date between '2022-08-12' and '2022-09-05'
+    {% endif %}
 )
 SELECT
     block_id,
