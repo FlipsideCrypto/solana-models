@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "CONCAT_WS('-', signer, b_date)",
+    unique_key = "CONCAT_WS('-', signer, nft_held)",
     incremental_strategy = 'delete+insert',
     cluster_by = 'signer'
 ) }} 
@@ -250,47 +250,32 @@ WHERE
     {% endif %}  
 
 ), 
-ins AS (
+pre_final AS (
     SELECT
-        b_date,
         signer,
-        ARRAY_AGG(token_in) AS nfts_in, 
-        MAX(_inserted_timestamp) as _inserted_timestamp
+        token_in as NFT_held
     FROM
         tokens_in
-    GROUP BY
-        b_date,
-        signer
-),
-outs AS (
-    SELECT
-        b_date,
-        signer,
-        ARRAY_AGG(token_out) AS nfts_out, 
-        MAX(_inserted_timestamp) as _inserted_timestamp
-    FROM
+
+    EXCEPT
+
+    SELECT 
+        signer, 
+        token_out as NFT_held
+    FROM 
         tokens_out
-    GROUP BY
-        b_date,
-        signer
 )
-SELECT
-    COALESCE(
-        i.b_date,
-        o.b_date
-    ) AS b_date,
-    COALESCE(
-        i.signer,
-        o.signer
-    ) AS signer,
-    nfts_in,
-    nfts_out, 
-    i._inserted_timestamp
-FROM
-    ins i 
-    FULL OUTER JOIN outs o
-    ON i.signer = o.signer
-    AND i.b_date = o.b_date
-WHERE 
-    (i.signer IS NOT NULL 
-    OR o.signer IS NOT NULL)
+SELECT 
+    p.signer, 
+    NFT_held, 
+    max(_inserted_timestamp) as _inserted_timestamp
+FROM 
+    pre_final p
+
+LEFT OUTER JOIN tokens_in i
+ON p.signer = i.signer
+
+WHERE NFT_held IS NOT NULL
+GROUP BY 
+    p.signer, 
+    NFT_held
