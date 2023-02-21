@@ -2,7 +2,8 @@
     materialized = 'incremental',
     unique_key = "CONCAT_WS('-', tx_id, event_type, mint)",
     incremental_strategy = 'delete+insert',
-    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE']
+    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
+    full_refresh = false
 ) }}
 
 WITH base_events AS (
@@ -30,7 +31,6 @@ SELECT
     null as inner_index,
     event_type,
     instruction :parsed :info :mint :: STRING AS mint,
-    instruction :parsed :info :account :: STRING as token_account, 
     instruction :parsed :info :decimals :: INTEGER AS DECIMAL,
     COALESCE(
         instruction :parsed :info :amount :: INTEGER,
@@ -61,7 +61,6 @@ SELECT
     i.index as inner_index,
     i.value :parsed :type :: STRING AS event_type,
     i.value :parsed :info :mint :: STRING AS mint,
-    i.value :parsed :info :account :: STRING as token_account, 
     i.value :parsed :info :decimals :: INTEGER AS DECIMAL,
     COALESCE(
         i.value :parsed :info :amount :: INTEGER,

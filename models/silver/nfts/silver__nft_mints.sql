@@ -69,7 +69,6 @@ pre_final AS (
         i.tx_id,
         i.succeeded,
         i.mint,
-        f.token_account, 
         i.decimal,
         f.mint_amount,
         i._inserted_timestamp
@@ -99,7 +98,6 @@ SELECT
     mp.program_id,
     mp.payer as purchaser,
     b.mint,
-    b.token_account, 
     mp.mint_currency,
     mp.mint_price,
     b._inserted_timestamp
