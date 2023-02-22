@@ -1,0 +1,45 @@
+name: dbt_run_streamline_get_blocks_real_time
+run-name: dbt_run_streamline_get_blocks_real_time
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Runs "every 15mins" (see https://crontab.guru)
+    - cron: '*/15 * * * *'
+    
+env:
+  DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
+
+  ACCOUNT: "${{ secrets.ACCOUNT }}"
+  ROLE: "${{ secrets.ROLE }}"
+  USER: "${{ secrets.USER }}"
+  PASSWORD: "${{ secrets.PASSWORD }}"
+  REGION: "${{ secrets.REGION }}"
+  DATABASE: "${{ secrets.DATABASE }}"
+  WAREHOUSE: "${{ secrets.WAREHOUSE }}"
+  SCHEMA: "${{ secrets.SCHEMA }}"
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  run_dbt_jobs:
+    runs-on: ubuntu-latest-4-cores
+    environment: 
+      name: workflow_prod
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v1
+        with:
+          python-version: "3.7.x"
+
+      - name: install dependencies
+        run: |
+          pip3 install dbt-snowflake==${{ secrets.DBT_VERSION }} cli_passthrough requests click
+          dbt deps
+      - name: Run DBT Jobs
+        run: |
+          dbt run -s models/bronze/bronze__blocks.sql
+          
