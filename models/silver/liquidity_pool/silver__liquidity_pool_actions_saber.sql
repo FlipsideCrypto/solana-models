@@ -476,8 +476,8 @@ temp_final AS (
         l.succeeded,
         l.program_id,
         CASE
-            WHEN l.action = 'mintTo' THEN 'mint_LP_tokens'
-            WHEN l.action = 'burn' THEN 'burn_LP_tokens'
+            WHEN l.action = 'mintTo' THEN 'mintTo'
+            WHEN l.action = 'burn' THEN 'burn'
             ELSE NULL
         END AS action,
         l.liquidity_provider,
