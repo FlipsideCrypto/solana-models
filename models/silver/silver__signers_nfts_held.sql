@@ -67,7 +67,7 @@ FROM
     ON e.mint = t.mint
 WHERE
     t.block_timestamp :: DATE >= CURRENT_DATE - 10
-    t.block_timestamp :: DATE IN (
+    AND t.block_timestamp :: DATE IN (
         SELECT
             block_timestamp_date
         FROM
@@ -99,12 +99,12 @@ FROM
 WHERE 
     event_type = 'initializeAccount3'
     AND block_timestamp :: DATE >= CURRENT_DATE - 10
-            AND block_timestamp :: DATE IN (
-                SELECT
-                    block_timestamp_date
-                FROM
-                    dates_changed
-            ) 
+    AND block_timestamp :: DATE IN (
+        SELECT
+            block_timestamp_date
+        FROM
+            dates_changed
+    ) 
 {% if is_incremental() %}
         {% if execute %}
         {{ get_batch_load_logic_with_alias(this,30,'2023-02-16','e') }}
@@ -126,7 +126,7 @@ FROM
     {{ ref('silver__nft_sales_magic_eden_v2')}}
 WHERE 
     block_timestamp :: DATE >= CURRENT_DATE - 10
-        block_timestamp :: DATE IN (
+        AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
             FROM
@@ -152,7 +152,7 @@ tokens_out AS (
         {{ ref('silver__burn_actions') }}
     WHERE
         block_timestamp :: DATE >= CURRENT_DATE - 10
-        block_timestamp :: DATE IN (
+        AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
             FROM
@@ -181,7 +181,7 @@ FROM
     ON e.mint = t.mint
 WHERE
     block_timestamp :: DATE >= CURRENT_DATE - 10
-    block_timestamp :: DATE IN (
+    AND block_timestamp :: DATE IN (
         SELECT
             block_timestamp_date
         FROM
@@ -235,7 +235,7 @@ FROM
     {{ ref('silver__nft_sales_magic_eden_v2')}}
 WHERE 
     block_timestamp :: DATE >= CURRENT_DATE - 10
-        block_timestamp :: DATE IN (
+        AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
             FROM
