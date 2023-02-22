@@ -61,36 +61,37 @@ potential_missing_txs AS (
         ON base_blocks.block_id = base_txs.block_id
     WHERE
         base_txs.block_id IS NULL
-),
-encoded_txs AS(
-    SELECT
-        DISTINCT block_id
-    FROM
-        {{ ref('silver___inner_instructions') }}
-    WHERE
-        VALUE :instructions [0] :programIdIndex :: NUMBER IS NOT NULL
-        AND block_timestamp :: DATE >= CURRENT_DATE - 7
-    GROUP BY
-        1
-    EXCEPT
-    SELECT
-        DISTINCT block_id
-    FROM
-        {{ ref('bronze__transactions2') }}
-    WHERE
-        _partition_id BETWEEN (
-            SELECT
-                MAX(_partition_id) -3
-            FROM
-                {{ ref('bronze__transactions2') }}
-        )
-        AND (
-            SELECT
-                MAX(_partition_id)
-            FROM
-                {{ ref('bronze__transactions2') }}
-        )
 )
+-- ,
+-- encoded_txs AS(
+--     SELECT
+--         DISTINCT block_id
+--     FROM
+--         {{ ref('silver___inner_instructions') }}
+--     WHERE
+--         VALUE :instructions [0] :programIdIndex :: NUMBER IS NOT NULL
+--         AND block_timestamp :: DATE >= CURRENT_DATE - 7
+--     GROUP BY
+--         1
+--     EXCEPT
+--     SELECT
+--         DISTINCT block_id
+--     FROM
+--         {{ ref('bronze__transactions2') }}
+--     WHERE
+--         _partition_id BETWEEN (
+--             SELECT
+--                 MAX(_partition_id) -3
+--             FROM
+--                 {{ ref('bronze__transactions2') }}
+--         )
+--         AND (
+--             SELECT
+--                 MAX(_partition_id)
+--             FROM
+--                 {{ ref('bronze__transactions2') }}
+--         )
+-- )
 SELECT
     block_id,
     (
@@ -117,14 +118,14 @@ FROM
 WHERE
     cmp.error IS NOT NULL
     OR cmp.block_id IS NULL
-UNION
-SELECT
-    block_id,
-    (
-        SELECT
-            COALESCE(MAX(_partition_id) + 1, 1)
-        FROM
-            {{ ref('streamline__complete_block_txs') }}
-    ) AS batch_id
-FROM
-    encoded_txs
+-- UNION
+-- SELECT
+--     block_id,
+--     (
+--         SELECT
+--             COALESCE(MAX(_partition_id) + 1, 1)
+--         FROM
+--             {{ ref('streamline__complete_block_txs') }}
+--     ) AS batch_id
+-- FROM
+--     encoded_txs
