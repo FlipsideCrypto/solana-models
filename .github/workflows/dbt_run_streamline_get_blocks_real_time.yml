@@ -24,7 +24,9 @@ concurrency:
 
 jobs:
   run_dbt_jobs:
-    runs-on: ubuntu-latest-4-cores
+    runs-on:
+      group: 'Default Larger Runners'
+      labels: ubuntu-latest-4-cores
     environment: 
       name: workflow_prod
 
