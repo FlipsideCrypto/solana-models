@@ -39,3 +39,7 @@ models:
         description: "{{ doc('sales_amount') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: MARKETPLACE
+        description: "{{ doc('marketplace') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
