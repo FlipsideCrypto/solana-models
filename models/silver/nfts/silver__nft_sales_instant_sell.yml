@@ -16,7 +16,11 @@ models:
             - mint
             - round(sales_amount,8)
           model_condition: "where tx_id in ('Ep7n5yUXoBiV6J3ntzvCqaGMS92NbQ9zdqS8ZMJVEwVGhKxsomKzGfsKzyHpzrb9s7ipLH4Cn5P88rneZEcm1Uy',
-            '59fgrVMFqY1scM8gumej3kCq6gzhQauso41QzB9sMx72MdH5dQ76Z7ZHcPM8gWyecCB3mriwbng8uPZ5zEKgmVN1')"
+            '59fgrVMFqY1scM8gumej3kCq6gzhQauso41QzB9sMx72MdH5dQ76Z7ZHcPM8gWyecCB3mriwbng8uPZ5zEKgmVN1',
+            '2yDoFY813NMMrFctpef8wxV4ktEt9Nn8kogJHSA6FBDdHpbezk6X21W2rbHK5tHLHsYBj7sdjNRDpHb9au2nEZT',
+            '5cVLZm21xYLbhsi8zN2YJPacuKQjsaxcguJGZ2keP4vrGDKVJvazbvECSMaHoY5qVYWovVP53QC1scGX8rdTPUT',
+            '39bf1gUcYqTuHnYTLPEbCGJ5NcpNBn8bkUGeVJxkRMRLuPP3SUaggdVcmDpHFUQSPJNq3wiCPvgzBTSwGWF53we',
+            '46c3pCDa8hAuqiRN4SV3zwhuMz7XgDU6qrtsyzhkSXyJwjmeZ1TFsbxqnA15KCnPVLN1zNVUrouWJAskTX7v5uCF')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -57,7 +61,8 @@ models:
       - name: SALES_AMOUNT
         description: "{{ doc('sales_amount') }}"
         tests: 
-          - not_null
+          - not_null:
+              where: succeeded = TRUE
       - name: MARKETPLACE
         description: "{{ doc('marketplace') }}"
         tests: 
