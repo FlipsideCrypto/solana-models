@@ -13,7 +13,17 @@ WITH base_events AS (
         solana.silver.events
     WHERE
         program_id = 'mmm3XBJg5gk8XJxEKBvdgptZz6SgK4tXvn36sodowMc'
-        AND block_timestamp :: DATE > '2022-10-14'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% else %}
+    AND block_timestamp :: DATE >= '2022-10-14'
+{% endif %}
 ),
 base_token_balance AS (
     SELECT
@@ -21,7 +31,18 @@ base_token_balance AS (
     FROM
         solana.silver._post_token_balances
     WHERE
-        block_timestamp :: DATE > '2022-10-14'
+        amount = 1
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% else %}
+    AND block_timestamp :: DATE >= '2022-10-14'
+{% endif %}
 ),
 base_transfers AS (
     SELECT
@@ -30,7 +51,17 @@ base_transfers AS (
         solana.silver.transfers
     WHERE
         mint = 'So11111111111111111111111111111111111111112'
-        AND block_timestamp :: DATE > '2022-10-14'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% else %}
+    AND block_timestamp :: DATE >= '2022-10-14'
+{% endif %}
 ),
 coral_cube_sales AS(
     SELECT
@@ -60,10 +91,11 @@ coral_cube_sales AS(
         AND A.instruction :accounts [4] = b2.owner
     WHERE
         A.signers [1] = '7RpRDUZBdu5hfmqWvobPazbNeVCagRk5E3Rb8Bm8qRmD'
-        AND A.signers [0] <> 'AwQqQ1Xo9VxY64fcjw2toXZQnk94o5pFkxnGRngnqb1u' --filters out sell_withdraw actions
+        AND A.instruction :accounts [14] <> 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
+        AND purchaser <> '7RpRDUZBdu5hfmqWvobPazbNeVCagRk5E3Rb8Bm8qRmD'
         AND ARRAY_SIZE(
             instruction :accounts
-        ) > 16
+        ) >= 16
 ),
 mev2_sales AS(
     SELECT
@@ -78,7 +110,10 @@ mev2_sales AS(
             ) > 19 THEN instruction :accounts [7] :: STRING
             WHEN ARRAY_SIZE(
                 instruction :accounts
-            ) = 18 THEN instruction :accounts [8] :: STRING
+            ) IN (
+                18,
+                19
+            ) THEN instruction :accounts [8] :: STRING
         END AS mint
     FROM
         base_events A
@@ -87,23 +122,6 @@ mev2_sales AS(
         AND ARRAY_SIZE(
             instruction :accounts
         ) > 16
-),
-mev2_nft_sale_amount AS (
-    SELECT
-        A.tx_id,
-        b.mint,
-        SUM(
-            b.amount
-        ) AS sales_amount
-    FROM
-        mev2_sales A
-        LEFT OUTER JOIN base_transfers b
-        ON A.tx_id = b.tx_id
-    WHERE
-        A.instruction :accounts [5] = b.tx_from
-    GROUP BY
-        1,
-        2
 ),
 coral_cube_nft_sale_amount AS (
     SELECT
@@ -128,6 +146,23 @@ coral_cube_nft_sale_amount AS (
     GROUP BY
         1,
         2
+),
+mev2_nft_sale_amount AS (
+    SELECT
+        A.tx_id,
+        b.mint,
+        SUM(
+            b.amount
+        ) AS sales_amount
+    FROM
+        mev2_sales A
+        LEFT OUTER JOIN base_transfers b
+        ON A.tx_id = b.tx_id
+    WHERE
+        A.instruction :accounts [5] = b.tx_from
+    GROUP BY
+        1,
+        2
 )
 SELECT
     A.block_timestamp,
@@ -145,6 +180,8 @@ FROM
     coral_cube_sales A
     LEFT JOIN coral_cube_nft_sale_amount b
     ON A.tx_id = b.tx_id
+WHERE
+    b.sales_amount IS NOT NULL
 UNION
 SELECT
     A.block_timestamp,
