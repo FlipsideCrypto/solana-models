@@ -1,14 +1,14 @@
 version: 2
 models:
-  - name: silver__nft_sales_instant_sell
+  - name: silver__nft_sales_amm_sell
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
             - MINT
       - compare_model_subset:
-          name: silver__nft_sales_instant_sell_business_logic_test
-          compare_model: ref('testing__nft_sales_instant_sell')
+          name: silver__nft_sales_amm_sell_business_logic_test
+          compare_model: ref('testing__nft_sales_amm_sell')
           compare_columns: 
             - tx_id
             - purchaser

@@ -10,7 +10,7 @@ WITH base_events AS (
     SELECT
         *
     FROM
-        solana.silver.events
+        {{ ref('silver__events') }}
     WHERE
         program_id = 'mmm3XBJg5gk8XJxEKBvdgptZz6SgK4tXvn36sodowMc'
 
@@ -29,7 +29,7 @@ base_token_balance AS (
     SELECT
         *
     FROM
-        solana.silver._post_token_balances
+        {{ ref('silver___post_token_balances') }}
     WHERE
         amount = 1
 
@@ -48,7 +48,7 @@ base_transfers AS (
     SELECT
         *
     FROM
-        solana.silver.transfers
+        {{ ref('silver__transfers') }}
     WHERE
         mint = 'So11111111111111111111111111111111111111112'
 

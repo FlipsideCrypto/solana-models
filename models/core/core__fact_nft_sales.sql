@@ -175,4 +175,4 @@ SELECT
     mint,
     sales_amount
 FROM
-    {{ ref('silver__nft_sales_instant_sell') }}
+    {{ ref('silver__nft_sales_amm_sell') }}
