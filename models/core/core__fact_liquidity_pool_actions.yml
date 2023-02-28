@@ -1,0 +1,45 @@
+version: 2
+models:
+  - name: core__fact_liquidity_pool_actions
+    description: Records for actions involving liquidity pools on Orca, Raydium, and Saber. 
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}" 
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: ACTION
+        description: Type of interaction performed with the liquidity pool
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: LIQUIDITY_PROVIDER
+        description: "{{ doc('liquidity_provider') }}" 
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: LIQUIDITY_POOL_ADDRESS
+        description: "{{ doc('liquidity_pool_address') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: AMOUNT
+        description: "{{ doc('amount') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist

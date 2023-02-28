@@ -2,8 +2,7 @@
     materialized = 'incremental',
     unique_key = "CONCAT_WS('-', tx_id, event_type, mint)",
     incremental_strategy = 'delete+insert',
-    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
-    full_refresh = false
+    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE']
 ) }}
 
 WITH base_events AS (
@@ -12,35 +11,15 @@ WITH base_events AS (
         *
     FROM
         {{ ref('silver__events') }}
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-WHERE
-    block_id BETWEEN (
-        SELECT
-            LEAST(COALESCE(MAX(block_id), 31310775)+1,151386092)
-        FROM
-            {{ this }}
-        )
-        AND (
-        SELECT
-            LEAST(COALESCE(MAX(block_id), 31310775)+4000000,151386092)
-        FROM
-            {{ this }}
-        ) 
-{% elif is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
-{% else %}
-WHERE
-    block_id between 31310775 and 32310775
-{% endif %}
+    WHERE 
+        1 = 1
+    {% if is_incremental() %}
+        {% if execute %}
+        {{ get_batch_load_logic(this,30,'2023-02-14') }}
+        {% endif %}
+    {% else %}
+        AND _inserted_timestamp::date between '2022-08-12' and '2022-09-05'
+    {% endif %}
 )
 SELECT
     block_id,
@@ -51,6 +30,7 @@ SELECT
     null as inner_index,
     event_type,
     instruction :parsed :info :mint :: STRING AS mint,
+    instruction :parsed :info :account :: STRING as token_account, 
     instruction :parsed :info :decimals :: INTEGER AS DECIMAL,
     COALESCE(
         instruction :parsed :info :amount :: INTEGER,
@@ -81,6 +61,7 @@ SELECT
     i.index as inner_index,
     i.value :parsed :type :: STRING AS event_type,
     i.value :parsed :info :mint :: STRING AS mint,
+    i.value :parsed :info :account :: STRING as token_account, 
     i.value :parsed :info :decimals :: INTEGER AS DECIMAL,
     COALESCE(
         i.value :parsed :info :amount :: INTEGER,

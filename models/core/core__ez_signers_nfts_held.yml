@@ -1,0 +1,13 @@
+version: 2
+models:
+  - name: core__ez_signers_nfts_held
+    description: A table that contains wallet addresses and NFTs that the wallet currently holds. 
+    columns:
+      - name: SIGNER
+        description: The address of the user that initiated the transaction
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: NFT_held
+        description: The mint address of an NFT the wallet currently holds
+        tests: 
+          - dbt_expectations.expect_column_to_exist
