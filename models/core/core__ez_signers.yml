@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: core__ez_signers
+    description: A table that contains aggregate information about addresses that have signed transactions.
     columns:
       - name: SIGNER
         description: The address of the user that initiated the transaction

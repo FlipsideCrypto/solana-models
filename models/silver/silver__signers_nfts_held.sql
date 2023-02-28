@@ -2,7 +2,8 @@
     materialized = 'incremental',
     unique_key = "CONCAT_WS('-', signer, nft_held)",
     incremental_strategy = 'delete+insert',
-    cluster_by = 'signer'
+    cluster_by = 'signer', 
+    full_refresh = false
 ) }} 
 WITH dates_changed AS (
     SELECT
@@ -33,7 +34,7 @@ tokens_in AS (
     ON m.token_account = o.account_address 
     WHERE
         end_block_id IS NULL
-        -- AND block_timestamp :: DATE >= CURRENT_DATE - 7
+        AND block_timestamp :: DATE >= CURRENT_DATE - 10
         AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
@@ -65,8 +66,8 @@ FROM
     INNER JOIN {{ ref('silver___nft_distinct_mints') }} e
     ON e.mint = t.mint
 WHERE
-    --t.block_timestamp :: DATE >= CURRENT_DATE - 7
-    t.block_timestamp :: DATE IN (
+    t.block_timestamp :: DATE >= CURRENT_DATE - 10
+    AND t.block_timestamp :: DATE IN (
         SELECT
             block_timestamp_date
         FROM
@@ -97,13 +98,13 @@ FROM
 
 WHERE 
     event_type = 'initializeAccount3'
-    --AND block_timestamp :: DATE >= CURRENT_DATE - 7
-            AND block_timestamp :: DATE IN (
-                SELECT
-                    block_timestamp_date
-                FROM
-                    dates_changed
-            ) 
+    AND block_timestamp :: DATE >= CURRENT_DATE - 10
+    AND block_timestamp :: DATE IN (
+        SELECT
+            block_timestamp_date
+        FROM
+            dates_changed
+    ) 
 {% if is_incremental() %}
         {% if execute %}
         {{ get_batch_load_logic_with_alias(this,30,'2023-02-16','e') }}
@@ -124,8 +125,8 @@ SELECT
 FROM 
     {{ ref('silver__nft_sales_magic_eden_v2')}}
 WHERE 
-    --block_timestamp :: DATE >= CURRENT_DATE - 7
-        block_timestamp :: DATE IN (
+    block_timestamp :: DATE >= CURRENT_DATE - 10
+        AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
             FROM
@@ -150,8 +151,8 @@ tokens_out AS (
     FROM
         {{ ref('silver__burn_actions') }}
     WHERE
-        --block_timestamp :: DATE >= CURRENT_DATE - 7
-        block_timestamp :: DATE IN (
+        block_timestamp :: DATE >= CURRENT_DATE - 10
+        AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
             FROM
@@ -179,8 +180,8 @@ FROM
     INNER JOIN {{ ref('silver___nft_distinct_mints') }} e
     ON e.mint = t.mint
 WHERE
-    --block_timestamp :: DATE >= CURRENT_DATE - 7
-    block_timestamp :: DATE IN (
+    block_timestamp :: DATE >= CURRENT_DATE - 10
+    AND block_timestamp :: DATE IN (
         SELECT
             block_timestamp_date
         FROM
@@ -207,7 +208,7 @@ FROM
     {{ ref('silver__token_account_ownership_events') }} 
 WHERE 
     event_type = 'closeAccount'
-    --AND block_timestamp :: DATE >= CURRENT_DATE - 7
+    AND block_timestamp :: DATE >= CURRENT_DATE - 10
         AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
@@ -233,8 +234,8 @@ SELECT
 FROM 
     {{ ref('silver__nft_sales_magic_eden_v2')}}
 WHERE 
-    --block_timestamp :: DATE >= CURRENT_DATE - 7
-        block_timestamp :: DATE IN (
+    block_timestamp :: DATE >= CURRENT_DATE - 10
+        AND block_timestamp :: DATE IN (
             SELECT
                 block_timestamp_date
             FROM
