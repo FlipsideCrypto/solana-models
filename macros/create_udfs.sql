@@ -30,6 +30,14 @@
             create_udf_get_jupv4_inner_programs(
             schema = "silver"
         ) }}
+        {{
+            create_udf_get_compute_units_consumed(
+                schema = "silver"
+        ) }}
+        {{
+            create_udf_get_compute_units_total(
+                schema = "silver"
+        ) }}
         {% endset %}
         {% do run_query(sql) %}
     {% endif %}
