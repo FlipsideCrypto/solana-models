@@ -93,6 +93,7 @@ prev_null_block_timestamp_txs AS (
         t.log_messages,
         t.address_table_lookups,
         t.version,
+        null as tx_size_test,
         t._partition_id,
         GREATEST(
             t._inserted_timestamp,
@@ -127,6 +128,7 @@ SELECT
     log_messages,
     address_table_lookups,
     version,
+    silver.udf_get_tx_size_test(account_keys,instructions,version,address_table_lookups) as tx_size_test,
     _partition_id,
     _inserted_timestamp
 FROM
