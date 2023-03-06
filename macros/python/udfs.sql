@@ -132,20 +132,29 @@ handler = 'get_tx_size_test'
 as
 $$
 def get_tx_size_test(accts, pre_balances, instructions, version, addr_lookups) -> int:
-    signers_ct_temp = 0
+
+    --3 bytes for msg header
     msg_header_size = 3
+    --32 bytes per account pubkey
     account_pubkeys_size = len(pre_balances) * 32
+    --32 bytes for recent blockhash
     blockhash_size = 32
     
+    --64 bytes per signature
+    signers_ct_temp = 0
     for v in accts:
         if v["signer"]:
             signers_ct_temp += 1
             
     sig_size = signers_ct_temp * 64
+    --1 byte for program id index (1 for each instruction)
     program_id_idx_size = len(instructions)
+    --1 byte for each item in accounts array
     accounts_idx_size = sum(len(instruction.get('accounts', [])) for instruction in instructions)
+    --1 byte per character in 'data' string
     data_size = sum(len(instruction.get('data', b'')) for instruction in instructions)
 
+    -- 1 byte per index in 'address_table_lookups' + 1 byte per writableIndexes + 1 byte per readonlyIndexes
     address_lookup_size = 0
     if version == '0':
         total_items = 0
