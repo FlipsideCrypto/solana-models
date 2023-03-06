@@ -32,11 +32,11 @@
         ) }}
         {{
             create_udf_get_compute_units_consumed(
-                schema = "silver"
+            schema = "silver"
         ) }}
         {{
             create_udf_get_compute_units_total(
-                schema = "silver"
+            schema = "silver"
         ) }}
         {% endset %}
         {% do run_query(sql) %}

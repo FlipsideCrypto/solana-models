@@ -130,8 +130,8 @@ runtime_version = '3.8'
 handler = 'get_compute_units_consumed'
 as 
 $$
-import re
 def get_compute_units_consumed(log_messages):
+    import re
     for record in data:
         tx_id = record['TX_ID']
         logs = record['LOG_MESSAGES']
@@ -155,8 +155,8 @@ runtime_version = '3.8'
 handler = 'get_compute_units_total'
 as 
 $$
-import re
 def get_compute_units_total(log_messages):
+    import re
     for record in data:
         tx_id = record['TX_ID']
         logs = record['LOG_MESSAGES']
