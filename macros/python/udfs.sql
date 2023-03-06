@@ -121,3 +121,48 @@ def get_jupv4_inner_programs(inner_instruction) -> list:
     return inner_programs
 $$;
 {% endmacro %}
+
+
+{% macro create_udf_get_tx_size_test(schema) %}
+create or replace function solana_dev.silver.udf_get_tx_size_test(accts array, pre_balances array, instructions array, version string, addr_lookups array)
+returns int
+language python
+runtime_version = '3.8'
+handler = 'get_tx_size_test'
+as
+$$
+def get_tx_size_test(accts, pre_balances, instructions, version, addr_lookups) -> int:
+    signers_ct_temp = 0
+    msg_header_size = 3
+    account_pubkeys_size = len(pre_balances) * 32
+    blockhash_size = 32
+    
+    for v in accts:
+        if v["signer"]:
+            signers_ct_temp += 1
+            
+    sig_size = signers_ct_temp * 64
+    program_id_idx_size = len(instructions)
+    accounts_idx_size = sum(len(instruction.get('accounts', [])) for instruction in instructions)
+    data_size = sum(len(instruction.get('data', b'')) for instruction in instructions)
+
+    address_lookup_size = 0
+    if version == '0':
+        total_items = 0
+        readonly_items = 0
+        writeable_items = 0
+        for item in addr_lookups:
+            total_items += 1
+            readonly_items += len(item.get('readonlyIndexes', []))
+            writeable_items += len(item.get('writableIndexes', []))
+        address_lookup_size = total_items + readonly_items + writeable_items
+
+    transaction_size = (
+        msg_header_size + account_pubkeys_size + blockhash_size +
+        sig_size + program_id_idx_size + accounts_idx_size +
+        data_size + address_lookup_size
+    )
+    
+    return transaction_size
+$$;
+{% endmacro %}
