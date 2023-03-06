@@ -65,7 +65,7 @@ SELECT
     log_messages,
     address_table_lookups,
     version,
-    silver.udf_get_tx_size_test(account_keys,pre_balances,instructions,version,address_table_lookups) as tx_size_test,
+    silver.udf_get_tx_size_test(account_keys,instructions,version,address_table_lookups) as tx_size_test,
     _partition_id,
     _inserted_timestamp
 FROM

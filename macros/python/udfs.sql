@@ -124,19 +124,19 @@ $$;
 
 
 {% macro create_udf_get_tx_size_test(schema) %}
-create or replace function solana_dev.silver.udf_get_tx_size_test(accts array, pre_balances array, instructions array, version string, addr_lookups array)
+create or replace function solana_dev.silver.udf_get_tx_size_test(accts array, instructions array, version string, addr_lookups array)
 returns int
 language python
 runtime_version = '3.8'
 handler = 'get_tx_size_test'
 as
 $$
-def get_tx_size_test(accts, pre_balances, instructions, version, addr_lookups) -> int:
+def get_tx_size_test(accts, instructions, version, addr_lookups) -> int:
 
     --3 bytes for msg header
     msg_header_size = 3
     --32 bytes per account pubkey
-    account_pubkeys_size = len(pre_balances) * 32
+    account_pubkeys_size = len(accts) * 32
     --32 bytes for recent blockhash
     blockhash_size = 32
     
