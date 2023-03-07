@@ -1,0 +1,23 @@
+version: 2
+models:
+  - name: silver___signers_nfts_in
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - SIGNER
+            - TOKEN_IN
+            - B_DATE
+            - _INSERTED_TIMESTAMP
+    columns:
+      - name: B_DATE
+        description: The date the signer acquired the NFT. 
+        tests: 
+          - not_null
+      - name: SIGNER
+        description: The address of the user that initiated the transaction
+      - name: TOKEN_IN
+        description: The mint of an NFT currently held by the signer     
+      - name: _INSERTED_TIMESTAMP 
+        description: The time the record was inserted into the table. 
+        tests: 
+          - not_null

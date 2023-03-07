@@ -3,16 +3,27 @@ solana:
   outputs:
     dev:
       type: snowflake
-      account: vna27887.us-east-1
-      role: INTERNAL_DEV
-      user: jessica@flipsidecrypto.com
-      authenticator: externalbrowser
-      region: us-east-1
-      database: SOLANA_DEV
-      warehouse: DBT_EMERGENCY
-      schema: silver
-      threads: 12
+      account: "{{ env_var('ACCOUNT') }}"
+      user: "{{ env_var('USER') }}"
+      password: "{{ env_var('PASSWORD') }}"
+      role: "{{ env_var('ROLE') }}"
+      schema: "{{ env_var('SCHEMA') }}"
+      region: "{{ env_var('REGION') }}"
+      database: "{{ env_var('DATABASE') }}"
+      warehouse: "{{ env_var('WAREHOUSE') }}"
+      threads: 8
       client_session_keep_alive: False
-      query_tag: dbt_JESSICA_dev
+    prod:
+      type: snowflake
+      account: "{{ env_var('ACCOUNT') }}"
+      user: "{{ env_var('USER') }}"
+      password: "{{ env_var('PASSWORD') }}"
+      role: "{{ env_var('ROLE') }}"
+      schema: "{{ env_var('SCHEMA') }}"
+      region: "{{ env_var('REGION') }}"
+      database: "{{ env_var('DATABASE') }}"
+      warehouse: "{{ env_var('WAREHOUSE') }}"
+      threads: 8
+      client_session_keep_alive: False
   config:
     send_anonymous_usage_stats: False
