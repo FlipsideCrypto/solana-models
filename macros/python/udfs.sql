@@ -132,16 +132,13 @@ as
 $$
 def get_compute_units_consumed(log_messages):
     import re
-    for record in data:
-        tx_id = record['TX_ID']
-        logs = record['LOG_MESSAGES']
-        consumed_sum = 0
-        for i in range(len(logs)):
-            consumed = 0
-            if "consumed" in logs[i]:
-                c = re.findall(r'\b\d+\b', logs[i])
-                consumed = int(c[0])
-            consumed_sum = consumed_sum + consumed
+    consumed_sum = 0
+    for i in range(len(log_messages)):
+        consumed = 0
+        if "consumed" in log_messages[i]:
+            c = re.findall(r'\b\d+\b', log_messages[i])
+            consumed = int(c[0])
+        consumed_sum = consumed_sum + consumed
 
     return consumed_sum
 $$;
@@ -157,16 +154,13 @@ as
 $$
 def get_compute_units_total(log_messages):
     import re
-    for record in data:
-        tx_id = record['TX_ID']
-        logs = record['LOG_MESSAGES']
-        available_sum = 0
-        for i in range(len(logs)):
-            available = 0
-            if "consumed" in logs[i]:
-                c = re.findall(r'\b\d+\b', logs[i])
-                available = int(c[1])
-            available_sum = available_sum + available
+    available_sum = 0
+    for i in range(len(log_messages)):
+        available = 0
+        if "consumed" in log_messages[i]:
+            c = re.findall(r'\b\d+\b', log_messages[i])
+            available = int(c[1])
+        available_sum = available_sum + available
 
     return available_sum
 $$;
