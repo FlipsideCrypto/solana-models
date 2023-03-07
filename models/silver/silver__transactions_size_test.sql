@@ -45,7 +45,7 @@ WITH pre_final AS (
             t.data :transaction :message :instructions [0] :programId :: STRING,
             ''
         ) <> 'Vote111111111111111111111111111111111111111'
-        and _partition_id = 15137)
+        and _partition_id = 9138)
 
 SELECT
     block_timestamp,
@@ -72,4 +72,3 @@ FROM
     pre_final b qualify(ROW_NUMBER() over(PARTITION BY block_id, tx_id
 ORDER BY
     _inserted_timestamp DESC)) = 1
-
