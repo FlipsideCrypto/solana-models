@@ -159,7 +159,8 @@ def get_compute_units_total(log_messages):
         available = 0
         if "consumed" in log_messages[i]:
             c = re.findall(r'\b\d+\b', log_messages[i])
-            available = int(c[1])
+            if len(c) >= 2:
+            	available = int(c[1])
         available_sum = available_sum + available
 
     return available_sum
