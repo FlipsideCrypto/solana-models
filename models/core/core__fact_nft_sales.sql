@@ -176,3 +176,17 @@ SELECT
     sales_amount
 FROM
     {{ ref('silver__nft_sales_amm_sell') }}
+UNION
+SELECT
+    'tensorswap',
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    purchaser,
+    seller,
+    mint,
+    sales_amount
+FROM
+    {{ ref('silver__nft_sales_tensorswap') }}
