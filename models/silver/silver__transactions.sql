@@ -92,8 +92,8 @@ prev_null_block_timestamp_txs AS (
         t.inner_instructions,
         t.log_messages,
         t.address_table_lookups,
-        units_consumed,
-        units_limit,
+        t.units_consumed,
+        t.units_limit,
         t.version,
         t._partition_id,
         GREATEST(
