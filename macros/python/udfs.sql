@@ -122,56 +122,47 @@ def get_jupv4_inner_programs(inner_instruction) -> list:
 $$;
 {% endmacro %}
 
-
-{% macro create_udf_get_tx_size_test(schema) %}
-create or replace function solana_dev.silver.udf_get_tx_size_test(accts array, instructions array, version string, addr_lookups array)
+{% macro create_udf_get_compute_units_consumed(schema) %}
+create or replace function {{ schema }}.udf_get_compute_units_consumed(log_messages array)
 returns int
-language python
+language python 
 runtime_version = '3.8'
-handler = 'get_tx_size_test'
-as
+handler = 'get_compute_units_consumed'
+as 
 $$
-def get_tx_size_test(accts, instructions, version, addr_lookups) -> int:
+def get_compute_units_consumed(log_messages):
+    import re
+    consumed_sum = 0
+    for i in range(len(log_messages)):
+        consumed = 0
+        if "consumed" in log_messages[i]:
+            c = re.findall(r'\b\d+\b', log_messages[i])
+            consumed = int(c[0])
+        consumed_sum = consumed_sum + consumed
 
-    --3 bytes for msg header
-    msg_header_size = 3
-    --32 bytes per account pubkey
-    account_pubkeys_size = len(accts) * 32
-    --32 bytes for recent blockhash
-    blockhash_size = 32
-    
-    --64 bytes per signature
-    signers_ct_temp = 0
-    for v in accts:
-        if v["signer"]:
-            signers_ct_temp += 1
-            
-    sig_size = signers_ct_temp * 64
-    --1 byte for program id index (1 for each instruction)
-    program_id_idx_size = len(instructions)
-    --1 byte for each item in accounts array
-    accounts_idx_size = sum(len(instruction.get('accounts', [])) for instruction in instructions)
-    --1 byte per character in 'data' string
-    data_size = sum(len(instruction.get('data', b'')) for instruction in instructions)
+    return consumed_sum
+$$;
+{% endmacro %}
 
-    -- 1 byte per index in 'address_table_lookups' + 1 byte per writableIndexes + 1 byte per readonlyIndexes
-    address_lookup_size = 0
-    if version == '0':
-        total_items = 0
-        readonly_items = 0
-        writeable_items = 0
-        for item in addr_lookups:
-            total_items += 1
-            readonly_items += len(item.get('readonlyIndexes', []))
-            writeable_items += len(item.get('writableIndexes', []))
-        address_lookup_size = total_items + readonly_items + writeable_items
+{% macro create_udf_get_compute_units_total(schema) %}
+create or replace function {{ schema }}.udf_get_compute_units_total(log_messages array)
+returns int
+language python 
+runtime_version = '3.8'
+handler = 'get_compute_units_total'
+as 
+$$
+def get_compute_units_total(log_messages):
+    import re
+    available_sum = 0
+    for i in range(len(log_messages)):
+        available = 0
+        if "consumed" in log_messages[i]:
+            c = re.findall(r'\b\d+\b', log_messages[i])
+            if len(c) >= 2:
+            	available = int(c[1])
+        available_sum = available_sum + available
 
-    transaction_size = (
-        msg_header_size + account_pubkeys_size + blockhash_size +
-        sig_size + program_id_idx_size + accounts_idx_size +
-        data_size + address_lookup_size
-    )
-    
-    return transaction_size
+    return available_sum
 $$;
 {% endmacro %}

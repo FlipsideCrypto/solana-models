@@ -17,6 +17,8 @@ SELECT
     post_token_balances,
     instructions,
     inner_instructions,
-    log_messages
+    log_messages,
+    units_consumed,
+    units_limit
 FROM
     {{ ref('silver__transactions') }}

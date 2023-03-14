@@ -52,6 +52,10 @@ models:
         description: Array of log messages written by the program for this transaction
       - name: ADDRESS_TABLE_LOOKUPS
         description: Array of lookup keys used associate additional account keys with the transactions.  Valid for version > 0 transactions.
+      - name: UNITS_CONSUMED
+        description: The number of compute units consumed by the program. 
+      - name: UNIT_LIMIT
+        description: The max number of compute units that can be consumed by the program. 
       - name: VERSION
         description: Transaction version, legacy version is listed as NULL or 'legacy'
       - name: _INSERTED_TIMESTAMP
