@@ -38,6 +38,10 @@
             create_udf_get_compute_units_total(
             schema = "silver"
         ) }}
+        {{
+            create_udf_get_tx_size(
+            schema = "silver"
+        ) }}
         {% endset %}
         {% do run_query(sql) %}
     {% endif %}
