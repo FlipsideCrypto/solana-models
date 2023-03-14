@@ -59,7 +59,7 @@ models:
         description: The number of compute units consumed by the program. 
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: UNIT_LIMIT
+      - name: UNITS_LIMIT
         description: The max number of compute units that can be consumed by the program.
         tests:
           - dbt_expectations.expect_column_to_exist
