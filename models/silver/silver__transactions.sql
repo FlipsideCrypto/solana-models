@@ -131,8 +131,8 @@ SELECT
     address_table_lookups,
     silver.udf_get_compute_units_consumed(log_messages) as units_consumed,
     silver.udf_get_compute_units_total(log_messages) as units_limit,
+    silver.udf_get_tx_size(account_keys,instructions,version,address_table_lookups) as tx_size,
     version,
-    silver.udf_get_tx_size_test(account_keys,instructions,version,address_table_lookups) as tx_size_test,
     _partition_id,
     _inserted_timestamp
 FROM

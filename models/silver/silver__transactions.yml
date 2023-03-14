@@ -56,6 +56,8 @@ models:
         description: The number of compute units consumed by the program. 
       - name: UNIT_LIMIT
         description: The max number of compute units that can be consumed by the program. 
+      - name: TX_SIZE
+        description: The size of the transaction in bytes. 
       - name: VERSION
         description: Transaction version, legacy version is listed as NULL or 'legacy'
       - name: _INSERTED_TIMESTAMP
