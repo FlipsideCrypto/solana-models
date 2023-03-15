@@ -88,7 +88,7 @@ AND
         FROM
             {{ this }}
     )
-    e._inserted_timestamp >= (
+AND e._inserted_timestamp >= (
         SELECT
             MAX(_inserted_timestamp)
         FROM
