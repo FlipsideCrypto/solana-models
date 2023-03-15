@@ -92,6 +92,8 @@ prev_null_block_timestamp_txs AS (
         t.inner_instructions,
         t.log_messages,
         t.address_table_lookups,
+        t.units_consumed,
+        t.units_limit,
         t.version,
         t._partition_id,
         GREATEST(
@@ -126,6 +128,8 @@ SELECT
     inner_instructions,
     log_messages,
     address_table_lookups,
+    silver.udf_get_compute_units_consumed(log_messages) as units_consumed,
+    silver.udf_get_compute_units_total(log_messages) as units_limit,
     version,
     _partition_id,
     _inserted_timestamp

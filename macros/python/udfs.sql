@@ -121,3 +121,48 @@ def get_jupv4_inner_programs(inner_instruction) -> list:
     return inner_programs
 $$;
 {% endmacro %}
+
+{% macro create_udf_get_compute_units_consumed(schema) %}
+create or replace function {{ schema }}.udf_get_compute_units_consumed(log_messages array)
+returns int
+language python 
+runtime_version = '3.8'
+handler = 'get_compute_units_consumed'
+as 
+$$
+def get_compute_units_consumed(log_messages):
+    import re
+    consumed_sum = 0
+    for i in range(len(log_messages)):
+        consumed = 0
+        if "consumed" in log_messages[i]:
+            c = re.findall(r'\b\d+\b', log_messages[i])
+            consumed = int(c[0])
+        consumed_sum = consumed_sum + consumed
+
+    return consumed_sum
+$$;
+{% endmacro %}
+
+{% macro create_udf_get_compute_units_total(schema) %}
+create or replace function {{ schema }}.udf_get_compute_units_total(log_messages array)
+returns int
+language python 
+runtime_version = '3.8'
+handler = 'get_compute_units_total'
+as 
+$$
+def get_compute_units_total(log_messages):
+    import re
+    available_sum = 0
+    for i in range(len(log_messages)):
+        available = 0
+        if "consumed" in log_messages[i]:
+            c = re.findall(r'\b\d+\b', log_messages[i])
+            if len(c) >= 2:
+            	available = int(c[1])
+        available_sum = available_sum + available
+
+    return available_sum
+$$;
+{% endmacro %}
