@@ -228,6 +228,36 @@ def get_tx_size(accts, instructions, version, addr_lookups, signers) -> int:
 
         temp_data_size = len('0' * leading_zeros + hex_str)
         data_size += (1 if temp_data_size / 2 <= 127 else (2 if temp_data_size / 2 <= 16383 else 3)) + (temp_data_size / 2)
+    
+    for instruction in instructions:
+        if 'data' not in instruction:
+            parsed = instruction.get('parsed')
+            if isinstance(parsed, dict):
+                type_ = parsed.get('type')
+            else:
+                type_ = None
+        
+            if type_ == 'transfer' and instruction.get('program') == 'spl-token':
+                data_size += 7
+                accounts_index_size += 4
+            elif instruction.get('program') == 'spl-memo' and instruction.get('programId') == 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr':
+                data_size += 30
+                accounts_index_size += 0
+            elif type_ == 'transfer' and instruction.get('program') == 'system':
+                data_size += 9
+                accounts_index_size += 3
+            elif instruction.get('program') == 'spl-memo' and instruction.get('programId') == 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo':
+                data_size += 43
+                accounts_index_size += 0
+            elif type_ == 'transferChecked' and instruction.get('program') == 'spl-token':
+                data_size += 8
+                accounts_index_size += 5
+            elif type_ == 'write' and instruction.get('program') == 'bpf-upgradeable-loader':
+                info = parsed.get('info')
+                if info:
+                  bytes_data = info.get('bytes')
+                  if bytes_data:
+                    data_size += len(bytes_data) / 2
         
     final_data_size = data_size
 
