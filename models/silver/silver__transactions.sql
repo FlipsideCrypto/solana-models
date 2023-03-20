@@ -94,7 +94,7 @@ prev_null_block_timestamp_txs AS (
         t.address_table_lookups,
         t.units_consumed,
         t.units_limit,
-        null as tx_size,
+        t.tx_size,
         t.version,
         t._partition_id,
         GREATEST(
