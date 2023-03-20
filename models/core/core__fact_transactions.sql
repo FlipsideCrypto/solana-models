@@ -19,6 +19,7 @@ SELECT
     inner_instructions,
     log_messages,
     units_consumed,
-    units_limit
+    units_limit,
+    tx_size
 FROM
     {{ ref('silver__transactions') }}

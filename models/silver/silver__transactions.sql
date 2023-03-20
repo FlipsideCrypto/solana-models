@@ -94,6 +94,7 @@ prev_null_block_timestamp_txs AS (
         t.address_table_lookups,
         t.units_consumed,
         t.units_limit,
+        null as tx_size,
         t.version,
         t._partition_id,
         GREATEST(
@@ -130,6 +131,7 @@ SELECT
     address_table_lookups,
     silver.udf_get_compute_units_consumed(log_messages) as units_consumed,
     silver.udf_get_compute_units_total(log_messages) as units_limit,
+    silver.udf_get_tx_size(account_keys,instructions,version,address_table_lookups,signers) as tx_size,
     version,
     _partition_id,
     _inserted_timestamp
