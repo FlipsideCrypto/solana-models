@@ -214,10 +214,6 @@ base AS (
         base_tmp
     WHERE
         inner_instruction_type = 'transfer'
-        AND COALESCE(
-            preceding_inner_instruction_type,
-            ''
-        ) <> 'create'
 ),
 post_token_balances AS (
     SELECT
