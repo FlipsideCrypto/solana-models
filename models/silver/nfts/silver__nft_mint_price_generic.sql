@@ -201,7 +201,7 @@ mint_price_events AS (
     FROM
         metaplex_events me
         LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
-    where i.value:parsed:type <> 'burn'
+    where i.value:parsed:type not in ('burn','mintTo','approve')
     group by 1,2,3,4,5,6,7,8,9,10,11,12
 ),
 pre_final as (
