@@ -1,0 +1,47 @@
+version: 2
+models:
+  - name: silver__historical_stake_account
+    columns:
+      - name: epoch_ingested_at
+        description: "Epoch number for when data was ingested"
+        tests:
+          - not_null
+      - name: authorized_staker
+        description: "Authorized staker for the validator"
+        tests:
+          - not_null
+      - name: authorized_withdrawer
+        description: "Authorized withdrawer for the validator"
+        tests:
+          - not_null
+      - name: lockup
+        description: "Lockup information for the validator"
+      - name: rent_exempt_reserve
+        description: "Rent exempt reserve amount for the validator"
+      - name: credits_observed
+        description: "Credits observed for the validator"
+      - name: activation_epoch
+        description: "Activation epoch for the validator"
+      - name: deactivation_epoch
+        description: "Deactivation epoch for the validator"
+      - name: stake
+        description: "Stake for the validator"
+      - name: voter
+        description: "Voter for the validator"
+      - name: warmup_cooldown_rate
+        description: "Warmup cooldown rate for the validator"
+      - name: TYPE
+        description: "Type for the validator account"
+        tests:
+          - not_null
+      - name: program
+        description: "Program for the validator account"
+        tests:
+          - not_null
+      - name: lamports
+        description: "Lamports for the validator account"
+        tests:
+          - not_null
+      - name: rent_epoch
+        description: "Rent epoch for the validator account"
+      - name: pubkey

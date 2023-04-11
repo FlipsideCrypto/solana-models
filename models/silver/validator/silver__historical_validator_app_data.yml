@@ -1,0 +1,74 @@
+version: 2
+models:
+  - name: silver__historical_validator_app_data
+    columns:
+      - name: file_date
+        description: "Date of file/when data was collected"
+        tests:
+          - not_null
+      - name: account
+        description: "Vote account information"
+        tests:
+          - not_null
+      - name: active_stake
+        description: "Active stake for the validator"
+      - name: admin_warning
+        description: "Admin warning for the validator"
+      - name: authorized_withdrawer_score
+        description: "Authorized withdrawer score for the validator"
+      - name: avatar_url
+        description: "Avatar URL for the validator"
+      - name: commission
+        description: "Commission rate for the validator"
+      - name: consensus_mods_score
+        description: "Consensus modifications score for the validator"
+      - name: created_at
+        description: "Creation date for the validator"
+      - name: data_center_concentration_score
+        description: "Data center concentration score for the validator"
+      - name: delinquent
+        description: "Whether the validator is delinquent"
+      - name: details
+        description: "Details for the validator"
+      - name: epoch
+        description: "Epoch for the validator"
+      - name: epoch_credits
+        description: "Epoch credits for the validator"
+      - name: keybase_id
+        description: "Keybase ID for the validator"
+      - name: NAME
+        description: "Name for the validator"
+      - name: network
+        description: "Network for the validator"
+      - name: published_information_score
+        description: "Published information score for the validator"
+        tests:
+          - not_null
+      - name: root_distance_score
+        description: "Root distance score for the validator"
+      - name: security_report_score
+        description: "Security report score for the validator"
+        tests:
+          - not_null
+      - name: skipped_slot_score
+        description: "Skipped slot score for the validator"
+      - name: software_version
+        description: "Software version for the validator"
+      - name: software_version_score
+        description: "Software version score for the validator"
+        tests:
+          - not_null
+      - name: stake_concentration_score
+        description: "Stake concentration score for the validator"
+      - name: total_score
+        description: "Total score for the validator"
+        tests:
+          - not_null
+      - name: updated_at
+        description: "Last updated date for the validator"
+      - name: url
+        description: "URL for the validator"
+      - name: vote_distance_score
+        description: "Vote distance score for the validator"
+      - name: www_url
+        description: "WWW URL for the validator"

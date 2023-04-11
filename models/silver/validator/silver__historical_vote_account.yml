@@ -1,0 +1,62 @@
+version: 2
+models:
+  - name: silver__historical_vote_account
+    columns:
+      - name: epoch_ingested_at
+        description: "Epoch number for when data was ingested"
+        tests:
+          - not_null
+      - name: authorized_voter
+        description: "Authorized voter for the vote account"
+        tests:
+          - not_null
+      - name: epoch
+        description: "Epoch for the authorized voter"
+      - name: authorized_withdrawer
+        description: "Authorized withdrawer for the vote account"
+        tests:
+          - not_null
+      - name: commission
+        description: "Commission for the vote account"
+        tests:
+          - not_null
+      - name: epoch_credits
+        description: "Epoch credits for the vote account"
+        tests:
+          - not_null
+      - name: last_timestamp_slot
+        description: "Last timestamp slot for the vote account"
+        tests:
+          - not_null
+      - name: last_timestamp
+        description: "Last timestamp for the vote account"
+        tests:
+          - not_null
+      - name: node_pubkey
+        description: "Node pubkey for the vote account"
+        tests:
+          - not_null
+      - name: prior_voters
+        description: "Prior voters for the vote account"
+      - name: root_slot
+        description: "Root slot for the vote account"
+      - name: votes
+        description: "Votes for the vote account"
+        tests:
+          - not_null
+      - name: lamports
+        description: "Lamports for the vote account"
+        tests:
+          - not_null
+      - name: owner
+        description: "Owner for the vote account"
+        tests:
+          - not_null
+      - name: rent_epoch
+        description: "Rent epoch for the vote account"
+        tests:
+          - not_null
+      - name: pubkey
+        description: "Public key for the vote account"
+        tests:
+          - not_null
