@@ -38,10 +38,10 @@ models:
         description: "Program for the validator account"
         tests:
           - not_null
-      - name: lamports
-        description: "Lamports for the validator account"
+      - name: account_sol
+        description: "SOL assigned to this account"
         tests:
           - not_null
       - name: rent_epoch
-        description: "Rent epoch for the validator account"
+        description: "Epoch at which this account will next owe rent"
       - name: pubkey

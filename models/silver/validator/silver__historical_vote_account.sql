@@ -15,7 +15,10 @@ SELECT
     json_data :account :data :parsed :info :priorVoters AS prior_voters,
     json_data :account :data :parsed :info :rootSlot :: NUMBER AS root_slot,
     json_data :account :data :parsed :info :votes AS votes,
-    json_data :account :lamports :: NUMBER AS lamports,
+    json_data :account :lamports / pow(
+        10,
+        9
+    ) AS account_sol,
     json_data :account :owner :: STRING AS owner,
     json_data :account :rentEpoch :: NUMBER AS rent_epoch,
     json_data :pubkey :: STRING AS pubkey

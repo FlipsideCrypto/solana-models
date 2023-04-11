@@ -44,8 +44,8 @@ models:
         description: "Votes for the vote account"
         tests:
           - not_null
-      - name: lamports
-        description: "Lamports for the vote account"
+      - name: account_sol
+        description: "SOL assigned to this account"
         tests:
           - not_null
       - name: owner
@@ -53,7 +53,7 @@ models:
         tests:
           - not_null
       - name: rent_epoch
-        description: "Rent epoch for the vote account"
+        description: "Epoch at which this account will next owe rent"
         tests:
           - not_null
       - name: pubkey

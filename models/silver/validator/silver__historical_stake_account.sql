@@ -16,7 +16,10 @@ SELECT
     json_data :account :data :parsed :info :stake :delegation :warmupCooldownRate :: NUMBER AS warmup_cooldown_rate,
     json_data :account :data :parsed :type :: STRING AS TYPE,
     json_data :account :data :program :: STRING AS program,
-    json_data :account :lamports :: NUMBER AS lamports,
+    json_data :account :lamports / pow(
+        10,
+        9
+    ) AS account_sol,
     json_data :account :rentEpoch :: NUMBER AS rentEpoch,
     json_data :pubkey :: STRING AS pubkey
 FROM
