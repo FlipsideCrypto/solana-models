@@ -112,6 +112,7 @@ WHERE
     AND succeeded
     AND instruction :accounts [0] = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
     AND instruction :accounts [13] = '9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin'
+UNION
 SELECT
     block_timestamp,
     block_id,
@@ -132,4 +133,4 @@ WHERE
     AND instruction :accounts [0] = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
     AND instruction :accounts [1] = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'
     AND instruction :accounts [15] = 'srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX'
-    AND block_timestamp :: DATE > '2023-01-15';
+    AND block_timestamp :: DATE > '2023-01-15'
