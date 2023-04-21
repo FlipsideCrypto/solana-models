@@ -9,6 +9,7 @@ $$
     begin 
         alter external table streamline.{{ target.database }}.decoded_instructions_data_api refresh;
         alter external table streamline.{{ target.database }}.validator_metadata_api refresh;
+        alter external table streamline.{{ target.database }}.validator_vote_accounts refresh;
         return TRUE;
     end;
 $${% endset %}
