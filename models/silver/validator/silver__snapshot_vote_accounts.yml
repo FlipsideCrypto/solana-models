@@ -1,62 +1,51 @@
 version: 2
 models:
-  - name: silver__historical_vote_account
+  - name: silver__snapshot_vote_accounts
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - EPOCH_RECORDED
+            - VOTE_PUBKEY
     columns:
-      - name: epoch_ingested_at
-        description: "Epoch number for when data was ingested"
+      - name: epoch_recorded
+        description: "The epoch when data was recorded"
         tests:
           - not_null
-      - name: authorized_voter
-        description: "Authorized voter for the vote account"
-        tests:
-          - not_null
-      - name: epoch
-        description: "Epoch for the authorized voter"
-      - name: authorized_withdrawer
-        description: "Authorized withdrawer for the vote account"
+      - name: activated_stake
+        description: "The activated stake in solana"
         tests:
           - not_null
       - name: commission
-        description: "Commission for the vote account"
+        description: "Commission of the validator"
         tests:
           - not_null
       - name: epoch_credits
-        description: "Epoch credits for the vote account"
+        description: "The epoch credits"
         tests:
           - not_null
-      - name: last_timestamp_slot
-        description: "Last timestamp slot for the vote account"
+      - name: epoch_vote_account
+        description: "The epoch vote account"
         tests:
           - not_null
-      - name: last_timestamp
-        description: "Last timestamp for the vote account"
+      - name: last_vote
+        description: "The last vote"
         tests:
           - not_null
       - name: node_pubkey
-        description: "Node pubkey for the vote account"
+        description: "The node public key"
         tests:
           - not_null
-      - name: prior_voters
-        description: "Prior voters for the vote account"
       - name: root_slot
-        description: "Root slot for the vote account"
-      - name: votes
-        description: "Votes for the vote account"
+        description: "The root slot"
         tests:
           - not_null
-      - name: account_sol
-        description: "SOL assigned to this account"
+      - name: vote_pubkey
+        description: "The vote public key"
         tests:
           - not_null
-      - name: owner
-        description: "Owner for the vote account"
+      - name: _inserted_timestamp
+        description: "The inserted timestamp"
         tests:
           - not_null
-      - name: rent_epoch
-        description: "Epoch at which this account will next owe rent"
-        tests:
-          - not_null
-      - name: pubkey
-        description: "Public key for the vote account"
-        tests:
-          - not_null
+
+    
