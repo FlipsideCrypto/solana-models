@@ -50,6 +50,13 @@ votes_accounts_epoch_recorded AS (
         _inserted_timestamp
     ) b
     ON A._inserted_timestamp = b._inserted_timestamp
+),
+votes_accounts_deduped AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER (PARTITION BY epoch_recorded, votePubkey ORDER BY _inserted_timestamp desc) AS row_num
+  FROM
+    votes_accounts_epoch_recorded
 )
 SELECT
   epoch_status,
@@ -57,11 +64,12 @@ SELECT
   activatedStake AS activated_stake,
   commission,
   epochCredits AS epoch_credits,
-  epochVoteAccount AS epoch_vote_ccount,
+  epochVoteAccount AS epoch_vote_account,
   lastVote AS last_vote,
   nodePubkey AS node_pubkey,
   rootSlot AS root_slot,
   votePubkey AS vote_pubkey,
   _inserted_timestamp
 FROM
-  votes_accounts_epoch_recorded
+  votes_accounts_deduped
+  where row_num = 1
