@@ -7,6 +7,7 @@
             {{ udf_bulk_get_blocks() }};
             {{ udf_bulk_get_block_txs() }};
             {{ udf_bulk_get_block_rewards() }};
+            {{ udf_snapshot_get_vote_accounts() }};
         {% endif %}
 
         {{ create_udf_ordered_signers(
