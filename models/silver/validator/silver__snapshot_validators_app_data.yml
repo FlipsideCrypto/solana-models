@@ -1,0 +1,51 @@
+version: 2
+models:
+  - name: silver__snapshot_vote_accounts
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - EPOCH_RECORDED
+            - VOTE_PUBKEY
+    columns:
+      - name: epoch_recorded
+        description: "The epoch when data was recorded"
+        tests:
+          - not_null
+      - name: activated_stake
+        description: "The activated stake in solana"
+        tests:
+          - not_null
+      - name: commission
+        description: "Commission of the validator"
+        tests:
+          - not_null
+      - name: epoch_credits
+        description: "The epoch credits"
+        tests:
+          - not_null
+      - name: epoch_vote_account
+        description: "The epoch vote account"
+        tests:
+          - not_null
+      - name: last_vote
+        description: "The last vote"
+        tests:
+          - not_null
+      - name: node_pubkey
+        description: "The node public key"
+        tests:
+          - not_null
+      - name: root_slot
+        description: "The root slot"
+        tests:
+          - not_null
+      - name: vote_pubkey
+        description: "The vote public key"
+        tests:
+          - not_null
+      - name: _inserted_timestamp
+        description: "The inserted timestamp"
+        tests:
+          - not_null
+
+    
