@@ -1,51 +1,84 @@
 version: 2
 models:
-  - name: silver__snapshot_vote_accounts
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - EPOCH_RECORDED
-            - VOTE_PUBKEY
+  - name: silver__snapshot_validator_app_data
     columns:
       - name: epoch_recorded
         description: "The epoch when data was recorded"
         tests:
           - not_null
-      - name: activated_stake
-        description: "The activated stake in solana"
-        tests:
-          - not_null
-      - name: commission
-        description: "Commission of the validator"
-        tests:
-          - not_null
-      - name: epoch_credits
-        description: "The epoch credits"
-        tests:
-          - not_null
-      - name: epoch_vote_account
-        description: "The epoch vote account"
-        tests:
-          - not_null
-      - name: last_vote
-        description: "The last vote"
-        tests:
-          - not_null
       - name: node_pubkey
-        description: "The node public key"
+        description: "Account for the validator node"
         tests:
           - not_null
-      - name: root_slot
-        description: "The root slot"
+      - name: active_stake
+        description: "Active stake in SOL delegated to the validator"
+      - name: admin_warning
+        description: "Admin warning for the validator"
+      - name: authorized_withdrawer_score
+        description: "validator.app score for Authorized withdrawer"
+      - name: avatar_url
+        description: "URL of avatar image"
+      - name: commission
+        description: "% of rewards payout to the vote account"
+      - name: consensus_mods_score
+        description: "validator.app score Consensus modifications"
+      - name: created_at
+        description: "date when validator was created"
+      - name: data_center_concentration_score
+        description: "validator.app score  for Data center concentration score"
+      - name: data_center_key
+        description: "identifier for the data center"
+      - name: data_center_host
+        description: "host for the data center"
+      - name: delinquent
+        description: "Status whether the validator is offline/delinquent"
+      - name: details
+        description: "Details for the validator"
+      - name: epoch_active
+        description: "last epoch when vote account was active"
+      - name: epoch_credits
+        description: "Epoch credits for the validator"
+      - name: keybase_id
+        description: "Keybase ID for the validator"
+      - name: latitude
+        description: "Latitude coordinates of data center"
+      - name: longitude
+        description: "Longitude coordinates of data center"
+      - name: validator_name
+        description: "Name of the validator"
+      - name: published_information_score
+        description: "validator.app score for Published information"
         tests:
           - not_null
+      - name: root_distance_score
+        description: "validator.app score for Root distance"
+      - name: security_report_score
+        description: "validator.app score for Security "
+        tests:
+          - not_null
+      - name: skipped_slot_score
+        description: "validator.app score for Skipped slots"
+      - name: software_version
+        description: "Solana mainnet version"
+      - name: software_version_score
+        description: "validator.app score for Software version"
+        tests:
+          - not_null
+      - name: stake_concentration_score
+        description: "validator.app score for Stake concentration score"
+      - name: total_score
+        description: "validator.app score total score"
+        tests:
+          - not_null
+      - name: updated_at
+        description: "Last date validator was updated"
       - name: vote_pubkey
-        description: "The vote public key"
-        tests:
+        description: "vote account for the validator"
+      - name: vote_distance_score
+        description: "validator.app score for Vote distance"
+      - name: www_url
+        description: "url for the validator"
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
           - not_null
-      - name: _inserted_timestamp
-        description: "The inserted timestamp"
-        tests:
-          - not_null
-
-    

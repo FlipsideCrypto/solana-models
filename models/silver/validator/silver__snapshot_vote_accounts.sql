@@ -61,7 +61,10 @@ votes_accounts_deduped AS (
 SELECT
   epoch_status,
   epoch_recorded,
-  activatedStake AS activated_stake,
+  activatedStake / pow(
+        10,
+        9
+    ) AS active_stake,
   commission,
   epochCredits AS epoch_credits,
   epochVoteAccount AS epoch_vote_account,
