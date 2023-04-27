@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__snapshot_validator_app_data
+  - name: silver__snapshot_validators_app_data
     columns:
       - name: epoch_recorded
         description: "The epoch when data was recorded"
