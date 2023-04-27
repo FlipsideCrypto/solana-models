@@ -21,6 +21,6 @@ SELECT
     ) AS account_sol,
     json_data :account :owner :: STRING AS owner,
     json_data :account :rentEpoch :: NUMBER AS rent_epoch,
-    json_data :pubkey :: STRING AS pubkey
+    json_data :pubkey :: STRING AS vote_pubkey
 FROM
     solana_dev.bronze.historical_vote_account_data

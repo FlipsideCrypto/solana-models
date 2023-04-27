@@ -1,9 +1,9 @@
 version: 2
 models:
-  - name: silver__historical_validator_app_data
+  - name: silver__snapshot_validator_app_data
     columns:
-      - name: file_date
-        description: "Date when data was collected"
+      - name: epoch_recorded
+        description: "The epoch when data was recorded"
         tests:
           - not_null
       - name: node_pubkey
@@ -78,3 +78,7 @@ models:
         description: "validator.app score for Vote distance"
       - name: www_url
         description: "url for the validator"
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null

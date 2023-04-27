@@ -1,13 +1,12 @@
-{{ config (
-    materialized = 'view'
+{{ config(
+  materialized = 'incremental',
+  unique_key = "CONCAT_WS('-', epoch_recorded, vote_pubkey)",
+  incremental_strategy = 'delete+insert',
+  cluster_by = ['_inserted_timestamp::DATE'],
 ) }}
 
+with base as (
 SELECT
-    DATE_FROM_PARTS(
-        '20' || RIGHT(REGEXP_REPLACE(filename, '[^0-9]', ''), 2) :: INTEGER,
-        SUBSTR(REGEXP_REPLACE(filename, '[^0-9]', ''), 1, 2) :: INTEGER,
-        SUBSTR(REGEXP_REPLACE(filename, '[^0-9]', ''), 3, 2) :: INTEGER
-    ) AS file_date,
     json_data :account :: STRING AS node_pubkey,
     json_data :active_stake :: NUMBER AS active_stake,
     json_data :admin_warning :: STRING AS admin_warning,
@@ -40,6 +39,28 @@ SELECT
     json_data :updated_at :: STRING AS updated_at,
     json_data :vote_account :: STRING as vote_pubkey,
     json_data :vote_distance_score :: NUMBER AS vote_distance_score,
-    json_data :www_url :: STRING AS www_url
+    json_data :www_url :: STRING AS www_url,
+    _inserted_timestamp
 FROM
-    solana_dev.bronze.historical_validator_app_data
+    solana_dev.bronze.validators_app_api),
+    
+validators_epoch_recorded AS (
+  SELECT
+    A.*,
+    b.epoch_recorded
+  FROM
+    base A
+    LEFT JOIN (
+      SELECT
+        MAX(epoch_active) AS epoch_recorded,
+        _inserted_timestamp
+      FROM
+        base
+        where delinquent = false
+      GROUP BY
+        _inserted_timestamp
+    ) b
+    ON A._inserted_timestamp = b._inserted_timestamp
+)
+
+select * from validators_epoch_recorded

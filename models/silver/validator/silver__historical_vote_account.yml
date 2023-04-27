@@ -7,41 +7,41 @@ models:
         tests:
           - not_null
       - name: authorized_voter
-        description: "Authorized voter for the vote account"
+        description: "Account responsible for signing vote transactions"
         tests:
           - not_null
       - name: epoch
-        description: "Epoch for the authorized voter"
+        description: "last epoch when vote account was active"
       - name: authorized_withdrawer
-        description: "Authorized withdrawer for the vote account"
+        description: "Account responsible for signing stake withdrawal transactions"
         tests:
           - not_null
       - name: commission
-        description: "Commission for the vote account"
+        description: "% of rewards payout to the vote account"
         tests:
           - not_null
       - name: epoch_credits
-        description: "Epoch credits for the vote account"
+        description: "Credits earned by the end of epochs, containing epoch/credits/previous credits"
         tests:
           - not_null
       - name: last_timestamp_slot
-        description: "Last timestamp slot for the vote account"
+        description: "Last slot voted on"
         tests:
           - not_null
       - name: last_timestamp
-        description: "Last timestamp for the vote account"
+        description: "The timestamp when last slot was voted on"
         tests:
           - not_null
       - name: node_pubkey
-        description: "Node pubkey for the vote account"
+        description: "pubkey for the Solana validator node"
         tests:
           - not_null
       - name: prior_voters
         description: "Prior voters for the vote account"
       - name: root_slot
-        description: "Root slot for the vote account"
+        description: "latest slot confirmed"
       - name: votes
-        description: "Votes for the vote account"
+        description: "Votes during epoch"
         tests:
           - not_null
       - name: account_sol
@@ -49,14 +49,14 @@ models:
         tests:
           - not_null
       - name: owner
-        description: "Owner for the vote account"
+        description: "Program account that owns the vote account"
         tests:
           - not_null
       - name: rent_epoch
         description: "Epoch at which this account will next owe rent"
         tests:
           - not_null
-      - name: pubkey
+      - name: vote_pubkey
         description: "Public key for the vote account"
         tests:
           - not_null

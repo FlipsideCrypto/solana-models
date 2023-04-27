@@ -45,6 +45,7 @@ sources:
       - name: block_rewards_api
       - name: block_txs_api
       - name: validator_vote_accounts
+      - name: validator_app_list_api
   - name: bronze_api
     schema: bronze_api
     tables:

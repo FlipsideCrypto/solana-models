@@ -7,41 +7,34 @@ models:
         tests:
           - not_null
       - name: authorized_staker
-        description: "Authorized staker for the validator"
-        tests:
-          - not_null
+        description: "Account responsible for signing stake delegations/deactivativations transactions"
       - name: authorized_withdrawer
-        description: "Authorized withdrawer for the validator"
-        tests:
-          - not_null
+        description: "Account responsible for signing stake withdrawal transactions"
       - name: lockup
-        description: "Lockup information for the validator"
+        description: "Lockup information when tokens can be withdrawn"
       - name: rent_exempt_reserve
-        description: "Rent exempt reserve amount for the validator"
+        description: "Minimum SOL balance that must be maintained for this account to remain rent exempt"
       - name: credits_observed
         description: "Credits observed for the validator"
       - name: activation_epoch
-        description: "Activation epoch for the validator"
+        description: "Epoch when stake was activated"
       - name: deactivation_epoch
-        description: "Deactivation epoch for the validator"
-      - name: stake
-        description: "Stake for the validator"
+        description: "Epoch when stake will be deactivated"
+      - name: active_stake
+        description: "Amount staked in SOL"
       - name: voter
-        description: "Voter for the validator"
+        description: "Vote account of the validator this stake is delegated to"
       - name: warmup_cooldown_rate
-        description: "Warmup cooldown rate for the validator"
-      - name: TYPE
-        description: "Type for the validator account"
-        tests:
-          - not_null
+        description: "Rate at which stake can be activated/deactivated"
+      - name: type_stake
+        description: "Status of the stake"
       - name: program
-        description: "Program for the validator account"
-        tests:
-          - not_null
+        description: "The type of account"
       - name: account_sol
-        description: "SOL assigned to this account"
+        description: "SOL held in this account"
         tests:
           - not_null
       - name: rent_epoch
         description: "Epoch at which this account will next owe rent"
-      - name: pubkey
+      - name: stake_pubkey
+        description: "Address of stake account"
