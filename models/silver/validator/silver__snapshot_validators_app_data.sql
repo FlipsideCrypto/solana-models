@@ -1,6 +1,6 @@
 {{ config(
   materialized = 'incremental',
-  unique_key = "CONCAT_WS('-', epoch_recorded, vote_pubkey)",
+  unique_key = "CONCAT_WS('-', epoch_recorded, node_pubkey)",
   incremental_strategy = 'delete+insert',
   cluster_by = ['_inserted_timestamp::DATE'],
 ) }}
@@ -41,8 +41,18 @@ SELECT
     json_data :vote_distance_score :: NUMBER AS vote_distance_score,
     json_data :www_url :: STRING AS www_url,
     _inserted_timestamp
-FROM
-    solana_dev.bronze.validators_app_api),
+      FROM
+    {{ ref('bronze__validators_app_api') }}
+
+{% if is_incremental() %}
+WHERE _inserted_timestamp >= (
+  SELECT
+    MAX(_inserted_timestamp)
+  FROM
+    {{ this }}
+)
+{% endif %}
+),
     
 validators_epoch_recorded AS (
   SELECT
