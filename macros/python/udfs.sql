@@ -144,7 +144,8 @@ def get_compute_units_consumed(log_messages, instructions):
         units_consumed_list.append(units_consumed)
         selected_logs.add(logs)
         break
-  return sum(units_consumed_list)
+  total_units_consumed = sum(units_consumed_list)
+  return None if total_units_consumed == 0 else total_units_consumed
 $$;
 {% endmacro %}
 
@@ -165,7 +166,7 @@ def get_compute_units_total(log_messages, instructions):
       if match:
         total_units = int(match.group(1))
         return total_units
-  return 0 if match is None else total_units
+  return None if match is None else total_units
 $$;
 {% endmacro %}
 
