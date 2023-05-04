@@ -1,0 +1,44 @@
+version: 2
+models:
+  - name: silver__snapshot_stake_accounts
+    columns:
+      - name: epoch_recorded
+        description: "The epoch when data was recorded"
+        tests:
+          - not_null
+      - name: authorized_staker
+        description: "Account responsible for signing stake delegations/deactivativations transactions"
+      - name: authorized_withdrawer
+        description: "Account responsible for signing any stake withdrawal transactions"
+      - name: lockup
+        description: "Lockup information when tokens can be withdrawn"
+      - name: rent_exempt_reserve
+        description: "Minimum SOL balance that must be maintained for this account to remain rent exempt"
+      - name: credits_observed
+        description: "Credits observed for the validator"
+      - name: activation_epoch
+        description: "Epoch when stake was activated"
+      - name: deactivation_epoch
+        description: "Epoch when stake will be deactivated"
+      - name: active_stake
+        description: "Amount staked in SOL"
+      - name: voter
+        description: "Vote account of the validator this stake is delegated to"
+      - name: warmup_cooldown_rate
+        description: "Rate at which stake can be activated/deactivated"
+      - name: type_stake
+        description: "Status of the stake"
+      - name: program
+        description: "The type of account"
+      - name: account_sol
+        description: "SOL held in this account"
+        tests:
+          - not_null
+      - name: rent_epoch
+        description: "Epoch at which this account will next owe rent"
+      - name: stake_pubkey
+        description: "Address of stake account"
+      - name: _inserted_timestamp
+        description: "The inserted timestamp"
+        tests:
+          - not_null

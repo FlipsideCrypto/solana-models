@@ -9,4 +9,4 @@ SELECT
     0
   ) as _inserted_timestamp
 FROM 
-streamline.solana_dev.validators_app_list_api
+streamline.solana_dev.stake_program_accounts
