@@ -9,7 +9,7 @@ models:
       - name: authorized_staker
         description: "Account responsible for signing stake delegations/deactivativations transactions"
       - name: authorized_withdrawer
-        description: "Account responsible for signing stake withdrawal transactions"
+        description: "Account responsible for signing any stake withdrawal transactions"
       - name: lockup
         description: "Lockup information when tokens can be withdrawn"
       - name: rent_exempt_reserve
