@@ -123,47 +123,50 @@ $$;
 {% endmacro %}
 
 {% macro create_udf_get_compute_units_consumed(schema) %}
-create or replace function {{ schema }}.udf_get_compute_units_consumed(log_messages array)
+create or replace function {{ schema }}.udf_get_compute_units_consumed(log_messages array, instructions array)
 returns int
 language python 
 runtime_version = '3.8'
 handler = 'get_compute_units_consumed'
 as 
 $$
-def get_compute_units_consumed(log_messages):
-    import re
-    consumed_sum = 0
-    for i in range(len(log_messages)):
-        consumed = 0
-        if "consumed" in log_messages[i]:
-            c = re.findall(r'\b\d+\b', log_messages[i])
-            consumed = int(c[0])
-        consumed_sum = consumed_sum + consumed
-
-    return consumed_sum
+def get_compute_units_consumed(log_messages, instructions):
+  import re
+  units_consumed_list = []
+  selected_logs = set()
+  for instr in instructions:
+    program_id = instr['programId']
+    for logs in log_messages:
+      if logs in selected_logs:
+        continue
+      if re.search(f"Program {program_id} consumed", logs):
+        units_consumed = int(re.findall(r'consumed (\d+)', logs)[0])
+        units_consumed_list.append(units_consumed)
+        selected_logs.add(logs)
+        break
+  total_units_consumed = sum(units_consumed_list)
+  return None if total_units_consumed == 0 else total_units_consumed
 $$;
 {% endmacro %}
 
 {% macro create_udf_get_compute_units_total(schema) %}
-create or replace function {{ schema }}.udf_get_compute_units_total(log_messages array)
+create or replace function {{ schema }}.udf_get_compute_units_total(log_messages array, instructions array)
 returns int
 language python 
 runtime_version = '3.8'
 handler = 'get_compute_units_total'
 as 
 $$
-def get_compute_units_total(log_messages):
-    import re
-    available_sum = 0
-    for i in range(len(log_messages)):
-        available = 0
-        if "consumed" in log_messages[i]:
-            c = re.findall(r'\b\d+\b', log_messages[i])
-            if len(c) >= 2:
-            	available = int(c[1])
-        available_sum = available_sum + available
-
-    return available_sum
+def get_compute_units_total(log_messages, instructions):
+  import re
+  for instr in instructions:
+    program_id = instr['programId']
+    for logs in log_messages:
+      match = re.search(f"Program {program_id} consumed \d+ of (\d+) compute units", logs)
+      if match:
+        total_units = int(match.group(1))
+        return total_units
+  return None if match is None else total_units
 $$;
 {% endmacro %}
 
