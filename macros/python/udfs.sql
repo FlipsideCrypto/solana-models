@@ -123,7 +123,7 @@ $$;
 {% endmacro %}
 
 {% macro create_udf_get_compute_units_consumed(schema) %}
-create or replace function {{ schema }}.udf_get_compute_units_consumed(log_messages array)
+create or replace function {{ schema }}.udf_get_compute_units_consumed(log_messages array, instructions array)
 returns int
 language python 
 runtime_version = '3.8'
@@ -150,7 +150,7 @@ $$;
 {% endmacro %}
 
 {% macro create_udf_get_compute_units_total(schema) %}
-create or replace function {{ schema }}.udf_get_compute_units_total(log_messages array)
+create or replace function {{ schema }}.udf_get_compute_units_total(log_messages array, instructions array)
 returns int
 language python 
 runtime_version = '3.8'
