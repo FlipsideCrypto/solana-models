@@ -159,6 +159,7 @@ as
 $$
 def get_compute_units_total(log_messages, instructions):
   import re
+  match = None
   for instr in instructions:
     program_id = instr['programId']
     for logs in log_messages:
@@ -166,7 +167,8 @@ def get_compute_units_total(log_messages, instructions):
       if match:
         total_units = int(match.group(1))
         return total_units
-  return None if match is None else total_units
+  if match is None:
+    return None
 $$;
 {% endmacro %}
 
