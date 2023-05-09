@@ -9,4 +9,7 @@ SELECT
     0
   ) as _inserted_timestamp
 FROM 
-streamline.solana_dev.validator_vote_accounts
+    {{ source(
+        'bronze_streamline', 
+        'validator_vote_accounts'
+    )}}
