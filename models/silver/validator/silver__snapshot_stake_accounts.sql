@@ -33,7 +33,7 @@ SELECT
     {{ ref('bronze__stake_program_accounts') }}
 
 {% if is_incremental() %}
-WHERE _inserted_timestamp >= (
+WHERE _inserted_timestamp > (
   SELECT
     MAX(_inserted_timestamp)
   FROM

@@ -26,7 +26,7 @@ WITH base AS (
     {{ ref('bronze__vote_accounts') }}
 
 {% if is_incremental() %}
-WHERE _inserted_timestamp >= (
+WHERE _inserted_timestamp > (
   SELECT
     MAX(_inserted_timestamp)
   FROM
