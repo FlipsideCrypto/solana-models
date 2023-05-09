@@ -10,10 +10,7 @@ WITH date_hours AS (
     SELECT
         date_hour
     FROM
-        {{ source (
-            'crosschain',
-            'dim_date_hours'
-        ) }}
+        {{ ref('silver__dates') }}
     WHERE
         date_hour >= '2020-04-10'
         AND date_hour <= (

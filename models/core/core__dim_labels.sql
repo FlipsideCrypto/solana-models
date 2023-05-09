@@ -11,8 +11,4 @@ SELECT
   label_subtype,
   project_name as label, 
   address_name as address_name
-FROM {{ source(
-        'crosschain',
-        'address_labels'
-    ) }} 
-WHERE blockchain = 'solana'
+FROM {{ ref('silver__labels') }}

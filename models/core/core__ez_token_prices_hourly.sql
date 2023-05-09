@@ -21,10 +21,7 @@ SELECT
     END AS is_imputed
 FROM
     {{ ref('silver__token_metadata') }} A
-    CROSS JOIN {{ source(
-        'crosschain',
-        'dim_date_hours'
-    ) }}
+    CROSS JOIN {{ ref('silver__dates') }}
     b
     LEFT JOIN {{ ref('silver__token_prices_coin_gecko_hourly') }}
     cg
