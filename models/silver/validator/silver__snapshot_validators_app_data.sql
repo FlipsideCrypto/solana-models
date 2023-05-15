@@ -67,6 +67,7 @@ validators_epoch_recorded AS (
       FROM
         base
         where delinquent = false
+        and active_stake > 0
       GROUP BY
         _inserted_timestamp
     ) b

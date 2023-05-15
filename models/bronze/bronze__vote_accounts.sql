@@ -11,5 +11,5 @@ SELECT
 FROM 
     {{ source(
         'bronze_streamline', 
-        'validator_vote_accounts'
+        'validator_vote_program_accounts'
     )}}

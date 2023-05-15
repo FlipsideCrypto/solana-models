@@ -8,20 +8,25 @@
 WITH base AS (
 
   SELECT
-    json_data :status :: STRING AS epoch_status,
-    json_data :data :activatedStake :: int / pow(
+    _inserted_timestamp,
+    json_data :account :data :parsed :info :authorizedVoters [0] :authorizedVoter :: STRING AS authorized_voter,
+    json_data :account :data :parsed :info :authorizedVoters [0] :epoch :: NUMBER AS last_epoch_active,
+    json_data :account :data :parsed :info :authorizedWithdrawer :: STRING AS authorized_withdrawer,
+    json_data :account :data :parsed :info :commission :: NUMBER AS commission,
+    json_data :account :data :parsed :info :epochCredits AS epoch_credits,
+    json_data :account :data :parsed :info :lastTimestamp :slot :: NUMBER AS last_timestamp_slot,
+    json_data :account :data :parsed :info :lastTimestamp :timestamp :: timestamp_tz AS last_timestamp,
+    json_data :account :data :parsed :info :nodePubkey :: STRING AS node_pubkey,
+    json_data :account :data :parsed :info :priorVoters AS prior_voters,
+    json_data :account :data :parsed :info :rootSlot :: NUMBER AS root_slot,
+    json_data :account :data :parsed :info :votes AS votes,
+    json_data :account :lamports / pow(
         10,
         9
-    ) AS activatedStake,
-    json_data :data :commission :: NUMBER AS commission,
-    json_data :data :epochCredits [4] [0] :: NUMBER AS latest_epoch,
-    json_data :data :epochCredits AS epochCredits,
-    json_data :data :epochVoteAccount :: BOOLEAN AS epochVoteAccount,
-    json_data :data :lastVote :: NUMBER AS lastVote,
-    json_data :data :nodePubkey :: STRING AS nodePubkey,
-    json_data :data :rootSlot :: NUMBER AS rootSlot,
-    json_data :data :votePubkey :: STRING AS votePubkey,
-    _inserted_timestamp
+    ) AS account_sol,
+    json_data :account :owner :: STRING AS owner,
+    json_data :account :rentEpoch :: NUMBER AS rent_epoch,
+    json_data :pubkey :: STRING AS vote_pubkey
   FROM
     {{ ref('bronze__vote_accounts') }}
 
@@ -34,15 +39,15 @@ WHERE _inserted_timestamp > (
 )
 {% endif %}
 ),
-votes_accounts_epoch_recorded AS (
+vote_accounts_epoch_recorded AS (
   SELECT
-    A.*,
+    a.*,
     b.epoch_recorded
   FROM
-    base A
+    base a
     LEFT JOIN (
       SELECT
-        MAX(latest_epoch) AS epoch_recorded,
+        MAX(last_epoch_active) AS epoch_recorded,
         _inserted_timestamp
       FROM
         base
@@ -50,29 +55,6 @@ votes_accounts_epoch_recorded AS (
         _inserted_timestamp
     ) b
     ON A._inserted_timestamp = b._inserted_timestamp
-),
-votes_accounts_deduped AS (
-  SELECT
-    *,
-    ROW_NUMBER() OVER (PARTITION BY epoch_recorded, votePubkey ORDER BY _inserted_timestamp desc) AS row_num
-  FROM
-    votes_accounts_epoch_recorded
 )
-SELECT
-  epoch_status,
-  epoch_recorded,
-  activatedStake / pow(
-        10,
-        9
-    ) AS active_stake,
-  commission,
-  epochCredits AS epoch_credits,
-  epochVoteAccount AS epoch_vote_account,
-  lastVote AS last_vote,
-  nodePubkey AS node_pubkey,
-  rootSlot AS root_slot,
-  votePubkey AS vote_pubkey,
-  _inserted_timestamp
-FROM
-  votes_accounts_deduped
-  where row_num = 1
+
+select * from vote_accounts_epoch_recorded

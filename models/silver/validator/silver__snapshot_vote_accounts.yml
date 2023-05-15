@@ -11,8 +11,14 @@ models:
         description: "The epoch when data was recorded"
         tests:
           - not_null
-      - name: active_stake
-        description: "The activated stake in SOL delegated to the vote account in this epoch"
+      - name: authorized_voter
+        description: "Account responsible for signing vote transactions"
+        tests:
+          - not_null
+      - name: last_epoch_active
+        description: "last epoch when vote account was active"
+      - name: authorized_withdrawer
+        description: "Account responsible for signing stake withdrawal transactions"
         tests:
           - not_null
       - name: commission
@@ -23,29 +29,39 @@ models:
         description: "Credits earned by the end of epochs, containing epoch/credits/previous credits"
         tests:
           - not_null
-      - name: epoch_vote_account
-        description: "Whether the vote account is staked for this epoch"
+      - name: last_timestamp_slot
+        description: "Last slot voted on"
         tests:
           - not_null
-      - name: last_vote
-        description: "Most recent slot voted on by the vote account"
+      - name: last_timestamp
+        description: "The timestamp when last slot was voted on"
         tests:
           - not_null
       - name: node_pubkey
         description: "pubkey for the Solana validator node"
         tests:
           - not_null
+      - name: prior_voters
+        description: "Prior voters for the vote account"
       - name: root_slot
         description: "latest slot confirmed"
+      - name: votes
+        description: "Votes during epoch"
+        tests:
+          - not_null
+      - name: account_sol
+        description: "SOL assigned to this account"
+        tests:
+          - not_null
+      - name: owner
+        description: "Program account that owns the vote account"
+        tests:
+          - not_null
+      - name: rent_epoch
+        description: "Epoch at which this account will next owe rent"
         tests:
           - not_null
       - name: vote_pubkey
-        description: "The vote account address"
+        description: "Public key for the vote account"
         tests:
           - not_null
-      - name: _inserted_timestamp
-        description: "The inserted timestamp"
-        tests:
-          - not_null
-
-    

@@ -12,6 +12,7 @@ $$
         alter external table streamline.{{ target.database }}.validator_vote_accounts refresh;
         alter external table streamline.{{ target.database }}.validators_app_list_api refresh;
         alter external table streamline.{{ target.database }}.stake_program_accounts refresh;
+        alter external table streamline.{{ target.database }}.validator_vote_program_accounts refresh;
         return TRUE;
     end;
 $${% endset %}
