@@ -1,0 +1,51 @@
+version: 2
+models:
+  - name: silver__snapshot_vote_accounts_extended_stats
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - EPOCH_RECORDED
+            - VOTE_PUBKEY
+    columns:
+      - name: epoch_recorded
+        description: "The epoch when data was recorded"
+        tests:
+          - not_null
+      - name: active_stake
+        description: "The activated stake in SOL delegated to the vote account in this epoch"
+        tests:
+          - not_null
+      - name: commission
+        description: "% of rewards payout to the vote account"
+        tests:
+          - not_null
+      - name: epoch_credits
+        description: "Credits earned by the end of epochs, containing epoch/credits/previous credits"
+        tests:
+          - not_null
+      - name: epoch_vote_account
+        description: "Whether the vote account is staked for this epoch"
+        tests:
+          - not_null
+      - name: last_vote
+        description: "Most recent slot voted on by the vote account"
+        tests:
+          - not_null
+      - name: node_pubkey
+        description: "pubkey for the Solana validator node"
+        tests:
+          - not_null
+      - name: root_slot
+        description: "latest slot confirmed"
+        tests:
+          - not_null
+      - name: vote_pubkey
+        description: "The vote account address"
+        tests:
+          - not_null
+      - name: _inserted_timestamp
+        description: "The inserted timestamp"
+        tests:
+          - not_null
+
+    
