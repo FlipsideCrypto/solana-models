@@ -8,13 +8,10 @@
 WITH vote_programs AS (
     SELECT 
         address
-    FROM {{ source(
-        'crosschain',
-        'address_labels'
-    ) }} 
+    FROM 
+    {{ ref('silver__labels') }} 
     WHERE 
-        blockchain = 'solana'
-        AND project_name = 'realms'
+        project_name = 'realms'
 ),  
 vote_txs AS (
     SELECT
