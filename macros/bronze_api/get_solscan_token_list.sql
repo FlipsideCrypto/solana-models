@@ -17,7 +17,9 @@ SELECT
     'GET',
     'https://public-api.solscan.io/token/list?sortBy=volume&direction=desc&limit=50&offset=' || (
       rn * 50
-    ) :: STRING,{},{}
+    ) :: STRING || '&token=' || (
+      SELECT API_KEY FROM crosschain.silver.apis_keys WHERE API_NAME = 'solscan'
+    ),{},{}
   ) AS DATA,
   SYSDATE()
 FROM
