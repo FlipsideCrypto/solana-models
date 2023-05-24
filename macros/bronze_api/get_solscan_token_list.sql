@@ -1,10 +1,5 @@
 {% macro get_solscan_token_list() %}
   {% set query %}
-DECLARE
-  counter INTEGER DEFAULT 1;
-maximum_count INTEGER DEFAULT 10;
-BEGIN
-  for i IN 1 TO maximum_count DO
 INSERT INTO
   bronze_API.solscan_TOKEN_list(
     counter,
@@ -18,7 +13,12 @@ SELECT
     'https://public-api.solscan.io/token/list?sortBy=volume&direction=desc&limit=50&offset=' || (
       rn * 50
     ) :: STRING || '&token=' || (
-      SELECT API_KEY FROM crosschain.silver.apis_keys WHERE API_NAME = 'solscan'
+      SELECT
+        api_key
+      FROM
+        crosschain.silver.apis_keys
+      WHERE
+        api_name = 'solscan'
     ),{},{}
   ) AS DATA,
   SYSDATE()
@@ -27,20 +27,46 @@ FROM
     SELECT
       SEQ4() rn
     FROM
-      TABLE(GENERATOR(rowcount => 262))
-    EXCEPT
-    SELECT
-      counter
-    FROM
-      bronze_api.solscan_token_list
-    LIMIT
-      1
+      TABLE(GENERATOR(rowcount => 75))
   );
-call system $ wait(5);
-counter:= counter + 1;
-END for;
-RETURN counter;
-END;
 {% endset %}
-{% do run_query(query) %}
+  {% do run_query(query) %}
+  {% set wait %}
+  CALL system$wait(10);
+{% endset %}
+  {% do run_query(wait) %}
+  {% set query %}
+INSERT INTO
+  bronze_API.solscan_TOKEN_list(
+    counter,
+    DATA,
+    _inserted_timestamp
+  )
+SELECT
+  rn,
+  ethereum.streamline.udf_api(
+    'GET',
+    'https://public-api.solscan.io/token/list?sortBy=volume&direction=desc&limit=50&offset=' || (
+      rn * 50
+    ) :: STRING || '&token=' || (
+      SELECT
+        api_key
+      FROM
+        crosschain.silver.apis_keys
+      WHERE
+        api_name = 'solscan'
+    ),{},{}
+  ) AS DATA,
+  SYSDATE()
+FROM
+  (
+    SELECT
+      SEQ4() rn
+    FROM
+      TABLE(GENERATOR(rowcount => 150))
+    WHERE
+      rn > 74
+  );
+{% endset %}
+  {% do run_query(query) %}
 {% endmacro %}
