@@ -32,7 +32,7 @@ FROM
 {% endset %}
   {% do run_query(query) %}
   {% set wait %}
-  CALL system$wait(10);
+  CALL system$wait(30);
 {% endset %}
   {% do run_query(wait) %}
   {% set query %}
