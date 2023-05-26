@@ -7,7 +7,7 @@
 WITH base AS (
 
     SELECT
-        VALUE :"address" :: STRING AS token_address,
+        VALUE :"mintAddress" :: STRING AS token_address,
         VALUE :extensions :coingeckoId :: STRING AS coingecko_id,
         VALUE :tokenName :: STRING AS NAME,
         VALUE :tokenSymbol :: STRING AS symbol,
@@ -75,4 +75,5 @@ SELECT
 FROM
     base qualify(ROW_NUMBER() over (PARTITION BY token_address
 ORDER BY
+    (coingecko_id IS NOT NULL) DESC,
     _inserted_timestamp DESC)) = 1
