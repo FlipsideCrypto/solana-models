@@ -466,6 +466,8 @@ SELECT
     succeeded,
     program_id,
     inner_swap_program_id,
+    index,
+    rn as inner_index,
     swapper,
     from_mint,
     from_amt,
@@ -477,7 +479,12 @@ SELECT
         ORDER BY
             index,
             rn
-    ) AS swap_index
+    ) AS swap_index,
+    concat(
+        tx_id,
+        '-',
+        index
+    ) AS _log_id
 FROM
     final_temp
 WHERE

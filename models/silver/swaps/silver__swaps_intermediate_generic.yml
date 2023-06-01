@@ -126,6 +126,8 @@ models:
         tests: 
           - not_null: 
               where: succeeded = TRUE
+      - name: _LOG_ID
+        description: "Combination of TX_ID and event index"
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 

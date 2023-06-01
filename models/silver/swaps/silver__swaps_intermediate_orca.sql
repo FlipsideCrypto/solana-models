@@ -372,6 +372,8 @@ final_temp AS (
         s1.tx_id,
         s1.succeeded,
         s1.program_id,
+        s1.index,
+        s1.inner_index,
         s1.swapper,
         s1.mint,
         s1.amount,
@@ -396,6 +398,8 @@ final_temp AS (
         s1.tx_id,
         s1.succeeded,
         s1.program_id,
+        s1.index,
+        s1.inner_index,
         s1.swapper,
         s1.mint,
         s1.amount,
@@ -415,6 +419,8 @@ final_temp AS (
         s1.tx_id,
         s1.succeeded,
         s1.program_id,
+        s1.index,
+        s1.inner_index,
         s1.swapper,
         NULL AS mint,
         NULL AS amount,
@@ -443,6 +449,8 @@ SELECT
     tx_id,
     succeeded,
     program_id,
+    index,
+    inner_index,
     swapper,
     mint AS from_mint,
     amount AS from_amt,
@@ -453,7 +461,12 @@ SELECT
         PARTITION BY tx_id
         ORDER BY
             rn
-    ) AS swap_index
+    ) AS swap_index,
+    concat(
+        tx_id,
+        '-',
+        index
+    ) AS _log_id
 FROM
     final_temp
 WHERE

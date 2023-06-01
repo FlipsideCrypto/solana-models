@@ -14,7 +14,8 @@ SELECT
     to_amt AS swap_to_amount,
     to_mint AS swap_to_mint,
     program_id,
-    l.address_name AS swap_program
+    l.address_name AS swap_program,
+    _log_id
 FROM
     {{ ref('silver__swaps') }}
     s

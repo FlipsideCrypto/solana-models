@@ -24,6 +24,7 @@ WITH base AS (
         to_mint,
         to_amt,
         swap_index,
+        _log_id,
         _inserted_timestamp
     FROM
         {{ ref('silver__swaps_intermediate_generic') }}
@@ -51,6 +52,7 @@ SELECT
     to_mint,
     to_amt,
     swap_index,
+    _log_id,
     _inserted_timestamp
 FROM
     {{ ref('silver__swaps_intermediate_raydium') }}
@@ -78,6 +80,7 @@ SELECT
     to_mint,
     to_amt,
     swap_index,
+    _log_id,
     _inserted_timestamp
 FROM
     {{ ref('silver__swaps_intermediate_orca') }}
@@ -105,6 +108,7 @@ SELECT
     to_mint,
     to_amt,
     swap_index,
+    _log_id,
     _inserted_timestamp
 FROM
     {{ ref('silver__swaps_intermediate_jupiterv4') }}
@@ -131,6 +135,7 @@ base_swaps AS (
         from_mint,
         to_mint,
         _inserted_timestamp,
+        MIN(_log_id) as _log_id,
         MIN(swap_index) AS swap_index,
         SUM(from_amt) AS from_amt,
         SUM(to_amt) AS to_amt
@@ -208,6 +213,7 @@ pre_final AS (
             b2.to_mint,
             b1.to_mint
         ) AS to_mint,
+        b1._log_id,
         b1._inserted_timestamp
     FROM
         intermediate_swaps b1
@@ -243,6 +249,7 @@ SELECT
         0
     ) AS to_amt,
     pf.to_mint,
+    pf._log_id,
     pf._inserted_timestamp
 FROM
     pre_final pf
@@ -269,6 +276,7 @@ SELECT
     pf.from_mint,
     0 AS to_amt,
     pf.to_mint,
+    pf._log_id,
     pf._inserted_timestamp
 FROM
     pre_final pf
