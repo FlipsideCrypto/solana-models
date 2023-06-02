@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__ez_staking_lp_actions
-    description: An easy table for staking & LP actions that contains additional information about the validator. 
+    description: EZ table for staking & LP actions that contains additional information about the validator. 
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

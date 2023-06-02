@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__ez_token_prices_hourly
-    description: Dimension table that provides a name, symbol, and price of tokens at the hour level
+    description: EZ table containing the name, symbol, and price of tokens at the hourly level
     tests:
      - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
