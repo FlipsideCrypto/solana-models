@@ -158,6 +158,7 @@ SELECT
     NULL AS claim_ticket_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp,
+    'SOL' as token,
     concat_ws(
         '-',
         tx_id,
@@ -188,6 +189,7 @@ SELECT
     NULL AS claim_ticket_address,
     e.amount,
     e._inserted_timestamp,
+    'SOL' as token,
     concat_ws(
         '-',
         tx_id,
@@ -209,8 +211,9 @@ SELECT
     e.instruction :accounts [3] :: STRING AS address,
     NULL AS reserve_stake_address,
     e.instruction :accounts [4] :: STRING AS claim_ticket_address,
-    NULL AS amount,
+    e.inner_instruction:instructions[0]:parsed:info:amount::int as amount,
     e._inserted_timestamp,
+    'mSOL' as token,
     concat_ws(
         '-',
         tx_id,
@@ -236,6 +239,7 @@ SELECT
         i.value :parsed :info :lamports + b.pre_balances [silver.udf_get_account_balances_index( claim_ticket_address, b.account_keys)]
     ) :: NUMBER AS amount,
     e._inserted_timestamp,
+    'SOL' as token,
     concat_ws(
         '-',
         e.tx_id,
