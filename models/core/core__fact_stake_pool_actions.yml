@@ -43,3 +43,7 @@ models:
         description: "Amount in Lamports"
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: TOKEN
+        description: "Token utilized in the stake pool action"
+        tests:
+          - dbt_expectations.expect_column_to_exist
