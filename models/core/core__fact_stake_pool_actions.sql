@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'view',
-    -- meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }}}
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }}}
 ) }}
 
 {% for model_suffix in ["generic","socean","lido","eversol"] %}
