@@ -1,9 +1,9 @@
 {{ config(
     materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }}}
+    -- meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }}}
 ) }}
 
-{% for model_suffix in ["generic","socean","lido","marinade","eversol"] %}
+{% for model_suffix in ["generic","socean","lido","eversol"] %}
 
     SELECT
         CASE
@@ -22,7 +22,8 @@
         action,
         address,
         stake_pool,
-        amount
+        amount,
+        'SOL' as token
     FROM
         {{ ref(
             'silver__stake_pool_actions_' + model_suffix
@@ -32,3 +33,20 @@
         UNION ALL
         {% endif %}
     {% endfor %}
+    UNION ALL
+    SELECT
+        'marinade' as stake_pool_name,
+        tx_id,
+        block_id,
+        block_timestamp,
+        INDEX,
+        succeeded,
+        action,
+        address,
+        stake_pool,
+        amount,
+        token
+    FROM
+        {{ ref(
+            'silver__stake_pool_actions_marinade'
+        ) }}
