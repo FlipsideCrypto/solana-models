@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: core__fact_token_prices_hourly
+    description: A table containing the hourly prices of tokens and the provider.
     columns:
       - name: PROVIDER
         description: Provider of the data

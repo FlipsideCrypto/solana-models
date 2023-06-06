@@ -60,6 +60,11 @@ The dimension tables are sourced from a variety of on-chain and off-chain source
 
 Convenience views (denoted ez_) are a combination of different fact and dimension tables. These views are built to make it easier to query the data.
 
+### Solana Data
+
+Key notes about our Solana data:
+- Transactions before block 39,824,213 (~ 2020-10-07) may not contain BLOCK_TIMESTAMP values, so BLOCK_ID should be utilized when querying older transactions.
+
 ## **Using dbt docs**
 ### Navigation
 
