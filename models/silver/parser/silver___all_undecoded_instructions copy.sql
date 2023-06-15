@@ -6,7 +6,9 @@
 WITH idl_in_play AS (
 
     SELECT
-        REPLACE(SPLIT_PART(metadata$filename, '/', 3), '.json') AS program_id
+        LOWER(
+            REPLACE(SPLIT_PART(metadata$filename, '/', 3), '.json')
+        ) AS program_id
     FROM
         {{ source(
             'bronze_streamline',
@@ -23,12 +25,14 @@ instr_in_play AS (
     FROM
         {{ ref('silver__events') }} A
         JOIN idl_in_play b
-        ON A.program_id = b.program_id
+        ON LOWER(
+            A.program_id
+        ) = b.program_id
 )
 SELECT
     p.program_id,
     p.tx_id,
-    p.INDEX,
+    p.index,
     p.instruction,
     p.block_timestamp
 FROM
@@ -40,7 +44,13 @@ FROM
     d
     ON p.tx_id = d.tx_id
     AND p.index = d.index
+    AND p.block_timestamp = d.block_timestamp
 WHERE
-    d.tx_id IS NULL qualify(ROW_NUMBER() over (PARTITION BY program_id
+    d.tx_id IS NULL 
+    {# qualify(ROW_NUMBER() over (PARTITION BY program_id
 ORDER BY
-    p.block_timestamp)) < 101
+    p.block_timestamp
+)
+) < 100001 #}
+{# order by p.block_timestamp
+LIMIT 100000 #}
