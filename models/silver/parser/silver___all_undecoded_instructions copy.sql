@@ -46,11 +46,4 @@ FROM
     AND p.index = d.index
     AND p.block_timestamp = d.block_timestamp
 WHERE
-    d.tx_id IS NULL 
-    {# qualify(ROW_NUMBER() over (PARTITION BY program_id
-ORDER BY
-    p.block_timestamp
-)
-) < 100001 #}
-{# order by p.block_timestamp
-LIMIT 100000 #}
+    d.tx_id IS NULL
