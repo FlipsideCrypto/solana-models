@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   schedule:
     # Run at xx:8 UTC hourly (see https://crontab.guru)
-    - cron: 8 */1 * * *'
+    - cron: 8 * * * *'
     
 nv:
   USE_VARS: "${{ vars.USE_VARS }}"
