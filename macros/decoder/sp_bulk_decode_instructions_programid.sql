@@ -1,7 +1,7 @@
 {% macro sp_bulk_decode_instructions_programid() %}
   {% if var("UPDATE_UDFS_AND_SPS") %}
     {% set sql %}
-    CREATE OR REPLACE PROCEDURE solana_dev.silver.sp_bulk_decode_instructions(program_id VARCHAR(16777216))
+    CREATE OR REPLACE PROCEDURE silver.sp_bulk_decode_instructions(program_id VARCHAR(16777216))
 RETURNS table()
 LANGUAGE SQL
 AS 
@@ -14,6 +14,7 @@ BEGIN
       SELECT  tx_id, index,
          silver.udf_decode_instructions(program_id,instruction)  as decoded_instruction
          , block_timestamp
+          ,program_id
         from silver._all_undecoded_instructions
         WHERE lower(program_id) = lower(''', :program_id, ''')
         Limit 10000
