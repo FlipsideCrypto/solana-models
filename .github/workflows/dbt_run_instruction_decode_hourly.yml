@@ -7,7 +7,7 @@ on:
     # Run at xx:8 UTC hourly (see https://crontab.guru)
     - cron: '8 * * * *'
     
-nv:
+env:
   USE_VARS: "${{ vars.USE_VARS }}"
   DBT_PROFILES_DIR: "${{ vars.DBT_PROFILES_DIR }}"
   DBT_VERSION: "${{ vars.DBT_VERSION }}"
