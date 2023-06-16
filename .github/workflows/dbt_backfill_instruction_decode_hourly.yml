@@ -1,5 +1,5 @@
-name: dbt_run_instruction_decode_hourly
-run-name: dbt_run_instruction_decode_hourly
+name: dbt_backfill_instruction_decode_hourly
+run-name: dbt_backfill_instruction_decode_hourly
 
 on:
   workflow_dispatch:
