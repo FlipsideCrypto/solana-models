@@ -9,6 +9,8 @@ AS DECLARE
   cur CURSOR FOR  
   Select REPLACE(SPLIT_PART(metadata$filename, '/', 3), '.json') program_id from streamline.solana.decode_instructions_idls    ;
 BEGIN
+  create or replace temporary table results as 
+  select ''::string as pid;
   
     FOR cur_row IN cur DO
         let pid varchar:= cur_row.program_id;
@@ -19,8 +21,6 @@ BEGIN
         end if;
     END FOR;
     let rs resultset := (select * from results order by pid);
-    -- RETURN test;
-    -- RETURN TABLE(RESULTSET_FROM_CURSOR(cur));
     RETURN TABLE(rs);
 END;{% endset %}
 {% do run_query(sql) %}
