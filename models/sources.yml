@@ -38,6 +38,7 @@ sources:
     database: streamline
     schema: solana
     tables:
+      - name: decode_instructions_idls
       - name: decoded_instructions_data_api
       - name: validator_metadata_api
       - name: stake_account_tx_ids_api
@@ -63,3 +64,7 @@ sources:
     schema: streamline
     tables:
       - name: complete_block_txs
+  - name: bronze
+    schema: bronze
+    tables:
+      - name: decoded_instructions
