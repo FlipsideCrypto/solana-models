@@ -12,7 +12,7 @@ BEGIN
   
     FOR cur_row IN cur DO
         let pid varchar:= cur_row.program_id;
-        call solana_dev.silver.sp_bulk_decode_instructions(:pid);
+        call silver.sp_bulk_decode_instructions(:pid);
         let cnt varchar := (select count(*) from table(result_scan(last_query_id())));
         if (cnt > 0) then
             insert into results (pid) values (:pid);
