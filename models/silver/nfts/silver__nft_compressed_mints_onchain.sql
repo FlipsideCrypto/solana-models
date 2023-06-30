@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "mint",
+    unique_key = "tx_id",
     incremental_strategy = 'delete+insert',
 ) }}
 
@@ -12,7 +12,8 @@ with bgum_mints as (
     tx_id,
     instruction :accounts[1] ::string as leaf_owner,
     instruction :accounts[8] ::string as collection_mint,
-    signers[0]::string as creator_address
+    signers[0]::string as creator_address,
+    _inserted_timestamp
 
   from solana.silver.events e
   inner join solana.silver.transactions txs
@@ -20,8 +21,6 @@ with bgum_mints as (
   where succeeded
     and program_id = 'BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY'
     and array_contains('Program log: Instruction: MintToCollectionV1' ::variant, log_messages)
-    -- and block_timestamp > '2023-02-07'
-    -- and block_timestamp::date = '2023-04-27'
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
     SELECT
@@ -29,7 +28,7 @@ AND e._inserted_timestamp >= (
     FROM
         {{ this }}
 )
-and tx._inserted_timestamp >= (
+and txs._inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
@@ -48,7 +47,8 @@ and tx._inserted_timestamp >= (
     tx_id,
     f.value :accounts[1] ::string as leaf_owner,
     f.value :accounts[8] ::string as collection_mint,
-    signers[0]::string as creator_address
+    signers[0]::string as creator_address,
+    _inserted_timestamp
   
   from solana.silver.events e
   inner join lateral flatten (input => inner_instruction :instructions) f
@@ -66,7 +66,7 @@ AND e._inserted_timestamp >= (
     FROM
         {{ this }}
 )
-and tx._inserted_timestamp >= (
+and txs._inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
