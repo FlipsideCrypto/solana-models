@@ -14,3 +14,4 @@ FROM
     LATERAL FLATTEN(
         input => a.json_data :metadata :leaders
     ) AS f
+group by 1,2,3,4,5,6
