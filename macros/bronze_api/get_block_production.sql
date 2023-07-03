@@ -1,6 +1,15 @@
 {% macro get_block_production() %}
+ {% set create_table %}
+CREATE TABLE if NOT EXISTS {{ target.database }}.bronze_api.block_production(
+    json_data VARIANT,
+    epoch varchar,
+    calls string,
+     _inserted_timestamp timestamp_ntz
+  );
+{% endset %}
+  {% do run_query(create_table) %}
   {% set create_block_prod_call_query %}
-  CREATE temporary TABLE block_production_call AS
+  CREATE temporary TABLE bronze_api.block_production_call AS
 SELECT
   ARRAY_AGG(
     { 'id': previous_epoch,
@@ -39,16 +48,17 @@ FROM
   {% do run_query(create_block_prod_call_query) %}
   {% set results_query %}
 INSERT INTO
-  solana_dev.bronze_API.block_production WITH results AS (
+    bronze_api.block_production (json_data,epoch,calls,_inserted_timestamp) WITH results AS (
     SELECT
       ethereum.streamline.udf_json_rpc_call(
         'https://api.mainnet-beta.solana.com',{ 'Content-Type': 'application/json' },
         calls
       ),
-      calls [0] :id AS epoch,
+      calls [0] :id,
+      calls :: string,
       TO_TIMESTAMP_NTZ(CURRENT_TIMESTAMP) AS _inserted_timestamp
     FROM
-      block_production_call
+      bronze_api.block_production_call
   )
 SELECT
   *
