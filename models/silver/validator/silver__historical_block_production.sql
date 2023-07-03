@@ -10,7 +10,10 @@ SELECT
     a.json_data :metadata :start_slot :: INT AS start_slot,
     a.json_data :metadata :end_slot :: INT AS end_slot
 FROM
-    solana_dev.bronze.block_production a,
+    {{ source(
+        'bronze',
+        'block_production'
+    ) }} a,
     LATERAL FLATTEN(
         input => a.json_data :metadata :leaders
     ) AS f
