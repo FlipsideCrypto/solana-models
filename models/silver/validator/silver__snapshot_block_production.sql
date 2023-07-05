@@ -26,4 +26,7 @@ WHERE _inserted_timestamp > (
     {{ this }}
 )
 {% endif %}
+qualify(ROW_NUMBER() over(PARTITION BY epoch, node_pubkey
+ORDER BY
+    _inserted_timestamp DESC)) = 1
 

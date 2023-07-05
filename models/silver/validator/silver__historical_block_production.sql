@@ -16,5 +16,7 @@ FROM
     ) }} a,
     LATERAL FLATTEN(
         input => a.json_data :metadata :leaders
-    ) AS f
-group by 1,2,3,4,5,6
+    ) AS f group by 1,2,3,4,5,6 qualify(ROW_NUMBER() over(PARTITION BY epoch, node_pubkey
+ORDER BY
+    epoch DESC)) = 1
+
