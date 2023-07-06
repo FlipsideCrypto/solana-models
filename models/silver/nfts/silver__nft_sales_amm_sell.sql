@@ -117,7 +117,7 @@ mev2_sales AS(
             instruction :accounts [12] :: STRING = '11111111111111111111111111111111'
             OR instruction :accounts [16] :: STRING = 'ocp4vWUzA2z2XMYJ3QhM9vWdyoyoQwAFJhRdVTbvo9E'
         )
-    UNION
+    UNION ALL
         -- mev2_sells
     SELECT
         A.*,
