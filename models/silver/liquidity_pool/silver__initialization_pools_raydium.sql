@@ -120,8 +120,8 @@ SELECT
     instruction :accounts [4] :: STRING AS liquidity_pool,
     '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8' AS owner,
     instruction :accounts [5] :: STRING AS mint_authority,
-    instruction :accounts [8] :: STRING AS token_a_account,
-    instruction :accounts [9] :: STRING AS token_b_account,
+    instruction :accounts [10] :: STRING AS token_a_account,
+    instruction :accounts [11] :: STRING AS token_b_account,
     instruction :accounts [7] :: STRING AS pool_token,
     _inserted_timestamp
 FROM
