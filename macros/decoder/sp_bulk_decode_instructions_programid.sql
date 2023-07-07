@@ -17,7 +17,7 @@ BEGIN
           ,program_id
         from silver._all_undecoded_instructions
         WHERE lower(program_id) = lower(''', :program_id, ''')
-        Limit 10000
+        Limit 1000
         ;')
      into :exec_sql;
     results := (EXECUTE IMMEDIATE :exec_sql );
