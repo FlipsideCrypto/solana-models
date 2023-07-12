@@ -43,6 +43,33 @@ AND _inserted_timestamp >= (
     AND block_id > 67919748 -- first appearance of Raydium LP program id
 {% endif %}
 ),
+base_ii AS(
+    SELECT
+        tx_id,
+        A.index,
+        mapped_instruction_index,
+        block_timestamp,
+        ii.index AS inner_index,
+        ii.value AS VALUE
+    FROM
+        {{ ref('silver___inner_instructions') }} A,
+        LATERAL FLATTEN(
+            VALUE :instructions
+        ) ii
+    WHERE
+        1 = 1
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% else %}
+    AND block_timestamp :: DATE >= '2021-03-06' -- first appearance of Orca program id
+{% endif %}
+),
 lp_events AS (
     SELECT
         e.*,
@@ -64,87 +91,92 @@ lp_events_w_inner_program_ids AS (
     FROM
         lp_events,
         TABLE(FLATTEN(inner_programs)) i),
-outer_withdraws_and_deposits AS (
-    SELECT
-        block_timestamp,
-        block_id,
-        tx_id,
-        succeeded,
-        INDEX,
-        -1 AS inner_index,
-        liquidity_provider,
-        program_id,
-        NULL AS lp_program_inner_index_start,
-        NULL AS lp_program_inner_index_end,
-        instruction AS event_instructions,
-        ARRAY_SIZE(
-            instruction :accounts
-        ) AS num_accts,
-        _inserted_timestamp
-    FROM
-        lp_events
-    WHERE
-        program_id IN (
-            '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
-            '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv',
-            '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+        outer_withdraws_and_deposits AS (
+            SELECT
+                block_timestamp,
+                block_id,
+                tx_id,
+                succeeded,
+                INDEX,
+                -1 AS inner_index,
+                liquidity_provider,
+                program_id,
+                NULL AS lp_program_inner_index_start,
+                NULL AS lp_program_inner_index_end,
+                instruction AS event_instructions,
+                ARRAY_SIZE(
+                    instruction :accounts
+                ) AS num_accts,
+                _inserted_timestamp
+            FROM
+                lp_events
+            WHERE
+                program_id IN (
+                    '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+                    '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv',
+                    '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+                )
+        ),
+        inner_withdraws_and_deposits AS (
+            SELECT
+                A.block_timestamp,
+                A.block_id,
+                A.tx_id,
+                A.succeeded,
+                A.index,
+                ii.inner_index AS inner_index,
+                A.liquidity_provider,
+                A.inner_lp_program_id AS program_id,
+                A.lp_program_inner_index_start,
+                A.lp_program_inner_index_end,
+                ii.value AS event_instructions,
+                ARRAY_SIZE(
+                    ii.value :accounts
+                ) AS num_accts,
+                A._inserted_timestamp
+            FROM
+                lp_events_w_inner_program_ids A
+                LEFT JOIN base_ii ii
+                ON A.tx_id = ii.tx_id
+                AND A.index = ii.mapped_instruction_index
+                AND A.block_timestamp = ii.block_timestamp
+                AND A.lp_program_inner_index_start = ii.inner_index
+            WHERE
+                A.inner_lp_program_id IN (
+                    '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
+                    '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv',
+                    '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+                )
+        ),
+        combined AS(
+            SELECT
+                *
+            FROM
+                outer_withdraws_and_deposits
+            UNION
+            SELECT
+                *
+            FROM
+                inner_withdraws_and_deposits
         )
-),
-inner_withdraws_and_deposits AS (
     SELECT
-        A.block_timestamp,
-        A.block_id,
-        A.tx_id,
-        A.succeeded,
-        A.index,
-        ii.index AS inner_index,
-        A.liquidity_provider,
-        A.inner_lp_program_id AS program_id,
-        A.lp_program_inner_index_start,
-        A.lp_program_inner_index_end,
-        ii.value AS event_instructions,
-        ARRAY_SIZE(
-            ii.value :accounts
-        ) AS num_accts,
-        A._inserted_timestamp
+        C.*,
+        CASE
+            WHEN num_accts > 17 THEN 'withdraw'
+            WHEN num_accts < 17 THEN 'deposit'
+        END AS action
     FROM
-        lp_events_w_inner_program_ids A
-        LEFT JOIN TABLE(FLATTEN(inner_instruction :instructions)) ii
-        ON A.lp_program_inner_index_start = ii.index
-    WHERE
-        A.inner_lp_program_id IN (
-            '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
-            '27haf8L6oxUeXrHrgEgsexjSY5hbVUWEmvv9Nyxg8vQv',
-            '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+        combined C
+        LEFT JOIN {{ ref('silver__initialization_pools_raydium') }}
+        p1
+        ON (
+            event_instructions :accounts [5] :: STRING = p1.pool_token
         )
-),
-combined AS(
-    SELECT
-        *
-    FROM
-        outer_withdraws_and_deposits
-    UNION
-    SELECT
-        *
-    FROM
-        inner_withdraws_and_deposits
-)
-SELECT
-    C.*,
-    CASE
-        WHEN num_accts > 17 THEN 'withdraw'
-        WHEN num_accts < 17 THEN 'deposit'
-    END AS action
-FROM
-    combined C
-    LEFT JOIN {{ ref('silver__initialization_pools_raydium') }} p1
-    ON (
-        event_instructions :accounts [5] :: STRING = p1.pool_token
-    )
-WHERE
-    (
-        C.num_accts > 17
-        OR C.num_accts < 17
-    )
-    AND p1.tx_id IS NOT NULL
-    qualify(row_number() over (partition by c.block_id, c.tx_id, c.index,c.inner_index order by c.index,c.inner_index)) = 1
+    WHERE
+        (
+            C.num_accts > 17
+            OR C.num_accts < 17
+        )
+        AND p1.tx_id IS NOT NULL qualify(ROW_NUMBER() over (PARTITION BY C.block_id, C.tx_id, C.index, C.inner_index
+    ORDER BY
+        C.index, C.inner_index)) = 1
