@@ -1,9 +1,9 @@
 {{ config (
     materialized = "incremental",
     unique_key = "CONCAT_WS('-', tx_id, INDEX)",
-    cluster_by = "ROUND(block_id, -3)",
+    cluster_by = "ROUND(block_id, -3)"
 ) }}
---  post_hook = 'call silver.sp_bulk_decode_instructions()',
+
 WITH idl_in_play AS (
 
     SELECT
