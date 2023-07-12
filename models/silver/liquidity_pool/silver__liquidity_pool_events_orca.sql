@@ -47,28 +47,14 @@ base_ii AS(
     SELECT
         tx_id,
         A.index,
-        mapped_instruction_index,
         block_timestamp,
         ii.index AS inner_index,
         ii.value AS VALUE
     FROM
-        {{ ref('silver___inner_instructions') }} A,
+        base_events A,
         LATERAL FLATTEN(
-            VALUE :instructions
+            inner_instruction :instructions
         ) ii
-    WHERE
-        1 = 1
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND block_timestamp :: DATE >= '2021-02-14' -- first appearance of Orca program id
-{% endif %}
 ),
 lp_events AS (
     SELECT
@@ -149,7 +135,7 @@ lp_events_w_inner_program_ids AS (
                 lp_events_w_inner_program_ids A
                 LEFT JOIN base_ii ii
                 ON A.tx_id = ii.tx_id
-                AND A.index = ii.mapped_instruction_index
+                AND A.index = ii.index
                 AND A.block_timestamp = ii.block_timestamp
                 AND A.lp_program_inner_index_start = ii.inner_index
             WHERE
