@@ -1,28 +1,29 @@
+-- depends_on: {{ ref('bronze__streamline_program_parser') }}
 {{ config (
     materialized = "incremental",
-    unique_key = "block_id",
-    cluster_by = "_partition_id",
-    merge_update_columns = ["_partition_id"]
+    unique_key = "id",
+    cluster_by = "ROUND(block_id, -3)",
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(id)"
 ) }}
 
 SELECT
     block_id,
-    error,
-    _partition_id
+    CONCAT_WS('-', block_id, data[1]:program::STRING, data[0]) AS id,
+    _inserted_timestamp
 FROM
-    {{ source(
-        "bronze_streamline",
-        "block_rewards_api"
-    ) }} AS s
-WHERE
-    s.block_id IS NOT NULL
-
 {% if is_incremental() %}
-AND s._partition_id > (
-    select 
-        coalesce(max(_partition_id),0)
-    from
-        {{ this }}
-)
+{{ ref('bronze__streamline_program_parser') }}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) _inserted_timestamp
+        FROM
+            {{ this }}
+    )
+{% else %}
+    {{ ref('bronze__streamline_FR_program_parser') }}
 {% endif %}
-group by 1,2,3
+
+qualify(ROW_NUMBER() over (PARTITION BY id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

@@ -6,27 +6,63 @@
     )
 ) }}
 
-{% for item in range(20) %}
-    (
+WITH last_3_days AS ({% if var('STREAMLINE_RUN_HISTORY') %}
+
+    SELECT
+        0 AS block_id
+    {% else %}
+    SELECT
+        MAX(block_id) - 100000 AS block_id --aprox 3 days
+    FROM
+        {{ ref("streamline__all_undecoded_instructions") }}
+    {% endif %}),
+    tbl AS (
         SELECT
             program_id,
             tx_id,
             INDEX,
             instruction,
-            block_id, 
+            block_id,
             block_timestamp
         FROM
             {{ ref("streamline__all_undecoded_instructions") }}
         WHERE
-            program_id = 'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph'
-            AND 
-            block_id BETWEEN {{ item * 1000000 + 80000000 }}
-            AND {{(
-                item + 1
-            ) * 1000000 + 80000000}}
-        ORDER BY
-            block_id
-    ) {% if not loop.last %}
-    UNION ALL
-    {% endif %}
-{% endfor %}
+            (
+                block_id >= (
+                    SELECT
+                        block_id
+                    FROM
+                        last_3_days
+                )
+            )
+            AND block_id IS NOT NULL
+            AND concat_ws(
+                '-',
+                block_id,
+                program_id,
+                INDEX
+            ) NOT IN (
+                SELECT
+                    id
+                FROM
+                    {{ ref("streamline__complete_decoded_instructions") }}
+                WHERE
+                    block_id >= (
+                        SELECT
+                            block_id
+                        FROM
+                            last_3_days
+                    )
+                    AND block_id IS NOT NULL
+            )
+    )
+SELECT
+    program_id,
+    tx_id,
+    INDEX,
+    instruction,
+    block_id,
+    block_timestamp
+FROM
+    tbl
+WHERE program_id = (SELECT MAX(program_id) AS program_id FROM tbl)
