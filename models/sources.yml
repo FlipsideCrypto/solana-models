@@ -56,6 +56,7 @@ sources:
     tables:
       - name: solscan_token_list
       - name: token_metadata
+      - name: block_production
   - name: solana_silver
     schema: silver
     tables:
@@ -69,3 +70,4 @@ sources:
     schema: bronze
     tables:
       - name: decoded_instructions
+      - name: block_production

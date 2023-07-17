@@ -1,0 +1,26 @@
+version: 2
+models:
+  - name: silver__snapshot_block_production
+    columns:
+      - name: epoch
+        description: "Epoch number for the ingested data"
+        tests:
+          - not_null
+      - name: node_pubkey
+        description: "Pubkey for the Solana validator node"
+        tests:
+          - not_null
+      - name: num_leader_slots
+        description: "Number of slots the validator was the leader for in the epoch"
+      - name: num_blocks_produced
+        description: "Number of blocks the validator produced in the epoch"
+      - name: start_slot
+        description: "First slot of the epoch"
+      - name: end_slot
+        description: "Final slot of the epoch"
+      - name: _inserted_timestamp
+        description: "The inserted timestamp"
+        tests:
+          - not_null
+
+
