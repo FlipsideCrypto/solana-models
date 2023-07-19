@@ -70,3 +70,6 @@ sources:
     tables:
       - name: decoded_instructions
       - name: block_production
+      - name: historical_vote_account_data
+      - name: historical_validator_app_data
+      - name: historical_stake_account_data

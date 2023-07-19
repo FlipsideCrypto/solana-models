@@ -42,4 +42,7 @@ SELECT
     json_data :vote_distance_score :: NUMBER AS vote_distance_score,
     json_data :www_url :: STRING AS www_url
 FROM
-    solana_dev.bronze.historical_validator_app_data
+    {{ source(
+        'bronze',
+        'historical_validator_app_data'
+    ) }}
