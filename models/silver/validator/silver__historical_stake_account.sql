@@ -26,4 +26,7 @@ SELECT
     json_data :account :rentEpoch :: NUMBER AS rent_epoch,
     json_data :pubkey :: STRING AS stake_pubkey
 FROM
-    solana_dev.bronze.historical_stake_account_data
+    {{ source(
+        'bronze',
+        'historical_stake_account_data'
+    ) }}
