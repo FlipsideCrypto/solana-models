@@ -50,6 +50,7 @@ sources:
       - name: validators_app_list_api
       - name: stake_program_accounts
       - name: validator_vote_program_accounts
+      - name: program_parser
   - name: bronze_api
     schema: bronze_api
     tables:
