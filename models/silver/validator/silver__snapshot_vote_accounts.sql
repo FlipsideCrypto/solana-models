@@ -13,13 +13,13 @@ WITH base AS (
     json_data :account :data :parsed :info :authorizedVoters [0] :epoch :: NUMBER AS last_epoch_active,
     json_data :account :data :parsed :info :authorizedWithdrawer :: STRING AS authorized_withdrawer,
     json_data :account :data :parsed :info :commission :: NUMBER AS commission,
-    json_data :account :data :parsed :info :epochCredits AS epoch_credits,
+    json_data :account :data :parsed :info :epochCredits :: ARRAY AS epoch_credits,
     json_data :account :data :parsed :info :lastTimestamp :slot :: NUMBER AS last_timestamp_slot,
     json_data :account :data :parsed :info :lastTimestamp :timestamp :: timestamp_tz AS last_timestamp,
     json_data :account :data :parsed :info :nodePubkey :: STRING AS node_pubkey,
-    json_data :account :data :parsed :info :priorVoters AS prior_voters,
+    json_data :account :data :parsed :info :priorVoters :: ARRAY AS prior_voters,
     json_data :account :data :parsed :info :rootSlot :: NUMBER AS root_slot,
-    json_data :account :data :parsed :info :votes AS votes,
+    json_data :account :data :parsed :info :votes :: ARRAY AS votes,
     json_data :account :lamports / pow(
         10,
         9
@@ -58,3 +58,6 @@ vote_accounts_epoch_recorded AS (
 )
 
 select * from vote_accounts_epoch_recorded
+qualify(ROW_NUMBER() over(PARTITION BY epoch_recorded, vote_pubkey
+ORDER BY
+    _inserted_timestamp DESC)) = 1

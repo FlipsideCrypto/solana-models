@@ -66,7 +66,7 @@ validators_epoch_recorded AS (
         _inserted_timestamp
       FROM
         base
-        where delinquent = false
+        where delinquent = FALSE
         and active_stake > 0
       GROUP BY
         _inserted_timestamp
@@ -75,3 +75,6 @@ validators_epoch_recorded AS (
 )
 
 select * from validators_epoch_recorded
+    qualify(ROW_NUMBER() over(PARTITION BY epoch_recorded, node_pubkey
+ORDER BY
+    _inserted_timestamp DESC)) = 1

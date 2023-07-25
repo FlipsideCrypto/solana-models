@@ -6,12 +6,12 @@
 ) }}
 
 select
-    epoch,
+    epoch :: INT as epoch,
     key as node_pubkey,
-    f.value[0] as num_leader_slots,
-    f.value[1] as num_blocks_produced,
-    json_data:data[0]:result:value:range:firstSlot as start_slot,
-    json_data:data[0]:result:value:range:lastSlot as end_slot,
+    f.value[0] :: INT as num_leader_slots,
+    f.value[1] :: INT as num_blocks_produced,
+    json_data:data[0]:result:value:range:firstSlot :: INT as start_slot,
+    json_data:data[0]:result:value:range:lastSlot :: INT as end_slot,
     _inserted_timestamp
 from {{ source(
             'bronze_api',
