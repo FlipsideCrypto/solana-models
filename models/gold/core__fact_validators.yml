@@ -1,0 +1,87 @@
+version: 2
+models:
+  - name: core__fact_validators
+    description: "This table contains validator data by epoch, sourced from the Validators.app API"
+    columns:
+      - name: epoch
+        description: "The epoch when data was recorded"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: node_pubkey
+        description: "Account for the validator node"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: vote_pubkey
+        description: "vote account for the validator"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: active_stake
+        description: "Active stake in SOL delegated to the validator"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: admin_warning
+        description: "Admin warning for the validator"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: avatar_url
+        description: "URL of avatar image"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: commission
+        description: "% of rewards payout to the vote account"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: created_at
+        description: "date when validator was created"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: data_center_key
+        description: "identifier for the data center"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: data_center_host
+        description: "host for the data center"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: delinquent
+        description: "Status whether the validator is offline/delinquent"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: details
+        description: "Details for the validator"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: epoch_active
+        description: "last epoch when vote account was active"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: epoch_credits
+        description: "Epoch credits for the validator"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: keybase_id
+        description: "Keybase ID for the validator"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: latitude
+        description: "Latitude coordinates of data center"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: longitude
+        description: "Longitude coordinates of data center"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: validator_name
+        description: "Name of the validator"
+      - name: software_version
+        description: "Solana mainnet version"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: updated_at
+        description: "Last date validator was updated"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: www_url
+        description: "url for the validator"
+        tests:
+          - dbt_expectations.expect_column_to_exist

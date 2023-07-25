@@ -1,0 +1,69 @@
+version: 2
+models:
+  - name: core__fact_vote_accounts
+    description: "This table contains data for each vote account by epoch, including the validator's public key, voting weight, commission rate, and related information."
+    columns:
+      - name: epoch
+        description: "Epoch when data was captured"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: authorized_voter
+        description: "Account responsible for signing vote transactions"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: last_epoch_active
+        description: "last epoch when vote account was active"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: authorized_withdrawer
+        description: "Account responsible for signing stake withdrawal transactions"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: commission
+        description: "% of rewards payout to the vote account"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: epoch_credits
+        description: "Credits earned by the end of epochs, containing epoch/credits/previous credits"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: last_timestamp_slot
+        description: "Last slot voted on"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: last_timestamp
+        description: "The timestamp when last slot was voted on"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: node_pubkey
+        description: "pubkey for the Solana validator node"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: prior_voters
+        description: "Prior voters for the vote account"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: root_slot
+        description: "latest slot confirmed"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: votes
+        description: "Votes during epoch"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: account_sol
+        description: "SOL assigned to this account"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: owner
+        description: "Program account that owns the vote account"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: rent_epoch
+        description: "Epoch at which this account will next owe rent"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: vote_pubkey
+        description: "Public key for the vote account"
+        tests:
+          - dbt_expectations.expect_column_to_exist

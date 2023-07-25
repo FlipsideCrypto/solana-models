@@ -1,0 +1,69 @@
+version: 2
+models:
+  - name: core__fact_stake_accounts
+    description: "This table contains data for stake accounts by epoch, including the active amount staked, lockup information, and related information."
+    columns:
+      - name: epoch
+        description: "Epoch when data was captured"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: stake_pubkey
+        description: "Address of stake account"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: vote_pubkey
+        description: "Vote account of the validator this stake is delegated to"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: authorized_staker
+        description: "Account responsible for signing stake delegations/deactivativations transactions"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: authorized_withdrawer
+        description: "Account responsible for signing any stake withdrawal transactions"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: lockup
+        description: "Lockup information when tokens can be withdrawn"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: rent_exempt_reserve
+        description: "Minimum SOL balance that must be maintained for this account to remain rent exempt"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: credits_observed
+        description: "Credits observed for the validator"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: activation_epoch
+        description: "Epoch when stake was activated"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: deactivation_epoch
+        description: "Epoch when stake will be deactivated"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: active_stake
+        description: "Amount staked in SOL"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: warmup_cooldown_rate
+        description: "Rate at which stake can be activated/deactivated"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: type_stake
+        description: "Status of the stake"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: program
+        description: "The type of account"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: account_sol
+        description: "SOL held in this account"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: rent_epoch
+        description: "Epoch at which this account will next owe rent"
+        tests:
+          - dbt_expectations.expect_column_to_exist
