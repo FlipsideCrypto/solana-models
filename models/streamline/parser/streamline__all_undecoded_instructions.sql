@@ -1,8 +1,9 @@
-{{ config(
-    materialized = 'view',
-    full_refresh = false
+{{ config (
+    materialized = "incremental",
+    unique_key = "CONCAT_WS('-', tx_id, INDEX)",
+    cluster_by = "ROUND(block_id, -3)"
 ) }}
---  post_hook = 'call silver.sp_bulk_decode_instructions()',
+
 WITH idl_in_play AS (
 
     SELECT
@@ -21,6 +22,7 @@ instr_in_play AS (
         tx_id,
         INDEX,
         instruction,
+        block_id, 
         block_timestamp
     FROM
         {{ ref('silver__events') }} A
@@ -34,6 +36,7 @@ SELECT
     p.tx_id,
     p.index,
     p.instruction,
+    p.block_id,
     p.block_timestamp
 FROM
     instr_in_play p
