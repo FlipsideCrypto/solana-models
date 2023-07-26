@@ -10,7 +10,7 @@ SELECT
     _inserted_timestamp,
     json_data :account :data :parsed :info :meta :authorized :staker :: STRING AS authorized_staker,
     json_data :account :data :parsed :info :meta :authorized :withdrawer :: STRING AS authorized_withdrawer,
-    json_data :account :data :parsed :info :meta :lockup :: variant AS lockup,
+    json_data :account :data :parsed :info :meta :lockup :: OBJECT AS lockup,
     json_data :account :data :parsed :info :meta :rentExemptReserve :: NUMBER AS rent_exempt_reserve,
     json_data :account :data :parsed :info :stake :creditsObserved :: NUMBER AS credits_observed,
     json_data :account :data :parsed :info :stake :delegation :activationEpoch :: NUMBER AS activation_epoch,
@@ -60,3 +60,6 @@ stake_accounts_epoch_recorded AS (
 )
 
 Select * from stake_accounts_epoch_recorded
+qualify(ROW_NUMBER() over(PARTITION BY epoch_recorded, stake_pubkey
+ORDER BY
+    _inserted_timestamp DESC)) = 1
