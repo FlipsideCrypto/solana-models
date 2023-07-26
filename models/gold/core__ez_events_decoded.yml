@@ -1,0 +1,43 @@
+version: 2
+models:
+  - name: core__ez_events_decoded
+    description: Contains each event that occurs on Solana where the instruction has been decoded. A transaction can consist of more than one event and not all events within a transaction will be decoded.
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SIGNERS
+        description: List of accounts that signed the transaction
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: INDEX
+        description: Location of the event within the instructions of a transaction
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: EVENT_TYPE
+        description: "{{ doc('event_type') }}"
+      - name: INSTRUCTION
+        description: An instruction specifies which program it is calling, which accounts it wants to read or modify, and additional data that serves as auxiliary input to the program
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: DECODED_INSTRUCTION
+        description: An instruction specifies which program it is calling, which accounts it wants to read or modify, and additional data that serves as auxiliary input to the program
+        tests:
+          - dbt_expectations.expect_column_to_exist

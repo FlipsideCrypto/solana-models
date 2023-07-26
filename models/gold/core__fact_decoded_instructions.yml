@@ -1,0 +1,29 @@
+version: 2
+models:
+  - name: core__fact_decoded_instructions
+    description: Contains the decoded instructions for events. This table only contains instructions for the programs that we have idls for. More idls will continually be added.
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: INDEX
+        description: Location of the event within the instructions of a transaction
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: DECODED_INSTRUCTION
+        description: An instruction specifies which program it is calling, which accounts it wants to read or modify, and additional data that serves as auxiliary input to the program
+        tests:
+          - dbt_expectations.expect_column_to_exist
