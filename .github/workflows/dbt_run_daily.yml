@@ -46,6 +46,7 @@ jobs:
           dbt run-operation run_sp_snapshot_get_vote_accounts
           dbt run-operation run_sp_snapshot_get_stake_accounts
           dbt run-operation run_sp_snapshot_get_vote_program_accounts
+          dbt run-operation get_block_production
           dbt run -s models/bronze/bronze__validators_app_api.sql models/bronze/bronze__vote_accounts.sql models/bronze/bronze__stake_program_accounts.sql models/bronze/bronze__vote_accounts_extended_stats.sql
-          dbt run -s models/silver/validator/silver__snapshot_stake_accounts.sql models/silver/validator/silver__snapshot_validators_app_data.sql models/silver/validator/silver__snapshot_vote_accounts.sql models/silver/validator/silver__snapshot_vote_accounts_extended_stats.sql
+          dbt run -s models/silver/validator/silver__snapshot_stake_accounts.sql models/silver/validator/silver__snapshot_validators_app_data.sql models/silver/validator/silver__snapshot_vote_accounts.sql models/silver/validator/silver__snapshot_vote_accounts_extended_stats.sql models/silver/validator/silver__snapshot_block_production.sql
 

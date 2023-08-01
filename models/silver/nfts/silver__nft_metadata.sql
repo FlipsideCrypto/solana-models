@@ -53,6 +53,6 @@ FROM
         input => record_content: results
     ) t
 WHERE t.value :mint_address :: STRING IS NOT NULL
-AND blockchain = 'solana' qualify(ROW_NUMBER() over(PARTITION BY contract_address, token_id
+AND blockchain = 'solana' qualify(ROW_NUMBER() over(PARTITION BY mint
 ORDER BY
     created_at_timestamp DESC)) = 1

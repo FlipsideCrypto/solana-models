@@ -11,6 +11,7 @@
             {{ udf_snapshot_get_validators_app_data() }};
             {{ udf_snapshot_get_stake_accounts() }};
             {{ udf_snapshot_get_vote_program_accounts() }};
+            {{ udf_decode_instructions() }};
         {% endif %}
 
         {{ create_udf_ordered_signers(

@@ -5,3 +5,5 @@ packages:
     version: 0.8.2
   - package: dbt-labs/dbt_utils
     version: 1.0.0
+  - git: https://github.com/FlipsideCrypto/fsc-utils.git
+    revision: "v1.3"

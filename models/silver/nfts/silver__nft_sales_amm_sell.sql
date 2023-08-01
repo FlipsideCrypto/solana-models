@@ -98,11 +98,32 @@ coral_cube_sales AS(
         ) >= 16
 ),
 mev2_sales AS(
+    -- mev2_buys
     SELECT
         A.*,
         instruction :accounts [1] :: STRING AS purchaser,
         instruction :accounts [0] :: STRING AS seller,
         'buy' AS nft_sale_type,
+        'Magic Eden' AS marketplace,
+        instruction :accounts [8] :: STRING AS mint
+    FROM
+        base_events A
+    WHERE
+        signers [1] = 'NTYeYJ1wr4bpM5xo6zx5En44SvJFAd35zTxxNoERYqd'
+        AND ARRAY_SIZE(
+            instruction :accounts
+        ) > 16
+        AND (
+            instruction :accounts [12] :: STRING = '11111111111111111111111111111111'
+            OR instruction :accounts [16] :: STRING = 'ocp4vWUzA2z2XMYJ3QhM9vWdyoyoQwAFJhRdVTbvo9E'
+        )
+    UNION ALL
+        -- mev2_sells
+    SELECT
+        A.*,
+        instruction :accounts [0] :: STRING AS purchaser,
+        instruction :accounts [1] :: STRING AS seller,
+        'sell' AS nft_sale_type,
         'Magic Eden' AS marketplace,
         CASE
             WHEN ARRAY_SIZE(
@@ -110,7 +131,9 @@ mev2_sales AS(
             ) > 19 THEN instruction :accounts [7] :: STRING
             WHEN ARRAY_SIZE(
                 instruction :accounts
-            ) IN (
+            )
+            IN (
+                17,
                 18,
                 19
             ) THEN instruction :accounts [8] :: STRING
@@ -122,6 +145,8 @@ mev2_sales AS(
         AND ARRAY_SIZE(
             instruction :accounts
         ) > 16
+        AND instruction :accounts [11] :: STRING = '11111111111111111111111111111111'
+        AND instruction :accounts [16] :: STRING != 'ocp4vWUzA2z2XMYJ3QhM9vWdyoyoQwAFJhRdVTbvo9E'
 ),
 coral_cube_nft_sale_amount AS (
     SELECT
@@ -159,7 +184,14 @@ mev2_nft_sale_amount AS (
         LEFT OUTER JOIN base_transfers b
         ON A.tx_id = b.tx_id
     WHERE
-        A.instruction :accounts [5] = b.tx_from
+        (
+            A.nft_sale_type = 'sell'
+            AND A.instruction :accounts [0] = b.tx_from
+        )
+        OR (
+            A.nft_sale_type = 'buy'
+            AND A.instruction :accounts [5] = b.tx_from
+        )
     GROUP BY
         1,
         2

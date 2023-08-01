@@ -38,6 +38,7 @@ sources:
     database: streamline
     schema: solana
     tables:
+      - name: decode_instructions_idls
       - name: decoded_instructions_data_api
       - name: validator_metadata_api
       - name: stake_account_tx_ids_api
@@ -49,11 +50,13 @@ sources:
       - name: validators_app_list_api
       - name: stake_program_accounts
       - name: validator_vote_program_accounts
+      - name: program_parser
   - name: bronze_api
     schema: bronze_api
     tables:
       - name: solscan_token_list
       - name: token_metadata
+      - name: block_production
   - name: solana_silver
     schema: silver
     tables:
@@ -63,3 +66,11 @@ sources:
     schema: streamline
     tables:
       - name: complete_block_txs
+  - name: bronze
+    schema: bronze
+    tables:
+      - name: decoded_instructions
+      - name: block_production
+      - name: historical_vote_account_data
+      - name: historical_validator_app_data
+      - name: historical_stake_account_data

@@ -6,7 +6,7 @@ SELECT
     RIGHT(REGEXP_REPLACE(filename, '[^0-9]', ''), 3) AS epoch_ingested_at,
     json_data :account :data :parsed :info :meta :authorized :staker :: STRING AS authorized_staker,
     json_data :account :data :parsed :info :meta :authorized :withdrawer :: STRING AS authorized_withdrawer,
-    json_data :account :data :parsed :info :meta :lockup :: variant AS lockup,
+    json_data :account :data :parsed :info :meta :lockup :: OBJECT AS lockup,
     json_data :account :data :parsed :info :meta :rentExemptReserve :: NUMBER AS rent_exempt_reserve,
     json_data :account :data :parsed :info :stake :creditsObserved :: NUMBER AS credits_observed,
     json_data :account :data :parsed :info :stake :delegation :activationEpoch :: NUMBER AS activation_epoch,
@@ -26,4 +26,7 @@ SELECT
     json_data :account :rentEpoch :: NUMBER AS rent_epoch,
     json_data :pubkey :: STRING AS stake_pubkey
 FROM
-    solana_dev.bronze.historical_stake_account_data
+    {{ source(
+        'bronze',
+        'historical_stake_account_data'
+    ) }}

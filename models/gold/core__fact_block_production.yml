@@ -1,0 +1,29 @@
+version: 2
+models:
+  - name: core__fact_block_production
+    description: Block production values for validators by epoch
+    columns:
+      - name: EPOCH
+        description: "Epoch when data was captured"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: NODE_PUBKEY
+        description: "Pubkey for the Solana validator node"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: NUM_LEADER_SLOTS
+        description: "Number of slots the validator was the leader for in the epoch"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: NUM_BLOCKS_PRODUCED
+        description: "Number of blocks the validator produced in the epoch"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: START_SLOT
+        description: "First slot of the epoch"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: END_SLOT
+        description: "Final slot of the epoch"
+        tests:
+          - dbt_expectations.expect_column_to_exist
