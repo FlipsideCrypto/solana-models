@@ -6,20 +6,19 @@ SELECT
     { 'id': 'my-id',
     'jsonrpc': '2.0',
     'method': 'searchAssets',
-    'params':{ 
-    'compressed': True,
-    'grouping': [
-                'collection',
-                collection_mint],
-    'page': page,
-    'limit': LIMIT, 
-    'sortBy':{ 'sortBy': 'created', 'sortDirection': 'asc' }} }
-  ) calls, collection_mint AS nft_collection_mint,
-  page AS page,
-LIMIT
-  AS limit,
-  FLOOR((ROW_NUMBER() OVER(ORDER BY collection_mint, page) - 1) / 2) as batch_id
-    -- (ROW_NUMBER() OVER(ORDER BY collection_mint, page) - 1) as batch_id
+    'params':
+      { 'compressed': TRUE,
+      'grouping': [ 'collection', collection_mint],
+      'page': page,
+      'limit': LIMIT, 
+      'sortBy':{ 'sortBy': 'created', 'sortDirection': 'desc' }} 
+    }
+  ) calls, 
+  collection_mint AS nft_collection_mint,
+  page,
+  LIMIT, 
+  -- FLOOR((ROW_NUMBER() OVER(ORDER BY collection_mint, page) - 1) / 2) as batch_id
+  (ROW_NUMBER() over(ORDER BY collection_mint, page) - 1) AS batch_id
 FROM
   (
     WITH counted_items AS (
@@ -29,9 +28,16 @@ FROM
         CEIL((COUNT(*)) / 1000) AS total_pages
       FROM
         solana_dev.silver.nft_compressed_mints_onchain
-        -- where block_timestamp >= (select max(_inserted_timestamp) from solana_dev.bronze_API.helius_compressed_nfts)
+      WHERE
+        _inserted_timestamp >= (
+          SELECT
+            MAX(_inserted_timestamp)
+          FROM
+            solana_dev.silver.nft_compressed_mints
+        )
       GROUP BY
-        collection_mint),
+        collection_mint
+    ),
     temp AS (
       SELECT
         collection_mint,
@@ -40,8 +46,8 @@ FROM
           AND page < total_pages THEN 1000
           WHEN page = total_pages THEN item_count % 1000
           ELSE item_count
-        END AS
-      LIMIT, page
+        END AS LIMIT, 
+        page
       FROM
         counted_items
         CROSS JOIN (
@@ -63,40 +69,45 @@ FROM
         collection_mint,
         page
     )
-      SELECT
-        *
-      FROM
-        temp
-    )
-    GROUP BY
-      collection_mint,
-    LIMIT, page
-    order by batch_id asc;
+    SELECT
+      *
+    FROM
+      temp
+  )
+GROUP BY collection_mint, LIMIT, page
+ORDER BY batch_id ASC;
 {% endset %}
-      {% do run_query(final_calls_query) %}
-  {% for batch_id in range(4637,5000) %}
+  {% do run_query(final_calls_query) %}
+  {% for batch_id in range(0,2500) %}
     {% set results_query %}
-          INSERT INTO solana_dev.bronze_API.helius_compressed_nfts 
-          WITH
-            results AS (
-              SELECT
-                ethereum.streamline.udf_json_rpc_call(
-                    'https://rpc.helius.xyz/?api-key=476c7025-437d-4b3b-abbe-ceafd0dfdc02',{},
-                    calls) as data,
-                    nft_collection_mint,
-                    page,
-                    limit,
-                    TO_TIMESTAMP_NTZ(current_timestamp) as _inserted_timestamp
-                FROM
-                  final_calls
-                WHERE
-                  batch_id = {{ batch_id }}
-            )
-          SELECT
-            *
-          FROM
-            results;
-            {% endset %}
-        {% do run_query(results_query) %}
+  INSERT INTO
+    solana_dev.bronze_API.helius_compressed_nfts WITH results AS (
+      SELECT
+        ethereum.streamline.udf_json_rpc_call(
+          'https://rpc.helius.xyz/?api-key=' || (
+            SELECT
+              api_key
+            FROM
+              crosschain.silver.apis_keys
+            WHERE
+              api_name = 'helius'
+          ),{},
+          calls
+        ) AS DATA,
+        nft_collection_mint,
+        page,
+        LIMIT, 
+        TO_TIMESTAMP_NTZ(CURRENT_TIMESTAMP) AS _inserted_timestamp
+      FROM
+        final_calls
+      WHERE
+        batch_id = {{ batch_id }}
+    )
+  SELECT
+    *
+  FROM
+    results;
+{% endset %}
+    {% do run_query(results_query) %}
   {% endfor %}
 {% endmacro %}
