@@ -1,7 +1,13 @@
 {{ config(
-      materialized='view'
-    ) 
-}}
+    materialized = 'view',
+    meta={
+        'database_tags':{
+            'table': {
+                'PURPOSE': 'VALIDATOR'
+            }
+        }
+    }
+) }}
 
 SELECT
   epoch, 
