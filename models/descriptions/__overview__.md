@@ -42,11 +42,17 @@ There is more information on how to use dbt docs in the last section of this doc
 - [fact_transactions](#!/model/model.solana_models.core__fact_transactions)
 - [fact_transfers](#!/model/model.solana_models.core__fact_transfers)
 - [fact_votes_agg_block](#!/model/model.solana_models.core__fact_votes_agg_block)
+- [fact_stake_accounts](#!/model/model.solana_models.core__fact_stake_accounts)
+- [fact_vote_accounts](#!/model/model.solana_models.core__fact_vote_accounts)
+- [fact_block_production](#!/model/model.solana_models.core__fact_block_production)
+- [fact_validators](#!/model/model.solana_models.core__fact_validators)
+- [fact_decoded_instructions](#!/model/model.solana_models.core__fact_decoded_instructions)
 
 **Convenience Tables:**
 - [ez_signers](#!/model/model.solana_models.core__ez_signers)
 - [ez_staking_lp_actions](#!/model/model.solana_models.core__ez_staking_lp_actions)
 - [ez_token_prices_hourly](#!/model/model.solana_models.core__ez_token_prices_hourly)
+- [ez_events_decoded](#!/model/model.solana_models.core__ez_events_decoded)
 
 ## **Data Model Overview**
 
