@@ -27,13 +27,13 @@ FROM
         COUNT(*) AS item_count,
         CEIL((COUNT(*)) / 1000) AS total_pages
       FROM
-        solana_dev.silver.nft_compressed_mints_onchain
+        {{ target.database }}.silver.nft_compressed_mints_onchain
       WHERE
         _inserted_timestamp >= (
           SELECT
             MAX(_inserted_timestamp)
           FROM
-            solana_dev.silver.nft_compressed_mints
+            {{ target.database }}.silver.nft_compressed_mints
         )
       GROUP BY
         collection_mint
@@ -81,7 +81,7 @@ ORDER BY batch_id ASC;
   {% for batch_id in range(0,2500) %}
     {% set results_query %}
   INSERT INTO
-    solana_dev.bronze_API.helius_compressed_nfts WITH results AS (
+    {{ target.database }}.bronze_API.helius_compressed_nfts WITH results AS (
       SELECT
         ethereum.streamline.udf_json_rpc_call(
           'https://rpc.helius.xyz/?api-key=' || (
@@ -97,7 +97,7 @@ ORDER BY batch_id ASC;
         nft_collection_mint,
         page,
         LIMIT, 
-        TO_TIMESTAMP_NTZ(CURRENT_TIMESTAMP) AS _inserted_timestamp
+        SYSDATE() AS _inserted_timestamp
       FROM
         final_calls
       WHERE
