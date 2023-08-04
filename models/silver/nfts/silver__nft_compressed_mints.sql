@@ -17,13 +17,13 @@ WITH offchain AS (
         nft_collection_mint,
         items.seq AS seq
     FROM
-        solana_dev.bronze_api.helius_compressed_nfts,
+        {{ target.database }}.bronze_api.helius_compressed_nfts,
         LATERAL FLATTEN(
             input => DATA :data [0] :result :items
         ) AS items
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+WHERE _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
@@ -59,7 +59,7 @@ onchain AS (
         {{ ref('silver__nft_compressed_mints_onchain') }}
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+WHERE _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
