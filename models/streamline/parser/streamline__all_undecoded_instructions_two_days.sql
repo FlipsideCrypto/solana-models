@@ -18,12 +18,6 @@ WITH idl_in_play AS (
             'decode_instructions_idls'
         ) }}
 )
-, min_completed AS (
-    SELECT 
-        MIN(block_id) as min_block_completed
-    FROM 
-        {{ ref('streamline__complete_decoded_instructions') }}
-)
 SELECT
     A.program_id,
     A.tx_id,
@@ -45,8 +39,7 @@ FROM
             A.program_id,
             A.INDEX
         ) = c.id
-    JOIN min_completed m
 WHERE 
     c.block_id IS NULL
 AND 
-    A.block_id between min_block_completed - 10000000 and min_block_completed
+    A.block_timestamp >= current_date - 2

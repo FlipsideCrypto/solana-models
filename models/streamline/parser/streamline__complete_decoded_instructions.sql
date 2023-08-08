@@ -8,9 +8,15 @@
 
 SELECT
     block_id,
-    CONCAT_WS('-', block_id, data[1]:program::STRING, data[0]) AS id,
+    concat_ws(
+        '-',
+        block_id,
+        DATA [1] :program :: STRING,
+        DATA [0]
+    ) AS id,
     _inserted_timestamp
 FROM
+
 {% if is_incremental() %}
 {{ ref('bronze__streamline_program_parser') }}
 WHERE
@@ -26,4 +32,4 @@ WHERE
 
 qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
-    _inserted_timestamp DESC)) = 1
+    _inserted_timestamp DESC)) = 1 
