@@ -11,7 +11,7 @@
       BEGIN
         RESULT:= (
             SELECT
-              silver.udf_bulk_program_parser()
+              streamline.udf_bulk_program_parser()
           );
         RETURN RESULT;
       END;
