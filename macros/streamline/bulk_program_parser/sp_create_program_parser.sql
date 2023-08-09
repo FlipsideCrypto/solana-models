@@ -11,7 +11,7 @@
       BEGIN
         RESULT:= (
             SELECT
-              streamline.udf_bulk_program_parser()
+              streamline.udf_bulk_program_parser(object_construct('realtime', 'False'))
           );
         RETURN RESULT;
       END;

@@ -11,8 +11,9 @@ SELECT
     concat_ws(
         '-',
         block_id,
-        DATA [1] :program :: STRING,
-        DATA [0]
+        tx_id,
+        program_id,
+        index
     ) AS id,
     _inserted_timestamp
 FROM
@@ -22,14 +23,13 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) _inserted_timestamp
+            COALESCE(MAX(_inserted_timestamp),'2000-01-01'::timestamp_ntz) _inserted_timestamp
         FROM
             {{ this }}
     )
 {% else %}
     {{ ref('bronze__streamline_FR_program_parser') }}
 {% endif %}
-
 qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1 
