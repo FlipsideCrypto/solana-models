@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_bulk_program_parser(object_construct('realtime', 'False'))",
+        func = "{{this.schema}}.udf_bulk_program_parser(object_construct('realtime', 'True'))",
         target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}
@@ -17,12 +17,6 @@ WITH idl_in_play AS (
             'bronze_streamline',
             'decode_instructions_idls'
         ) }}
-), 
-min_completed AS (
-    SELECT 
-        MIN(block_id) as min_block_completed
-    FROM 
-        {{ ref('streamline__complete_decoded_instructions') }}
 ),
 event_subset AS (
     SELECT 
@@ -36,10 +30,8 @@ event_subset AS (
         {{ ref('silver__events') }} e
     JOIN 
         idl_in_play b ON LOWER(e.program_id) = b.program_id
-    JOIN 
-        min_completed m
     WHERE 
-        e.block_id between min_block_completed - 500000 and min_block_completed
+        e.block_timestamp >= current_date - 2
 ),
 completed_subset AS (
     SELECT 
@@ -48,7 +40,7 @@ completed_subset AS (
     FROM
         {{ ref('streamline__complete_decoded_instructions') }}
     WHERE 
-        block_id between (SELECT MIN(block_id) from event_subset) and (SELECT MAX(block_id) from event_subset)
+        block_id >= (SELECT MIN(block_id) from event_subset)
 )
 SELECT
     e.program_id,

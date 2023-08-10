@@ -17,5 +17,6 @@ FROM
     {{ ref('silver__decoded_instructions') }} A
     JOIN {{ ref('silver__events') }}
     b
-    ON A.tx_id = b.tx_id
+    ON A.program_id = b.program_id
+    AND A.tx_id = b.tx_id
     AND A.index = b.index
