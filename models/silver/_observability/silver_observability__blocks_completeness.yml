@@ -1,0 +1,75 @@
+version: 2
+models:
+  - name: silver_observability__blocks_completeness
+    description: Records of all blocks block gaps (missing blocks) with a timestamp the test was run
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TEST_TIMESTAMP
+    columns:
+      - name: MIN_BLOCK
+        description: The lowest block id in the test
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+      - name: MAX_BLOCK
+        description: The highest block id in the test
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+      - name: MIN_BLOCK_TIMESTAMP
+        description: The lowest block timestamp in the test
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_NTZ
+      - name: MAX_BLOCK_TIMESTAMP
+        description: The highest block timestamp in the test
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_NTZ
+      - name: BLOCKS_TESTED
+        description: Count of blocks in the test
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+      - name: BLOCKS_IMPACTED_COUNT
+        description: Count of block gaps in the test
+        tests: 
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+      - name: BLOCKS_IMPACTED_ARRAY
+        description: Array of affected blocks
+        tests: 
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - ARRAY
+      - name: TEST_FAILURE_DETAILS
+        description: Array of details of the failure
+        tests: 
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - ARRAY
+      - name: TEST_TIMESTAMP
+        description: When the test was run
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_NTZ

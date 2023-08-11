@@ -1,3 +1,9 @@
+{{ config(
+    materialized = 'incremental',
+    unique_key = 'test_timestamp',
+    full_refresh = false
+) }}
+
 WITH source AS (
 
     SELECT
@@ -5,7 +11,7 @@ WITH source AS (
         block_timestamp,
         previous_BLOCK_ID as prev_block_id
     FROM
-        {{ ref('silver__blocks') }}
+        solana.silver.blocks
         A
     WHERE
         block_timestamp < DATEADD(
@@ -29,9 +35,7 @@ AND (
         )
     )
     OR ({% if var('OBSERV_FULL_TEST') %}
-        (block_id >= 0
-        and block_id <> 1690556) -- this block is not available
-        
+        block_id >= 0
     {% else %}
         block_id >= (
     SELECT
@@ -49,16 +53,11 @@ AND (
 )
 {% endif %}
 ),
--- skipped blocks are not processed
 block_gen AS (
     SELECT
         previous_block_id as block_id
     FROM
         {{ ref('silver__blocks') }}
-        -- {{ source(
-        --     'crosschain_silver',
-        --     'number_sequence'
-        -- ) }}
     WHERE
         block_id BETWEEN (
             SELECT
@@ -125,4 +124,4 @@ WHERE
     COALESCE(
         b.block_id,
         C.block_id
-    ) IS NOT NULL;
+    ) IS NOT NULL
