@@ -1,10 +1,10 @@
-name: dbt_run_parser_program
-run-name: dbt_run_parser_program
+name: dbt_run_macro_get_compressed_nft
+run-name: dbt_run_macro_get_compressed_nft
 
 on:
   schedule:
-    # Runs every 30 mins (see https://crontab.guru)
-    - cron: '*/30 * * * *'
+    # Runs 2:30 daily (see https://crontab.guru)
+    - cron: '30 2 * * *'
     
 env:
   DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
@@ -40,5 +40,6 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -s models/streamline/parser/streamline__complete_decoded_instructions.sql
-          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m ./models/streamline/parser/streamline__all_undecoded_instructions_two_days.sql
+          dbt run -s models/silver/nfts/silver__nft_compressed_mints_onchain.sql
+          dbt run-operation get_helius_compressed_nft
+          dbt run -s models/silver/nfts/silver__nft_compressed_mints.sql

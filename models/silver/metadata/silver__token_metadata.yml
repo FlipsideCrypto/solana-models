@@ -25,7 +25,7 @@ models:
         description: "The twitter account for the project"
       - name: WEBSITE
         description:  "The website for the project"
-      - name: DECRIPTION
+      - name: DESCRIPTION
         description: "The coin market cap description"
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"

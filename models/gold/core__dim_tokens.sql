@@ -13,7 +13,7 @@ SELECT
   logo,
   twitter,
   website,
-  decription,
+  description,
   _INSERTED_TIMESTAMP
 FROM
   {{ ref('silver__token_metadata') }}
