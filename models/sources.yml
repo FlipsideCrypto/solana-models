@@ -23,6 +23,7 @@ sources:
       - name: hourly_prices_coin_gecko
       - name: coin_market_cap_cryptocurrency_info
       - name: apis_keys
+      - name: number_sequence
 
   - name: shared
     database: flipside_prod_db
