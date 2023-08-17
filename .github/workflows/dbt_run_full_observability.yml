@@ -8,16 +8,16 @@ on:
     - cron: '0 6 1 * *'
     
 env:
-  DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
+  DBT_PROFILES_DIR: ./
 
-  ACCOUNT: "${{ secrets.ACCOUNT }}"
-  ROLE: "${{ secrets.ROLE }}"
-  USER: "${{ secrets.USER }}"
+  ACCOUNT: "${{ vars.ACCOUNT }}"
+  ROLE: "${{ vars.ROLE }}"
+  USER: "${{ vars.USER }}"
   PASSWORD: "${{ secrets.PASSWORD }}"
-  REGION: "${{ secrets.REGION }}"
-  DATABASE: "${{ secrets.DATABASE }}"
-  WAREHOUSE: "${{ secrets.WAREHOUSE }}"
-  SCHEMA: "${{ secrets.SCHEMA }}"
+  REGION: "${{ vars.REGION }}"
+  DATABASE: "${{ vars.DATABASE }}"
+  WAREHOUSE: "${{ vars.WAREHOUSE }}"
+  SCHEMA: "${{ vars.SCHEMA }}"
 
 concurrency:
   group: ${{ github.workflow }}
@@ -37,7 +37,7 @@ jobs:
 
       - name: install dependencies
         run: |
-          pip3 install dbt-snowflake==${{ secrets.DBT_VERSION }} cli_passthrough requests click
+          pip3 install dbt-snowflake==${{ vars.DBT_VERSION }} cli_passthrough requests click
           dbt deps
       - name: Run DBT Jobs
         run: |
