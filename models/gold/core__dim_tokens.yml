@@ -23,5 +23,5 @@ models:
         description: "The twitter account for the project"
       - name: WEBSITE
         description: "The website for the project"
-      - name: DECRIPTION
+      - name: DESCRIPTION
         description: "The coin market cap description for the token"
