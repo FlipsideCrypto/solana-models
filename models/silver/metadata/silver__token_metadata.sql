@@ -11,7 +11,7 @@ WITH cmc_base AS (
         NAME AS cmc_name,
         cmc_id,
         symbol AS cmc_symbol,
-        metadata :description :: STRING AS cmc_decription,
+        metadata :description :: STRING AS cmc_description,
         metadata :logo :: STRING AS cmc_icon,
         metadata :tags AS cmc_tags,
         metadata :explorer :: STRING AS cmc_explorer,
@@ -104,7 +104,7 @@ fin AS (
         cg.symbol AS cg_symbol,
         cmc.cmc_name,
         cmc.cmc_symbol,
-        cmc.cmc_decription,
+        cmc.cmc_description,
         cmc.cmc_icon,
         cmc.cmc_tags,
         cmc.cmc_twitter,
@@ -193,7 +193,7 @@ SELECT
         ss_website,
         cmc_urls
     ) AS website,
-    cmc_decription AS decription,
+    cmc_description AS description,
     _inserted_timestamp
 FROM
     fin
