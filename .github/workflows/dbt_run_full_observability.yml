@@ -1,0 +1,44 @@
+name: dbt_run_full_observability
+run-name: dbt_run_full_observability
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Runs “At 06:00 on day-of-month 1.” (see https://crontab.guru)
+    - cron: '0 6 1 * *'
+    
+env:
+  DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
+
+  ACCOUNT: "${{ secrets.ACCOUNT }}"
+  ROLE: "${{ secrets.ROLE }}"
+  USER: "${{ secrets.USER }}"
+  PASSWORD: "${{ secrets.PASSWORD }}"
+  REGION: "${{ secrets.REGION }}"
+  DATABASE: "${{ secrets.DATABASE }}"
+  WAREHOUSE: "${{ secrets.WAREHOUSE }}"
+  SCHEMA: "${{ secrets.SCHEMA }}"
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  run_dbt_jobs:
+    runs-on: ubuntu-latest
+    environment: 
+      name: workflow_prod
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v1
+        with:
+          python-version: "3.7.x"
+
+      - name: install dependencies
+        run: |
+          pip3 install dbt-snowflake==${{ secrets.DBT_VERSION }} cli_passthrough requests click
+          dbt deps
+      - name: Run DBT Jobs
+        run: |
+          dbt run --vars '{"OBSERV_FULL_TEST":True}' -m models/silver/_observability
