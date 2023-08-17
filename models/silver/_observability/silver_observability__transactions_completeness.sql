@@ -1,4 +1,11 @@
+{{ config(
+    materialized = 'incremental',
+    unique_key = 'test_timestamp',
+    full_refresh = false
+) }}
+
 WITH summary_stats AS (
+
     SELECT
         MIN(block_id) AS min_block,
         MAX(block_id) AS max_block,
@@ -7,57 +14,54 @@ WITH summary_stats AS (
         COUNT(1) AS blocks_tested
     FROM
         {{ ref('silver__blocks') }}
-    WHERE block_timestamp <= DATEADD('hour', -12, CURRENT_TIMESTAMP())
-        -- block_timestamp <= DATEADD('hour', -12, CURRENT_TIMESTAMP())
-        -- AND block_timestamp >= DATEADD('day', -100, CURRENT_TIMESTAMP()) -- block_id between 192931291 and 192931296
-        -- block_id between 192926963 and 192926968
+    WHERE
+        block_timestamp <= DATEADD('hour', -12, CURRENT_TIMESTAMP())
 
-    {% if is_incremental() %}
-    AND (
-        block_number >= (
-            SELECT
-                MIN(block_number)
-            FROM
-                (
-                    SELECT
-                        MIN(block_number) AS block_number
-                    FROM
-                        {{ ref('silver__blocks') }}
-                    WHERE
-                        block_timestamp BETWEEN DATEADD('hour', -96, CURRENT_TIMESTAMP())
-                        AND DATEADD('hour', -95, CURRENT_TIMESTAMP())
-                    UNION
-                    SELECT
-                        MIN(VALUE) - 1 AS block_number
-                    FROM
-                        (
-                            SELECT
-                                blocks_impacted_array
-                            FROM
-                                {{ this }}
-                                qualify ROW_NUMBER() over (
-                                    ORDER BY
-                                        test_timestamp DESC
-                                ) = 1
-                        ),
-                        LATERAL FLATTEN(
-                            input => blocks_impacted_array
-                        )
-                )
-        ) {% if var('OBSERV_FULL_TEST') %}
-            OR block_number >= 0
-        {% endif %}
-    )
-    {% endif %})
-,
+{% if is_incremental() %}
+AND (
+    block_id >= (
+        SELECT
+            MIN(block_id)
+        FROM
+            (
+                SELECT
+                    MIN(block_id) AS block_id
+                FROM
+                    {{ ref('silver__blocks') }}
+                WHERE
+                    block_timestamp BETWEEN DATEADD('hour', -96, CURRENT_TIMESTAMP())
+                    AND DATEADD('hour', -95, CURRENT_TIMESTAMP())
+                UNION
+                SELECT
+                    MIN(VALUE) - 1 AS block_id
+                FROM
+                    (
+                        SELECT
+                            blocks_impacted_array
+                        FROM
+                            {{ this }}
+                            qualify ROW_NUMBER() over (
+                                ORDER BY
+                                    test_timestamp DESC
+                            ) = 1
+                    ),
+                    LATERAL FLATTEN(
+                        input => blocks_impacted_array
+                    )
+            )
+    ) {% if var('OBSERV_FULL_TEST') %}
+        OR block_id >= 0
+    {% endif %}
+)
+{% endif %}
+),
 base_blocks AS (
     SELECT
         *
     FROM
         {{ ref('silver__blocks') }}
     WHERE
-        block_id >= 154195836 -- this query wont give correct results prior to this block_id
-        AND block_id BETWEEN (
+        block_id BETWEEN (
             SELECT
                 min_block
             FROM

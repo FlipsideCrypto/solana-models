@@ -9,17 +9,22 @@ WITH source AS (
     SELECT
         block_id,
         block_timestamp,
-        previous_BLOCK_ID as prev_block_id
+        previous_BLOCK_ID AS true_prev_block_id,
+        LAG(
+            block_id,
+            1
+        ) over (
+            ORDER BY
+                block_id ASC
+        ) AS prev_BLOCK_ID
     FROM
-        solana.silver.blocks
-        A
+        {{ ref('silver__blocks') }} A
     WHERE
         block_timestamp < DATEADD(
             HOUR,
             -24,
             SYSDATE()
         )
-
 
 {% if is_incremental() %}
 AND (
@@ -35,7 +40,7 @@ AND (
         )
     )
     OR ({% if var('OBSERV_FULL_TEST') %}
-        block_id >= 0
+        block_id > 39824213 --some anomalies before tx's start having block_timestamps
     {% else %}
         block_id >= (
     SELECT
@@ -55,11 +60,14 @@ AND (
 ),
 block_gen AS (
     SELECT
-        previous_block_id as block_id
+        _id AS block_id
     FROM
-        {{ ref('silver__blocks') }}
+        {{ source(
+            'crosschain_silver',
+            'number_sequence'
+        ) }}
     WHERE
-        block_id BETWEEN (
+        _id BETWEEN (
             SELECT
                 MIN(block_id)
             FROM
@@ -72,7 +80,6 @@ block_gen AS (
                 source
         )
 )
-
 SELECT
     'blocks' AS test_name,
     MIN(
@@ -120,8 +127,9 @@ FROM
     ON A.block_id > C.prev_BLOCK_ID
     AND A.block_id < C.block_id
     AND C.block_id - C.prev_BLOCK_ID <> 1
+    AND A.block_id = C.true_prev_BLOCK_ID
 WHERE
     COALESCE(
-        b.block_id,
-        C.block_id
+        b.prev_block_id,
+        C.prev_block_id
     ) IS NOT NULL
