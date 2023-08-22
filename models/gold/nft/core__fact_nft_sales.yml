@@ -1,7 +1,7 @@
 version: 2
 models:
-  - name: core__fact_liquidity_pool_actions
-    description: Table containing actions involving liquidity pools on Orca, Raydium, and Saber Dexes. 
+  - name: core__fact_nft_sales
+    description: Deprecating soon! This is a notice that we're replacing this table with `nft__fact_nft_sales`. Please migrate queries to the new table by 9/14/23. There will be no column changes or any other changes of any kind. 
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -16,30 +16,30 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: SUCCEEDED
-        description: "{{ doc('tx_succeeded') }}" 
+        description: "{{ doc('tx_succeeded') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: PROGRAM_ID
+      - name: PROGRAM_ID 
         description: "{{ doc('program_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: ACTION
-        description: Type of interaction performed with the liquidity pool
+      - name: PURCHASER
+        description: "{{ doc('purchaser') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: LIQUIDITY_PROVIDER
-        description: "{{ doc('liquidity_provider') }}" 
-        tests:
-          - dbt_expectations.expect_column_to_exist
-      - name: LIQUIDITY_POOL_ADDRESS
-        description: "{{ doc('liquidity_pool_address') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
-      - name: AMOUNT
-        description: "{{ doc('amount') }}"
-        tests:
+      - name: SELLER
+        description: "{{ doc('seller') }}"
+        tests: 
           - dbt_expectations.expect_column_to_exist
       - name: MINT
         description: "{{ doc('mint') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SALES_AMOUNT
+        description: "{{ doc('sales_amount') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: MARKETPLACE
+        description: "{{ doc('marketplace') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
