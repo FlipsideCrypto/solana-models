@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__fact_validators
+  - name: gov__fact_validators
     description: "This table contains validator data by epoch, sourced from the Validators.app API"
     columns:
       - name: epoch

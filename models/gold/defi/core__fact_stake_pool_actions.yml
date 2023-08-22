@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__fact_stake_pool_actions
-    description:Deprecating soon! This is a notice that we're replacing this table with `defi__fact_stake_pool_actions`. Please migrate queries to the new table by 9/14/23. There will be no column changes or any other changes of any kind. 
+    description: Deprecating soon! This is a notice that we're replacing this table with `defi__fact_stake_pool_actions`. Please migrate queries to the new table by 9/14/23. There will be no column changes or any other changes of any kind. 
     columns:
       - name: STAKE_POOL_NAME
         description: "Name of stake pool action is performed against"

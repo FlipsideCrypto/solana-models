@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__fact_staking_lp_actions
+  - name: gov__fact_staking_lp_actions
     description: Staking and liquidity provider actions that take place on the Solana blockchain. 
     columns:
       - name: BLOCK_TIMESTAMP

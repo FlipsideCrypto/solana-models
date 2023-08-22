@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__fact_nft_mints
+  - name: nft__fact_nft_mints
     description: An easy table containing information about Solana NFT mints including the purchaser, mint price, and NFT minted. 
     columns:
       - name: BLOCK_TIMESTAMP

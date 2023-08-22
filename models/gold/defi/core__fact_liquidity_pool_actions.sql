@@ -5,4 +5,4 @@
 SELECT
     *
 FROM
-    {{ ref('defi__fact_liquidity_pool_actions.sql') }}
+    {{ ref('defi__fact_liquidity_pool_actions') }}

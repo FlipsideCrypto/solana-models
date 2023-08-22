@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__fact_block_production
+  - name: gov__fact_block_production
     description: Block production values for validators by epoch
     columns:
       - name: EPOCH

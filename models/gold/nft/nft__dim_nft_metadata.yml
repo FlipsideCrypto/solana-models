@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__dim_nft_metadata
+  - name: nft__dim_nft_metadata
     description: Contains NFT metadata for some collections. This table is sourced from the Magic Eden and Helius API. 
     columns:
       - name: BLOCKCHAIN

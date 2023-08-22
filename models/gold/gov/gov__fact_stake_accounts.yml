@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__fact_stake_accounts
+  - name: gov__fact_stake_accounts
     description: "This table contains data for stake accounts by epoch, including the active amount staked, lockup information, and related information."
     columns:
       - name: epoch

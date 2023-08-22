@@ -12,4 +12,4 @@
 SELECT
     *
 FROM
-    {{ ref('gov__fact_guages_votes') }}
+    {{ ref('gov__fact_gauges_votes') }}

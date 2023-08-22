@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__fact_proposal_creation
+  - name: gov__fact_proposal_creation
     description: An EZ view of all proposal creations. Currently, this table is limited to only proposal creations on Realms DAO governance spaces. A space serves as a voting group for an organization, dAPP, or DAO.  
     columns:
       - name: GOVERNANCE_PLATFORM

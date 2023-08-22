@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__fact_vote_accounts
+  - name: gov__fact_vote_accounts
     description: "This table contains data for each vote account by epoch, including the validator's public key, voting weight, commission rate, and related information."
     columns:
       - name: epoch
