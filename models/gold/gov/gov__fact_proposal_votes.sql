@@ -1,17 +1,11 @@
 {{ config(
     materialized = 'view',
-    meta={
-        'database_tags':{
-            'table': {
-                'PURPOSE': 'GOVERNANCE'
-            }
-        }
-    }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'GOVERNANCE' }}}
 ) }}
 
-SELECT 
-    'tribeca' as governance_platform, 
-    'marinade' as program_name,
+SELECT
+    'tribeca' AS governance_platform,
+    'marinade' AS program_name,
     block_timestamp,
     block_id,
     tx_id,
@@ -19,32 +13,28 @@ SELECT
     voter,
     voter_account,
     voter_nft,
-    proposal, 
-    NULL AS realms_id, 
-    NULL AS vote_choice, 
-    NULL AS vote_rank, 
+    proposal,
+    NULL AS realms_id,
+    NULL AS vote_choice,
+    NULL AS vote_rank,
     NULL AS vote_weight
-
 FROM
     {{ ref('silver__proposal_votes_marinade') }}
-
-UNION ALL 
-
-SELECT 
-    'realms' as governance_platform, 
-    program_id as program_name, 
-    block_timestamp, 
-    block_id, 
-    tx_id, 
-    succeeded,  
-    voter, 
-    vote_account, 
-    NULL AS voter_nft, 
+UNION ALL
+SELECT
+    'realms' AS governance_platform,
+    program_id AS program_name,
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    voter,
+    vote_account,
+    NULL AS voter_nft,
     proposal,
-    realms_id, 
-    vote_choice, 
-    vote_rank, 
+    realms_id,
+    vote_choice,
+    vote_rank,
     vote_weight
-
 FROM
     {{ ref('silver__proposal_votes_realms') }}

@@ -1,12 +1,6 @@
 {{ config(
-    materialized = 'view',
-    meta={
-        'database_tags':{
-            'table': {
-                'PURPOSE': 'STAKING'
-            }
-        }
-    }
+  materialized = 'view',
+  meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }}}
 ) }}
 
 SELECT 

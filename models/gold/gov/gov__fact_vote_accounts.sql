@@ -1,19 +1,13 @@
 {{ config(
-    materialized = 'view',
-    meta={
-        'database_tags':{
-            'table': {
-                'PURPOSE': 'VALIDATOR'
-            }
-        }
-    }
+  materialized = 'view',
+  meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'VALIDATOR' }}}
 ) }}
 
 SELECT
-  epoch_recorded :: int as epoch, 
+  epoch_recorded :: INT AS epoch,
   vote_pubkey,
   node_pubkey,
-  authorized_voter, 
+  authorized_voter,
   authorized_withdrawer,
   commission,
   epoch_credits,
@@ -26,17 +20,18 @@ SELECT
   account_sol,
   owner,
   rent_epoch
-FROM {{ ref('silver__snapshot_vote_accounts') }}
+FROM
+  {{ ref('silver__snapshot_vote_accounts') }}
 UNION ALL
 SELECT
-  epoch_ingested_at :: int as epoch, 
+  epoch_ingested_at :: INT AS epoch,
   vote_pubkey,
   node_pubkey,
-  authorized_voter, 
+  authorized_voter,
   authorized_withdrawer,
   commission,
   epoch_credits,
-  epoch :: int as last_epoch_active,
+  epoch :: INT AS last_epoch_active,
   last_timestamp_slot,
   last_timestamp,
   prior_voters,
@@ -45,4 +40,5 @@ SELECT
   account_sol,
   owner,
   rent_epoch
-FROM {{ ref('silver__historical_vote_account') }}
+FROM
+  {{ ref('silver__historical_vote_account') }}

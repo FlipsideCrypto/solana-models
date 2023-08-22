@@ -1,16 +1,10 @@
 {{ config(
     materialized = 'view',
-    meta={
-        'database_tags':{
-            'table': {
-                'PURPOSE': 'GOVERNANCE'
-            }
-        }
-    }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'GOVERNANCE' }}}
 ) }}
 
-SELECT 
-    'marinade' as program_name,
+SELECT
+    'marinade' AS program_name,
     block_timestamp,
     block_id,
     tx_id,

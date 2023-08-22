@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }}}
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }} }
 ) }}
 
 SELECT

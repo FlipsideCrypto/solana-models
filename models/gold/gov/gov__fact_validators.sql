@@ -1,16 +1,10 @@
 {{ config(
-    materialized = 'view',
-    meta={
-        'database_tags':{
-            'table': {
-                'PURPOSE': 'VALIDATOR'
-            }
-        }
-    }
+  materialized = 'view',
+  meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'VALIDATOR' }}}
 ) }}
 
 SELECT
-  epoch_recorded::INT as epoch,
+  epoch_recorded :: INT AS epoch,
   node_pubkey,
   vote_pubkey,
   active_stake,
@@ -31,10 +25,11 @@ SELECT
   software_version,
   updated_at,
   www_url
-FROM {{ ref('silver__snapshot_validators_app_data') }}
+FROM
+  {{ ref('silver__snapshot_validators_app_data') }}
 UNION ALL
 SELECT
-  epoch_recorded::INT as epoch,
+  epoch_recorded :: INT AS epoch,
   node_pubkey,
   vote_pubkey,
   active_stake,
@@ -55,4 +50,5 @@ SELECT
   software_version,
   updated_at,
   www_url
-FROM {{ ref('silver__historical_validator_app_data') }}
+FROM
+  {{ ref('silver__historical_validator_app_data') }}

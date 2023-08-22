@@ -1,20 +1,14 @@
 {{ config(
-    materialized = 'view',
-    meta={
-        'database_tags':{
-            'table': {
-                'PURPOSE': 'VALIDATOR'
-            }
-        }
-    }
+  materialized = 'view',
+  meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'VALIDATOR' }}}
 ) }}
 
 SELECT
-  epoch_recorded::INT as epoch,
+  epoch_recorded :: INT AS epoch,
   stake_pubkey,
   vote_pubkey,
-  authorized_staker, 
-  authorized_withdrawer, 
+  authorized_staker,
+  authorized_withdrawer,
   lockup,
   rent_exempt_reserve,
   credits_observed,
@@ -26,14 +20,15 @@ SELECT
   program,
   account_sol,
   rent_epoch
-FROM {{ ref('silver__snapshot_stake_accounts') }}
+FROM
+  {{ ref('silver__snapshot_stake_accounts') }}
 UNION ALL
 SELECT
-  epoch_ingested_at::INT as epoch,
+  epoch_ingested_at :: INT AS epoch,
   stake_pubkey,
   vote_pubkey,
-  authorized_staker, 
-  authorized_withdrawer, 
+  authorized_staker,
+  authorized_withdrawer,
   lockup,
   rent_exempt_reserve,
   credits_observed,
@@ -45,4 +40,5 @@ SELECT
   program,
   account_sol,
   rent_epoch
-FROM {{ ref('silver__historical_stake_account') }}
+FROM
+  {{ ref('silver__historical_stake_account') }}
