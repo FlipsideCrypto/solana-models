@@ -42,9 +42,9 @@ FROM
       SELECT
         collection_mint,
         CASE
-          WHEN item_count > 1000
-          AND page < total_pages THEN 1000
-          WHEN page = total_pages THEN item_count % 1000
+          WHEN item_count > 500
+          AND page < total_pages THEN 500
+          WHEN page = total_pages THEN 500
           ELSE item_count
         END AS LIMIT, 
         page
@@ -62,7 +62,7 @@ FROM
       WHERE
         page_nums.page <= counted_items.total_pages
         OR (
-          item_count > 1000
+          item_count > 500
           AND page_nums.page = counted_items.total_pages
         )
       ORDER BY
@@ -78,7 +78,7 @@ GROUP BY collection_mint, LIMIT, page
 ORDER BY batch_id ASC;
 {% endset %}
   {% do run_query(final_calls_query) %}
-  {% for batch_id in range(0,2500) %}
+  {% for batch_id in range(0,5000) %}
     {% set results_query %}
   INSERT INTO
     {{ target.database }}.bronze_API.helius_compressed_nfts WITH results AS (
