@@ -6,29 +6,9 @@
     )
 ) }}
 
-WITH retry AS (
-
-    SELECT
-        program_id,
-        tx_id,
-        INDEX,
-        block_id
-    FROM
-        {{ ref('silver__decoded_instructions') }}
-    WHERE decoded_instruction = 'Unknown instruction, IDL doesnt include this instruction'
-)
 SELECT
-    e.program_id,
-    e.tx_id,
-    e.index,
-    e.instruction,
-    e.block_id,
-    e.block_timestamp
+    *
 FROM
-    {{ ref('silver__events') }}
-    e
-    INNER JOIN retry
-    ON e.program_id = retry.program_id
-    AND e.tx_id = retry.tx_id
-    AND e.index = retry.index
-    AND e.block_id = retry.block_id
+    {{ ref('silver__decoded_instructions') }}
+WHERE
+    decoded_instruction :error IS NOT NULL

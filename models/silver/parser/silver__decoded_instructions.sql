@@ -19,7 +19,8 @@ SELECT
     A.program_id,
     COALESCE(
         A.value :data :data [0] [1],
-        A.value :data [1]
+        A.value :data [1],
+        A.value :data
     ) AS decoded_instruction,
     A._inserted_timestamp
 FROM
