@@ -3,7 +3,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = ["tx_id", "index" ],
-    cluster_by = "block_timestamp::date",
+    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE','program_id'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
