@@ -16,9 +16,15 @@ WITH retry AS (
     FROM
         {{ ref('silver__decoded_instructions') }}
     WHERE
-        decoded_instruction :args :unknown IS NOT NULL
-        OR decoded_instruction IS NULL
-        AND decoded_instruction != 'Unknown instruction, IDL doesnt include this instruction'
+        ({% if var('STREAMLINE_RETRY_UNKNOWN') %}
+            decoded_instruction :error IS NOT NULL
+            OR decoded_instruction :args :unknown IS NOT NULL
+            OR decoded_instruction IS NULL
+        {% else %}
+            (decoded_instruction :args :unknown IS NOT NULL
+            OR decoded_instruction IS NULL)
+            AND decoded_instruction :error IS NULL
+        {% endif %})
 )
 SELECT
     e.program_id,

@@ -71,7 +71,7 @@ WHERE
     ) %}
     WITH meta AS (
         SELECT
-            job_created_time AS _inserted_timestamp,
+            LAST_MODIFIED AS _inserted_timestamp,
             file_name,
             {{ partition_function }} AS {{ partition_name }}
         FROM
@@ -111,7 +111,7 @@ WHERE
     ) %}
     WITH meta AS (
         SELECT
-            registered_on AS _inserted_timestamp,
+            LAST_MODIFIED AS _inserted_timestamp,
             file_name,
             {{ partition_function }} AS {{ partition_name }}
         FROM
