@@ -41,4 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m ./models/streamline/parser/streamline__unknown_error_instructions.sql
+          dbt run -m ./models/streamline/parser/streamline__unknown_error_instructions.sql
