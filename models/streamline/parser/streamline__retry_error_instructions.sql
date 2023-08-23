@@ -18,6 +18,7 @@ WITH retry AS (
     WHERE
         decoded_instruction :args :unknown IS NOT NULL
         OR decoded_instruction IS NULL
+        AND decoded_instruction != 'Unknown Instruction'
 )
 SELECT
     e.program_id,
