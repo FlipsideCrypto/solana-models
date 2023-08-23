@@ -1,7 +1,8 @@
-name: dbt_run_parser_program
-run-name: dbt_run_parser_program
+name: dbt_run_parser_program_retry
+run-name: dbt_run_parser_program_retry
 
 on:
+  workflow_dispatch:
   schedule:
     # Runs every day (see https://crontab.guru)
     - cron: '0 2 * * *'
