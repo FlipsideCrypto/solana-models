@@ -19,18 +19,18 @@ There is more information on how to use dbt docs in the last section of this doc
 
 ### Core Tables (`Solana`.`CORE`.`<table_name>`)
 
-**Dimension Tables:**
+**Core Dimension Tables:**
 - [dim_labels](#!/model/model.solana_models.core__dim_labels)
 - [dim_tokens](#!/model/model.solana_models.core__dim_tokens)
 
-**Fact Tables:**
+**Core Fact Tables:**
 - [fact_blocks](#!/model/model.solana_models.core__fact_blocks)
 - [fact_events](#!/model/model.solana_models.core__fact_events)
 - [fact_transactions](#!/model/model.solana_models.core__fact_transactions)
 - [fact_transfers](#!/model/model.solana_models.core__fact_transfers)
 - [fact_decoded_instructions](#!/model/model.solana_models.core__fact_decoded_instructions)
 
-**Convenience Tables:**
+**Core Convenience Tables:**
 - [ez_signers](#!/model/model.solana_models.core__ez_signers)
 - [ez_events_decoded](#!/model/model.solana_models.core__ez_events_decoded)
 
@@ -64,11 +64,11 @@ There is more information on how to use dbt docs in the last section of this doc
 
 ## **Data Model Overview**
 
-The Solana models are built a few different ways, but the core fact tables are built using three layers of sql models: **bronze, silver, and core.**
+The Solana models are built a few different ways, but the core fact tables are built using three layers of sql models: **bronze, silver, and gold.**
 
 - Bronze: Data is loaded in from the source as a view
 - Silver: All necessary parsing, filtering, de-duping, and other transformations are done here
-- Core: Final views and tables that are available publicly
+- Gold (core/defi/gov/nft/price): Final views and tables that are available publicly
 
 The dimension tables are sourced from a variety of on-chain and off-chain sources.
 
@@ -101,7 +101,7 @@ Note that you can also right-click on models to interactively filter and explore
 
 ### **More information**
 - [Flipside](https://flipsidecrypto.xyz/)
-- [Velocity](https://app.flipsidecrypto.com/velocity?nav=Discover)
+- [Data Studio](https://flipsidecrypto.xyz/edit)
 - [Tutorials](https://docs.flipsidecrypto.com/our-data/tutorials)
 - [Github](https://github.com/FlipsideCrypto/solana-models)
 - [What is dbt?](https://docs.getdbt.com/docs/introduction)
