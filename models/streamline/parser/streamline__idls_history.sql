@@ -37,7 +37,7 @@ event_history AS (
         MIN(block_id) AS first_event_block,
         MAX(block_id) AS latest_event_block
     FROM
-        solana.silver.events
+        {{ ref('silver__events') }}
     WHERE
         LOWER(program_id) IN (
             SELECT
