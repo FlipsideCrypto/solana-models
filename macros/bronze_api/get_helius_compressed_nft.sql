@@ -25,7 +25,7 @@ FROM
       SELECT
         collection_mint,
         COUNT(*) AS item_count,
-        CEIL((COUNT(*)) / 1000) AS total_pages
+        CEIL((COUNT(*)) / 500) AS total_pages
       FROM
         {{ target.database }}.silver.nft_compressed_mints_onchain
       WHERE
