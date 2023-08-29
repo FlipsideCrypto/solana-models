@@ -13,6 +13,11 @@ sources:
     tables:
       - name: address_labels
       - name: dim_date_hours
+  - name: crosschain_public
+    database: "{{ 'crosschain' if target.database == 'SOLANA' else 'crosschain_dev' }}"
+    schema: bronze_public
+    tables:
+      - name: user_idls
   - name: crosschain_silver
     database: "{{ 'crosschain' if target.database == 'SOLANA' else 'crosschain_dev' }}"
     schema: silver
