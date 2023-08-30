@@ -76,7 +76,7 @@ groupings AS (
 responses AS (
     SELECT
         program_id,
-        streamline.udf_decode_instruction(requests) AS response
+        streamline.udf_decode_instructions(requests) AS response
     FROM
         groupings
 )
