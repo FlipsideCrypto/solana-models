@@ -6,75 +6,63 @@
     )
 ) }}
 
-WITH idls_in_play AS (
+WITH min_decoded_event AS (
 
     SELECT
-        *
-    FROM
-        {{ ref('streamline__idls_history') }}
-    WHERE
-        min_decoded_block <> first_event_block
-        OR min_decoded_block IS NULL
-),
-load_range_existing AS (
-    SELECT
-        -- MAX(block_id) as max_block_completed,
-        MIN(block_id) AS min_block_completed,
-        min_block_completed - 500000 AS backfill_to_block,
         SPLIT_PART(
             id,
             '-',
             3
-        ) :: STRING AS program_id
+        ) :: STRING AS program_id,
+        MIN(block_id) AS min_decoded_block
     FROM
-        {{ ref('streamline__complete_decoded_instructions') }}
+        {{ ref('streamline__complete_decoded_instructions') }} A
     GROUP BY
         program_id
 ),
-new_idl AS (
+min_decoded_event_timestamp AS (
     SELECT
+        A.*,
+        b.block_timestamp AS min_decoded_block_timestamp
+    FROM
+        min_decoded_event A
+        JOIN {{ ref('silver__blocks') }}
+        b
+        ON A.min_decoded_block = b.block_id
+),
+idls_in_play AS (
+    SELECT
+        A.*,
+        b.min_decoded_block_timestamp
+    FROM
+        {{ ref('streamline__idls_history') }} A
+        LEFT JOIN min_decoded_event_timestamp b
+        ON A.program_id = b.program_id
+    WHERE
+        first_event_block_timestamp <> min_decoded_block_timestamp
+        OR min_decoded_block_timestamp IS NULL
+),
+block_timestamp_ranges AS (
+    SELECT
+        CASE
+            WHEN min_decoded_block_timestamp IS NOT NULL THEN min_decoded_block_timestamp
+            ELSE latest_event_block_timestamp
+        END AS start_range,
+        CASE
+            WHEN min_decoded_block_timestamp IS NOT NULL THEN DATEADD(
+                DAY,
+                -2,
+                min_decoded_block_timestamp
+            )
+            ELSE DATEADD(
+                DAY,
+                -2,
+                latest_event_block_timestamp
+            )
+        END AS end_range,
         program_id
     FROM
         idls_in_play
-    WHERE
-        program_id NOT IN (
-            SELECT
-                DISTINCT(program_id)
-            FROM
-                load_range_existing
-        )
-),
-load_range_new AS(
-    SELECT
-        MAX(block_id) AS latest_block,
-        latest_block - 500000 AS backfill_to_block,
-        program_id
-    FROM
-        {{ ref('silver__events') }}
-    WHERE
-        program_id IN (
-            SELECT
-                program_id
-            FROM
-                new_idl
-        )
-    GROUP BY
-        program_id
-),
-block_ranges AS (
-    SELECT
-        latest_block AS start_block,
-        backfill_to_block,
-        program_id
-    FROM
-        load_range_new
-    UNION ALL
-    SELECT
-        min_block_completed AS start_block,
-        backfill_to_block,
-        program_id
-    FROM
-        load_range_existing
 )
 SELECT
     e.program_id,
@@ -84,9 +72,10 @@ SELECT
     e.block_id,
     e.block_timestamp
 FROM
-    {{ ref('silver__events') }} e
-    JOIN block_ranges b
+    {{ ref('silver__events') }}
+    e
+    JOIN block_timestamp_ranges b
     ON e.program_id = b.program_id
 WHERE
-    e.block_id BETWEEN backfill_to_block
-    AND start_block
+    e.block_timestamp BETWEEN end_range
+    AND start_range
