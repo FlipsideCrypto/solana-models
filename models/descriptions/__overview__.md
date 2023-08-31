@@ -19,48 +19,56 @@ There is more information on how to use dbt docs in the last section of this doc
 
 ### Core Tables (`Solana`.`CORE`.`<table_name>`)
 
-**Dimension Tables:**
+**Core Dimension Tables:**
 - [dim_labels](#!/model/model.solana_models.core__dim_labels)
 - [dim_tokens](#!/model/model.solana_models.core__dim_tokens)
-- [dim_nft_metadata](#!/model/model.solana_models.core__nft_metadata)
 
-**Fact Tables:**
+**Core Fact Tables:**
 - [fact_blocks](#!/model/model.solana_models.core__fact_blocks)
 - [fact_events](#!/model/model.solana_models.core__fact_events)
-- [fact_gauges_creates](#!/model/model.solana_models.core__fact_events)
-- [fact_gauges_votes](#!/model/model.solana_models.core__fact_gauges_votes)
-- [fact_gov_actions](#!/model/model.solana_models.core__fact_gov_actions)
-- [fact_liquidity_pool_actions](#!/model/model.solana_models.core__fact_liquidity_pool_actions)
-- [fact_nft_mints](#!/model/model.solana_models.core__fact_nft_mints)
-- [fact_nft_sales](#!/model/model.solana_models.core__fact_nft_sales)
-- [fact_proposal_creation](#!/model/model.solana_models.core__fact_proposal_creation)
-- [fact_proposal_votes](#!/model/model.solana_models.core__fact_proposal_votes)
-- [fact_stake_pool_actions](#!/model/model.solana_models.core__fact_stake_pool_actions)
-- [fact_staking_lp_actions](#!/model/model.solana_models.core__fact_staking_lp_actions)
-- [fact_swaps](#!/model/model.solana_models.core__fact_swaps)
-- [fact_token_prices_hourly](#!/model/model.solana_models.core__fact_token_prices_hourly)
 - [fact_transactions](#!/model/model.solana_models.core__fact_transactions)
 - [fact_transfers](#!/model/model.solana_models.core__fact_transfers)
-- [fact_votes_agg_block](#!/model/model.solana_models.core__fact_votes_agg_block)
-- [fact_stake_accounts](#!/model/model.solana_models.core__fact_stake_accounts)
-- [fact_vote_accounts](#!/model/model.solana_models.core__fact_vote_accounts)
-- [fact_block_production](#!/model/model.solana_models.core__fact_block_production)
-- [fact_validators](#!/model/model.solana_models.core__fact_validators)
 - [fact_decoded_instructions](#!/model/model.solana_models.core__fact_decoded_instructions)
 
-**Convenience Tables:**
+**Core Convenience Tables:**
 - [ez_signers](#!/model/model.solana_models.core__ez_signers)
-- [ez_staking_lp_actions](#!/model/model.solana_models.core__ez_staking_lp_actions)
-- [ez_token_prices_hourly](#!/model/model.solana_models.core__ez_token_prices_hourly)
 - [ez_events_decoded](#!/model/model.solana_models.core__ez_events_decoded)
+
+### DeFi Tables (`Solana`.`DEFI`.`<table_name>`)
+- [fact_liquidity_pool_actions](#!/model/model.solana_models.defi__fact_liquidity_pool_actions)
+- [fact_stake_pool_actions](#!/model/model.solana_models.defi__fact_stake_pool_actions)
+- [fact_swaps](#!/model/model.solana_models.defi__fact_swaps)
+
+### Governance Tables (`Solana`.`GOV`.`<table_name>`)
+- [ez_staking_lp_actions](#!/model/model.solana_models.gov__ez_staking_lp_actions)
+- [fact_gauges_creates](#!/model/model.solana_models.gov__fact_gauges_create)
+- [fact_gauges_votes](#!/model/model.solana_models.gov__fact_gauges_votes)
+- [fact_gov_actions](#!/model/model.solana_models.gov__fact_gov_actions)
+- [fact_proposal_creation](#!/model/model.solana_models.gov__fact_proposal_creation)
+- [fact_proposal_votes](#!/model/model.solana_models.gov__fact_proposal_votes)
+- [fact_staking_lp_actions](#!/model/model.solana_models.gov__fact_staking_lp_actions)
+- [fact_stake_accounts](#!/model/model.solana_models.gov__fact_stake_accounts)
+- [fact_vote_accounts](#!/model/model.solana_models.gov__fact_vote_accounts)
+- [fact_block_production](#!/model/model.solana_models.gov__fact_block_production)
+- [fact_validators](#!/model/model.solana_models.gov__fact_validators)
+- [fact_votes_agg_block](#!/model/model.solana_models.gov__fact_votes_agg_block)
+
+### NFT Tables (`Solana`.`NFT`.`<table_name>`)
+- [dim_nft_metadata](#!/model/model.solana_models.nft__dim_nft_metadata)
+- [fact_nft_mints](#!/model/model.solana_models.nft__fact_nft_mints)
+- [fact_nft_sales](#!/model/model.solana_models.nft__fact_nft_sales)
+
+### Price Tables (`Solana`.`PRICE`.`<table_name>`)
+- [fact_token_prices_hourly](#!/model/model.solana_models.price__fact_token_prices_hourly)
+- [ez_token_prices_hourly](#!/model/model.solana_models.price__ez_token_prices_hourly)
 
 ## **Data Model Overview**
 
-The Solana models are built a few different ways, but the core fact tables are built using three layers of sql models: **bronze, silver, and core.**
+The Solana models are built a few different ways, but the core fact tables are built using three layers of sql models: **bronze, silver, and gold.**
 
 - Bronze: Data is loaded in from the source as a view
 - Silver: All necessary parsing, filtering, de-duping, and other transformations are done here
-- Core: Final views and tables that are available publicly
+- Gold (core/defi/gov/nft/price): Final views and tables that are available publicly
 
 The dimension tables are sourced from a variety of on-chain and off-chain sources.
 
@@ -93,7 +101,7 @@ Note that you can also right-click on models to interactively filter and explore
 
 ### **More information**
 - [Flipside](https://flipsidecrypto.xyz/)
-- [Velocity](https://app.flipsidecrypto.com/velocity?nav=Discover)
+- [Data Studio](https://flipsidecrypto.xyz/edit)
 - [Tutorials](https://docs.flipsidecrypto.com/our-data/tutorials)
 - [Github](https://github.com/FlipsideCrypto/solana-models)
 - [What is dbt?](https://docs.getdbt.com/docs/introduction)
