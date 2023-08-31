@@ -1,12 +1,6 @@
 {{ config(
     materialized = 'table',
-    meta={
-        'database_tags':{
-            'table': {
-                'PURPOSE': 'STAKING'
-            }
-        }
-    },
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }}},
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
 ) }}
@@ -17,7 +11,6 @@ WITH base_staking_lp_actions AS (
         *
     FROM
         {{ ref('silver__staking_lp_actions') }}
-
 ),
 merges_and_splits AS (
     SELECT
@@ -241,7 +234,7 @@ fill_vote_acct AS (
         END AS vote_account
     FROM
         tx_base
-), 
+),
 fill_vote_acct2 AS (
     SELECT
         block_id,
@@ -251,15 +244,15 @@ fill_vote_acct2 AS (
         INDEX,
         event_type,
         signers,
-        stake_authority, 
-        withdraw_authority, 
+        stake_authority,
+        withdraw_authority,
         stake_account,
         stake_active,
         pre_tx_staked_balance,
         post_tx_staked_balance,
         withdraw_amount,
-        withdraw_destination, 
-        CASE    
+        withdraw_destination,
+        CASE
             WHEN vote_account IS NULL THEN FIRST_VALUE(vote_account) ignore nulls over (
                 PARTITION BY stake_account
                 ORDER BY
@@ -268,8 +261,9 @@ fill_vote_acct2 AS (
             )
             ELSE vote_account
         END AS vote_account
-    FROM fill_vote_acct
-), 
+    FROM
+        fill_vote_acct
+),
 temp AS (
     SELECT
         b.block_id,
@@ -289,16 +283,16 @@ temp AS (
         b.withdraw_destination,
         COALESCE(
             b.vote_account,
-            a.vote_account
-        ) AS vote_account  
+            A.vote_account
+        ) AS vote_account
     FROM
-        fill_vote_acct2 b 
-        LEFT OUTER JOIN fill_vote_acct2 a
-        ON b.tx_id = a.tx_id 
-        AND b.index = a.index
+        fill_vote_acct2 b
+        LEFT OUTER JOIN fill_vote_acct2 A
+        ON b.tx_id = A.tx_id
+        AND b.index = A.index
         AND b.event_type = 'split_destination'
-        AND a.event_type = 'split_source'   
-), 
+        AND A.event_type = 'split_source'
+),
 temp2 AS (
     SELECT
         block_id,
@@ -308,15 +302,15 @@ temp2 AS (
         INDEX,
         event_type,
         signers,
-        stake_authority, 
-        withdraw_authority, 
+        stake_authority,
+        withdraw_authority,
         stake_account,
         stake_active,
         pre_tx_staked_balance,
         post_tx_staked_balance,
         withdraw_amount,
-        withdraw_destination, 
-        CASE    
+        withdraw_destination,
+        CASE
             WHEN vote_account IS NULL THEN FIRST_VALUE(vote_account) ignore nulls over (
                 PARTITION BY stake_account
                 ORDER BY
@@ -325,8 +319,9 @@ temp2 AS (
             )
             ELSE vote_account
         END AS vote_account
-    FROM temp
-) 
+    FROM
+        temp
+)
 SELECT
     block_id,
     block_timestamp,
@@ -335,25 +330,25 @@ SELECT
     INDEX,
     event_type,
     signers,
-    stake_authority, 
-    withdraw_authority, 
+    stake_authority,
+    withdraw_authority,
     stake_account,
     stake_active,
     pre_tx_staked_balance,
     post_tx_staked_balance,
     withdraw_amount,
-    withdraw_destination, 
-    vote_account, 
+    withdraw_destination,
+    vote_account,
     node_pubkey,
     validator_rank,
-    commission, 
+    commission,
     COALESCE(
         address_name,
         vote_account
     ) AS validator_name
-FROM temp2
-LEFT OUTER JOIN validators v
-ON vote_account = vote_pubkey
-LEFT OUTER JOIN {{ ref('core__dim_labels') }}
-ON vote_account = address
-   
+FROM
+    temp2
+    LEFT OUTER JOIN validators v
+    ON vote_account = vote_pubkey
+    LEFT OUTER JOIN {{ ref('core__dim_labels') }}
+    ON vote_account = address
