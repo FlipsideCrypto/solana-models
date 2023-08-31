@@ -15,9 +15,8 @@ SELECT
     mint,
     sales_amount
 FROM
-    {{ source(
-        'solana_silver',
-        'nft_sales_magic_eden_v1'
+    {{ ref(
+        'silver__nft_sales_magic_eden_v1_view'
     ) }}
 UNION
 SELECT
@@ -74,9 +73,8 @@ SELECT
     mint,
     sales_amount
 FROM
-    {{ source(
-        'solana_silver',
-        'nft_sales_solport'
+    {{ ref(
+        'silver__nft_sales_solport_view'
     ) }}
 UNION
 SELECT

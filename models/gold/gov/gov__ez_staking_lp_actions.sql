@@ -185,9 +185,8 @@ validators AS (
         VALUE :votePubkey :: STRING AS vote_pubkey,
         VALUE :number :: INTEGER AS validator_rank
     FROM
-        {{ source(
-            'bronze_streamline',
-            'validator_metadata_api'
+        {{ ref(
+            'silver__validator_metadata_api'
         ) }}
 ),
 fill_vote_acct AS (
