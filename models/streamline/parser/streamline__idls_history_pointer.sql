@@ -30,11 +30,17 @@ SELECT
     h.program_id,
     COALESCE(
         p.min_decoded_block_timestamp_date,
-        h.latest_event_block_timestamp
+        h.default_backfill_start_block_timestamp
     ) :: DATE AS min_decoded_block_timestamp_date,
+    COALESCE(
+        p.min_decoded_block,
+        h.default_backfill_start_block_id
+    ) AS min_decoded_block_id,
     min_decoded_block_timestamp_date -2 AS backfill_to_date
 FROM
     {{ ref('streamline__idls_history') }}
     h
     LEFT JOIN program_last_processed p
     ON p.program_id = h.program_id
+WHERE 
+    min_decoded_block_id > first_block_id
