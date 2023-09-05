@@ -1,45 +1,35 @@
 {{ config (
-    materialized = 'table'
+    materialized = "incremental",
+    unique_key = 'program_id'
 ) }}
 
 WITH idls AS (
 
     SELECT
-        LOWER(
-            REPLACE(SPLIT_PART(metadata$filename, '/', 3), '.json')
-        ) AS program_id
-    FROM
-        {{ source(
-            'bronze_streamline',
-            'decode_instructions_idls'
-        ) }}
-)
-,
-min_decoded_event AS (
-    SELECT
-        SPLIT_PART(ID, '-', 3)::string as program_id,
-        MIN(block_id) AS min_decoded_block
-    FROM
-        {{ ref('streamline__complete_decoded_instructions') }}
-    WHERE
-        LOWER(program_id) IN (
-            SELECT
-                program_id
-            FROM
-                idls
-        )
-    GROUP BY
         program_id
+    FROM
+        {{ ref('silver__verified_idls') }}
+
+{% if is_incremental %}
+WHERE
+    program_id NOT IN (
+        SELECT
+            program_id
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
 event_history AS (
     SELECT
         program_id,
-        MIN(block_id) AS first_event_block,
-        MAX(block_id) AS latest_event_block
+        MIN(block_id) AS first_block_id,
+        MAX(block_timestamp) AS default_backfill_start_block_timestamp,
+        MAX(block_id) AS default_backfill_start_block_id
     FROM
         {{ ref('silver__events') }}
     WHERE
-        LOWER(program_id) IN (
+        program_id IN (
             SELECT
                 program_id
             FROM
@@ -49,11 +39,9 @@ event_history AS (
         program_id
 )
 SELECT
-    A.program_id,
-    A.first_event_block,
-    A.latest_event_block,
-    b.min_decoded_block
+    program_id,
+    first_block_id,
+    default_backfill_start_block_timestamp,
+    default_backfill_start_block_id
 FROM
-    event_history A
-    LEFT JOIN min_decoded_event b
-    ON A.program_id = b.program_id
+    event_history
