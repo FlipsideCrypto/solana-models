@@ -21,3 +21,5 @@ FROM
     ON e.block_timestamp >= p.backfill_to_date
     AND e.block_timestamp <= p.min_decoded_block_timestamp_date
     AND e.program_id = p.program_id
+WHERE 
+    e.block_id <= p.min_decoded_block_id
