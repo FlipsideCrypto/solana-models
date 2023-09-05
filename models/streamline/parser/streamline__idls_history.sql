@@ -10,7 +10,7 @@ WITH idls AS (
     FROM
         {{ ref('silver__verified_idls') }}
 
-{% if is_incremental %}
+{% if is_incremental() %}
 WHERE
     program_id NOT IN (
         SELECT
