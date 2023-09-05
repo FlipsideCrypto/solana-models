@@ -1,0 +1,49 @@
+version: 2
+models:
+  - name: core__fact_stake_pool_actions
+    description: Deprecating soon! This is a notice that we're replacing this table with `defi__fact_stake_pool_actions`. Please migrate queries to the new table by 9/14/23. There will be no column changes or any other changes of any kind. 
+    columns:
+      - name: STAKE_POOL_NAME
+        description: "Name of stake pool action is performed against"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: INDEX
+        description: Location of the stake pool action within a transaction
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: ACTION
+        description: "{{ doc('stake_pool_action') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: STAKE_POOL
+        description: "{{ doc('stake_pool') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: ADDRESS
+        description: "{{ doc('stake_pool_address') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: AMOUNT
+        description: "Amount in Lamports"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TOKEN
+        description: "Token utilized in the stake pool action"
+        tests:
+          - dbt_expectations.expect_column_to_exist

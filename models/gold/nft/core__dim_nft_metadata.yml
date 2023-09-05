@@ -1,0 +1,57 @@
+version: 2
+models:
+  - name: core__dim_nft_metadata
+    description: Deprecating soon! This is a notice that we're replacing this table with `nft__dim_nft_metadata`. Please migrate queries to the new table by 9/14/23. There will be no column changes or any other changes of any kind.
+    columns:
+      - name: BLOCKCHAIN
+        description: "{{ doc('blockchain') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: CONTRACT_ADDRESS
+        description: "{{ doc('contract_address') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: CONTRACT_NAME
+        description: "{{ doc('contract_name') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: CREATED_AT_TIMESTAMP
+        description: "{{ doc('created_at_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: CREATOR_ADDRESS
+        description: "{{ doc('creator_address') }}"
+        tests:  
+          - dbt_expectations.expect_column_to_exist
+      - name: CREATOR_NAME
+        description: "{{ doc('creator_name') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: IMAGE_URL
+        description: "{{ doc('image_url') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: PROJECT_NAME
+        description: "{{ doc('project_name') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TOKEN_ID
+        description: "{{ doc('token_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TOKEN_METADATA
+        description: "{{ doc('token_metadata') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TOKEN_METADATA_URI
+        description: "{{ doc('token_metadata_uri') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TOKEN_NAME
+        description: "{{ doc('token_name') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
