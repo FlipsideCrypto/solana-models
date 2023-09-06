@@ -12,10 +12,10 @@ WITH base_candy_machine_events AS (
     FROM
         {{ ref('silver__events') }}
     WHERE 
-        program_id in ('cndy3Z4yapfJBmL3ShUp5exZKqR3z33thTzeNMm2gRZ','cndyAnrLdpjq1Ssp1z8xxDsB8dxe7u4HL5Nxi2K5WXZ')
+        program_id in ('cndy3Z4yapfJBmL3ShUp5exZKqR3z33thTzeNMm2gRZ','cndyAnrLdpjq1Ssp1z8xxDsB8dxe7u4HL5Nxi2K5WXZ','CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR')
     AND 
-        succeeded        
-
+        succeeded   
+             
 {% if is_incremental() %}
 AND
     _inserted_timestamp >= (
@@ -60,7 +60,11 @@ candy_machine AS (
         i.index as inner_index,
         e.program_id,
         instruction :accounts [5] :: STRING AS mint,
-        instruction :accounts [2] :: STRING AS payer,
+        CASE 
+            WHEN e.program_id =  'CndyV3LdqHUfDLmE5naZjVN8rBZz4tqhdefbAnjHG3JR'
+            then instruction :accounts [3] :: STRING
+            ELSE instruction :accounts [2] :: STRING
+        END as payer,
         COALESCE(
             i.value :parsed :info :lamports :: INTEGER,
             i.value :parsed :info :amount :: INTEGER
