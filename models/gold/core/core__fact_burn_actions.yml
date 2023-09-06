@@ -1,0 +1,49 @@
+version: 2
+models:
+  - name: core__fact_burn_actions
+    description: Contains information on burn events, which includes burns of SPL tokens, NFTs, and liquidity pool tokens. 
+    columns:
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: INDEX
+        description: Location of the event within the instructions of a transaction
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: INNER_INDEX
+        description: Location of the event within the inner instructions of a transaction
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: EVENT_TYPE
+        description: "{{ doc('event_type') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BURN_AMOUNT
+        description: "{{ doc('burn_amount') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BURN_AUTHORITY
+        description: The account address with authority to confirm burn event
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SIGNERS
+        description: "{{ doc('signers') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
