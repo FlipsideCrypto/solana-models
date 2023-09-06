@@ -51,8 +51,6 @@ LIMIT
             e.index,
             e.program_id,
             e.instruction,
-            e.tx_id,
-            e.block_id,
             TRUE
         ) AS request
     FROM
