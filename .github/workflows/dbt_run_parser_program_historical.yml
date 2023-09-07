@@ -40,4 +40,5 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
+          dbt run -s models/streamline/parser/streamline__complete_decoded_instructions.sql models/streamline/parser/streamline__idls_history_pointer.sql
           dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m ./models/streamline/parser/streamline__all_undecoded_instructions_history.sql
