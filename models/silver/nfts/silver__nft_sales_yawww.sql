@@ -3,6 +3,7 @@
     unique_key = "tx_id",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
+    enabled = false,
 ) }}
 
 WITH base_table AS (
@@ -109,7 +110,10 @@ price_bids AS (
         acct_2,
         bid_amount
     FROM
-        {{ ref('silver__nft_bids_yawww') }}
+        {{ source(
+            'solana_silver',
+            'nft_bids_yawww'
+        ) }}
         qualify(ROW_NUMBER() over (PARTITION BY bidder, acct_2
     ORDER BY
         block_timestamp DESC)) = 1
