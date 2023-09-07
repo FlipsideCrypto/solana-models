@@ -89,7 +89,7 @@ SELECT
     mint,
     sales_amount
 FROM
-    {{ ref('silver__nft_sales_opensea') }}
+    {{ ref('silver__nft_sales_opensea_view') }}
 UNION
 SELECT
     'yawww',
@@ -103,7 +103,7 @@ SELECT
     mint,
     sales_amount
 FROM
-    {{ ref('silver__nft_sales_yawww') }}
+    {{ ref('silver__nft_sales_yawww_view') }}
 UNION
 SELECT
     'hadeswap',
