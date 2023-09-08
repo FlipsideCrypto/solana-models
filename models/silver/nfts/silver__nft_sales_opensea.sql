@@ -3,6 +3,8 @@
     unique_key = "CONCAT_WS('-', tx_id, mint)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
+    full_refresh = false,
+    enabled = false,
 ) }}
 
 WITH sales_inner_instructions AS (

@@ -68,6 +68,9 @@ sources:
     tables:
       - name: nft_sales_solport
       - name: nft_sales_magic_eden_v1
+      - name: nft_sales_opensea
+      - name: nft_sales_yawww
+      - name: nft_bids_yawww
   - name: solana_streamline
     schema: streamline
     tables:

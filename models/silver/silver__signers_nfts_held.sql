@@ -3,7 +3,9 @@
     unique_key = "CONCAT_WS('-', signer, nft_held)",
     incremental_strategy = 'delete+insert',
     cluster_by = 'signer', 
-    full_refresh = false
+    full_refresh = false,
+    enabled = false,
+    
 ) }} 
 WITH dates_changed AS (
     SELECT

@@ -2,6 +2,8 @@
     materialized = 'incremental',
     unique_key = ["account_address","owner","start_block_id"],
     cluster_by = ['_inserted_timestamp::DATE'],
+    full_refresh = false,
+    enabled = false,
 ) }}
 
 /*
