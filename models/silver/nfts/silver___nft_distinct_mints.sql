@@ -2,6 +2,7 @@
     materialized = 'incremental',
     unique_key = "mint",
     incremental_strategy = 'delete+insert',
+    full_refresh = false,
     enabled = false,
 ) }}
 
