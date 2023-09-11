@@ -1,5 +1,6 @@
 {{ config(
-    materialized = 'table',
+    materialized = 'incremental',
+    unique_key = ['block_id','tx_id','index'],
     meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }}},
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
@@ -11,7 +12,28 @@ WITH base_staking_lp_actions AS (
         *
     FROM
         {{ ref('silver__staking_lp_actions') }}
+    {% if is_incremental() %}
+    WHERE block_timestamp::date >= current_date - 1
+    {% endif %}
 ),
+{% if is_incremental() %}
+latest_state as (
+    select stake_account, stake_authority, withdraw_authority, stake_active, vote_account
+    from {{ this }}
+    WHERE block_timestamp::date < current_date - 1
+    qualify(row_number() over (partition by stake_account order by block_id desc, block_timestamp desc, index desc)) = 1
+),
+{% else %}
+/*dummy cte so that downstream code can stay the same*/
+latest_state as (
+    select 
+        'a' as stake_account, 
+        'a' as stake_authority, 
+        'a' as withdraw_authority, 
+        'a' as stake_active, 
+        'a' as vote_account
+),
+{% endif %}
 merges_and_splits AS (
     SELECT
         block_id,
@@ -140,7 +162,8 @@ tx_base AS (
             WHEN event_type = 'initialize' THEN instruction :parsed :info :authorized :withdrawer :: STRING
             WHEN event_type = 'authorize'
             AND instruction :parsed :info :authorityType = 'Withdrawer' THEN instruction :parsed :info :newAuthority :: STRING
-            ELSE instruction :parsed :info :stakeAuthority :: STRING
+            WHEN event_type = 'split_destination' THEN stake_authority
+            ELSE NULL
         END AS withdraw_authority,
         stake_account,
         CASE
@@ -191,78 +214,46 @@ fill_vote_acct AS (
         INDEX,
         event_type,
         signers,
-        CASE
-            WHEN stake_authority IS NULL THEN LAST_VALUE(stake_authority) ignore nulls over (
-                PARTITION BY stake_authority
+        COALESCE(tx_base.stake_authority, 
+            LAST_VALUE(tx_base.stake_authority) ignore nulls over (
+                PARTITION BY tx_base.stake_account
                 ORDER BY
                     block_id,
                     INDEX rows unbounded preceding
-            )
-            ELSE stake_authority
-        END AS stake_authority,
-        CASE
-            WHEN withdraw_authority IS NULL THEN LAST_VALUE(withdraw_authority) ignore nulls over (
-                PARTITION BY withdraw_authority
+            ),
+            latest_state.stake_authority) AS stake_authority,
+        COALESCE(tx_base.withdraw_authority, 
+            LAST_VALUE(tx_base.withdraw_authority) ignore nulls over (
+                PARTITION BY tx_base.stake_account
                 ORDER BY
                     block_id,
                     INDEX rows unbounded preceding
-            )
-            ELSE withdraw_authority
-        END AS withdraw_authority,
-        stake_account,
-        CASE
-            WHEN stake_active IS NULL THEN LAST_VALUE(stake_active) ignore nulls over (
-                PARTITION BY stake_account
+            ),
+            latest_state.withdraw_authority) AS withdraw_authority,
+        tx_base.stake_account,
+        COALESCE(tx_base.stake_active, 
+            LAST_VALUE(tx_base.stake_active) ignore nulls over (
+                PARTITION BY tx_base.stake_account
                 ORDER BY
                     block_id,
                     INDEX rows unbounded preceding
-            )
-            ELSE stake_active
-        END AS stake_active,
+            ),
+            latest_state.stake_active) AS stake_active,
         pre_tx_staked_balance,
         post_tx_staked_balance,
         withdraw_amount,
         withdraw_destination,
-        CASE
-            WHEN vote_acct IS NULL THEN LAST_VALUE(vote_acct) ignore nulls over (
-                PARTITION BY stake_account
+        COALESCE(tx_base.vote_acct,
+            LAST_VALUE(tx_base.vote_acct) ignore nulls over (
+                PARTITION BY tx_base.stake_account
                 ORDER BY
                     block_id,
                     INDEX rows unbounded preceding
-            )
-            ELSE vote_acct
-        END AS vote_account
+            ),
+            latest_state.vote_account) AS vote_account
     FROM
         tx_base
-),
-fill_vote_acct2 AS (
-    SELECT
-        block_id,
-        block_timestamp,
-        tx_id,
-        succeeded,
-        INDEX,
-        event_type,
-        signers,
-        stake_authority,
-        withdraw_authority,
-        stake_account,
-        stake_active,
-        pre_tx_staked_balance,
-        post_tx_staked_balance,
-        withdraw_amount,
-        withdraw_destination,
-        CASE
-            WHEN vote_account IS NULL THEN FIRST_VALUE(vote_account) ignore nulls over (
-                PARTITION BY stake_account
-                ORDER BY
-                    block_id,
-                    INDEX rows unbounded preceding
-            )
-            ELSE vote_account
-        END AS vote_account
-    FROM
-        fill_vote_acct
+    LEFT OUTER JOIN latest_state on latest_state.stake_account = tx_base.stake_account
 ),
 temp AS (
     SELECT
@@ -286,8 +277,8 @@ temp AS (
             A.vote_account
         ) AS vote_account
     FROM
-        fill_vote_acct2 b
-        LEFT OUTER JOIN fill_vote_acct2 A
+        fill_vote_acct b
+        LEFT OUTER JOIN fill_vote_acct A
         ON b.tx_id = A.tx_id
         AND b.index = A.index
         AND b.event_type = 'split_destination'
@@ -311,7 +302,7 @@ temp2 AS (
         withdraw_amount,
         withdraw_destination,
         CASE
-            WHEN vote_account IS NULL THEN FIRST_VALUE(vote_account) ignore nulls over (
+            WHEN vote_account IS NULL THEN LAST_VALUE(vote_account) ignore nulls over (
                 PARTITION BY stake_account
                 ORDER BY
                     block_id,
