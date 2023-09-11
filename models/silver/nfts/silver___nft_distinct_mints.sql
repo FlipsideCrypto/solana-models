@@ -2,6 +2,8 @@
     materialized = 'incremental',
     unique_key = "mint",
     incremental_strategy = 'delete+insert',
+    full_refresh = false,
+    enabled = false,
 ) }}
 
 WITH base AS (
@@ -112,7 +114,10 @@ SELECT
     mint,
     _inserted_timestamp
 FROM
-    {{ ref('silver__nft_sales_opensea') }}
+    {{ source(
+        'solana_silver',
+        'nft_sales_opensea'
+    ) }}
 
 {% if is_incremental() %}
 WHERE
@@ -128,7 +133,10 @@ SELECT
     mint,
     _inserted_timestamp
 FROM
-    {{ ref('silver__nft_sales_yawww') }}
+    {{ source(
+        'solana_silver',
+        'nft_sales_yawww'
+    ) }}
 
 {% if is_incremental() %}
 WHERE

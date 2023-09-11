@@ -4,6 +4,8 @@
     unique_key = ["account_address"],
     cluster_by = ['_inserted_timestamp::DATE'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
+    full_refresh = false,
+    enabled = false,
 ) }}
 
 /* need to rebucket and regroup the intermediate model due to possibility of change events coming in out of order */
