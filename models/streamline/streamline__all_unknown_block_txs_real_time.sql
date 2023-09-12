@@ -28,13 +28,19 @@ WITH pre_final AS (
     FROM
         {{ ref('streamline__complete_block_txs') }}
 ),
+max_block AS (
+    SELECT
+        max(block_id) as max_block_id
+    FROM
+        {{ ref('silver__blocks') }}
+),
 base_blocks AS (
     SELECT
         *
     FROM
         {{ ref('silver__blocks') }}
     WHERE
-        block_id >= 170000000 -- all blocks prior have been confirmed as complete
+        block_id >= (select max_block_id-2000000 from max_block) -- make assumption (since we have intraday alerts) that 2mil blocks prior to latest have been confirmed
         AND _inserted_date < CURRENT_DATE
 ),
 base_txs AS (
@@ -43,14 +49,14 @@ base_txs AS (
     FROM
         {{ ref('silver__transactions') }}
     WHERE
-        block_id >= 170000000
+        block_id >= (select max_block_id-2000000 from max_block)
     UNION
     SELECT
         DISTINCT block_id
     FROM
         {{ ref('silver__votes') }}
     WHERE
-        block_id >= 170000000
+        block_id >= (select max_block_id-2000000 from max_block)
 ),
 potential_missing_txs AS (
     SELECT
@@ -62,35 +68,35 @@ potential_missing_txs AS (
     WHERE
         base_txs.block_id IS NULL
 ),
-encoded_txs AS(
-    SELECT
-        DISTINCT block_id
-    FROM
-        {{ ref('silver___inner_instructions') }}
-    WHERE
-        VALUE :instructions [0] :programIdIndex :: NUMBER IS NOT NULL
-        AND block_timestamp :: DATE >= CURRENT_DATE - 7
-    GROUP BY
-        1
-    EXCEPT
-    SELECT
-        DISTINCT block_id
-    FROM
-        {{ ref('bronze__transactions2') }}
-    WHERE
-        _partition_id BETWEEN (
-            SELECT
-                MAX(_partition_id) -3
-            FROM
-                {{ ref('bronze__transactions2') }}
-        )
-        AND (
-            SELECT
-                MAX(_partition_id)
-            FROM
-                {{ ref('bronze__transactions2') }}
-        )
-)
+-- encoded_txs AS(
+--     SELECT
+--         DISTINCT block_id
+--     FROM
+--         {{ ref('silver___inner_instructions') }}
+--     WHERE
+--         VALUE :instructions [0] :programIdIndex :: NUMBER IS NOT NULL
+--         AND block_timestamp :: DATE >= CURRENT_DATE - 7
+--     GROUP BY
+--         1
+--     EXCEPT
+--     SELECT
+--         DISTINCT block_id
+--     FROM
+--         {{ ref('bronze__transactions2') }}
+--     WHERE
+--         _partition_id BETWEEN (
+--             SELECT
+--                 MAX(_partition_id) -3
+--             FROM
+--                 {{ ref('bronze__transactions2') }}
+--         )
+--         AND (
+--             SELECT
+--                 MAX(_partition_id)
+--             FROM
+--                 {{ ref('bronze__transactions2') }}
+--         )
+-- )
 SELECT
     block_id,
     (
@@ -118,13 +124,13 @@ WHERE
     cmp.error IS NOT NULL
     OR cmp.block_id IS NULL
 UNION
-SELECT
-    block_id,
-    (
-        SELECT
-            COALESCE(MAX(_partition_id) + 1, 1)
-        FROM
-            {{ ref('streamline__complete_block_txs') }}
-    ) AS batch_id
-FROM
-    encoded_txs
+-- SELECT
+--     block_id,
+--     (
+--         SELECT
+--             COALESCE(MAX(_partition_id) + 1, 1)
+--         FROM
+--             {{ ref('streamline__complete_block_txs') }}
+--     ) AS batch_id
+-- FROM
+--     encoded_txs
