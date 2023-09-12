@@ -67,7 +67,8 @@ potential_missing_txs AS (
         ON base_blocks.block_id = base_txs.block_id
     WHERE
         base_txs.block_id IS NULL
-),
+)
+-- ,
 -- encoded_txs AS(
 --     SELECT
 --         DISTINCT block_id
@@ -123,7 +124,7 @@ FROM
 WHERE
     cmp.error IS NOT NULL
     OR cmp.block_id IS NULL
-UNION
+-- UNION
 -- SELECT
 --     block_id,
 --     (
