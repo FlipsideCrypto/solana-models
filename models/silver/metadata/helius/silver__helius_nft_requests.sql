@@ -7,7 +7,7 @@ WITH base AS (
     SELECT
         *
     FROM
-        solana.silver.nft_mints
+        {{ ref('silver__nft_mints') }}
 
 {% if is_incremental() %}
 WHERE
@@ -19,7 +19,7 @@ WHERE
     )
     AND _inserted_timestamp <= (
         SELECT
-            MAX(max_mint_event_inserted_timestamp)::date + 2
+            MAX(max_mint_event_inserted_timestamp)::date + 3
         FROM
             {{ this }}
     )
@@ -43,7 +43,7 @@ numbered_table AS (
 grouped AS (
     SELECT
         mint,
-        FLOOR((row_num - 1) / 750) + 1 AS group_num,
+        FLOOR((row_num - 1) / 400) + 1 AS group_num,
         _inserted_timestamp
     FROM
         numbered_table

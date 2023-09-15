@@ -1,0 +1,4 @@
+version: 2
+models:
+  - name: silver__helius_nft_metadata
+    description: Contains NFT metadata provided by Helius DAS API

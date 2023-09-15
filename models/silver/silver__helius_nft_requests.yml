@@ -1,4 +1,0 @@
-version: 2
-models:
-  - name: silver__helius_nft_requests
-    description: table holding requests to send to helius
