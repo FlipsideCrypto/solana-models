@@ -4,8 +4,8 @@ run-name: dbt_run_helius_metadata
 on:
   workflow_dispatch:
   schedule:
-    # Runs "every 20th minute" (see https://crontab.guru)
-    - cron: '*/20 * * * *'
+    # Runs "every 7th minute" (see https://crontab.guru)
+    - cron: '*/7 * * * *'
     
 env:
   DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
