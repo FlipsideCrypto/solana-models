@@ -25,8 +25,9 @@ FROM
     LATERAL FLATTEN(
         input => DATA :data [0] :result
     ) AS items
+    WHERE mint is not NULL
 {% if is_incremental() %}
-WHERE
+AND
     _inserted_timestamp >= (
         SELECT
             MAX(_inserted_timestamp)
