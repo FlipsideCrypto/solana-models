@@ -2,3 +2,38 @@ version: 2
 models:
   - name: silver__helius_nft_metadata
     description: Contains NFT metadata provided by Helius DAS API
+    columns:
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        tests:
+          - not_null
+          - unique
+      - name: AUTHORITIES
+        description: "Array of authority address for the NFT mint"
+      - name: BURNT
+        description: "If the NFT has been burned" 
+      - name: COMPRESSION
+        description: "Details on compression status" 
+      - name: CONTENT
+        description: "Various links to NFT content"
+      - name: METADATA
+        description: "The metadata for the NFT"
+      - name: CREATORS
+        description:  "Array of creator addresses"
+      - name: GROUPING
+        description: "The collection or grouping of the NFT"
+      - name: INTERFACE
+        description: "The twitter account for the project"
+      - name: MUTABLE
+        description:  "The website for the project"
+      - name: OWNERSHIP
+        description: "Ownership details for the NFT"
+      - name: ROYALTY
+        description: "Royalty details for NFT sale"
+      - name: SUPPLY
+        description: "Supply and edition id"
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
+    

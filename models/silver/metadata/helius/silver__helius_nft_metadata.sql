@@ -14,8 +14,8 @@ SELECT
     items.value ['content'] ['metadata'] AS metadata,
     items.value ['creators'] AS creators,
     items.value ['grouping'] AS GROUPING,
-    items.value ['interface'] AS INTERFACE,
-    items.value ['mutable'] AS mutable,
+    items.value ['interface'] :: STRING AS INTERFACE,
+    items.value ['mutable'] :: boolean AS mutable,
     items.value ['ownership'] AS ownership,
     items.value ['royalty'] AS royalty,
     items.value ['supply'] AS supply,
@@ -35,3 +35,7 @@ AND
             {{ this }}
     )
 {% endif %}
+    qualify(ROW_NUMBER() over (PARTITION BY mint
+ORDER BY
+    _inserted_timestamp DESC)) = 1
+

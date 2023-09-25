@@ -19,7 +19,7 @@ WHERE
     )
     AND _inserted_timestamp <= (
         SELECT
-            MAX(max_mint_event_inserted_timestamp)::date + 3
+            MAX(max_mint_event_inserted_timestamp) :: DATE + 3
         FROM
             {{ this }}
     )
@@ -30,7 +30,7 @@ WHERE
 ORDER BY
     _inserted_timestamp ASC
 ),
-numbered_table AS (
+numbered AS (
     SELECT
         *,
         ROW_NUMBER() over (
@@ -38,7 +38,9 @@ numbered_table AS (
                 _inserted_timestamp
         ) AS row_num
     FROM
-        base
+        base qualify(ROW_NUMBER() over (PARTITION BY mint
+    ORDER BY
+        _inserted_timestamp DESC)) = 1
 ),
 grouped AS (
     SELECT
@@ -46,7 +48,7 @@ grouped AS (
         FLOOR((row_num - 1) / 400) + 1 AS group_num,
         _inserted_timestamp
     FROM
-        numbered_table
+        numbered
     ORDER BY
         row_num
 ),
@@ -62,7 +64,11 @@ list_mints AS (
 )
 SELECT
     ARRAY_AGG(
-        { 'id': concat(group_num,'-',max_mint_event_inserted_timestamp::date),
+        { 'id': CONCAT(
+            group_num,
+            '-',
+            max_mint_event_inserted_timestamp :: DATE
+        ),
         'jsonrpc': '2.0',
         'method': 'getAssetBatch',
         'params':{ 'ids': list_mint }}
