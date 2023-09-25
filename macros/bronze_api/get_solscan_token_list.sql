@@ -36,8 +36,5 @@
     AND rn <= {{ i * 50 + 49 }};
 {% endset %}
     {% do run_query(query) %}
-    {% set wait %}
-    CALL system $ wait(30);
-    {% endset %} 
   {% endfor %}
 {% endmacro %}
