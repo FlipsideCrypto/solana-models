@@ -1,5 +1,6 @@
 {{ config(
-    materialized = 'incremental'
+    materialized = 'incremental',
+    tags = ['helius']
 ) }}
 
 WITH base AS (

@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    full_refresh = false
+    full_refresh = false,
+    tags = ['helius']
 ) }}
 
 WITH requests AS (

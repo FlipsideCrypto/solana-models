@@ -3,6 +3,7 @@
     unique_key = "mint",
     incremental_strategy = 'delete+insert',
     cluster_by = ['_inserted_timestamp::DATE'],
+    tags = ['helius']
 ) }}
 
 SELECT

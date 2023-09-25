@@ -42,6 +42,6 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run-operation run_sp_refresh_external_tables_full
-          dbt run -s ./models --exclude models/gold tag:share models/streamline models/silver/silver__daily_signers.sql models/silver/silver__signers.sql models/silver/validator models/silver/_observability models/silver/nfts/silver__nft_compressed_mints_onchain.sql models/silver/nfts/silver__nft_compressed_mints.sql models/silver/metadata/helius models/bronze/helius/bronze__helius_nft_metadata.sql
+          dbt run -s ./models --exclude models/gold tag:share models/streamline models/silver/silver__daily_signers.sql models/silver/silver__signers.sql models/silver/validator models/silver/_observability models/silver/nfts/silver__nft_compressed_mints_onchain.sql models/silver/nfts/silver__nft_compressed_mints.sql tag:helius
           dbt run --var '{"UPDATE_SNOWFLAKE_TAGS":True}' -s ./models/gold --exclude models/gold/core/core__ez_signers.sql
           
