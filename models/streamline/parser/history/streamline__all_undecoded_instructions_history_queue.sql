@@ -62,6 +62,6 @@ join pre_final pf on
 where 
     pf.program_id not in (select distinct(program_id) from {{ ref('streamline__complete_decoded_history') }})
 {% if is_incremental() %}
-or 
+and 
     pf.program_id not in (select distinct(program_id) from {{ this }})
 {% endif %}
