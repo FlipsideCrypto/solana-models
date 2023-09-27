@@ -1,5 +1,5 @@
-name: dbt_run_parser_program_historical
-run-name: dbt_run_parser_program_historical
+name: dbt_run_parser_program_historical_build_queue
+run-name: dbt_run_parser_program_historical_build_queue
 
 on:
   schedule:
