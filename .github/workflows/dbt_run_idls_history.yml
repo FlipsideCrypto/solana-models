@@ -40,4 +40,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -s models/streamline/parser/streamline__idls_history.sql models/streamline/parser/history/streamline__complete_decoded_history.sql
+          dbt run -s models/streamline/parser/history/streamline__idls_history.sql models/streamline/parser/history/streamline__complete_decoded_history.sql
