@@ -1,6 +1,5 @@
 {{ config (
     materialized = 'incremental',
-    unique_key = 'program_id'
 ) }}
 
 WITH base AS (
