@@ -1,5 +1,6 @@
 {{ config (
     materialized = 'incremental',
+    cluster_by = "ROUND(block_id, -6)",
     full_refresh = false
 ) }}
 
