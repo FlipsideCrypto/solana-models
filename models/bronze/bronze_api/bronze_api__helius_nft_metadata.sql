@@ -48,7 +48,7 @@ FROM
     ON A.max_mint_event_inserted_timestamp = b.max_mint_event_inserted_timestamp
 {% else %}
 WHERE
-    max_mint_event_inserted_timestamp :: DATE = '2022-10-18'
+    max_mint_event_inserted_timestamp :: DATE = '2022-08-12'
 {% endif %}
 ),
 final_requests AS (

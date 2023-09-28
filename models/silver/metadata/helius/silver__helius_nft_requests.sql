@@ -26,7 +26,7 @@ WHERE
     )
 {% else %}
 WHERE
-    block_timestamp :: DATE = '2022-10-18'
+    _inserted_timestamp :: DATE = '2022-08-12'
 {% endif %}
 ),
 numbered AS (
