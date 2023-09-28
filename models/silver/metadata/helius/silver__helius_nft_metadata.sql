@@ -24,7 +24,7 @@ SELECT
 FROM
     {{ ref('bronze__helius_nft_metadata') }},
     LATERAL FLATTEN(
-        input => DATA :data [0] :result
+        input => DATA :data :result
     ) AS items
     WHERE mint is not NULL
 {% if is_incremental() %}

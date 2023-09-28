@@ -64,20 +64,17 @@ list_mints AS (
         group_num
 )
 SELECT
-    ARRAY_AGG(
-        { 'id': CONCAT(
-            group_num,
-            '-',
-            max_mint_event_inserted_timestamp :: DATE
-        ),
-        'jsonrpc': '2.0',
-        'method': 'getAssetBatch',
-        'params':{ 'ids': list_mint }}
-    ) calls,
-    -- group_num AS request_num,
+    livequery.utils.udf_json_rpc_call(
+        'getAssetBatch',
+        OBJECT_CONSTRUCT(
+            'ids',
+            list_mint
+        )
+    ) AS rpc_request,
     max_mint_event_inserted_timestamp
 FROM
     list_mints
 GROUP BY
     group_num,
-    max_mint_event_inserted_timestamp
+    max_mint_event_inserted_timestamp,
+    list_mint

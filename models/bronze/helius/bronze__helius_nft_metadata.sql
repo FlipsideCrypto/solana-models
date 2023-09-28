@@ -34,15 +34,22 @@ WHERE
 ),
 response AS ({% for item in range(0, 100) %}
     (
-SELECT
-    ethereum.streamline.udf_json_rpc_call('https://rpc.helius.xyz/?api-key=' || (
-SELECT
-    api_key
-FROM
-    crosschain.silver.apis_keys
-WHERE
-    api_name = 'helius'),{}, calls) AS DATA, max_mint_event_inserted_timestamp, SYSDATE() AS _inserted_timestamp
-FROM
+     SELECT
+        livequery.live.udf_api(
+            'POST',
+            'https://rpc.helius.xyz/?api-key=' || (
+                SELECT
+                    api_key
+                FROM
+                    crosschain.silver.apis_keys
+                WHERE
+                    api_name = 'helius'),
+            {},
+            rpc_request
+        ) AS data,
+        max_mint_event_inserted_timestamp,
+        SYSDATE() AS _inserted_timestamp
+     FROM
     requests
 WHERE
     batch_id = {{ item }}) {% if not loop.last %}
