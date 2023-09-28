@@ -28,8 +28,6 @@ WHERE
 WHERE
     block_timestamp :: DATE = '2022-10-18'
 {% endif %}
-ORDER BY
-    _inserted_timestamp ASC
 ),
 numbered AS (
     SELECT
