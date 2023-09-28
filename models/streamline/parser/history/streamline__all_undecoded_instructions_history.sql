@@ -17,4 +17,4 @@ select
     tx_id,
     h.block_id
 from {{ ref('streamline__all_undecoded_instructions_history_queue') }} h
-where h.block_id between (select max_block_id-8000000 from m) and (select max_block_id from m)
+where h.block_id between (select max_block_id-200000 from m) and (select max_block_id from m)
