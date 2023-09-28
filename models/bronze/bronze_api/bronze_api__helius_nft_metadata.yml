@@ -1,0 +1,23 @@
+version: 2
+models:
+  - name: bronze_api__helius_nft_metadata
+    description: Raw NFT metadata from Helius DAS API
+    columns:
+      - name: DATA
+        description: "Raw response data"
+      - name: MAX_MINT_EVENT_INSERTED_TIMESTAMP
+        description: "The latest inserted timestamp for the mints passed to a call"
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
+      - name: RETRY_COUNT
+        description: "Number of times the request was attempted"
+        tests:
+          - accepted_values:
+              values: [0, 1, 2]
+      - name: CALL_SUCCEEDED
+        description: "Whether the call was successful"
+      - name: ERROR_CODE
+        description: "Error code if the call failed"
+    

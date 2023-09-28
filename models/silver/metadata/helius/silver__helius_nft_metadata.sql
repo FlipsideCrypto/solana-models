@@ -22,7 +22,7 @@ SELECT
     items.value ['supply'] AS supply,
     _inserted_timestamp
 FROM
-    {{ ref('bronze__helius_nft_metadata') }},
+    {{ ref('bronze_api__helius_nft_metadata') }},
     LATERAL FLATTEN(
         input => DATA :data :result
     ) AS items
