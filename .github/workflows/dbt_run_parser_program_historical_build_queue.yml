@@ -1,10 +1,10 @@
-name: dbt_run_idls_history
-run-name: dbt_run_idls_history
+name: dbt_run_parser_program_historical_build_queue
+run-name: dbt_run_parser_program_historical_build_queue
 
 on:
   schedule:
-    # At minute 15 past every 12th hour (see https://crontab.guru)
-    - cron: '15 */12 * * *'
+    # Runs every SUNDAY at 22:22 (see https://crontab.guru)
+    - cron: '22 2 * * SUN'
     
 env:
   DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
@@ -40,4 +40,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -s models/streamline/parser/history/streamline__idls_history.sql models/streamline/parser/history/streamline__complete_decoded_history.sql
+          dbt run -s models/streamline/parser/history/streamline__all_undecoded_instructions_history_queue.sql
