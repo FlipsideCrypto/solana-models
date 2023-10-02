@@ -7,3 +7,7 @@ models:
         description: "Request to be passed to LiveQuery"
       - name: MAX_MINT_EVENT_INSERTED_TIMESTAMP
         description: "The latest inserted timestamp for the mints passed to a call"
+      - name: _id
+        description: "The unique id of the request"
+        tests:
+          - unique

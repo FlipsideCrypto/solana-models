@@ -1,5 +1,6 @@
 {{ config(
     materialized = 'incremental',
+    unique_key = "_id",
     tags = ['helius']
 ) }}
 
@@ -62,14 +63,15 @@ list_mints AS (
         group_num
 )
 SELECT
-    livequery.utils.udf_json_rpc_call(
+    livequery_dev.utils.udf_json_rpc_call(
         'getAssetBatch',
         OBJECT_CONSTRUCT(
             'ids',
             list_mint
         )
     ) AS rpc_request,
-    max_mint_event_inserted_timestamp
+    max_mint_event_inserted_timestamp,
+    concat_ws('-',rpc_request:id,max_mint_event_inserted_timestamp) as _id
 FROM
     list_mints
 GROUP BY

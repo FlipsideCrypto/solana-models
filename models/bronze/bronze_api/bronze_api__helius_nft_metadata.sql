@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'max_mint_event_inserted_timestamp',
+    unique_key = '_id',
     full_refresh = false,
     tags = ['helius']
 ) }}
@@ -8,8 +8,10 @@
 WITH pre_requests AS (
 
     SELECT
-        *,
-        0 AS retry_count
+        rpc_request,
+        max_mint_event_inserted_timestamp,
+        0 AS retry_count,
+        _id
     FROM
         {{ ref('silver__helius_nft_requests') }}
 
@@ -23,7 +25,7 @@ WHERE
     )
     AND max_mint_event_inserted_timestamp < (
         SELECT
-            MAX(max_mint_event_inserted_timestamp) :: DATE + 2
+            MAX(max_mint_event_inserted_timestamp) :: DATE + 3
         FROM
             {{ this }}
     )
@@ -32,7 +34,8 @@ UNION ALL
 SELECT
     b.rpc_request,
     b.max_mint_event_inserted_timestamp,
-    A.retry_count + 1 AS retry_count
+    A.retry_count + 1 AS retry_count,
+    b._id
 FROM
     (
         SELECT
@@ -45,7 +48,7 @@ FROM
     ) A
     LEFT JOIN {{ ref('silver__helius_nft_requests') }}
     b
-    ON A.max_mint_event_inserted_timestamp = b.max_mint_event_inserted_timestamp
+    ON A._id = b._id
 {% else %}
 WHERE
     max_mint_event_inserted_timestamp :: DATE = '2022-08-12'
@@ -62,17 +65,22 @@ final_requests AS (
 response AS ({% for item in range(0, 100) %}
     (
     SELECT
-        livequery.live.udf_api('POST', 'https://rpc.helius.xyz/?api-key=' || (
+        livequery_dev.live.udf_api('POST', 'https://rpc.helius.xyz/?api-key=' || (
         SELECT
             api_key
         FROM
-            crosschain.silver.apis_keys
+            {{ source(
+                'crosschain_silver',
+                'apis_keys'
+            ) }}
         WHERE
-            api_name = 'helius'),
+            api_name = 'helius'
+            ),
             {}, 
             rpc_request) AS DATA, 
         max_mint_event_inserted_timestamp,
         retry_count,
+        _id,
         SYSDATE() AS _inserted_timestamp
 
     FROM
@@ -83,7 +91,9 @@ WHERE
     {% endif %}
 {% endfor %})
 SELECT
-    *,
+    data,
+    max_mint_event_inserted_timestamp,
+    retry_count,
     (
         DATA :data :message IS NULL
     )
@@ -93,6 +103,8 @@ SELECT
     COALESCE(
         DATA :data :code :: INT,
         DATA :status_code :: INT
-    ) AS error_code
+    ) AS status_code,
+    _id,
+    _inserted_timestamp
 FROM
     response

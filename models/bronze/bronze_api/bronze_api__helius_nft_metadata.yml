@@ -18,6 +18,10 @@ models:
               values: [0, 1, 2]
       - name: CALL_SUCCEEDED
         description: "Whether the call was successful"
-      - name: ERROR_CODE
+      - name: STATUS_CODE
         description: "Error code if the call failed"
+      - name: _ID
+        description: "The unique id of the request"
+        tests:
+          - unique
     
