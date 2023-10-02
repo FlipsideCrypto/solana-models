@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   schedule:
     # Runs "every hour" (see https://crontab.guru)
-    - cron: '*/15 * * * *'
+    - cron: '0,15,30,45 * * * *'
     
 env:
   DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
