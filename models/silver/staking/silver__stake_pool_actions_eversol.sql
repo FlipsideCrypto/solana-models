@@ -17,7 +17,7 @@ WITH base_stake_pool_events AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp)
+        GREATEST(MAX(_inserted_timestamp),current_date-3)
     FROM
         {{ this }}
 )
@@ -50,7 +50,7 @@ base_balances AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp)
+            GREATEST(MAX(_inserted_timestamp),current_date-3)
         FROM
             {{ this }}
     )

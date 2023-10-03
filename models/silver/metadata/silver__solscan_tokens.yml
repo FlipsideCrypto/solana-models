@@ -24,4 +24,10 @@ models:
       - name: TAGS
         description: "The website for the project"
       - name: _inserted_timestamp
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 7
    

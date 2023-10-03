@@ -20,7 +20,7 @@ WITH post_token_balances AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp)
+        GREATEST(MAX(_inserted_timestamp),current_date-3)
     FROM
         {{ this }}
 )
@@ -44,7 +44,7 @@ third_party_programs AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp)
+        GREATEST(MAX(_inserted_timestamp),current_date-3)
     FROM
         {{ this }}
 )
@@ -83,7 +83,7 @@ saber_gov_lock_events AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp)
+        GREATEST(MAX(_inserted_timestamp),current_date-3)
     FROM
         {{ this }}
 )
@@ -127,7 +127,7 @@ tx_logs AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp)
+        GREATEST(MAX(_inserted_timestamp),current_date-3)
     FROM
         {{ this }}
 )

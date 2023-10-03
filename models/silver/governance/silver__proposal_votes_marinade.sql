@@ -25,7 +25,7 @@ WITH marinade_vote_txs AS (
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp)
+        GREATEST(MAX(_inserted_timestamp),current_date-3)
     FROM
         {{ this }}
 )
@@ -57,7 +57,7 @@ WHERE
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp)
+        GREATEST(MAX(_inserted_timestamp),current_date-3)
     FROM
         {{ this }}
 )
@@ -92,7 +92,7 @@ b AS (
 WHERE
     t._inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp)
+            GREATEST(MAX(_inserted_timestamp),current_date-3)
         FROM
             {{ this }}
     )
@@ -159,7 +159,7 @@ WHERE
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp)
+        GREATEST(MAX(_inserted_timestamp),current_date-3)
     FROM
         {{ this }}
 )

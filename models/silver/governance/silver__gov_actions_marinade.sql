@@ -29,11 +29,32 @@ more_locks AS (
             FROM
                 base
         )
+    {% if is_incremental() %}
+    AND
+        _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp)
+            FROM
+                {{ this }}
+        )
+    {% else %}
+    AND
+        block_timestamp :: DATE >= '2022-04-01'
+    {% endif %}
     EXCEPT
     SELECT
         tx_id
     FROM
         {{ ref ('silver__gov_actions_marinade_tmp') }}
+    {% if is_incremental() %}
+    WHERE
+        _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp)
+            FROM
+                {{ this }}
+        )
+    {% endif %}
 )
 SELECT
     block_id,
