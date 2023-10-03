@@ -94,16 +94,12 @@ SELECT
     data,
     max_mint_event_inserted_timestamp,
     retry_count,
-    (
-        DATA :data :message IS NULL
-    )
-    AND (
-        DATA :error IS NULL
+    DATA :status_code :: INT AS status_code,
+    IFF(
+        status_code = 200,
+        TRUE,
+        FALSE
     ) AS call_succeeded,
-    COALESCE(
-        DATA :data :code :: INT,
-        DATA :status_code :: INT
-    ) AS status_code,
     _id,
     _inserted_timestamp
 FROM
