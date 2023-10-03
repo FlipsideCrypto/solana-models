@@ -41,7 +41,7 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -s models/silver/silver__helius_nft_requests
-          dbt run -s models/bronze/bronze_api/bronze_api__helius_nft_metadata
+          dbt run -s models/silver/metadata/helius/silver__helius_nft_requests.sql
+          dbt run -s models/bronze/bronze_api/bronze_api__helius_nft_metadata.sql
           
           
