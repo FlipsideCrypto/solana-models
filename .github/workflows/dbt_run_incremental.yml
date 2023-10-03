@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   schedule:
     # Runs "every hour" (see https://crontab.guru)
-    - cron: '*/20 * * * *'
+    - cron: '0,15,30,45 * * * *'
     
 env:
   DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
@@ -42,6 +42,5 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run-operation run_sp_refresh_external_tables_full
-          dbt run -s ./models --exclude models/gold tag:share models/streamline models/silver/silver__daily_signers.sql models/silver/silver__signers.sql models/silver/validator models/silver/_observability models/silver/nfts/silver__nft_compressed_mints_onchain.sql models/silver/nfts/silver__nft_compressed_mints.sql tag:helius
-          dbt run --var '{"UPDATE_SNOWFLAKE_TAGS":True}' -s ./models/gold --exclude models/gold/core/core__ez_signers.sql
+          dbt run -s ./models --exclude tag:share models/streamline models/silver/silver__daily_signers.sql models/silver/silver__signers.sql models/silver/validator models/silver/_observability models/silver/nfts/silver__nft_compressed_mints_onchain.sql models/silver/nfts/silver__nft_compressed_mints.sql models/gold/core/core__ez_signers.sql tag:helius
           
