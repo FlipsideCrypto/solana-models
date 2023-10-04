@@ -1,5 +1,6 @@
 {{ config(
-    materialized = 'incremental'
+    materialized = 'incremental',
+    tags = ['bronze_api']
 ) }}
 
 WITH collection_subset AS (
