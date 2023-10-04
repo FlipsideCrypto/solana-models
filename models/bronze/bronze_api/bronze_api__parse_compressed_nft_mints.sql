@@ -48,7 +48,7 @@ base AS (
         ii.value :programId :: STRING AS ii_program_id,
         ROW_NUMBER() over (
             ORDER BY
-                e.block_id,
+                e._inserted_timestamp,
                 e.tx_id
         ) AS rn,
         FLOOR(
