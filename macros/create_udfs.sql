@@ -13,6 +13,7 @@
             {{ udf_snapshot_get_vote_program_accounts() }};
             {{ udf_bulk_program_parser() }};
             {{ udf_decode_instructions() }};
+            {{ udf_bulk_parse_compressed_nft_mints() }};
         {% endif %}
 
         {{ create_udf_ordered_signers(
