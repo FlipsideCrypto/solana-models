@@ -1,11 +1,10 @@
-name: dbt_run_scheduled
-run-name: dbt_run_scheduled
+name: dbt_run_get_nft_compressed_backfill
+run-name: dbt_run_get_nft_compressed_backfill
 
 on:
-  workflow_dispatch:
   schedule:
-    # Runs "every hour" (see https://crontab.guru)
-    - cron: '0,15,30,45 * * * *'
+    # Runs 2:30 daily (see https://crontab.guru)
+    - cron: '*/5 * * * *'
     
 env:
   DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
@@ -41,6 +40,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run-operation run_sp_refresh_external_tables_full
-          dbt run -s ./models --exclude tag:share models/streamline models/silver/silver__daily_signers.sql models/silver/silver__signers.sql models/silver/validator models/silver/_observability models/silver/nfts/silver__nft_compressed_mints_onchain.sql models/silver/nfts/silver__nft_compressed_mints.sql models/gold/core/core__ez_signers.sql tag:helius tag:bronze_api
-          
+          dbt run -s models/bronze/bronze_api/bronze_api__parse_compressed_nft_mints.sql
