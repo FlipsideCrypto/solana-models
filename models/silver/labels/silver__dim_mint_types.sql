@@ -1,5 +1,6 @@
 {{ config(
-    materialized = 'incremental'
+    materialized = 'incremental',
+    unique_key = 'mint'
 ) }}
 
 WITH initialization AS (
@@ -12,7 +13,7 @@ WITH initialization AS (
             ELSE 'unknown'
         END AS mint_type
     FROM
-        solana.silver.mint_actions
+        {{ ref('silver__mint_actions') }}
     WHERE
         event_type IN (
             'initializeMint',
@@ -30,11 +31,11 @@ metaplex_events AS (
         e.instruction :accounts AS accounts,
         ARRAY_SIZE(accounts) AS num_accounts
     FROM
-        solana.silver.events e
+        {{ ref('silver__events') }} e
     WHERE
         program_id = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
         AND succeeded
-        AND block_timestamp::date > '2022-06-01'
+        AND block_timestamp :: DATE > '2022-06-01'
     UNION ALL
     SELECT
         tx_id,
@@ -50,7 +51,7 @@ metaplex_events AS (
     WHERE
         i.value :programId :: STRING = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
         AND succeeded
-        AND block_timestamp::date > '2022-06-01'
+        AND block_timestamp :: DATE > '2022-06-01'
 ),
 metaplex_mint_events AS (
     SELECT
@@ -139,7 +140,6 @@ nonfungibles AS (
 ),
 fungibles_and_others AS (
     SELECT
-        A.tx_id,
         A.mint,
         A.decimal,
         A.mint_type,
@@ -159,7 +159,6 @@ fungibles_and_others AS (
                 'Create Metadata Account V3'
             )
             AND A.decimal > 0 THEN 'Fungible'
-            ELSE 'unknown'
         END AS mint_standard_type
     FROM
         initialization A
@@ -177,15 +176,20 @@ fungibles_and_others AS (
         1,
         2,
         3,
-        4,
-        5
+        4
 )
 SELECT
-    *
+    mint,
+    DECIMAL,
+    mint_type,
+    mint_standard_type
 FROM
     nonfungibles
 UNION ALL
 SELECT
-    *
+    mint,
+    DECIMAL,
+    mint_type,
+    mint_standard_type
 FROM
     fungibles_and_others
