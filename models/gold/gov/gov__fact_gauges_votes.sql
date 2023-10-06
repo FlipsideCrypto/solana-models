@@ -29,4 +29,4 @@ SELECT
     NULL AS power,
     delegated_shares
 FROM
-    {{ ref('silver__gauges_votes_marinade') }}
+    {{ ref('silver__gauges_votes_marinade_view') }}

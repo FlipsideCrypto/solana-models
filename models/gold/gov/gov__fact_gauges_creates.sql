@@ -14,4 +14,4 @@ SELECT
     gaugemeister,
     validator_account
 FROM
-    {{ ref('silver__gauges_creates_marinade') }}
+    {{ ref('silver__gauges_creates_marinade_view') }}

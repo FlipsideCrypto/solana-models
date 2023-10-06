@@ -145,7 +145,7 @@ SELECT
     mint,
     sales_amount
 FROM
-    {{ ref('silver__nft_sales_coral_cube') }}
+    {{ ref('silver__nft_sales_coral_cube_view') }}
 UNION
 SELECT
     'exchange art',
