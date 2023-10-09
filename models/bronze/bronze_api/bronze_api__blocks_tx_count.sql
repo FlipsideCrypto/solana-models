@@ -3,10 +3,40 @@
     tags = ['bronze_api']
 ) }}
 
-{% set producer_limit_size = 100 %}
-{% set query_batch_size = 50 %}
+{% set producer_limit_size = 4000 %}
+{% set query_batch_size = 2000 %}
 
-with request as (
+{% if is_incremental() %}
+with next_batch as (
+    select 
+        *
+    from 
+        {{ this }}
+    qualify(row_number() over (order by _inserted_timestamp desc, _id desc)) = 1
+),
+next_block_id as (
+    select 
+        d.value:id::number as block_id
+    from 
+        next_batch,
+    table(flatten(data)) d 
+),
+{% else %}
+with 
+{% endif %}
+block_ids as (
+    select 
+        a._id+b.offset as block_id
+    from 
+        {{ ref('silver___number_sequence') }} a,
+    {% if is_incremental() %}
+        (select max(block_id)+1 as offset from next_block_id) b
+    {% else %}
+        (select 0 as offset) b
+    {% endif %}
+    qualify(row_number() over (order by block_id)) <= {{ producer_limit_size }}
+),
+request as (
     select 
         block_id,
         'https://solana-mainnet.rpc.extrnode.com' as url,
@@ -23,21 +53,31 @@ with request as (
                 'rewards',false
               )
             ]
-        ) as payload
-    from solana.silver.blocks
-    qualify(row_number() over (order by block_id)) <= {{ producer_limit_size }}
+        ) as payload,
+        row_number() over (order by block_id) as rn,
+        ceil(rn/{{ query_batch_size }}) as gn
+    from block_ids
 )
-, make_requests as ({% for item in range(1, producer_limit_size, query_batch_size) %}
+, make_requests as (
     select 
-        block_id,
-        livequery_dev.live.udf_api('POST',url,{},payload) as responses
+        gn,
+        array_agg(payload) as requests
     from request
-    qualify(row_number() over (order by block_id)) between {{ item }} and {{ item+query_batch_size-1 }}
-    {% if not loop.last %}
-    UNION ALL
-    {% endif %}
-{% endfor %})
+    group by gn
+)
+-- , responses as (
 select
-    block_id,
-    array_size(mr.responses:data:result:signatures::array) as tx_count
+    gn,
+    requests,
+    streamline.udf_bulk_get_blocks_tx_count(requests) as data,
+    sysdate() as _inserted_timestamp,
+    concat_ws('-',_inserted_timestamp,gn) as _id
 from make_requests mr
+    -- ,
+--     table(flatten(data)) d
+-- )
+-- select 
+    
+--     value:id as block_id,
+--     array_size(value:result:signatures::array) as tx_count
+-- from responses
