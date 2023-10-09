@@ -10,7 +10,7 @@ WITH initialization AS (
         CASE
             WHEN DECIMAL = 0 THEN 'nft'
             WHEN DECIMAL > 0 THEN 'token'
-            ELSE 'unknown'
+            ELSE NULL
         END AS mint_type
     FROM
         {{ ref('silver__mint_actions') }}
@@ -46,7 +46,7 @@ metaplex_events AS (
         i.value :accounts AS accounts,
         ARRAY_SIZE(accounts) AS num_accounts
     FROM
-        solana.silver.events e,
+        {{ ref('silver__events') }} e,
         TABLE(FLATTEN(inner_instruction :instructions)) i
     WHERE
         i.value :programId :: STRING = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'

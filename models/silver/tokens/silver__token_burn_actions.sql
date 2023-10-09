@@ -39,7 +39,7 @@ SELECT
     A._inserted_timestamp
 FROM
     base_burn_actions A
-    INNER JOIN solana_dev.silver.dim_mint_types b
+    INNER JOIN {{ ref('silver__mint_types') }} b
     ON A.mint = b.mint
 WHERE
     b.mint_type = 'token'
