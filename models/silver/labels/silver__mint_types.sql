@@ -15,43 +15,76 @@ WITH initialization AS (
     FROM
         {{ ref('silver__mint_actions') }}
     WHERE
-        event_type IN (
-            'initializeMint',
-            'initializeMint2'
-        )
-        AND succeeded
+        succeeded
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 metaplex_events AS (
     SELECT
-        tx_id,
-        block_timestamp,
-        INDEX,
-        0 AS inner_index,
-        program_id,
+        A.*,
+        e.index,
+        NULL AS inner_index,
+        e.program_id,
         e.instruction :accounts AS accounts,
         ARRAY_SIZE(accounts) AS num_accounts
     FROM
-        {{ ref('silver__events') }} e
+        initialization A
+        LEFT JOIN {{ ref('silver__events') }}
+        e
+        ON A.tx_id = e.tx_id
+        AND A.block_timestamp = e.block_timestamp
     WHERE
-        program_id = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
-        AND succeeded
-        AND block_timestamp :: DATE > '2022-06-01'
-    UNION ALL
+        e.program_id = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
+
+{% if is_incremental() %}
+AND e._inserted_timestamp >= (
     SELECT
-        tx_id,
-        e.block_timestamp,
-        e.index,
-        i.index AS inner_index,
-        i.value :programId AS program_id,
-        i.value :accounts AS accounts,
-        ARRAY_SIZE(accounts) AS num_accounts
+        MAX(
+            _inserted_timestamp
+        )
     FROM
-        {{ ref('silver__events') }} e,
-        TABLE(FLATTEN(inner_instruction :instructions)) i
-    WHERE
-        i.value :programId :: STRING = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
-        AND succeeded
-        AND block_timestamp :: DATE > '2022-06-01'
+        {{ this }}
+)
+{% else %}
+    AND e.block_timestamp :: DATE >= '2021-06-01'
+{% endif %}
+UNION ALL
+SELECT
+    A.*,
+    e.index,
+    i.index AS inner_index,
+    i.value :programId :: STRING AS program_id,
+    i.value :accounts AS accounts,
+    ARRAY_SIZE(accounts) AS num_accounts
+FROM
+    initialization A
+    LEFT JOIN {{ ref('silver__events') }}
+    e
+    ON A.tx_id = e.tx_id
+    AND A.block_timestamp = e.block_timestamp
+    LEFT JOIN TABLE(FLATTEN(e.inner_instruction :instructions)) i
+WHERE
+    i.value :programId :: STRING = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
+
+{% if is_incremental() %}
+AND e._inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        )
+    FROM
+        {{ this }}
+)
+{% else %}
+    AND e.block_timestamp :: DATE >= '2021-06-01'
+{% endif %}
 ),
 metaplex_mint_events AS (
     SELECT
@@ -87,11 +120,25 @@ metaplex_mint_events AS (
     FROM
         metaplex_events
 ),
+metaplex_mint_events_2 AS (
+    SELECT
+        *,
+        CASE
+            WHEN metaplex_event_type = 'Edition' THEN accounts [3] :: STRING
+            WHEN metaplex_event_type = 'Create' THEN accounts [2] :: STRING
+            WHEN metaplex_event_type IS NOT NULL THEN accounts [1] :: STRING
+            ELSE NULL
+        END AS metaplex_mint
+    FROM
+        metaplex_mint_events
+    WHERE
+        mint = metaplex_mint
+),
 ranked AS (
     SELECT
         *,
         ROW_NUMBER() over (
-            PARTITION BY tx_id
+            PARTITION BY mint
             ORDER BY
                 CASE
                     WHEN metaplex_event_type IN (
@@ -109,7 +156,7 @@ ranked AS (
                 END
         ) AS rn
     FROM
-        metaplex_mint_events
+        metaplex_mint_events_2
 ),
 nonfungibles AS (
     SELECT
@@ -133,7 +180,7 @@ nonfungibles AS (
     FROM
         initialization A
         LEFT JOIN ranked b
-        ON A.tx_id = b.tx_id
+        ON A.mint = b.mint
     WHERE
         b.rn = 1
         AND mint_standard_type IS NOT NULL
@@ -163,15 +210,16 @@ fungibles_and_others AS (
     FROM
         initialization A
         LEFT JOIN ranked b
-        ON A.tx_id = b.tx_id
+        ON A.mint = b.mint
         AND b.rn = 1
     WHERE
-        A.tx_id NOT IN (
+        A.mint NOT IN (
             SELECT
-                tx_id
+                mint
             FROM
                 nonfungibles
         )
+        AND A.mint_type IS NOT NULL
     GROUP BY
         1,
         2,
