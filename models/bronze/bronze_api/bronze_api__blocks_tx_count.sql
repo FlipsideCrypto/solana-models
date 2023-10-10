@@ -3,8 +3,9 @@
     tags = ['bronze_api']
 ) }}
 
-{% set producer_limit_size = 4000 %}
-{% set query_batch_size = 2000 %}
+{% set producer_limit_size = 1500 %}
+{% set query_batch_size = 20 %}
+{% set num_groups = 50 %}
 
 {% if is_incremental() %}
 with next_batch as (
@@ -34,6 +35,8 @@ block_ids as (
     {% else %}
         (select 0 as offset) b
     {% endif %}
+    where 
+        block_id <= (select max(block_id) from {{ ref('silver__blocks')}} )
     qualify(row_number() over (order by block_id)) <= {{ producer_limit_size }}
 ),
 request as (
@@ -65,14 +68,21 @@ request as (
     from request
     group by gn
 )
+{% for item in range(1,num_groups+1) %}
+    select
+        gn,
+        requests,
+        streamline.udf_bulk_get_blocks_tx_count(requests) as data,
+        sysdate() as _inserted_timestamp,
+        concat_ws('-',_inserted_timestamp,gn) as _id
+    from make_requests mr
+    where gn = {{ item }}
+    {% if not loop.last %}
+    UNION ALL
+    {% endif %}
+{% endfor %}
 -- , responses as (
-select
-    gn,
-    requests,
-    streamline.udf_bulk_get_blocks_tx_count(requests) as data,
-    sysdate() as _inserted_timestamp,
-    concat_ws('-',_inserted_timestamp,gn) as _id
-from make_requests mr
+
     -- ,
 --     table(flatten(data)) d
 -- )
