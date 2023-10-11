@@ -69,6 +69,10 @@ FROM
     e
     ON A.tx_id = e.tx_id
     AND A.block_timestamp = e.block_timestamp
+    AND ARRAY_CONTAINS(
+        'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s' :: variant,
+        e.inner_instruction_program_ids
+    )
     LEFT JOIN TABLE(FLATTEN(e.inner_instruction :instructions)) i
 WHERE
     i.value :programId :: STRING = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
@@ -176,7 +180,8 @@ nonfungibles AS (
             WHEN b.metaplex_event_type IN ('Create')
             AND accounts [1] <> 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
             AND A.decimal = 0 THEN 'NonFungible'
-        END AS mint_standard_type
+        END AS mint_standard_type,
+        A._inserted_timestamp
     FROM
         initialization A
         LEFT JOIN ranked b
@@ -206,7 +211,8 @@ fungibles_and_others AS (
                 'Create Metadata Account V3'
             )
             AND A.decimal > 0 THEN 'Fungible'
-        END AS mint_standard_type
+        END AS mint_standard_type,
+        A._inserted_timestamp
     FROM
         initialization A
         LEFT JOIN ranked b
@@ -220,17 +226,14 @@ fungibles_and_others AS (
                 nonfungibles
         )
         AND A.mint_type IS NOT NULL
-    GROUP BY
-        1,
-        2,
-        3,
-        4
+        qualify(row_number() over (partition by A.mint order by A._inserted_timestamp desc)) = 1
 )
 SELECT
     mint,
     DECIMAL,
     mint_type,
-    mint_standard_type
+    mint_standard_type,
+    _inserted_timestamp
 FROM
     nonfungibles
 UNION ALL
@@ -238,6 +241,7 @@ SELECT
     mint,
     DECIMAL,
     mint_type,
-    mint_standard_type
+    mint_standard_type,
+    _inserted_timestamp
 FROM
     fungibles_and_others
