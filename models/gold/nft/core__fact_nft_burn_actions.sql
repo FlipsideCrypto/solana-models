@@ -15,6 +15,6 @@ SELECT
     burn_authority,
     signers,
     DECIMAL,
-    MIN_STANDARD_TYPE
+    MINT_STANDARD_TYPE
 FROM
     {{ ref('silver__nft_burn_actions') }}

@@ -15,13 +15,12 @@ WITH base_mint_actions AS (
         event_type IN ('mintToChecked', 'mintTo')
 
 {% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% endif %}
 )
 SELECT
@@ -41,7 +40,8 @@ SELECT
     A._inserted_timestamp
 FROM
     base_mint_actions A
-    INNER JOIN {{ ref('silver__mint_types') }} b
+    INNER JOIN {{ ref('silver__mint_types') }}
+    b
     ON A.mint = b.mint
 WHERE
     b.mint_type = 'nft'

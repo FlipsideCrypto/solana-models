@@ -86,11 +86,7 @@ metaplex_events AS (
         base_metaplex_events e,
         TABLE(FLATTEN(e.inner_instruction :instructions)) i
     WHERE
-        ARRAY_CONTAINS(
-            'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s' :: variant,
-            e.inner_instruction_program_ids
-        )
-        AND i.value :programId :: STRING = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
+        e.program_id <> 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
 ),
 metaplex_mint_events AS (
     SELECT
@@ -129,9 +125,10 @@ metaplex_mint_events AS (
             WHEN metaplex_event_type IS NOT NULL THEN accounts [1] :: STRING
             ELSE NULL
         END AS mint
-
     FROM
         metaplex_events
+    WHERE
+        metaplex_event_type IS NOT NULL
 ),
 ranked AS (
     SELECT
