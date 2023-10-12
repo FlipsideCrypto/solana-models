@@ -15,7 +15,11 @@ WITH initialization AS (
     FROM
         {{ ref('silver__mint_actions') }}
     WHERE
-        succeeded
+        event_type IN (
+            'initializeMint',
+            'initializeMint2'
+        )
+        AND succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -26,69 +30,67 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
+base_metaplex_events AS (
+    SELECT
+        *
+    FROM
+        {{ ref('silver__events') }}
+    WHERE
+        (
+            program_id = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
+            OR ARRAY_CONTAINS(
+                'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s' :: variant,
+                inner_instruction_program_ids
+            )
+        )
+        AND succeeded
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        )
+    FROM
+        {{ this }}
+)
+{% else %}
+    AND block_timestamp :: DATE >= '2021-06-01'
+{% endif %}
+),
 metaplex_events AS (
     SELECT
-        A.*,
-        e.index,
+        block_timestamp,
+        block_id,
+        tx_id,
+        INDEX,
         NULL AS inner_index,
-        e.program_id,
-        e.instruction :accounts AS accounts,
+        program_id,
+        instruction :accounts AS accounts,
         ARRAY_SIZE(accounts) AS num_accounts
     FROM
-        initialization A
-        LEFT JOIN {{ ref('silver__events') }}
-        e
-        ON A.tx_id = e.tx_id
-        AND A.block_timestamp = e.block_timestamp
+        base_metaplex_events
     WHERE
-        e.program_id = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
-
-{% if is_incremental() %}
-AND e._inserted_timestamp >= (
+        program_id = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
+    UNION ALL
     SELECT
-        MAX(
-            _inserted_timestamp
-        )
+        e.block_timestamp,
+        e.block_id,
+        e.tx_id,
+        e.index,
+        i.index AS inner_index,
+        i.value :programId :: STRING AS program_id,
+        i.value :accounts AS accounts,
+        ARRAY_SIZE(accounts) AS num_accounts
     FROM
-        {{ this }}
-)
-{% else %}
-    AND e.block_timestamp :: DATE >= '2021-06-01'
-{% endif %}
-UNION ALL
-SELECT
-    A.*,
-    e.index,
-    i.index AS inner_index,
-    i.value :programId :: STRING AS program_id,
-    i.value :accounts AS accounts,
-    ARRAY_SIZE(accounts) AS num_accounts
-FROM
-    initialization A
-    LEFT JOIN {{ ref('silver__events') }}
-    e
-    ON A.tx_id = e.tx_id
-    AND A.block_timestamp = e.block_timestamp
-    AND ARRAY_CONTAINS(
-        'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s' :: variant,
-        e.inner_instruction_program_ids
-    )
-    LEFT JOIN TABLE(FLATTEN(e.inner_instruction :instructions)) i
-WHERE
-    i.value :programId :: STRING = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
-
-{% if is_incremental() %}
-AND e._inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
+        base_metaplex_events e,
+        TABLE(FLATTEN(e.inner_instruction :instructions)) i
+    WHERE
+        ARRAY_CONTAINS(
+            'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s' :: variant,
+            e.inner_instruction_program_ids
         )
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND e.block_timestamp :: DATE >= '2021-06-01'
-{% endif %}
+        AND i.value :programId :: STRING = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
 ),
 metaplex_mint_events AS (
     SELECT
@@ -120,23 +122,16 @@ metaplex_mint_events AS (
             WHEN num_accounts = 7
             AND accounts [5] = '11111111111111111111111111111111'
             AND accounts [6] = 'SysvarRent111111111111111111111111111111111' THEN 'Create Metadata Account'
-        END AS metaplex_event_type
-    FROM
-        metaplex_events
-),
-metaplex_mint_events_2 AS (
-    SELECT
-        *,
+        END AS metaplex_event_type,
         CASE
             WHEN metaplex_event_type = 'Edition' THEN accounts [3] :: STRING
             WHEN metaplex_event_type = 'Create' THEN accounts [2] :: STRING
             WHEN metaplex_event_type IS NOT NULL THEN accounts [1] :: STRING
             ELSE NULL
-        END AS metaplex_mint
+        END AS mint
+
     FROM
-        metaplex_mint_events
-    WHERE
-        mint = metaplex_mint
+        metaplex_events
 ),
 ranked AS (
     SELECT
@@ -160,7 +155,7 @@ ranked AS (
                 END
         ) AS rn
     FROM
-        metaplex_mint_events_2
+        metaplex_mint_events
 ),
 nonfungibles AS (
     SELECT
@@ -225,8 +220,9 @@ fungibles_and_others AS (
             FROM
                 nonfungibles
         )
-        AND A.mint_type IS NOT NULL
-        qualify(row_number() over (partition by A.mint order by A._inserted_timestamp desc)) = 1
+        AND A.mint_type IS NOT NULL qualify(ROW_NUMBER() over (PARTITION BY A.mint
+    ORDER BY
+        A._inserted_timestamp DESC)) = 1
 )
 SELECT
     mint,
