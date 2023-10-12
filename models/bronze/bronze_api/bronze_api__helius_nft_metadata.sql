@@ -62,7 +62,7 @@ final_requests AS (
     FROM
         pre_requests
 ),
-response AS ({% for item in range(0, 100) %}
+response AS ({% for item in range(1, 51) %}
     (
     SELECT
         livequery_dev.live.udf_api('POST', 'https://rpc.helius.xyz/?api-key=' || (
