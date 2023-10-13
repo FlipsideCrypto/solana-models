@@ -87,6 +87,7 @@ metaplex_events AS (
         TABLE(FLATTEN(e.inner_instruction :instructions)) i
     WHERE
         e.program_id <> 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
+        AND i.value :programId :: STRING = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
 ),
 metaplex_mint_events AS (
     SELECT
