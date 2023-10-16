@@ -2,6 +2,39 @@ version: 2
 models:
   - name: gov__ez_staking_lp_actions
     description: EZ table for staking & LP actions that contains additional information about the validator. 
+    tests:
+      - compare_model_subset:
+          name: gov__ez_staking_lp_actions_business_logic_test
+          compare_model: ref('testing__ez_staking_lp_actions')
+          compare_columns: 
+            - stake_account
+            - tx_id
+            - index
+            - event_type
+            - stake_authority
+            - withdraw_authority
+            - stake_active
+            - vote_account
+            - validator_name
+          model_condition: "where 
+            (
+              stake_account in ('HvqBJ9qJtbFWuTzMncqh7hgeUtHeh8zDsCPrrSPJbRvi',
+                '35bXuoR23q2Rwn2g6o2kUThJRokxEVsbuYCyNt4Mr43H',
+                'HhpVdoyt1w2pe2wT3AeYti7PF8o1tZr4t3VDQ8QS2C9L',
+                'H6M8LzYL6qKxqVZDQYAmCJfY6KF3MwqNVNijYmHQmLK7')
+              or
+              tx_id in ('WHHEQJ2hrUEnq429azYapvAFS3wccDd262BEVzPgp1JhFzwFBDzmW9MPfLXRLeTHpfj97nXx8k9sQTdUZ4fqJQt',
+                '3WnXfFQtHeRrutF8BbgpUirBRBR5CjNNqKMdSv3bomRBHDTbn5gn3WQ5GHBhgZNH6KnxCdEwu76GL33axi3vMFWJ',
+                '3jUYmgu4ASwGTPtkpDeLgSX3wY1DTLPhXNHf6xj4wTy881keCUKz2TBMEza3THnmKRL6imFM32sp6m8g4nX8v7Jd',
+                '51UcpfRBPjzDa8BNuWtmd5RaMWYG2GoNpsvfFE2zr1VyTxqr62vvRnuwBGUunx3D4uxCpqgGJ5E9YssMoYw3F4Wz',
+                '2QEoYQN7sV9cyqXQksLikT65WJbvG9nePnAnhRgCXV35CkLRWroGcje9XQyypegdrsHfoGqEZLLKBpiCk82dXGh7',
+                '63FGsSQ843DMkdVeQauNkrij3NYSTJHUBmF3VoE8qFCnkPpivSjrBk48rFtvgzvMrzDv88YiSzXV21JBp4XK3AwW',
+                '3DwTtQRT8hKkcGgpT8wEuepwgRDZ8TAs1yD6kgPc6egwJZJ1H8Sw8VgXgTC3BC6NE5DpbsrMdtwcE8b81gt6oVcC',
+                '3z6h9aooG6cPwQCAPur5HTT2vMxC3gGDzWCk3mc5AXkWRJ9yxzANXYBuYL68KwUa4zehgHFALGovGiXargMSzTEs',
+                'apikDqVczz6jwvqxABJ81YHMXRaHSj4WAGyKTUQzvnV547oKDFgCVpa87oay8FqW9FrKJtedYyqXpi6uzkZGd3H',
+                '3URQbmJCcSVLeLDJW9Dfkit8Y3jGxRofzk7GCXhSE7Aum1MgpcZzkSJBprX5SzGXDRaJA56ks9rFCZFZ7foNqSip',
+                '6774K5Q6nYMBiX1bjwr14ScZHwJddcEWvx9NwRspN8yqHVvRkdgGhGfhd6zDJKQQCW3PbqqkbmETsFTq6ywBr1eV')
+            )"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
