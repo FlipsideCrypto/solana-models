@@ -1,5 +1,6 @@
 {{ config(
-    materialized = 'view'
+    materialized = 'view',
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'Token' }}}
 ) }}
 
 SELECT
@@ -11,11 +12,14 @@ SELECT
     inner_index,
     event_type,
     mint,
-    burn_amount,
-    burn_authority,
+    mint_amount,
+    mint_authority,
     signers,
     DECIMAL,
     mint_standard_type
-
 FROM
-    {{ ref('silver__token_burn_actions') }}
+    {{ ref('silver__token_mint_actions') }}
+
+    
+
+    

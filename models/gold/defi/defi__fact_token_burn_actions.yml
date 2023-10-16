@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__fact_token_burn_actions
+  - name: defi__fact_token_burn_actions
     description: Contains information on all burn events for tokens.
     columns:
       - name: BLOCK_ID

@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__fact_nft_mint_actions
+  - name: nft__fact_nft_mint_actions
     description: Contains information on all mint events for NFTs
     columns:
       - name: BLOCK_ID
