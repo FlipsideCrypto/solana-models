@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__fact_nft_burn_actions
+  - name: nft__fact_nft_burn_actions
     description: Contains information on all burn events for NFTs.
     columns:
       - name: BLOCK_ID

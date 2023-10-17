@@ -1,5 +1,6 @@
 {{ config(
-    materialized = 'view'
+    materialized = 'view',
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }}}
 ) }}
 
 SELECT
@@ -15,7 +16,6 @@ SELECT
     burn_authority,
     signers,
     DECIMAL,
-    mint_standard_type
-
+    MINT_STANDARD_TYPE
 FROM
-    {{ ref('silver__token_burn_actions') }}
+    {{ ref('silver__nft_burn_actions') }}

@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__fact_token_mint_actions
+  - name: defi__fact_token_mint_actions
     description: Contains information on all mint events for tokens
     columns:
       - name: BLOCK_ID

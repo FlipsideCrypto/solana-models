@@ -1,5 +1,6 @@
 {{ config(
-    materialized = 'view'
+    materialized = 'view',
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'Token' }}}
 ) }}
 
 SELECT
@@ -17,7 +18,7 @@ SELECT
     DECIMAL,
     mint_standard_type
 FROM
-    {{ ref('silver__nft_mint_actions') }}
+    {{ ref('silver__token_mint_actions') }}
 
     
 
