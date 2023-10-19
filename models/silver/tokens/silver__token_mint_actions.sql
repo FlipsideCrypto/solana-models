@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "CONCAT_WS('-', tx_id, index, inner_index, mint)",
+    unique_key = "CONCAT_WS('-', tx_id, full_index, mint)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
 ) }}
@@ -37,7 +37,15 @@ SELECT
     A.signers,
     b.decimal,
     b.mint_standard_type,
-    A._inserted_timestamp
+    CASE
+        WHEN A.inner_index IS NOT NULL THEN concat_WS(
+            '.',
+            A.index,
+            A.inner_index
+        ) :: STRING
+        ELSE A.index :: STRING
+    END AS full_index,
+     A._inserted_timestamp
 FROM
     base_mint_actions A
     INNER JOIN {{ ref('silver__mint_types') }} b
