@@ -7,6 +7,10 @@ models:
         description: "Raw response data"
       - name: MAX_MINT_EVENT_INSERTED_TIMESTAMP
         description: "The latest inserted timestamp for the mints passed to a call"
+        tests:
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 3
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
