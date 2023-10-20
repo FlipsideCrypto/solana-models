@@ -28,7 +28,7 @@ SELECT
     A.tx_id,
     A.succeeded,
     A.index,
-    A.inner_index,
+    COALESCE(A.inner_index, -1) as inner_index,
     A.event_type,
     A.mint,
     A.burn_amount,
@@ -36,10 +36,11 @@ SELECT
     A.signers,
     b.decimal,
     b.mint_standard_type,
-    A._inserted_timestamp
+     A._inserted_timestamp
 FROM
     base_burn_actions A
-    INNER JOIN {{ ref('silver__mint_types') }} b
+    INNER JOIN {{ ref('silver__mint_types') }}
+    b
     ON A.mint = b.mint
 WHERE
     b.mint_type = 'nft'
