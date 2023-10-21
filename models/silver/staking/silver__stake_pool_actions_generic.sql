@@ -21,13 +21,12 @@ WITH base_events AS (
         )
 
 {% if is_incremental() %}
--- AND _inserted_timestamp >= (
---     SELECT
---         MAX(_inserted_timestamp)
---     FROM
---         {{ this }}
--- )
-AND _inserted_timestamp::DATE >= '2023-02-20'
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
 {% else %}
     AND block_timestamp :: DATE >= '2021-10-11'
 {% endif %}
@@ -134,6 +133,25 @@ withdraw_events AS (
         AND accounts [10] :: STRING = 'Stake11111111111111111111111111111111111111'
         AND accounts [11] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
 ),
+-- multiple withdraws in inner_instruction can be exactly the same so get the range to relate to correct Spoo1... event
+withdraw_events_inner_program_range AS (
+    SELECT
+        *,
+        CASE
+            WHEN inner_index <> -1 THEN inner_index
+        END AS start_inner_program,
+        CASE
+            WHEN inner_index = -1 THEN NULL
+            ELSE (
+                COALESCE(LEAD(inner_index) over (PARTITION BY tx_id, INDEX
+                ORDER BY
+                    inner_index) -1, 999999)
+            )
+        END AS end_inner_program
+    FROM
+        withdraw_events
+),
+-- withdraw events 
 withdraw_stake_events AS (
     SELECT
         *
@@ -168,14 +186,13 @@ base_balances AS (
         AND e.tx_id = t.tx_id
 
 {% if is_incremental() %}
--- WHERE
---     _inserted_timestamp >= (
---         SELECT
---             MAX(_inserted_timestamp)
---         FROM
---             {{ this }}
---     )
-where _inserted_timestamp::DATE >= '2023-02-20'
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% else %}
 WHERE
     t.block_timestamp :: DATE >= '2021-10-11'
@@ -257,7 +274,7 @@ deposit_stake_merge AS (
         AND e.index = i.index
     WHERE
         amount IS NOT NULL
-        and i.temp_stake_authority = stake_pool_withdraw_authority
+        AND i.temp_stake_authority = stake_pool_withdraw_authority
 )
 SELECT
     e.tx_id,
@@ -270,7 +287,8 @@ SELECT
     e.accounts [0] :: STRING AS stake_pool,
     e.accounts [1] :: STRING AS stake_pool_withdraw_authority,
     NULL AS stake_pool_deposit_authority,
-    e.signers [0] :: STRING AS address, -- use signers instead of instruction account because of "passthrough" wallets
+    e.signers [0] :: STRING AS address,
+    -- use signers instead of instruction account because of "passthrough" wallets
     e.accounts [2] :: STRING AS reserve_stake_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp,
@@ -308,15 +326,16 @@ SELECT
         e.inner_index
     ) AS _unique_key
 FROM
-    withdraw_events e
+    withdraw_events_inner_program_range e
     LEFT OUTER JOIN base_events b
     ON e.tx_id = b.tx_id
     AND e.index = b.index
     LEFT OUTER JOIN TABLE(FLATTEN(b.inner_instruction :instructions)) i
 WHERE
     i.value :parsed :type = 'withdraw'
-    and i.value :parsed :info:withdrawAuthority = stake_pool_withdraw_authority
-    and i.value :parsed :info :lamports IS NOT NULL
+    AND i.value :parsed :info :withdrawAuthority = stake_pool_withdraw_authority
+    AND i.value :parsed :info :lamports IS NOT NULL
+    and (e.start_inner_program is null or i.index between e.start_inner_program and e.end_inner_program)
 UNION
 SELECT
     e.tx_id,
@@ -371,8 +390,8 @@ FROM
     LEFT OUTER JOIN TABLE(FLATTEN(b.inner_instruction :instructions)) i
 WHERE
     i.value :parsed :info :lamports IS NOT NULL
-    AND i.value :parsed :type :: STRING = 'split' 
-    and i.value:parsed:info:newSplitAccount = e.accounts [4]
+    AND i.value :parsed :type :: STRING = 'split'
+    AND i.value :parsed :info :newSplitAccount = e.accounts [4] 
     -- UNION
     -- SELECT
     --     e.tx_id,
