@@ -275,6 +275,7 @@ deposit_stake_merge AS (
     WHERE
         amount IS NOT NULL
         AND i.temp_stake_authority = stake_pool_withdraw_authority
+        and i.merge_destination = e.accounts [5] :: STRING
 )
 SELECT
     e.tx_id,
