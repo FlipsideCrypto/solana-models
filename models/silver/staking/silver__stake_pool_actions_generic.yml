@@ -11,6 +11,7 @@ models:
           compare_columns: 
             - tx_id
             - index
+            - inner_index
             - action
             - stake_pool
             - stake_pool_withdraw_authority
@@ -51,6 +52,10 @@ models:
           - not_null
       - name: INDEX
         description: Location of the stake pool action within a transaction
+        tests: 
+          - not_null 
+      - name: INNER_INDEX
+        description: Location of the stake pool action within the inner instructions of a transaction
         tests: 
           - not_null 
       - name: SUCCEEDED
