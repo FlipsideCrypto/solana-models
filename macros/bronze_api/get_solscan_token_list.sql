@@ -10,18 +10,24 @@
     )
   SELECT
     rn,
-    ethereum.streamline.udf_api(
+    livequery_dev.live.udf_api(
       'GET',
-      'https://public-api.solscan.io/token/list?sortBy=volume&direction=desc&limit=50&offset=' || (
+      'https://pro-api.solscan.io/v1.0/token/list?sortBy=volume&direction=desc&limit=50&offset=' || (
         rn * 50
-      ) :: STRING || '&token=' || (
-        SELECT
-          api_key
-        FROM
-          crosschain.silver.apis_keys
-        WHERE
-          api_name = 'solscan'
-      ),{},{}
+      ),
+      OBJECT_CONSTRUCT(
+        'Accept',
+        'application/json',
+        'token',
+        (
+          SELECT
+            api_key
+          FROM
+            crosschain.silver.apis_keys
+          WHERE
+            api_name = 'solscan'
+        )
+      ),{}
     ) AS DATA,
     SYSDATE()
   FROM
