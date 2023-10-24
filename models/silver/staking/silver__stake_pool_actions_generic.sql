@@ -198,29 +198,6 @@ WHERE
     t.block_timestamp :: DATE >= '2021-10-11'
 {% endif %}
 ),
--- increase_validator_stake_events AS (
---     select *
---     from base_stake_pool_events
---     where ARRAY_SIZE(instruction :accounts) = 13
---     and instruction:accounts[7] = 'SysvarC1ock11111111111111111111111111111111'
---     and instruction:accounts[8] = 'SysvarRent111111111111111111111111111111111'
---     and instruction:accounts[9] = 'SysvarStakeHistory1111111111111111111111111'
---     and instruction:accounts[10] = 'StakeConfig11111111111111111111111111111111'
---     and instruction:accounts[11] = '11111111111111111111111111111111'
---     and instruction:accounts[12] = 'Stake11111111111111111111111111111111111111'
--- ),
--- decrease_validator_stake_events AS (
---     SELECT
---         *
---     FROM
---         base_stake_pool_events
---     WHERE
---         ARRAY_SIZE(instruction :accounts) = 10
---     and instruction:accounts[6] = 'SysvarC1ock11111111111111111111111111111111'
---     and instruction:accounts[7] = 'SysvarRent111111111111111111111111111111111'
---     and instruction:accounts[8] = '11111111111111111111111111111111'
---     and instruction:accounts[9] = 'Stake11111111111111111111111111111111111111'
--- ),
 merge_events AS (
     SELECT
         b.tx_id,
@@ -393,45 +370,3 @@ WHERE
     i.value :parsed :info :lamports IS NOT NULL
     AND i.value :parsed :type :: STRING = 'split'
     AND i.value :parsed :info :newSplitAccount = e.accounts [4] 
-    -- UNION
-    -- SELECT
-    --     e.tx_id,
-    --     e.block_id,
-    --     e.block_timestamp,
-    --     e.index,
-    --     e.succeeded,
-    --     'increase_validator_stake' AS action,
-    --     e.instruction :accounts [0] :: STRING AS stake_pool,
-    --     e.instruction :accounts [2] :: STRING AS stake_pool_withdraw_authority,
-    --     NULL as stake_pool_deposit_authority,
-    --     NULL AS address,
-    --     e.instruction :accounts [4] :: STRING AS reserve_stake_address,
-    --     i.value :parsed :info :lamports AS amount,
-    --     e._inserted_timestamp,
-    --     concat_ws('-',tx_id,e.index) as _unique_key
-    -- FROM
-    --     increase_validator_stake_events e,
-    --     TABLE(FLATTEN(inner_instruction :instructions)) i
-    -- WHERE
-    --     i.value :parsed :info :lamports IS NOT NULL
-    -- UNION
-    -- SELECT
-    --     e.tx_id,
-    --     e.block_id,
-    --     e.block_timestamp,
-    --     e.index,
-    --     e.succeeded,
-    --     'decrease_validator_stake' AS action,
-    --     e.instruction :accounts [0] :: STRING AS stake_pool,
-    --     e.instruction :accounts [2] :: STRING AS stake_pool_withdraw_authority,
-    --     NULL as stake_pool_deposit_authority,
-    --     NULL AS address,
-    --     NULL AS reserve_stake_address,
-    --     i.value :parsed :info :lamports AS amount,
-    --     e._inserted_timestamp,
-    --     concat_ws('-',tx_id,e.index) as _unique_key
-    -- FROM
-    --     decrease_validator_stake_events e,
-    --     TABLE(FLATTEN(inner_instruction :instructions)) i
-    -- WHERE
-    --     i.value :parsed :info :lamports IS NOT NULL
