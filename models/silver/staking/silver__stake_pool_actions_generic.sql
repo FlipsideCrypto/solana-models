@@ -5,21 +5,19 @@
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::date']
 ) }}
 
-WITH base_stake_pool_events AS (
+WITH base_events AS (
 
     SELECT
         *
     FROM
         {{ ref('silver__events') }}
     WHERE
-        program_id = 'SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy'
-        AND instruction :accounts [0] :: STRING IN (
-            -- daopool stake pool
-            '7ge2xKsZXmqPxa3YmXxXmzCp9Hc2ezrTxh6PECaxCwrL',
-            -- blazestake stake pool
-            'stk9ApL5HeVAwPLr3TLhDXdZS8ptVu7zp6ov8HFDuMi',
-            -- jpool stake pool
-            'CtMyWsrUtAwXWiGr9WjHT5fC3p3fgV8cyGpLTo2LJzG1'
+        (
+            program_id = 'SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy'
+            OR ARRAY_CONTAINS(
+                'SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy' :: variant,
+                inner_instruction_program_ids
+            )
         )
 
 {% if is_incremental() %}
@@ -30,9 +28,142 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-AND
-    block_timestamp :: DATE >= '2021-10-11'
+    AND block_timestamp :: DATE >= '2021-10-11'
 {% endif %}
+),
+base_stake_pool_events AS (
+    SELECT
+        block_timestamp,
+        block_id,
+        tx_id,
+        succeeded,
+        INDEX,
+        -1 AS inner_index,
+        program_id,
+        instruction AS instruction_temp,
+        inner_instruction,
+        instruction :accounts AS accounts,
+        ARRAY_SIZE(accounts) AS num_accounts,
+        _inserted_timestamp,
+        signers
+    FROM
+        base_events
+    WHERE
+        program_id = 'SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy'
+        AND instruction :accounts [0] :: STRING IN (
+            -- daopool stake pool
+            '7ge2xKsZXmqPxa3YmXxXmzCp9Hc2ezrTxh6PECaxCwrL',
+            -- blazestake stake pool
+            'stk9ApL5HeVAwPLr3TLhDXdZS8ptVu7zp6ov8HFDuMi',
+            -- jpool stake pool
+            'CtMyWsrUtAwXWiGr9WjHT5fC3p3fgV8cyGpLTo2LJzG1',
+            -- jito stake pool
+            'Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb',
+            -- cogent stake pool
+            'CgnTSoL3DgY9SFHxcLj6CgCgKKoTBr6tp4CPAEWy25DE',
+            -- laine stake pool
+            'LAinEtNLgpmCP9Rvsf5Hn8W6EhNiKLZQti1xfWMLy6X'
+        )
+    UNION ALL
+    SELECT
+        e.block_timestamp,
+        e.block_id,
+        e.tx_id,
+        e.succeeded,
+        e.index,
+        i.index AS inner_index,
+        i.value :programId :: STRING AS program_id,
+        i.value AS instruction_temp,
+        NULL AS inner_instruction,
+        i.value :accounts AS accounts,
+        ARRAY_SIZE(accounts) AS num_accounts,
+        e._inserted_timestamp,
+        e.signers
+    FROM
+        base_events e,
+        TABLE(FLATTEN(e.inner_instruction :instructions)) i
+    WHERE
+        i.value :programId :: STRING = 'SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy'
+        AND i.value :accounts [0] :: STRING IN (
+            '7ge2xKsZXmqPxa3YmXxXmzCp9Hc2ezrTxh6PECaxCwrL',
+            'stk9ApL5HeVAwPLr3TLhDXdZS8ptVu7zp6ov8HFDuMi',
+            'CtMyWsrUtAwXWiGr9WjHT5fC3p3fgV8cyGpLTo2LJzG1',
+            'Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb',
+            'CgnTSoL3DgY9SFHxcLj6CgCgKKoTBr6tp4CPAEWy25DE',
+            'LAinEtNLgpmCP9Rvsf5Hn8W6EhNiKLZQti1xfWMLy6X'
+        )
+),
+deposit_events AS (
+    SELECT
+        *
+    FROM
+        base_stake_pool_events
+    WHERE
+        num_accounts IN (
+            10,
+            11
+        )
+        AND accounts [8] :: STRING = '11111111111111111111111111111111'
+        AND accounts [9] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+),
+deposit_stake_events AS (
+    SELECT
+        *
+    FROM
+        base_stake_pool_events
+    WHERE
+        num_accounts = 15
+        AND accounts [11] :: STRING = 'SysvarC1ock11111111111111111111111111111111'
+        AND accounts [12] :: STRING = 'SysvarStakeHistory1111111111111111111111111'
+        AND accounts [13] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+        AND accounts [14] :: STRING = 'Stake11111111111111111111111111111111111111'
+),
+withdraw_events AS (
+    SELECT
+        *
+    FROM
+        base_stake_pool_events
+    WHERE
+        num_accounts IN (
+            12,
+            13
+        )
+        AND accounts [8] :: STRING = 'SysvarC1ock11111111111111111111111111111111'
+        AND accounts [9] :: STRING = 'SysvarStakeHistory1111111111111111111111111'
+        AND accounts [10] :: STRING = 'Stake11111111111111111111111111111111111111'
+        AND accounts [11] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+),
+-- multiple withdraws in inner_instruction can be exactly the same so get the range to relate to correct Spoo1... event
+withdraw_events_inner_program_range AS (
+    SELECT
+        *,
+        CASE
+            WHEN inner_index <> -1 THEN inner_index
+        END AS start_inner_program,
+        CASE
+            WHEN inner_index = -1 THEN NULL
+            ELSE (
+                COALESCE(LEAD(inner_index) over (PARTITION BY tx_id, INDEX
+                ORDER BY
+                    inner_index) -1, 999999)
+            )
+        END AS end_inner_program
+    FROM
+        withdraw_events
+),
+-- withdraw events 
+withdraw_stake_events AS (
+    SELECT
+        *
+    FROM
+        base_stake_pool_events
+    WHERE
+        ARRAY_SIZE(
+            accounts
+        ) = 13
+        AND accounts [10] :: STRING = 'SysvarC1ock11111111111111111111111111111111'
+        AND accounts [11] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+        AND accounts [12] :: STRING = 'Stake11111111111111111111111111111111111111'
 ),
 base_balances AS (
     SELECT
@@ -49,7 +180,7 @@ base_balances AS (
                 DISTINCT tx_id,
                 block_timestamp :: DATE AS b_date
             FROM
-                base_stake_pool_events
+                deposit_stake_events
         ) e
         ON e.b_date = t.block_timestamp :: DATE
         AND e.tx_id = t.tx_id
@@ -67,87 +198,25 @@ WHERE
     t.block_timestamp :: DATE >= '2021-10-11'
 {% endif %}
 ),
-deposit_events AS (
+merge_events AS (
     SELECT
-        *
+        b.tx_id,
+        b.index,
+        i.index AS inner_index,
+        i.value :parsed :info :destination :: STRING AS merge_destination,
+        i.value :parsed :info :stakeAuthority :: STRING AS temp_stake_authority
     FROM
-        base_stake_pool_events
+        base_events b,
+        TABLE(FLATTEN(inner_instruction :instructions)) i
     WHERE
-            ARRAY_SIZE(
-            instruction :accounts
-            ) IN (
-                10,
-                11
-            )
-            AND instruction :accounts [8] :: STRING = '11111111111111111111111111111111'
-            AND instruction :accounts [9] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-),
-deposit_stake_events AS (
-    SELECT
-        *
-    FROM
-        base_stake_pool_events
-    WHERE
-            ARRAY_SIZE(
-            instruction :accounts
-            ) = 15
-            AND instruction :accounts [11] :: STRING = 'SysvarC1ock11111111111111111111111111111111'
-            AND instruction :accounts [12] :: STRING = 'SysvarStakeHistory1111111111111111111111111'
-            AND instruction :accounts [13] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-            AND instruction :accounts [14] :: STRING = 'Stake11111111111111111111111111111111111111'
-),
-withdraw_events AS (
-    SELECT
-        *
-    FROM
-        base_stake_pool_events
-    WHERE
-        ARRAY_SIZE(
-            instruction :accounts
-        ) IN (
-            12,
-            13
+        i.value :parsed :type = 'merge'
+        AND i.value :programId = 'Stake11111111111111111111111111111111111111'
+        AND b.tx_id IN (
+            SELECT
+                tx_id
+            FROM
+                deposit_stake_events
         )
-        AND instruction :accounts [8] :: STRING = 'SysvarC1ock11111111111111111111111111111111'
-        AND instruction :accounts [9] :: STRING = 'SysvarStakeHistory1111111111111111111111111'
-        AND instruction :accounts [10] :: STRING = 'Stake11111111111111111111111111111111111111'
-        AND instruction :accounts [11] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-),
-withdraw_stake_events AS (
-    SELECT
-        *
-    FROM
-        base_stake_pool_events
-    WHERE
-        ARRAY_SIZE(
-        instruction :accounts
-        ) = 13
-        AND instruction :accounts [10] :: STRING = 'SysvarC1ock11111111111111111111111111111111'
-        AND instruction :accounts [11] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-        AND instruction :accounts [12] :: STRING = 'Stake11111111111111111111111111111111111111'
-),
-increase_validator_stake_events AS (
-    select *
-    from base_stake_pool_events
-    where ARRAY_SIZE(instruction :accounts) = 13
-    and instruction:accounts[7] = 'SysvarC1ock11111111111111111111111111111111'
-    and instruction:accounts[8] = 'SysvarRent111111111111111111111111111111111'
-    and instruction:accounts[9] = 'SysvarStakeHistory1111111111111111111111111'
-    and instruction:accounts[10] = 'StakeConfig11111111111111111111111111111111'
-    and instruction:accounts[11] = '11111111111111111111111111111111'
-    and instruction:accounts[12] = 'Stake11111111111111111111111111111111111111'
-),
-decrease_validator_stake_events AS (
-    SELECT
-        *
-    FROM
-        base_stake_pool_events
-    WHERE
-        ARRAY_SIZE(instruction :accounts) = 10
-    and instruction:accounts[6] = 'SysvarC1ock11111111111111111111111111111111'
-    and instruction:accounts[7] = 'SysvarRent111111111111111111111111111111111'
-    and instruction:accounts[8] = '11111111111111111111111111111111'
-    and instruction:accounts[9] = 'Stake11111111111111111111111111111111111111'
 ),
 deposit_stake_merge AS (
     SELECT
@@ -155,13 +224,14 @@ deposit_stake_merge AS (
         e.block_id,
         e.block_timestamp,
         e.index,
+        e.inner_index,
         e.succeeded,
-        e.instruction :accounts [0] :: STRING AS stake_pool,
-        e.instruction :accounts [3] :: STRING AS stake_pool_withdraw_authority,
-        e.instruction :accounts [2] :: STRING AS stake_pool_deposit_authority,
+        e.accounts [0] :: STRING AS stake_pool,
+        e.accounts [3] :: STRING AS stake_pool_withdraw_authority,
+        e.accounts [2] :: STRING AS stake_pool_deposit_authority,
         b.signers [0] :: STRING AS address,
-        e.instruction :accounts [6] :: STRING AS reserve_stake_address,
-        i.value :parsed :info :destination :: STRING AS merge_destination,
+        e.accounts [6] :: STRING AS reserve_stake_address,
+        i.merge_destination,
         silver.udf_get_account_balances_index(
             merge_destination,
             b.account_keys
@@ -176,30 +246,38 @@ deposit_stake_merge AS (
         deposit_stake_events e
         LEFT OUTER JOIN base_balances b
         ON b.tx_id = e.tx_id
-        LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
+        LEFT OUTER JOIN merge_events i
+        ON e.tx_id = i.tx_id
+        AND e.index = i.index
     WHERE
-        i.value :parsed :type = 'merge'
-        AND i.value :programId = 'Stake11111111111111111111111111111111111111'
+        amount IS NOT NULL
+        AND i.temp_stake_authority = stake_pool_withdraw_authority
+        and i.merge_destination = e.accounts [5] :: STRING
 )
 SELECT
     e.tx_id,
     e.block_id,
     e.block_timestamp,
     e.index,
+    e.inner_index,
     e.succeeded,
     'deposit' AS action,
-    e.instruction :accounts [0] :: STRING AS stake_pool,
-    e.instruction :accounts [1] :: STRING AS stake_pool_withdraw_authority,
-    NULL as stake_pool_deposit_authority,
-    b.signers[0] :: STRING AS address,  -- use signers instead of instruction account because of "passthrough" wallets
-    e.instruction :accounts [2] :: STRING AS reserve_stake_address,
+    e.accounts [0] :: STRING AS stake_pool,
+    e.accounts [1] :: STRING AS stake_pool_withdraw_authority,
+    NULL AS stake_pool_deposit_authority,
+    e.signers [0] :: STRING AS address,
+    -- use signers instead of instruction account because of "passthrough" wallets
+    e.accounts [2] :: STRING AS reserve_stake_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp,
-    concat_ws('-',e.tx_id,e.index) as _unique_key
+    concat_ws(
+        '-',
+        e.tx_id,
+        e.index,
+        e.inner_index
+    ) AS _unique_key
 FROM
     deposit_events e
-    LEFT OUTER JOIN base_balances b
-        ON b.tx_id = e.tx_id
     LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
 WHERE
     i.value :parsed :info :lamports IS NOT NULL
@@ -209,27 +287,40 @@ SELECT
     e.block_id,
     e.block_timestamp,
     e.index,
+    e.inner_index,
     e.succeeded,
     'withdraw' AS action,
-    e.instruction :accounts [0] :: STRING AS stake_pool,
-    e.instruction :accounts [1] :: STRING AS stake_pool_withdraw_authority,
-    NULL as stake_pool_deposit_authority,
-    e.instruction :accounts [5] :: STRING AS address,
-    e.instruction :accounts [4] :: STRING AS reserve_stake_address,
+    e.accounts [0] :: STRING AS stake_pool,
+    e.accounts [1] :: STRING AS stake_pool_withdraw_authority,
+    NULL AS stake_pool_deposit_authority,
+    e.accounts [5] :: STRING AS address,
+    e.accounts [4] :: STRING AS reserve_stake_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp,
-    concat_ws('-',tx_id,e.index) as _unique_key
+    concat_ws(
+        '-',
+        e.tx_id,
+        e.index,
+        e.inner_index
+    ) AS _unique_key
 FROM
-    withdraw_events e,
-    TABLE(FLATTEN(inner_instruction :instructions)) i
+    withdraw_events_inner_program_range e
+    LEFT OUTER JOIN base_events b
+    ON e.tx_id = b.tx_id
+    AND e.index = b.index
+    LEFT OUTER JOIN TABLE(FLATTEN(b.inner_instruction :instructions)) i
 WHERE
-    i.value :parsed :info :lamports IS NOT NULL
+    i.value :parsed :type = 'withdraw'
+    AND i.value :parsed :info :withdrawAuthority = stake_pool_withdraw_authority
+    AND i.value :parsed :info :lamports IS NOT NULL
+    and (e.start_inner_program is null or i.index between e.start_inner_program and e.end_inner_program)
 UNION
 SELECT
     e.tx_id,
     e.block_id,
     e.block_timestamp,
     e.index,
+    e.inner_index,
     e.succeeded,
     'deposit_stake' AS action,
     e.stake_pool,
@@ -242,7 +333,8 @@ SELECT
     concat_ws(
         '-',
         e.tx_id,
-        e.index
+        e.index,
+        e.inner_index
     ) AS _unique_key
 FROM
     deposit_stake_merge e
@@ -252,60 +344,29 @@ SELECT
     e.block_id,
     e.block_timestamp,
     e.index,
+    e.inner_index,
     e.succeeded,
     'withdraw_stake' AS action,
-    e.instruction :accounts [0] :: STRING AS stake_pool,
-    e.instruction :accounts [2] :: STRING AS stake_pool_withdraw_authority,
-    NULL as stake_pool_deposit_authority,
-    e.instruction :accounts [5] :: STRING AS address,
+    e.accounts [0] :: STRING AS stake_pool,
+    e.accounts [2] :: STRING AS stake_pool_withdraw_authority,
+    NULL AS stake_pool_deposit_authority,
+    e.accounts [5] :: STRING AS address,
     NULL AS reserve_stake_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp,
-    concat_ws('-',tx_id,e.index) as _unique_key
+    concat_ws(
+        '-',
+        e.tx_id,
+        e.index,
+        e.inner_index
+    ) AS _unique_key
 FROM
-    withdraw_stake_events e,
-    TABLE(FLATTEN(inner_instruction :instructions)) i
+    withdraw_stake_events e
+    LEFT OUTER JOIN base_events b
+    ON e.tx_id = b.tx_id
+    AND e.index = b.index
+    LEFT OUTER JOIN TABLE(FLATTEN(b.inner_instruction :instructions)) i
 WHERE
     i.value :parsed :info :lamports IS NOT NULL
--- UNION
--- SELECT
---     e.tx_id,
---     e.block_id,
---     e.block_timestamp,
---     e.index,
---     e.succeeded,
---     'increase_validator_stake' AS action,
---     e.instruction :accounts [0] :: STRING AS stake_pool,
---     e.instruction :accounts [2] :: STRING AS stake_pool_withdraw_authority,
---     NULL as stake_pool_deposit_authority,
---     NULL AS address,
---     e.instruction :accounts [4] :: STRING AS reserve_stake_address,
---     i.value :parsed :info :lamports AS amount,
---     e._inserted_timestamp,
---     concat_ws('-',tx_id,e.index) as _unique_key
--- FROM
---     increase_validator_stake_events e,
---     TABLE(FLATTEN(inner_instruction :instructions)) i
--- WHERE
---     i.value :parsed :info :lamports IS NOT NULL
--- UNION
--- SELECT
---     e.tx_id,
---     e.block_id,
---     e.block_timestamp,
---     e.index,
---     e.succeeded,
---     'decrease_validator_stake' AS action,
---     e.instruction :accounts [0] :: STRING AS stake_pool,
---     e.instruction :accounts [2] :: STRING AS stake_pool_withdraw_authority,
---     NULL as stake_pool_deposit_authority,
---     NULL AS address,
---     NULL AS reserve_stake_address,
---     i.value :parsed :info :lamports AS amount,
---     e._inserted_timestamp,
---     concat_ws('-',tx_id,e.index) as _unique_key
--- FROM
---     decrease_validator_stake_events e,
---     TABLE(FLATTEN(inner_instruction :instructions)) i
--- WHERE
---     i.value :parsed :info :lamports IS NOT NULL
+    AND i.value :parsed :type :: STRING = 'split'
+    AND i.value :parsed :info :newSplitAccount = e.accounts [4] 

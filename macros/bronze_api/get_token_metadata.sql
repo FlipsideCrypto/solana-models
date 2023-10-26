@@ -18,12 +18,25 @@ with base as (
 )
 select 
     address,
-    ethereum.streamline.udf_api(
-        'GET', 
-        concat('https://public-api.solscan.io/token/meta?tokenAddress=',
-        address,
-        '&token=',(
-      SELECT API_KEY FROM crosschain.silver.apis_keys WHERE API_NAME = 'solscan')), {}, {}) as resp,
+    livequery_dev.live.udf_api(
+      'GET',
+      'https://pro-api.solscan.io/v1.0/token/meta?tokenAddress=' || (
+        address
+      ),
+      OBJECT_CONSTRUCT(
+        'Accept',
+        'application/json',
+        'token',
+        (
+          SELECT
+            api_key
+          FROM
+            crosschain.silver.apis_keys
+          WHERE
+            api_name = 'solscan'
+        )
+      ),{}
+    ) AS resp,
     sysdate()
 from base
 ;
