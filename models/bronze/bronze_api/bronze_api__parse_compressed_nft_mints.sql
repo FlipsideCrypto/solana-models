@@ -106,6 +106,6 @@ SELECT
 FROM
     {{ source('bronze_api_prod','parse_compressed_nft_mints_requests') }}
 WHERE 
-    gn between {{ min_gn }} and {{ min_gn }}+4
+    gn between {{ min_gn }} and {{ min_gn }}+1
 GROUP BY
     gn
