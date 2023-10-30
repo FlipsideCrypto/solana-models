@@ -154,7 +154,7 @@ SELECT
     blocks_tested,
     blocks_impacted_count,
     blocks_impacted_array,
-    CURRENT_TIMESTAMP() AS test_timestamp
+    sysdate() AS test_timestamp
 FROM
     summary_stats
     JOIN impacted_blocks

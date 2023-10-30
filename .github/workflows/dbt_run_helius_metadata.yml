@@ -4,8 +4,8 @@ run-name: dbt_run_helius_metadata
 on:
   workflow_dispatch:
   schedule:
-    # Runs "every 7th minute" (see https://crontab.guru)
-    - cron: '*/7 * * * *'
+    # Runs "at minute 0 past hour 3 and 15" (see https://crontab.guru)
+    - cron: '0 3,15 * * *'
     
 env:
   DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
@@ -41,7 +41,6 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -s models/silver/metadata/helius/silver__helius_nft_requests.sql
-          dbt run -s models/bronze/bronze_api/bronze_api__helius_nft_metadata.sql
+          dbt run -s models/silver/metadata/helius/silver__helius_nft_requests.sql models/bronze/bronze_api/bronze_api__helius_nft_metadata.sql
           
           
