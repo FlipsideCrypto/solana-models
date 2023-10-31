@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ['block_id']
+    unique_key = ['block_id'],
+    enabled = false
 ) }}
 
 SELECT

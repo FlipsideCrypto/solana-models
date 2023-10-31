@@ -3,9 +3,9 @@
     tags = ['bronze_api']
 ) }}
 
-{% set producer_limit_size = 1500 %}
-{% set query_batch_size = 20 %}
-{% set num_groups = 50 %}
+{% set producer_limit_size = 6000 %}
+{% set query_batch_size = 1000 %}
+{% set num_groups = 6 %}
 
 {% if is_incremental() %}
 with next_batch as (
@@ -42,21 +42,11 @@ block_ids as (
 request as (
     select 
         block_id,
-        'https://solana-mainnet.rpc.extrnode.com' as url,
-        object_construct(
-            'jsonrpc','2.0',
-            'id',block_id,
-            'method','getBlock',
-            'params',[
-              block_id,
-              object_construct(
-                'encoding','json',
-                'maxSupportedTransactionVersion',0,
-                'transactionDetails','signatures',
-                'rewards',false
-              )
-            ]
-        ) as payload,
+        -- object_construct(
+        --     'headers', headers,
+        --     'url', 'https://pro-api.solscan.io',
+        --     'endpoint', CONCAT('/v1.0/block/',block_id)
+        -- ) as payload,
         row_number() over (order by block_id) as rn,
         ceil(rn/{{ query_batch_size }}) as gn
     from block_ids
@@ -64,15 +54,30 @@ request as (
 , make_requests as (
     select 
         gn,
-        array_agg(payload) as requests
+        'https://pro-api.solscan.io' as url,
+        '/v1.0/block/' as endpoint,
+        OBJECT_CONSTRUCT(
+            'Accept',
+            'application/json',
+            'token',
+            (
+                SELECT
+                api_key
+                FROM
+                crosschain.silver.apis_keys
+                WHERE
+                api_name = 'solscan'
+            )
+        ) as headers,
+        array_agg(block_id) as block_ids
     from request
     group by gn
 )
 {% for item in range(1,num_groups+1) %}
     select
         gn,
-        requests,
-        streamline.udf_bulk_get_blocks_tx_count(requests) as data,
+        block_ids,
+        streamline.udf_bulk_get_solscan_blocks(url, endpoint, headers, block_ids) as data,
         sysdate() as _inserted_timestamp,
         concat_ws('-',_inserted_timestamp,gn) as _id
     from make_requests mr
