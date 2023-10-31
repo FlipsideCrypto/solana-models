@@ -1,20 +1,14 @@
 {{ config(
     materialized = 'incremental',
     unique_key = ['block_id'],
-    enabled = false
 ) }}
 
 SELECT
-    VALUE :id AS block_id,
-    CASE
-        WHEN VALUE :error :code :: NUMBER = -32009 THEN 0
-        ELSE ARRAY_SIZE(
-            VALUE :result :signatures :: ARRAY
-        )
-    END AS tx_count,
+    VALUE :block_id AS block_id,
+    value:result:transactionCount as transactionCount,
     _inserted_timestamp
 FROM
-    {{ ref('bronze_api__blocks_tx_count') }},
+    {{ ref('bronze_api__solscan_blocks') }},
     TABLE(FLATTEN(DATA)) d
 
 {% if is_incremental() %}
