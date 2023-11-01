@@ -5,7 +5,7 @@
 
 SELECT
     VALUE :block_id AS block_id,
-    value:result:transactionCount as transactionCount,
+    value:result:transactionCount as transaction_count,
     _inserted_timestamp
 FROM
     {{ ref('bronze_api__solscan_blocks') }},

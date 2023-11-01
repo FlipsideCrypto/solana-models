@@ -1,5 +1,5 @@
-name: dbt_run_helius_metadata
-run-name: dbt_run_helius_metadata
+name: dbt_run_solscan_blocks
+run-name: dbt_run_solscan_blocks
 
 on:
   workflow_dispatch:
