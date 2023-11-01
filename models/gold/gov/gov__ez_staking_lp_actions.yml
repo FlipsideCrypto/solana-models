@@ -4,7 +4,7 @@ models:
     description: EZ table for staking & LP actions that contains additional information about the validator. 
     tests:
       - compare_model_subset:
-          name: gov__ez_staking_lp_actions_business_logic_test
+          name: silver__ez_staking_lp_actions_business_logic_test
           compare_model: ref('testing__ez_staking_lp_actions')
           compare_columns: 
             - stake_account
