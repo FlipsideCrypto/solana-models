@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    tags = ['bronze_api']
+    tags = ['bronze_api'],
+    full_refresh=false,
 ) }}
 
 {% set producer_limit_size = 1000 %}
