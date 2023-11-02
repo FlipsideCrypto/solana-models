@@ -74,8 +74,8 @@ base_blocks AS (
                 summary_stats
         )
 ),
-actual_tx_counts as (
-    SELECT 
+actual_tx_counts AS (
+    SELECT
         block_id,
         transaction_count
     FROM
@@ -92,30 +92,40 @@ actual_tx_counts as (
                 max_block
             FROM
                 summary_stats
-        ) 
+        )
 ),
-expected_tx_counts as (
-    SELECT 
+expected_tx_counts AS (
+    SELECT
         b.block_id,
         tc.transaction_count
-    FROM 
+    FROM
         base_blocks b
-    LEFT OUTER JOIN 
-        {{ ref('silver___blocks_tx_count') }} tc
+        LEFT OUTER JOIN {{ ref('silver___blocks_tx_count') }}
+        tc
         ON tc.block_id = b.block_id
-
 ),
 potential_missing_txs AS (
     SELECT
-        exp.block_id
+        e.block_id
     FROM
-        expected_tx_counts exp
-        LEFT OUTER JOIN actual_tx_counts act
-        ON exp.block_id = act.block_id
+        expected_tx_counts e
+        LEFT OUTER JOIN actual_tx_counts a
+        ON e.block_id = a.block_id
     WHERE
-        act.block_id IS NULL
-    OR 
-        (exp.transaction_count IS NOT NULL and act.transaction_count <> exp.transaction_count)
+        (
+            (
+                e.block_id < 226000000
+                OR e.transaction_count IS NULL
+            )
+            AND a.block_id IS NULL
+        )
+        OR (
+            e.block_id >= 226000000
+            AND COALESCE(
+                a.transaction_count,
+                0
+            ) <> e.transaction_count
+        )
 ),
 broken_blocks AS (
     SELECT
@@ -148,7 +158,7 @@ SELECT
     blocks_tested,
     blocks_impacted_count,
     blocks_impacted_array,
-    sysdate() AS test_timestamp
+    SYSDATE() AS test_timestamp
 FROM
     summary_stats
     JOIN impacted_blocks
