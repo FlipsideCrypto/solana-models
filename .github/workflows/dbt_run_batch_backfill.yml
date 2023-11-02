@@ -3,9 +3,9 @@ run-name: dbt_run_scheduled_batch_backfill
 
 on:
   workflow_dispatch:
-  # schedule:
-  #   # Runs every 5 mins, adjust to appropriate schedule as needed
-  #   - cron: '*/5 * * * *'
+  schedule:
+    # Runs every 7 mins, adjust to appropriate schedule as needed
+    - cron: '*/7 * * * *'
     
 env:
   DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
@@ -41,4 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -s models/silver/accounts
+          dbt run -s models/silver/silver__block_rewards.sql
