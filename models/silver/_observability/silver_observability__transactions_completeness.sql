@@ -74,12 +74,12 @@ base_blocks AS (
                 summary_stats
         )
 ),
-base_txs AS (
-    SELECT
+actual_tx_counts as (
+    SELECT 
         block_id,
-        tx_id
+        transaction_count
     FROM
-        {{ ref('silver__votes') }}
+        {{ ref('silver_observability__blocks_tx_count') }}
     WHERE
         block_id BETWEEN (
             SELECT
@@ -92,36 +92,30 @@ base_txs AS (
                 max_block
             FROM
                 summary_stats
-        )
-    UNION
-    SELECT
-        block_id,
-        tx_id
-    FROM
-        {{ ref('silver__transactions') }}
-    WHERE
-        block_id BETWEEN (
-            SELECT
-                min_block
-            FROM
-                summary_stats
-        )
-        AND (
-            SELECT
-                max_block
-            FROM
-                summary_stats
-        )
+        ) 
+),
+expected_tx_counts as (
+    SELECT 
+        b.block_id,
+        tc.transaction_count
+    FROM 
+        base_blocks b
+    LEFT OUTER JOIN 
+        {{ ref('silver___blocks_tx_count') }} tc
+        ON tc.block_id = b.block_id
+
 ),
 potential_missing_txs AS (
     SELECT
-        base_blocks.*
+        exp.block_id
     FROM
-        base_blocks
-        LEFT OUTER JOIN base_txs
-        ON base_blocks.block_id = base_txs.block_id
+        expected_tx_counts exp
+        LEFT OUTER JOIN actual_tx_counts act
+        ON exp.block_id = act.block_id
     WHERE
-        base_txs.block_id IS NULL
+        act.block_id IS NULL
+    OR 
+        (exp.transaction_count IS NOT NULL and act.transaction_count <> exp.transaction_count)
 ),
 broken_blocks AS (
     SELECT
