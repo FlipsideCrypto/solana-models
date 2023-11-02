@@ -1,0 +1,27 @@
+version: 2
+models:
+  - name: silver_observability__blocks_tx_count
+    description: Records of all block transaction counts. This is an intermediate table used for transaction completeness testing
+    columns:
+      - name: BLOCK_ID
+        description: The lowest block id in the test
+        tests:
+          - not_null
+          - unique
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+      - name: TRANSACTION_COUNT
+        description: The lowest block id in the test
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+      - name: _INSERTED_TIMESTAMP
+        description: The lowest block timestamp in the test
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_NTZ
