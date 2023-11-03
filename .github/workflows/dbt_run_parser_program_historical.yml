@@ -2,6 +2,7 @@ name: dbt_run_parser_program_historical
 run-name: dbt_run_parser_program_historical
 
 on:
+  workflow_dispatch:
   schedule:
     # Runs every 30 mins at XX:10, XX:40 (see https://crontab.guru)
     - cron: '10,40 * * * *'
