@@ -17,4 +17,5 @@ select
     tx_id,
     h.block_id
 from {{ ref('streamline__all_undecoded_instructions_history_queue') }} h
-where h.block_id between (select max_block_id-200000 from m) and (select max_block_id from m)
+where program_id in ('JUP5pEAZeHdHrLxh5UCwAbpjGwYKKoquCpda2hfP4u8','JUP5cHjnnCx2DppVsufsLrXs8EBZeEZzGtEK9Gdz6ow')
+-- where h.block_id between (select max_block_id-200000 from m) and (select max_block_id from m)
