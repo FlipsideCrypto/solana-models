@@ -4,8 +4,9 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - BLOCK_ID
-            - _LOG_ID
+            - TX_ID
+            - INDEX
+            - PROGRAM_ID
       - compare_model_subset:
           name: silver__swaps_intermediate_jupiterv6_business_logic_test
           compare_model: ref('testing__swaps_intermediate_jupiterv6')
