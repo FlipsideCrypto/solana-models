@@ -131,9 +131,9 @@ FROM
     ON A.tx_id = b.tx_id
     AND A.source_token_account = b.source_token_account
     AND A.program_source_token_account = b.dest_token_account
-    AND COALESCE(SPLIT_PART(A.index :: text, '.', 1) :: INT, b.index :: INT) = A.index
+    AND COALESCE(SPLIT_PART(b.index :: text, '.', 1) :: INT, b.index :: INT) = A.index
     LEFT JOIN transfers C
     ON A.tx_id = C.tx_id
     AND A.destination_token_account = C.dest_token_account
     AND A.program_destination_token_account = C.source_token_account
-    AND COALESCE(SPLIT_PART(A.index :: text, '.', 1) :: INT, C.index :: INT) = A.index
+    AND COALESCE(SPLIT_PART(C.index :: text, '.', 1) :: INT, C.index :: INT) = A.index
