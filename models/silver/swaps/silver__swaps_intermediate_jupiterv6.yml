@@ -5,7 +5,7 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
-            - INDEX
+            - SWAP_INDEX
             - PROGRAM_ID
       - compare_model_subset:
           name: silver__swaps_intermediate_jupiterv6_business_logic_test
@@ -17,6 +17,7 @@ models:
             - from_mint
             - round(to_amt,8)
             - to_mint
+            - swap_index
           model_condition: "where tx_id in ('33NLhAHDz2dAVRCqfgankDS2CAr78J1Q7LorotWhTaqcT2EDAVzPaWDK2sQsw4zSJM1KVXWzxvx6mDpvzAmNkzN1',
           '3DqnEWswNa8qD7GrqxUi7yyD2fgAk8GYdykHX6aZRQpxbVrdkj3rcFHPF13WuS7oMRs2gqtJGDcjCkDXzD5geprS',
           '4ckGB7iEDkxgtZszKRn1xLvYFSGBanuF2PwhTyqwWAdgqZLPezvtLwrDHUGQoZVYQHyruXjVjLLmNf6wEiyVnuhf',
@@ -68,6 +69,10 @@ models:
           - not_null
       - name: TO_MINT
         description:  "{{ doc('swaps_to_mint') }}"
+        tests: 
+          - not_null
+      - name: SWAP_INDEX
+        description: "{{ doc('swaps_swap_index') }}"
         tests: 
           - not_null
       - name: _INSERTED_TIMESTAMP
