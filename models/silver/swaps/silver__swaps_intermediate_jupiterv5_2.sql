@@ -129,7 +129,7 @@ source_transfers as (
         pf.index,
         pf.program_id,
         tr.source_token_account,
-        tr.mint,
+        coalesce(tr.mint,'So11111111111111111111111111111111111111112') as mint,
         sum(tr.amount) as amount,
         min(tr.index) as tr_index
     from 
@@ -186,6 +186,8 @@ find_marinade_deposits as (
         tma.mint_amount is not null
     and 
         tma.decimal is not null
+    and 
+        tma.mint = 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So'
 )
 select 
     pf.block_id,
@@ -196,7 +198,7 @@ select
     pf.swapper,
     coalesce(st.amount,burns.amount) as from_amt,
     coalesce(st.mint,burns.mint,nm.mint) as from_mint,
-    coalesce(dt.amount,md.amount) as to_amt,
+    coalesce(dt.amount,0) + coalesce(md.amount,0) as to_amt,
     coalesce(dt.mint,md.mint) as to_mint,
     pf._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['pf.tx_id','pf.index','pf.program_id']) }} as swaps_intermediate_jupiterv5_id,

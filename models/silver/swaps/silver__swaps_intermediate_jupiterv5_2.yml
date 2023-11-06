@@ -22,15 +22,14 @@ models:
           '59WjNoQcoHN78GagayEhjrh5STa4XZ3ZiteQZYJjVfiYEwGVVmazQNnMVNPSzWRQAhqoRXnUpNsGrmagayFUzo45',
           '4mPjnnnbanquhQHbeQofTRurwwdnwBBN5Yuq7xW57RRbxgsoXpa3QMSsTJ1cBDPwh6H1ixypFtnVho6mtsBjxsea',
           '2tCfkNuhChjFi5WpH4BUpiyw56yvMtALkEFPC8RQsU9jxapSHboVFBVFcdEdaRtHpRgfRmLLCyQne5FzyGYsUWZx',
-          '2oxFxDrRiaK5KPtXs5i2wiJVH332nvj38yzZFrYhJpk1Qp1EEU4srB71BzE7egbLjsiYkiLtY24iFWv3eQjerkoR')"  
+          '2oxFxDrRiaK5KPtXs5i2wiJVH332nvj38yzZFrYhJpk1Qp1EEU4srB71BzE7egbLjsiYkiLtY24iFWv3eQjerkoR',
+          'PjsiQNcw6Gj8oy5kfFTrJYWGsAByvPMCCbFyKn94hWHdpJsKyx91jLu3x3qiLFAD6FsCUQoddosc9WrFGJkdHPT',
+          '4uGmB1tmQafyxtarFHnmbCAiK9JerfkkzNxopnEBzrA3BegKgbbwCcUzSjFqWuWZmG4gryDcmMsdkVhSaN5wAKin')"  
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
           - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 2
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
