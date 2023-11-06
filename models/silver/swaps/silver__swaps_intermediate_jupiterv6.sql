@@ -33,13 +33,13 @@ decoded AS (
         index,
         _inserted_timestamp,
         program_id,
-        solana_dev.silver.udf_get_account_pubkey_by_name('userTransferAuthority', decoded_instruction:accounts) as swapper,
-        solana_dev.silver.udf_get_account_pubkey_by_name('sourceTokenAccount', decoded_instruction:accounts) as source_token_account,
-        solana_dev.silver.udf_get_account_pubkey_by_name('sourceMint', decoded_instruction:accounts) as source_mint,
-        solana_dev.silver.udf_get_account_pubkey_by_name('destinationMint', decoded_instruction:accounts) as destination_mint,
-        solana_dev.silver.udf_get_account_pubkey_by_name('destinationTokenAccount', decoded_instruction:accounts) as destination_token_account,
-        solana_dev.silver.udf_get_account_pubkey_by_name('programDestinationTokenAccount', decoded_instruction:accounts) as program_destination_token_account,
-        solana_dev.silver.udf_get_account_pubkey_by_name('programSourceTokenAccount', decoded_instruction:accounts) as program_source_token_account
+        silver.udf_get_account_pubkey_by_name('userTransferAuthority', decoded_instruction:accounts) as swapper,
+        silver.udf_get_account_pubkey_by_name('sourceTokenAccount', decoded_instruction:accounts) as source_token_account,
+        silver.udf_get_account_pubkey_by_name('sourceMint', decoded_instruction:accounts) as source_mint,
+        silver.udf_get_account_pubkey_by_name('destinationMint', decoded_instruction:accounts) as destination_mint,
+        silver.udf_get_account_pubkey_by_name('destinationTokenAccount', decoded_instruction:accounts) as destination_token_account,
+        silver.udf_get_account_pubkey_by_name('programDestinationTokenAccount', decoded_instruction:accounts) as program_destination_token_account,
+        silver.udf_get_account_pubkey_by_name('programSourceTokenAccount', decoded_instruction:accounts) as program_source_token_account
     FROM
         base
 ),
