@@ -1,0 +1,69 @@
+version: 2
+models:
+  - name: silver__swaps_intermediate_jupiterv6
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+            - _LOG_ID
+      - compare_model_subset:
+          name: silver__swaps_intermediate_jupiterv6_business_logic_test
+          compare_model: ref('testing__swaps_intermediate_jupiterv6')
+          compare_columns: 
+            - tx_id
+            - swapper
+            - round(from_amt,8)
+            - from_mint
+            - round(to_amt,8)
+            - to_mint
+          model_condition: "where tx_id in ('33NLhAHDz2dAVRCqfgankDS2CAr78J1Q7LorotWhTaqcT2EDAVzPaWDK2sQsw4zSJM1KVXWzxvx6mDpvzAmNkzN1',
+          '3DqnEWswNa8qD7GrqxUi7yyD2fgAk8GYdykHX6aZRQpxbVrdkj3rcFHPF13WuS7oMRs2gqtJGDcjCkDXzD5geprS',
+          '4ckGB7iEDkxgtZszKRn1xLvYFSGBanuF2PwhTyqwWAdgqZLPezvtLwrDHUGQoZVYQHyruXjVjLLmNf6wEiyVnuhf',
+          '5dnKpNshPu6F7JnhHRjGNodUrigVYmUq2ffVdyxPFn8ABWNcNg9p9v3GBZd4N9R3qk2nnHKk1PcnVSxu7HYfYeUX',
+          '5nhXU7f282fFdi3FynukwNLiybV5NYqptUNU6BJH7RpYRPe4mcporxadKmhC9ioxx3vJp9uVmMbXz35QffHTxrFz',
+          '5YrfH1RDhZkhh98eikYFcuqRxHY8K87A7hBBFAasaJyCeMW1dr1nG5xNDps3e3GaHnt2cp1tssZJQS2eFaUwcPz9',
+          'GD7mFaoiFFxRKEi4EfYbRHmCRN1Q7hCwrQaZbiRq998vXU7bwY22ET1SwXcgDYKSbVLVTmkbM7HgE7G1HSJDT4T',
+          'JLHisghyiom2v1fY4z2tntjQYz7Fupe679pTJSuWaPvymEwEau9WvFbxGEyvvM1SPZqZPHKroLWqZkrrXtH9WkP')"  
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null
+      - name: SWAPPER
+        description: "{{ doc('swaps_swapper') }}"
+        tests: 
+          - not_null:
+              where: succeeded = TRUE
+      - name: FROM_AMT
+        description:  "{{ doc('swaps_from_amt') }}"
+      - name: FROM_MINT
+        description:  "{{ doc('swaps_from_mint') }}"
+      - name: TO_AMT
+        description:  "{{ doc('swaps_to_amt') }}"
+      - name: TO_MINT
+        description:  "{{ doc('swaps_to_mint') }}"
+      - name: _LOG_ID
+        description: "Combination of TX_ID and event index"
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
