@@ -2,8 +2,7 @@
     materialized = 'incremental',
     unique_key = ['tx_id','swap_index','program_id'],
     merge_exclude_columns = ["inserted_timestamp"],
-    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
-    enabled=false
+    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE']
 ) }}
 
 WITH base_events AS(
@@ -48,7 +47,9 @@ AND _inserted_timestamp >= (
 ),
 base_transfers as (
     SELECT
-        *
+        *,
+        split(index,'.') as split_index,
+        concat_ws('.',split_index[0],lpad(split_index[1],2,'0')) as padded_index
     FROM
         {{ ref('silver__transfers') }}
     WHERE
@@ -74,6 +75,7 @@ base_token_mint_actions as (
         on ma.block_timestamp::date = tma.block_timestamp::date
         and ma.tx_id = tma.tx_id
         and ma.index = tma.index
+        and ma.inner_index = tma.inner_index
     WHERE
         ma.succeeded
 
@@ -115,9 +117,9 @@ source_transfers as (
         pf.index,
         pf.program_id,
         tr.source_token_account,
-        coalesce(tr.mint,'So11111111111111111111111111111111111111112') as mint,
+        max(tr.mint) as mint,
         sum(tr.amount) as amount,
-        min(tr.index) as tr_index
+        min(padded_index) as tr_index
     from 
         pre_final pf
     left outer join base_transfers tr 
@@ -125,7 +127,7 @@ source_transfers as (
         and pf.tx_id = tr.tx_id
         and pf.index = split(tr.index,'.')[0]::number
         and pf.swapper = tr.tx_from  
-    group by 1,2,3,4,5,6,7
+    group by 1,2,3,4,5,6
     qualify(row_number() over (partition by pf.tx_id, pf.index order by tr_index)) = 1
 ),
 find_null_source_mints as (
@@ -172,8 +174,6 @@ find_marinade_deposits as (
         tma.mint_amount is not null
     and 
         tma.decimal is not null
-    and 
-        tma.mint = 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So'
 )
 select 
     pf.block_id,
