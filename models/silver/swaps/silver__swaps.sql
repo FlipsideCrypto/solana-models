@@ -296,7 +296,7 @@ SELECT
     from_mint,
     to_amt,
     to_mint,
-    NULL as log_id,
+    NULL as _log_id,
     _inserted_timestamp
 FROM
     {{ ref('silver__swaps_intermediate_jupiterv6') }}
