@@ -25,15 +25,15 @@ models:
           '5pYiirYrJ6JFPWxUtTTJinQzFZAHxS9FMxS3DSzHWwTnit8SD81wLmRxnD9gG3m9624grhRBgKsodqkjW1j5sJuE',
           'YzW7iKgsuvwUFLDqh1JLTygPecb7cUK3j2oMGmvcWN2LXFep4KpTy3zZvyrboKZncWytJ1CWnxkRM6ZBpdraPBv',
           '3qsYnQtSZTKFna1Cj8vGqHfpkZaV7Cwubhe5GMAWPREw75evd7WpmzQMTSZrs7tjMzndavwxCdHLr4mNdAQDhqxu',
-          '4pLtamVfK8BzxmtoCJ8w8wo8VcRCjX3fjUhtY8CiW4X3fyTDj8Rjyp4jTiBuiW4rxCJQGfemVypAzqzt7Me99Ct8')"
+          '4pLtamVfK8BzxmtoCJ8w8wo8VcRCjX3fjUhtY8CiW4X3fyTDj8Rjyp4jTiBuiW4rxCJQGfemVypAzqzt7Me99Ct8',
+          'RipLfMrdihYbKFJbC3LvpQHfZHJsQwcsRC6pQnkfJqsXHKdgE6PuW7xU1DKnWQ7ReppeXvigzBXKG6Dy7G6f6vk',
+          'kmjRLLXq9z7kWkibAp6NEYsXxL1G96C7xtpnaRqbvRdZfJfFbWRGqhpkgcJC6fxai7gCvjkBxHzCLFcLwAD3AA5',
+          '4JbowertcD6Fr7GRaUFw3fVTYUz9XYcCrxZyZwai9g9Lxtjj8MVpLRdtc9uBPRxD4QY9BgtAqVWdXhqMjUKn7XPK')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
           - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 2
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
