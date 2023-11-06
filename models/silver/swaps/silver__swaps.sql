@@ -284,3 +284,29 @@ WHERE
     succeeded = FALSE qualify(ROW_NUMBER() over (PARTITION BY block_id, tx_id, program_id, from_mint, to_mint
 ORDER BY
     block_timestamp)) = 1
+UNION
+SELECT
+    block_id,
+    block_timestamp,
+    program_id,
+    tx_id,
+    succeeded,
+    swapper,
+    from_amt,
+    from_mint,
+    to_amt,
+    to_mint,
+    NULL as log_id,
+    _inserted_timestamp
+FROM
+    {{ ref('silver__swaps_intermediate_jupiterv6') }}
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+{% endif %}
+
