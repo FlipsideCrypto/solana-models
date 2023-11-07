@@ -1,0 +1,80 @@
+version: 2
+models:
+  - name: silver__swaps_intermediate_jupiterv5_1
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - SWAP_INDEX
+            - PROGRAM_ID
+      - compare_model_subset:
+          name: silver__swaps_intermediate_jupiterv5_1_business_logic_test
+          compare_model: ref('testing__swaps_intermediate_jupiterv5_1')
+          compare_columns: 
+            - tx_id
+            - swapper
+            - from_mint
+            - round(from_amt,8)
+            - to_mint
+            - round(to_amt,8)
+            - swap_index
+          model_condition: "where tx_id in ('2ZDacDp1wdUT9wugzPWKjJ81DnhrQSQZJCvvyRS1CGps7SU4ynLtEbceNQvRmNmsMCHsh8u1nHf3ubKU6GaB2FQq',
+          '3rPg4WvKXtVvxHiM3rUxtZntBJ4BUbCna4isCzorHrZ7ow5XSJ83PXufTmVZtt2D2d2iDbyuLBTYX7SrbWfbWfY7',
+          '2EaNmoZiLacMXuiArEVUb3VkT7qH21EDXvZVfgCNPrXC5DVmapsTBGyRRk97bwnyo7MB5g5J22V3q9u9sk2hGcT7',
+          '661Te778ZUAFiJZBBcKnPJrh45pYt58sbNQJX6m1JuXnJvShWKx1jFhPYaHTpB27FFbkKSWvbQx3gCZ2WmT8h1et',
+          '5pYiirYrJ6JFPWxUtTTJinQzFZAHxS9FMxS3DSzHWwTnit8SD81wLmRxnD9gG3m9624grhRBgKsodqkjW1j5sJuE',
+          'YzW7iKgsuvwUFLDqh1JLTygPecb7cUK3j2oMGmvcWN2LXFep4KpTy3zZvyrboKZncWytJ1CWnxkRM6ZBpdraPBv',
+          '3qsYnQtSZTKFna1Cj8vGqHfpkZaV7Cwubhe5GMAWPREw75evd7WpmzQMTSZrs7tjMzndavwxCdHLr4mNdAQDhqxu',
+          '4pLtamVfK8BzxmtoCJ8w8wo8VcRCjX3fjUhtY8CiW4X3fyTDj8Rjyp4jTiBuiW4rxCJQGfemVypAzqzt7Me99Ct8',
+          'RipLfMrdihYbKFJbC3LvpQHfZHJsQwcsRC6pQnkfJqsXHKdgE6PuW7xU1DKnWQ7ReppeXvigzBXKG6Dy7G6f6vk',
+          'kmjRLLXq9z7kWkibAp6NEYsXxL1G96C7xtpnaRqbvRdZfJfFbWRGqhpkgcJC6fxai7gCvjkBxHzCLFcLwAD3AA5',
+          '4JbowertcD6Fr7GRaUFw3fVTYUz9XYcCrxZyZwai9g9Lxtjj8MVpLRdtc9uBPRxD4QY9BgtAqVWdXhqMjUKn7XPK')"
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null
+      - name: SWAPPER
+        description: "{{ doc('swaps_swapper') }}"
+        tests: 
+          - not_null
+      - name: FROM_AMT
+        description:  "{{ doc('swaps_from_amt') }}"
+        tests: 
+          - not_null
+      - name: FROM_MINT
+        description:  "{{ doc('swaps_from_mint') }}"
+        tests: 
+          - not_null
+      - name: TO_AMT
+        description:  "{{ doc('swaps_to_amt') }}"
+        tests: 
+          - not_null
+      - name: TO_MINT
+        description:  "{{ doc('swaps_to_mint') }}"
+        tests: 
+          - not_null
+      - name: SWAP_INDEX
+        description: "{{ doc('swaps_swap_index') }}"
+        tests: 
+          - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
