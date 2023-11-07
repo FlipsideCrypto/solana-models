@@ -3,6 +3,7 @@
     unique_key = ['tx_id','swap_index','program_id'],
     merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
+    enabled=false
 ) }}
 
 WITH base_events AS(
