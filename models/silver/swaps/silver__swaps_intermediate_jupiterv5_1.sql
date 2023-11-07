@@ -98,6 +98,7 @@ pre_final as (
         e.tx_id,
         e.index,
         e.program_id,
+        e.succeeded,
         silver.udf_get_account_pubkey_by_name('userTransferAuthority', d.decoded_instruction:accounts) as swapper,
         silver.udf_get_account_pubkey_by_name('destinationTokenAccount', d.decoded_instruction:accounts) as dest_token_account,
         e._inserted_timestamp
@@ -182,6 +183,7 @@ select
     pf.tx_id,
     pf.index as swap_index,
     pf.program_id,
+    pf.succeeded,
     pf.swapper,
     st.amount as from_amt,
     coalesce(st.mint,nm.mint) as from_mint,
