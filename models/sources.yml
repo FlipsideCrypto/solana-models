@@ -74,6 +74,8 @@ sources:
       - name: gauges_votes_marinade
       - name: gauges_creates_marinade
       - name: nft_sales_coral_cube
+      - name: swaps_intermediate_jupiterv5_1
+      - name: swaps_intermediate_jupiterv5_2
   - name: solana_streamline
     schema: streamline
     tables:
