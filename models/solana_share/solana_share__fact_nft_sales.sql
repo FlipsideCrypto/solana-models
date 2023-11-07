@@ -16,5 +16,5 @@
     seller, 
     mint,
     sales_amount
-FROM {{ref('core__fact_nft_sales')}}
+FROM {{ref('nft__fact_nft_sales')}}
 where block_timestamp::date between '2021-12-01' and '2021-12-31'

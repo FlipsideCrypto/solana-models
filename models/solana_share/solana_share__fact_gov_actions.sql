@@ -17,5 +17,5 @@
     mint,
     action,
     amount
-FROM {{ref('core__fact_gov_actions')}}
+FROM {{ref('gov__fact_gov_actions')}}
 where block_timestamp::date between '2021-12-01' and '2021-12-31'

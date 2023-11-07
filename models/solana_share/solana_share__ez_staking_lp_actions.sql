@@ -26,5 +26,5 @@
     validator_rank,
     commission, 
     validator_name
-FROM {{ref('core__ez_staking_lp_actions')}}
+FROM {{ref('gov__ez_staking_lp_actions')}}
 where block_timestamp::date between '2021-12-01' and '2021-12-31'
