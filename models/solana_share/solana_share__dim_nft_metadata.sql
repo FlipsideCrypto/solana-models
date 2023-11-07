@@ -19,4 +19,4 @@
     token_metadata,
     token_metadata_uri,
     token_name
-FROM {{ref('core__dim_nft_metadata')}}
+FROM {{ref('nft__dim_nft_metadata')}}

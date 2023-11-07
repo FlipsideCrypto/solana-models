@@ -20,5 +20,5 @@
     vote_choice, 
     vote_rank, 
     vote_weight
-FROM {{ref('core__fact_proposal_votes')}}
+FROM {{ref('gov__fact_proposal_votes')}}
 where block_timestamp::date between '2021-12-01' and '2021-12-31'

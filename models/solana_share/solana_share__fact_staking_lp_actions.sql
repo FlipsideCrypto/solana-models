@@ -21,5 +21,5 @@
     post_balances,
     pre_token_balances,
     post_token_balances
-FROM {{ref('core__fact_staking_lp_actions')}}
+FROM {{ref('gov__fact_staking_lp_actions')}}
 where block_timestamp::date between '2021-12-01' and '2021-12-31'
