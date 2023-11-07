@@ -11,7 +11,7 @@ sources:
     database: "{{ 'crosschain' if target.database == 'SOLANA' else 'crosschain_dev' }}"
     schema: core
     tables:
-      - name: address_labels
+      - name: dim_labels
       - name: dim_date_hours
   - name: crosschain_public
     database: "{{ 'crosschain' if target.database == 'SOLANA' else 'crosschain_dev' }}"
