@@ -1,0 +1,2 @@
+workflow_name,workflow_schedule
+dbt_run_scheduled,"1,16,31,46 * * * *"
