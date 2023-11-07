@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = ['tx_id','swap_index','program_id'],
+    incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
 ) }}
