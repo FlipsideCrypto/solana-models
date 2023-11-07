@@ -93,3 +93,8 @@ sources:
     schema: bronze_api
     tables:
       - name: parse_compressed_nft_mints_requests
+  - name: github_actions
+    database: solana
+    schema: github_actions
+    tables:
+      - name: workflows
