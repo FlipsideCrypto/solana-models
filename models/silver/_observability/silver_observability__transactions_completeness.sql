@@ -74,31 +74,12 @@ base_blocks AS (
                 summary_stats
         )
 ),
-base_txs AS (
+actual_tx_counts AS (
     SELECT
         block_id,
-        tx_id
+        transaction_count
     FROM
-        {{ ref('silver__votes') }}
-    WHERE
-        block_id BETWEEN (
-            SELECT
-                min_block
-            FROM
-                summary_stats
-        )
-        AND (
-            SELECT
-                max_block
-            FROM
-                summary_stats
-        )
-    UNION
-    SELECT
-        block_id,
-        tx_id
-    FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('silver_observability__blocks_tx_count') }}
     WHERE
         block_id BETWEEN (
             SELECT
@@ -113,15 +94,38 @@ base_txs AS (
                 summary_stats
         )
 ),
+expected_tx_counts AS (
+    SELECT
+        b.block_id,
+        tc.transaction_count
+    FROM
+        base_blocks b
+        LEFT OUTER JOIN {{ ref('silver___blocks_tx_count') }}
+        tc
+        ON tc.block_id = b.block_id
+),
 potential_missing_txs AS (
     SELECT
-        base_blocks.*
+        e.block_id
     FROM
-        base_blocks
-        LEFT OUTER JOIN base_txs
-        ON base_blocks.block_id = base_txs.block_id
+        expected_tx_counts e
+        LEFT OUTER JOIN actual_tx_counts a
+        ON e.block_id = a.block_id
     WHERE
-        base_txs.block_id IS NULL
+        (
+            (
+                e.block_id < 226000000
+                OR e.transaction_count IS NULL
+            )
+            AND a.block_id IS NULL
+        )
+        OR (
+            e.block_id >= 226000000
+            AND COALESCE(
+                a.transaction_count,
+                0
+            ) <> e.transaction_count
+        )
 ),
 broken_blocks AS (
     SELECT
@@ -154,7 +158,7 @@ SELECT
     blocks_tested,
     blocks_impacted_count,
     blocks_impacted_array,
-    sysdate() AS test_timestamp
+    SYSDATE() AS test_timestamp
 FROM
     summary_stats
     JOIN impacted_blocks
