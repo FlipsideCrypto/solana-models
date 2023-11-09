@@ -1,0 +1,17 @@
+version: 2
+models:
+  - name: gov__dim_epoch
+    description: "Contains the block range for epochs"
+    columns:
+      - name: EPOCH
+        description: "{{ doc('epoch') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: START_BLOCK
+        description: "{{ doc('start_block') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: END_BLOCK
+        description: "{{ doc('end_block') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist

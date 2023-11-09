@@ -1,0 +1,28 @@
+version: 2
+models:
+  - name: gov__fact_fee_rewards
+    columns:
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: REWARD_AMOUNT_SOL
+        description: "{{ doc('amount') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: POST_BALANCE_SOL
+        description: "{{ doc('post_balance') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: VOTE_PUBKEY
+        description: "{{ doc('vote_pubkey') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: EPOCH_EARNED
+        description: "{{ doc('epoch_earned') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist

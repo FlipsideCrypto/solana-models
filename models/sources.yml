@@ -78,6 +78,7 @@ sources:
     schema: streamline
     tables:
       - name: complete_block_txs
+      - name: complete_block_rewards
   - name: bronze
     schema: bronze
     tables:

@@ -1,12 +1,12 @@
 version: 2
 models:
-  - name: silver__block_rewards
+  - name: silver__voting_rewards
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
+            - VOTE_PUBKEY
+            - EPOCH_EARNED
             - BLOCK_ID
-            - ACCOUNT
-            - REWARD_TYPE
     columns:
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
@@ -17,23 +17,27 @@ models:
         tests:
           - not_null:
               where: block_id > 39824213
+      - name: REWARD_AMOUNT_SOL
+        description: "{{ doc('amount') }}"
+        tests:
+          - not_null
+      - name: POST_BALANCE_SOL
+        description: "{{ doc('post_balance') }}"
+        tests:
+          - not_null
       - name: COMMISSION
-        description: Commission earned by the validator
+        description: "Percent of staking rewards paid to the validator"
+        tests: 
+          - not_null
+      - name: VOTE_PUBKEY
+        description: "{{ doc('vote_pubkey') }}"
         tests:
           - not_null
-      - name: AMOUNT
-        description: SOL (lamports) rewards amount in 
-        tests:
+      - name: EPOCH_EARNED
+        description: "{{ doc('epoch_earned') }}"
+        tests: 
           - not_null
-      - name: POST_BALANCE
-        description: Account SOL (lamports) balance  after rewards
-        tests:
-          - not_null
-      - name: ACCOUNT
-        description: Address receiving rewards
-        tests:
-          - not_null
-      - name: _INSERTED_DATE
+      - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
           - not_null
