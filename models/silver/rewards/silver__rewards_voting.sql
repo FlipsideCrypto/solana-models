@@ -1,8 +1,9 @@
 {{ config(
     materialized = 'incremental',
     unique_key = ["vote_pubkey","epoch_earned","block_id"],
+    merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_timestamp::DATE','floor(block_id,-6)','_inserted_timestamp::DATE'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(vote_pubkey, epoch_earned);",
     tags = ['rewards']
 ) }}
 
@@ -25,7 +26,7 @@ WITH base AS (
         ON b.block_id = A.block_id
     WHERE
         error IS NULL
-        AND reward_type = 'Fee'
+        AND reward_type = 'Voting'
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -54,7 +55,7 @@ WITH base AS (
         SELECT
             MAX(_partition_id)
         FROM
-        solana.streamline.complete_block_rewards
+        {{ source('solana_streamline','complete_block_rewards') }}
     )
 {% else %}
     AND _partition_id IN (
@@ -71,10 +72,11 @@ prev_null_block_timestamp_txs AS (
     A.block_id,
     A.reward_amount_sol,
     A.post_balance_sol,
+    A.commission,
     A.vote_pubkey,
     A.epoch_earned,
     A._partition_id,
-    A.fee_rewards_id,
+    A.rewards_voting_id,
     A.epoch_id,
     A.inserted_timestamp,
     A.modified_timestamp,
@@ -124,11 +126,12 @@ SELECT
         10,
         9
     ) AS post_balance_sol,
+    A.commission,
     A.account AS vote_pubkey,
-    b.epoch AS epoch_earned,
+    (b.epoch-1) AS epoch_earned, -- the rewards are based on the previous epoch activity
     A._partition_id,
-    {{ dbt_utils.generate_surrogate_key(['b.epoch','a.block_id','a.account']) }} AS fee_rewards_id,
-    {{ dbt_utils.generate_surrogate_key(['b.epoch']) }} AS epoch_id,
+    {{ dbt_utils.generate_surrogate_key(['epoch_earned','a.block_id','a.account']) }} AS rewards_voting_id,
+    {{ dbt_utils.generate_surrogate_key(['epoch_earned']) }} AS epoch_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS invocation_id,

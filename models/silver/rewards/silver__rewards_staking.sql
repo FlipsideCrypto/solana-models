@@ -1,8 +1,9 @@
 {{ config(
     materialized = 'incremental',
     unique_key = ["stake_pubkey","epoch_earned","block_id"],
+    merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_timestamp::DATE','floor(block_id,-6)','_inserted_timestamp::DATE'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(stake_pubkey, epoch_earned);",
     tags = ['rewards']
 ) }}
 
@@ -54,7 +55,7 @@ WITH base AS (
         SELECT
             MAX(_partition_id)
         FROM
-        solana.streamline.complete_block_rewards
+        {{ source('solana_streamline','complete_block_rewards') }}
     )
 {% else %}
     AND _partition_id IN (
@@ -75,7 +76,7 @@ prev_null_block_timestamp_txs AS (
     A.stake_pubkey,
     A.epoch_earned,
     A._partition_id,
-    A.staking_rewards_id,
+    A.rewards_stakings_id,
     A.epoch_id,
     A.inserted_timestamp,
     A.modified_timestamp,
@@ -129,7 +130,7 @@ SELECT
     A.account AS stake_pubkey,
     (b.epoch-1) AS epoch_earned, -- the rewards are based on the previous epoch activity
     A._partition_id,
-    {{ dbt_utils.generate_surrogate_key(['epoch_earned','a.block_id','a.account']) }} AS staking_rewards_id,
+    {{ dbt_utils.generate_surrogate_key(['epoch_earned','a.block_id','a.account']) }} AS rewards_staking_id,
     {{ dbt_utils.generate_surrogate_key(['epoch_earned']) }} AS epoch_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,

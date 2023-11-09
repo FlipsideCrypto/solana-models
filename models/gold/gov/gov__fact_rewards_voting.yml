@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: gov__fact_voting_rewards
+  - name: gov__fact_rewards_voting
     description: Rewards recieved by vote accounts/validators. These are sent once in the beginning of an epoch, for rewards earned by activity in the previous epoch.
     columns:
       - name: BLOCK_ID

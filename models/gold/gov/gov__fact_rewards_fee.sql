@@ -10,9 +10,9 @@ SELECT
     epoch_earned,
     reward_amount_sol,
     post_balance_sol,
-    fee_rewards_id as fact_fee_rewards_id,
+    rewards_fee_id as fact_rewards_fee_id,
     modified_timestamp,
     inserted_timestamp,
     epoch_id as dim_epoch_id
 from
-  {{ ref('silver__fee_rewards') }}
+  {{ ref('silver__rewards_fee') }}

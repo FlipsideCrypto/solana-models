@@ -41,4 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -s models/silver/rewards/silver__fee_rewards.sql models/silver/rewards/silver__rent_rewards.sql models/silver/rewards/silver__voting_rewards.sql models/silver/rewards/silver__staking_rewards.sql
+          dbt run -s models/silver/rewards/silver__rewards_fee.sql models/silver/rewards/silver__rewards_rent.sql models/silver/rewards/silver__rewards_voting.sql models/silver/rewards/silver__rewards_staking.sql

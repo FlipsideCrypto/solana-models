@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__voting_rewards
+  - name: silver__rewards_rent
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -18,16 +18,12 @@ models:
           - not_null:
               where: block_id > 39824213
       - name: REWARD_AMOUNT_SOL
-        description: "{{ doc('amount') }}"
+        description: "The amount of rent rewards received or rent paid in SOL, with rent payments being negative."
         tests:
           - not_null
       - name: POST_BALANCE_SOL
         description: "{{ doc('post_balance') }}"
         tests:
-          - not_null
-      - name: COMMISSION
-        description: "Percent of staking rewards paid to the validator"
-        tests: 
           - not_null
       - name: VOTE_PUBKEY
         description: "{{ doc('vote_pubkey') }}"

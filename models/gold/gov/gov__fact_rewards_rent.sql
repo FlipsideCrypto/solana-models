@@ -10,9 +10,9 @@ SELECT
     epoch_earned,
     reward_amount_sol,
     post_balance_sol,
-    voting_rewards_id as fact_voting_rewards_id,
+    rewards_rent_id as fact_rewards_rent_id,
     modified_timestamp,
     inserted_timestamp,
     epoch_id as dim_epoch_id
 from
-  {{ ref('silver__voting_rewards') }}
+  {{ ref('silver__rewards_rent') }}

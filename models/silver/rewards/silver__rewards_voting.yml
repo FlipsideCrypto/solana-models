@@ -1,10 +1,10 @@
 version: 2
 models:
-  - name: silver__staking_rewards
+  - name: silver__rewards_voting
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - STAKE_PUBKEY
+            - VOTE_PUBKEY
             - EPOCH_EARNED
             - BLOCK_ID
     columns:
@@ -29,8 +29,8 @@ models:
         description: "Percent of staking rewards paid to the validator"
         tests: 
           - not_null
-      - name: STAKE_PUBKEY
-        description: "Address of stake account"
+      - name: VOTE_PUBKEY
+        description: "{{ doc('vote_pubkey') }}"
         tests:
           - not_null
       - name: EPOCH_EARNED
