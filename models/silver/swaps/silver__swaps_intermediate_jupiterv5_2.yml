@@ -1,0 +1,83 @@
+version: 2
+models:
+  - name: silver__swaps_intermediate_jupiterv5_2
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - SWAP_INDEX
+            - PROGRAM_ID
+      - compare_model_subset:
+          name: silver__swaps_intermediate_jupiterv5_2_business_logic_test
+          compare_model: ref('testing__swaps_intermediate_jupiterv5_2')
+          compare_columns: 
+            - tx_id
+            - swapper
+            - round(from_amt,8)
+            - from_mint
+            - round(to_amt,8)
+            - to_mint
+            - swap_index
+          model_condition: "where tx_id in ('vDN32m4cUoCXG5jTxxbCM6MD4q7X8kXT4AvtDfdjdMdTvfHfmJvUkA4JE7CYf9LZXUfQnFqVXk9nAFsyDeixMgV',
+          '59WjNoQcoHN78GagayEhjrh5STa4XZ3ZiteQZYJjVfiYEwGVVmazQNnMVNPSzWRQAhqoRXnUpNsGrmagayFUzo45',
+          '4mPjnnnbanquhQHbeQofTRurwwdnwBBN5Yuq7xW57RRbxgsoXpa3QMSsTJ1cBDPwh6H1ixypFtnVho6mtsBjxsea',
+          '2tCfkNuhChjFi5WpH4BUpiyw56yvMtALkEFPC8RQsU9jxapSHboVFBVFcdEdaRtHpRgfRmLLCyQne5FzyGYsUWZx',
+          '2oxFxDrRiaK5KPtXs5i2wiJVH332nvj38yzZFrYhJpk1Qp1EEU4srB71BzE7egbLjsiYkiLtY24iFWv3eQjerkoR',
+          'PjsiQNcw6Gj8oy5kfFTrJYWGsAByvPMCCbFyKn94hWHdpJsKyx91jLu3x3qiLFAD6FsCUQoddosc9WrFGJkdHPT',
+          '4uGmB1tmQafyxtarFHnmbCAiK9JerfkkzNxopnEBzrA3BegKgbbwCcUzSjFqWuWZmG4gryDcmMsdkVhSaN5wAKin',
+          '54JLHAeGxMsnHzB3WFVgEpFKg9BoWnmqxm58CJqPKno3vTAULfBTELyZfAs95i3jkpfcKD7vx99ch1oLnbFZaHDc',
+          '3HYjbvaqNd9XN7966LJas8VnAnVrTNd1yCNDqnNoCgWaQavMrumxXXGw1qiQVhmDg1VReJZFnT8rsWMkRH56xhv5',
+          '2tHcbLfg5cWmuqYHUeKFK3DffmpmyHx5LuxwiKT9m1Hg9645BemDcyuHRNuFE2XCaJ6Unrmcjz4NryqNKivvmh4m',
+          '4YVJXQM6tnn2ZCUrbdSCZTkafyMXi3q7aXPZJtSziExkbG8MLKAhd57zZwy5ALCq8x4HBEe1qU4b8YZ6YUKQHrtg',
+          '3DQUWFHU2wYzaoKxoW2gn2VeytFAJBwtfxgW4XaMar6fmEFJofiUJ9594V1tej9RhNmrzEx2C9zAQuojKWrcKPJs',
+          '2LrMaVMCCBaf8tNeTy65QxMvtj5dabHx41shreuJu5pFxy8rkJwguthFfszULT7yxLVkMKUV4y2yjeyXUJKQ599B',
+          '2ZqeMBri7UiSD2TJmp4tJiRGXE6yfg17M7LXL27u89uDRwZtGHieZKQGT2on7g3UEBt4ntP8HzNTAsAWYzke5fYV',
+          '9WwUywW8j9tm58Qa2MjADiDYgLqVfEzRpQjDFtwnhenJDbMshzd7cgzTxokfunGSYqtp6uE3RBGEQ2MF3FPp9gM',
+          '5nXQfkg7AKdHeC9kLQUgyKUjebCx17ZswGYuar8whMAtptz2ssBcjRsSaZQ7AdpGDCvX36XqyMRx2xa8RjAcdSoc')"  
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null
+      - name: SWAPPER
+        description: "{{ doc('swaps_swapper') }}"
+      - name: FROM_AMT
+        description:  "{{ doc('swaps_from_amt') }}"
+        tests: 
+          - not_null
+      - name: FROM_MINT
+        description:  "{{ doc('swaps_from_mint') }}"
+        tests: 
+          - not_null
+      - name: TO_AMT
+        description:  "{{ doc('swaps_to_amt') }}"
+        tests: 
+          - not_null
+      - name: TO_MINT
+        description:  "{{ doc('swaps_to_mint') }}"
+        tests: 
+          - not_null
+      - name: SWAP_INDEX
+        description: "{{ doc('swaps_swap_index') }}"
+        tests: 
+          - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null

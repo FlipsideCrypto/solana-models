@@ -16,5 +16,5 @@
     gauge,
     power,
     delegated_shares
-FROM {{ref('core__fact_gauges_votes')}}
+FROM {{ref('gov__fact_gauges_votes')}}
 where block_timestamp::date between '2021-12-01' and '2021-12-31'

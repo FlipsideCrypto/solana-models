@@ -1,0 +1,46 @@
+name: dbt_run_alter_gha_task
+run-name: dbt_run_alter_gha_task
+
+on:
+  workflow_dispatch:
+    branches:
+      - "main"
+    inputs:
+      workflow_name:
+        type: string
+        description: Name of the workflow to perform the action on, no .yml extension
+        required: true
+      task_action:
+        type: choice 
+        description: Action to perform
+        required: true
+        options:
+          - SUSPEND
+          - RESUME
+        default: SUSPEND
+    
+env:
+  DBT_PROFILES_DIR: ./
+
+  ACCOUNT: "${{ vars.ACCOUNT }}"
+  ROLE: "${{ vars.ROLE }}"
+  USER: "${{ vars.USER }}"
+  PASSWORD: "${{ secrets.PASSWORD }}"
+  REGION: "${{ vars.REGION }}"
+  DATABASE: "${{ vars.DATABASE }}"
+  WAREHOUSE: "${{ vars.WAREHOUSE }}"
+  SCHEMA: "${{ vars.SCHEMA }}"
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  called_workflow_template:
+    uses: FlipsideCrypto/analytics-workflow-templates/.github/workflows/dbt_alter_gha_tasks.yml@main
+    with:
+      workflow_name: |
+         ${{ inputs.workflow_name }}
+      task_action: |
+         ${{ inputs.task_action }}
+      environment: workflow_prod
+    secrets: inherit

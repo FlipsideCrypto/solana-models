@@ -16,5 +16,5 @@
     swap_to_mint,
     program_id,
     swap_program
-FROM {{ref('core__fact_swaps')}}
+FROM {{ref('defi__fact_swaps')}}
 where block_timestamp::date between '2021-12-01' and '2021-12-31'

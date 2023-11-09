@@ -15,5 +15,5 @@
     gauge,
     gaugemeister,
     validator_account
-FROM {{ref('core__fact_gauges_creates')}}
+FROM {{ref('gov__fact_gauges_creates')}}
 where block_timestamp::date between '2021-12-01' and '2021-12-31'

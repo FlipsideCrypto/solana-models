@@ -276,3 +276,22 @@ def get_tx_size(accts, instructions, version, addr_lookups, signers) -> int:
 
 $$;
 {% endmacro %}
+
+{% macro create_udf_get_account_pubkey_by_name(schema) %}
+create or replace function {{ schema }}.udf_get_account_pubkey_by_name(name string, accounts array)
+returns string
+language python
+runtime_version = '3.8'
+handler = 'get_account_pubkey_by_name'
+as
+$$
+def get_account_pubkey_by_name(name, accounts) -> str:
+    if accounts is None:
+        return None
+    for i,a in enumerate(accounts):
+        if a and a.get("name","").lower() == name.lower():
+            return a.get("pubkey")
+
+    return None
+$$;
+{% endmacro %}

@@ -15,6 +15,6 @@ SELECT
     project_name
 FROM {{ source(
         'crosschain',
-        'address_labels'
+        'dim_labels'
     ) }} 
 WHERE blockchain = 'solana'

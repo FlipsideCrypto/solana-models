@@ -3,9 +3,8 @@ run-name: dbt_run_scheduled
 
 on:
   workflow_dispatch:
-  schedule:
-    # Runs "every hour" (see https://crontab.guru)
-    - cron: '1,16,31,46 * * * *'
+    branches:
+      - "main"
     
 env:
   DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
@@ -42,5 +41,5 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run-operation run_sp_refresh_external_tables_full
-          dbt run -s ./models --exclude tag:share models/streamline models/silver/silver__daily_signers.sql models/silver/silver__signers.sql models/silver/validator models/silver/_observability models/silver/nfts/silver__nft_compressed_mints_onchain.sql models/silver/nfts/silver__nft_compressed_mints.sql models/gold/core/core__ez_signers.sql tag:helius tag:bronze_api tag:rewards
+          dbt run -s "solana_models,./models" --exclude tag:share models/streamline models/silver/silver__daily_signers.sql models/silver/silver__signers.sql models/silver/validator models/silver/_observability models/silver/nfts/silver__nft_compressed_mints_onchain.sql models/silver/nfts/silver__nft_compressed_mints.sql models/gold/core/core__ez_signers.sql tag:helius tag:bronze_api models/github_actions
           

@@ -11,7 +11,7 @@ sources:
     database: "{{ 'crosschain' if target.database == 'SOLANA' else 'crosschain_dev' }}"
     schema: core
     tables:
-      - name: address_labels
+      - name: dim_labels
       - name: dim_date_hours
   - name: crosschain_public
     database: "{{ 'crosschain' if target.database == 'SOLANA' else 'crosschain_dev' }}"
@@ -74,6 +74,8 @@ sources:
       - name: gauges_votes_marinade
       - name: gauges_creates_marinade
       - name: nft_sales_coral_cube
+      - name: swaps_intermediate_jupiterv5_1
+      - name: swaps_intermediate_jupiterv5_2
   - name: solana_streamline
     schema: streamline
     tables:
@@ -87,3 +89,13 @@ sources:
       - name: historical_vote_account_data
       - name: historical_validator_app_data
       - name: historical_stake_account_data
+  - name: bronze_api_prod
+    database: solana
+    schema: bronze_api
+    tables:
+      - name: parse_compressed_nft_mints_requests
+  - name: github_actions
+    database: solana
+    schema: github_actions
+    tables:
+      - name: workflows

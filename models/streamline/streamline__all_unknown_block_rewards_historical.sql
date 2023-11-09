@@ -5,12 +5,12 @@
 WITH pre_final AS (
 
     SELECT
-        SEQ8()+98680445 AS block_id
+        SEQ8()+148693779 AS block_id
     FROM
-        TABLE(GENERATOR(rowcount => 60000000))
+        TABLE(GENERATOR(rowcount => 80000000))
     WHERE
-        block_id > 98680445
-        AND block_id <= 148693779
+        block_id >= 148693779
+        AND block_id <= 226117675
     EXCEPT
     SELECT
         block_id
