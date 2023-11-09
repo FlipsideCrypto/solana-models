@@ -58,10 +58,7 @@ WITH base AS (
         {{ source('solana_streamline','complete_block_rewards') }}
     )
 {% else %}
-    AND _partition_id IN (
-        1,2
-    )
-    -- AND _partition_id BETWEEN 28700 and 28800
+    AND _partition_id <= 10
 {% endif %}
 ),
 
@@ -76,7 +73,7 @@ prev_null_block_timestamp_txs AS (
     A.stake_pubkey,
     A.epoch_earned,
     A._partition_id,
-    A.rewards_stakings_id,
+    A.rewards_staking_id,
     A.epoch_id,
     A.inserted_timestamp,
     A.modified_timestamp,

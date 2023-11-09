@@ -58,10 +58,7 @@ WITH base AS (
         {{ source('solana_streamline','complete_block_rewards') }}
     )
 {% else %}
-    AND _partition_id IN (
-        1,2
-    )
-    -- AND _partition_id BETWEEN 28700 and 28800
+    AND _partition_id <= 10
 {% endif %}
 ),
 
