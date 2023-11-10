@@ -3,6 +3,7 @@
     unique_key = "_unique_key",
     incremental_strategy = 'merge',
     cluster_by = ['recorded_hour::DATE'],
+    tags = ['scheduled_non_core']
 ) }}
 
 WITH date_hours AS (

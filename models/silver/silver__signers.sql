@@ -2,7 +2,8 @@
     materialized = 'incremental',
     unique_key = "signer",
     incremental_strategy = 'delete+insert',
-    cluster_by = 'signer'
+    cluster_by = 'signer',
+    tags = ['scheduled_non_core']
 ) }}
 
 WITH base_min_signers AS (
