@@ -3,6 +3,7 @@
     unique_key = "tx_id",
     incremental_strategy = 'delete+insert',
     cluster_by = ['_inserted_timestamp::DATE'],
+    tags = ['scheduled_non_core']
 ) }}
 
 WITH token_balances AS (

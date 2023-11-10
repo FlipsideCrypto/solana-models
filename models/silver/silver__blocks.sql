@@ -2,7 +2,8 @@
   materialized = 'incremental',
   unique_key = "block_id",
   incremental_strategy = 'delete+insert',
-  cluster_by = ['block_timestamp::DATE','_inserted_timestamp::date']
+  cluster_by = ['block_timestamp::DATE','_inserted_timestamp::date'],
+  tags = ['scheduled_core']
 ) }}
 
 {% if is_incremental() %}

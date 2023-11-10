@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "program_id",
-    tags = ['idls']
+    tags = ['idls','scheduled_non_core']
 ) }}
 
 WITH user_abis AS (
