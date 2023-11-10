@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'block_id',
-    full_refresh = false
+    full_refresh = false,
+    tags = ['scheduled_non_core']
 ) }}
 
 WITH base as (

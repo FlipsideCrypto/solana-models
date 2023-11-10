@@ -4,7 +4,8 @@
     incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE','program_id'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION", 
-    full_refresh = false
+    full_refresh = false,
+    tags = ['scheduled_core']
 ) }}
 
 WITH base_i AS (

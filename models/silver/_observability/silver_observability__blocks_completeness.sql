@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'test_timestamp',
-    full_refresh = false
+    full_refresh = false,
+    tags = ['scheduled_non_core']
 ) }}
 
 WITH source AS (

@@ -5,6 +5,7 @@
     cluster_by = ['block_timestamp::DATE'],
     full_refresh = false,
     enabled = false,
+    tags = ['scheduled_non_core']
 ) }}
 
 WITH sales_inner_instructions AS (

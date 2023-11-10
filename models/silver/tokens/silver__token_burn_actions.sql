@@ -3,6 +3,7 @@
     unique_key = "CONCAT_WS('-', tx_id, index, inner_index, mint)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
+    tags = ['scheduled_non_core']
 ) }}
 
 WITH base_burn_actions AS (
