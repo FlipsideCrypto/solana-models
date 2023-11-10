@@ -77,9 +77,11 @@ sources:
       - name: swaps_intermediate_jupiterv5_1
       - name: swaps_intermediate_jupiterv5_2
   - name: solana_streamline
+    database: solana
     schema: streamline
     tables:
       - name: complete_block_txs
+      - name: complete_block_rewards
   - name: bronze
     schema: bronze
     tables:

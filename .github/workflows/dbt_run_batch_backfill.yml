@@ -1,10 +1,11 @@
-name: dbt_run_scheduled
-run-name: dbt_run_scheduled
+name: dbt_run_scheduled_batch_backfill
+run-name: dbt_run_scheduled_batch_backfill
 
 on:
   workflow_dispatch:
-    branches:
-      - "main"
+  schedule:
+    # Runs every 7 mins, adjust to appropriate schedule as needed
+    - cron: '*/7 * * * *'
     
 env:
   DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
@@ -15,7 +16,7 @@ env:
   PASSWORD: "${{ secrets.PASSWORD }}"
   REGION: "${{ secrets.REGION }}"
   DATABASE: "${{ secrets.DATABASE }}"
-  WAREHOUSE: "${{ secrets.WAREHOUSE }}"
+  WAREHOUSE: DBT_EMERGENCY
   SCHEMA: "${{ secrets.SCHEMA }}"
 
 concurrency:
@@ -40,6 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run-operation run_sp_refresh_external_tables_full
-          dbt run -s "solana_models,./models" --exclude tag:share models/streamline models/silver/silver__daily_signers.sql models/silver/silver__signers.sql models/silver/validator models/silver/_observability models/silver/nfts/silver__nft_compressed_mints_onchain.sql models/silver/nfts/silver__nft_compressed_mints.sql models/gold/core/core__ez_signers.sql tag:helius tag:bronze_api  tag:rewards models/github_actions "solana_model,tag:scheduled_non_core"
-          
+          dbt run -s models/silver/rewards/silver__rewards_fee.sql models/silver/rewards/silver__rewards_rent.sql models/silver/rewards/silver__rewards_voting.sql models/silver/rewards/silver__rewards_staking.sql --vars '{DBT_IS_BATCH_LOAD: true}'

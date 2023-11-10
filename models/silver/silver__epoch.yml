@@ -1,0 +1,20 @@
+version: 2
+models:
+  - name: silver__epoch
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - EPOCH
+    columns:
+      - name: EPOCH
+        description: "{{ doc('epoch') }}"
+        tests:
+          - not_null
+      - name: START_BLOCK
+        description: "{{ doc('start_block') }}"
+        tests:
+          - not_null
+      - name: END_BLOCK
+        description: "{{ doc('end_block') }}"
+        tests:
+          - not_null
