@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "token_address",
-    incremental_strategy = 'merge'
+    incremental_strategy = 'merge',
+    tags = ['scheduled_non_core']
 ) }}
 
 WITH base AS (

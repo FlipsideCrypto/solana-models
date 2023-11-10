@@ -1,7 +1,7 @@
 {{ config (
     materialized = "incremental",
     unique_key = "id",
-    tags = ['idls']
+    tags = ['idls','scheduled_non_core']
 ) }}
 
 WITH base AS (
