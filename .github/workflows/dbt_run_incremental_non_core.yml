@@ -1,11 +1,11 @@
-name: dbt_run_scheduled
-run-name: dbt_run_scheduled
+name: dbt_run_scheduled_non_core
+run-name: dbt_run_scheduled_non_core
 
 on:
   workflow_dispatch:
-  schedule:
-     # Every hour at minute 20,50 (see https://crontab.guru)
-    - cron: "20,50 * * * *"
+  # schedule:
+  #    # Every hour at minute 20,50 (see https://crontab.guru)
+  #   - cron: "20,50 * * * *"
     
 env:
   DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
