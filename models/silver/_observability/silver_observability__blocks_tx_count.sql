@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'block_id',
     full_refresh = false,
-    tags = ['scheduled_non_core']
+    tags = ['observability']
 ) }}
 
 WITH base as (

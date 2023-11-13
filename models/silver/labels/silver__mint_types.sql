@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'mint'
+    unique_key = 'mint',
+    tags=['scheduled_non_core'],
 ) }}
 
 WITH initialization AS (

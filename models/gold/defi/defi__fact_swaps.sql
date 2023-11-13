@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'SWAPS' }}}
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'SWAPS' }}},
+    tags = ['scheduled_non_core']
 ) }}
 
 SELECT

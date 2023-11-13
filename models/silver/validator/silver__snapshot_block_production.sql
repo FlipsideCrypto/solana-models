@@ -3,7 +3,7 @@
   unique_key = "CONCAT_WS('-', epoch, node_pubkey)",
   incremental_strategy = 'delete+insert',
   cluster_by = ['_inserted_timestamp::DATE'],
-  tags = ['scheduled_non_core']
+  tags = ['validator']
 ) }}
 
 select

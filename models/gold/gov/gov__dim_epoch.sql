@@ -1,5 +1,6 @@
 {{ config(
-  materialized = 'view'
+    materialized = 'view',
+    tags = ['scheduled_non_core']
 ) }}
 
 SELECT
