@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "tx_id",
     incremental_strategy = 'delete+insert',
-    tags = ['scheduled_non_core']
+    tags = ['compressed_nft']
 ) }}
 
 WITH offchain AS (

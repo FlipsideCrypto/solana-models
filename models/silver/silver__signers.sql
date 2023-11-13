@@ -3,7 +3,7 @@
     unique_key = "signer",
     incremental_strategy = 'delete+insert',
     cluster_by = 'signer',
-    tags = ['scheduled_non_core']
+    tags = ['scheduled_daily','signers']
 ) }}
 
 WITH base_min_signers AS (

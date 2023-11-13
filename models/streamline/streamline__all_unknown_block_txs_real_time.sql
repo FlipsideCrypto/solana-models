@@ -1,5 +1,6 @@
 {{ config(
-    materialized = 'view'
+    materialized = 'view',
+    tags = ['streamline'],
 ) }}
 
 WITH pre_final AS (

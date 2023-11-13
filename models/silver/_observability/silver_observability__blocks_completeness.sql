@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'test_timestamp',
     full_refresh = false,
-    tags = ['scheduled_non_core']
+    tags = ['observability']
 ) }}
 
 WITH source AS (

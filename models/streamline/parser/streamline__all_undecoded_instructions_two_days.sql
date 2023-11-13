@@ -3,7 +3,8 @@
     post_hook = if_data_call_function(
         func = "{{this.schema}}.udf_bulk_program_parser(object_construct('realtime', 'True'))",
         target = "{{this.schema}}.{{this.identifier}}"
-    )
+    ),
+    tags = ['streamline'],
 ) }}
 
 WITH idl_in_play AS (

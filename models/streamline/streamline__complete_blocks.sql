@@ -2,7 +2,8 @@
     materialized = "incremental",
     unique_key = "block_id",
     cluster_by = "_inserted_date",
-    merge_update_columns = ["_inserted_date","_inserted_timestamp"]
+    merge_update_columns = ["_inserted_date","_inserted_timestamp"],
+    tags = ['streamline'],
 ) }}
 
 WITH meta AS (

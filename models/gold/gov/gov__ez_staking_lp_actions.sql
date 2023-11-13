@@ -4,6 +4,7 @@
     meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }}},
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
+    tags = ['scheduled_non_core']
 ) }}
 
 WITH base_staking_lp_actions AS (

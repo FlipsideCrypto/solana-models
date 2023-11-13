@@ -4,7 +4,7 @@
     incremental_strategy = 'delete+insert',
     cluster_by = 'signer',
     full_refresh = false,
-    tags = ['scheduled_non_core']
+    tags = ['scheduled_daily','signers']
 ) }}
 
 WITH dates_changed AS (
