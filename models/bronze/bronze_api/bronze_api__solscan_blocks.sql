@@ -49,3 +49,4 @@ select
     sysdate() as _inserted_timestamp,
     concat_ws('-',_inserted_timestamp,1) as _id
 from make_requests mr
+where array_size(block_ids) > 0;
