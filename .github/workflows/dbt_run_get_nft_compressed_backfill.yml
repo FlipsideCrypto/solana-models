@@ -2,9 +2,9 @@ name: dbt_run_get_nft_compressed_backfill
 run-name: dbt_run_get_nft_compressed_backfill
 
 on:
-  schedule:
-    # Runs 2:30 daily (see https://crontab.guru)
-    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    branches:
+      - "main"
     
 env:
   DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
