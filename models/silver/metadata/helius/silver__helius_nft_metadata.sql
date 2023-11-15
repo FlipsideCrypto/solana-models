@@ -15,6 +15,8 @@ SELECT
     items.value ['content'] ['metadata'] AS metadata,
     items.value ['creators'] AS creators,
     items.value ['grouping'] AS GROUPING,
+    grouping[0]:group_key::string AS group_key,
+    grouping[0]:group_value::string AS group_value,
     items.value ['interface'] :: STRING AS INTERFACE,
     items.value ['mutable'] :: boolean AS mutable,
     items.value ['ownership'] AS ownership,
