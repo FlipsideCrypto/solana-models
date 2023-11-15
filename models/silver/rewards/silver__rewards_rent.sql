@@ -40,7 +40,7 @@ WITH base AS (
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(_partition_id), 1) + 25, 28780)
+            LEAST(COALESCE(MAX(_partition_id), 1) + 100, 28780)
         FROM
             {{ this }}
         ) 
