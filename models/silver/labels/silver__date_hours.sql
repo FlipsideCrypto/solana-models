@@ -1,5 +1,6 @@
 {{ config(
-    materialized = 'table'
+    materialized = 'table',
+    tags=['scheduled_non_core'],
 ) }}
 
 SELECT
