@@ -92,7 +92,6 @@
 --         AND e.block_timestamp :: DATE = C.block_timestamp :: DATE
 --         AND ii_program_id = 'noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'
 -- )
-{% for i in range(1,6) %}
 SELECT
     ARRAY_AGG(request) AS batch_request,
     streamline.udf_bulk_parse_compressed_nft_mints(batch_request) AS responses,
@@ -106,10 +105,6 @@ SELECT
 FROM
     {{ source('bronze_api_prod','parse_compressed_nft_mints_requests') }}
 WHERE 
-    gn = {{ min_gn }}+{{ i }}
+    gn between {{ min_gn }}+1 and {{ min_gn }}+10
 GROUP BY
     gn
-{% if not loop.last %}
-UNION ALL
-{% endif %}
-{% endfor %}

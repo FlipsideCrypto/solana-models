@@ -41,3 +41,12 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run -s models/bronze/bronze_api/bronze_api__parse_compressed_nft_mints.sql
+          dbt run -s models/bronze/bronze_api/bronze_api__parse_compressed_nft_mints.sql
+          dbt run -s models/bronze/bronze_api/bronze_api__parse_compressed_nft_mints.sql
+          dbt run -s models/bronze/bronze_api/bronze_api__parse_compressed_nft_mints.sql
+          dbt run -s models/bronze/bronze_api/bronze_api__parse_compressed_nft_mints.sql
+          dbt run -s models/bronze/bronze_api/bronze_api__parse_compressed_nft_mints.sql
+          dbt run -s models/bronze/bronze_api/bronze_api__parse_compressed_nft_mints.sql
+          dbt run -s models/bronze/bronze_api/bronze_api__parse_compressed_nft_mints.sql
+          dbt run -s models/bronze/bronze_api/bronze_api__parse_compressed_nft_mints.sql
+          dbt run -s models/bronze/bronze_api/bronze_api__parse_compressed_nft_mints.sql
