@@ -100,12 +100,13 @@ epoch AS (
 
 {% if is_incremental() %}
 WHERE
-    epoch <= (
-        SELECT
-            MAX(epoch_earned) + 10
-        FROM
-            {{ this }}
-    )
+    epoch <= 540
+    -- epoch <= (
+    --     SELECT
+    --         MAX(epoch_earned) + 10
+    --     FROM
+    --         {{ this }}
+    -- )
 {% else %}
 WHERE
     epoch <= 540
