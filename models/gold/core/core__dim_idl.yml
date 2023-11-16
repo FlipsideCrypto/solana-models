@@ -1,0 +1,21 @@
+version: 2
+models:
+  - name: core__dim_idl
+    description: The status of Program IDL's submitted for decoding events 
+    columns:
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+      - name: MAX_BLOCK_ID
+        description: "The most current block where events have been decoded for a program"
+      - name: MIN_BLOCK_ID
+        description: "The oldest block where events have been decoded for a program"
+      - name: FIRST_BLOCK_ID
+        description: "The earliest block where program events occur"
+      - name: STATUS_HISTORICAL_DATA
+        description: "Whether the program has been fully decoded from its inception"
+      - name: DIM_IDL_ID
+        description: "{{ doc('id') }}"
+      - name: MODIFIED_TIMESTAMP
+        description: "{{ doc('modified_timestamp') }}"
+      - name: INSERTED_TIMESTAMP
+        description: "{{ doc('inserted_timestamp') }}"
