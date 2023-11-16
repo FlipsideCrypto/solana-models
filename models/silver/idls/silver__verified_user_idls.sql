@@ -78,11 +78,34 @@ responses AS (
         streamline.udf_decode_instructions(requests) AS response
     FROM
         groupings
+),
+results as (
+    select 
+        program_id,
+        response :status_code :: INTEGER as status_code,
+        try_parse_json(response:body):data::array as decoded_instructions
+    from responses
+),
+expanded as (
+    select
+        r.program_id,
+        r.status_code,
+        iff(coalesce(d.value:error::string,'') = '' or status_code <> 200,false,true) is_error
+    from results r,
+    table(flatten(decoded_instructions)) d
+),
+program_error_rates as (
+    select 
+        program_id,
+        count_if(is_error)/count(*) as error_rate
+    from expanded
+    group by program_id
 )
 SELECT
     b.program_id,
     b.idl,
     b.idl_hash,
+    iff(r.error_rate <= 0.25,true,false) as is_valid,
     b.discord_username,
     b._inserted_timestamp,
     CONCAT(
@@ -91,10 +114,9 @@ SELECT
         b.idl_hash
     ) AS id
 FROM
-    responses r
+    program_error_rates r
     JOIN base b
     ON b.program_id = r.program_id
-WHERE
-    r.response :status_code :: INTEGER = 200 qualify(ROW_NUMBER() over(PARTITION BY b.program_id
+qualify(ROW_NUMBER() over(PARTITION BY b.program_id
 ORDER BY
     _inserted_timestamp DESC)) = 1
