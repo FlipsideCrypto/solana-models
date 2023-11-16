@@ -28,8 +28,15 @@ FROM
         input => DATA :data :result
     ) AS items
     WHERE mint is not NULL
-    and _inserted_timestamp <= '2023-10-13 05:35:36.367'
-
+{% if is_incremental() %}
+AND
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+{% endif %}
     qualify(ROW_NUMBER() over (PARTITION BY mint
 ORDER BY
     _inserted_timestamp DESC)) = 1)
