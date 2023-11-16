@@ -1,13 +1,12 @@
 version: 2
 models:
-  - name: silver__solscan_nft_collections
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - COLLECTION_ID
+  - name: silver__nft_collection
     columns:
       - name: COLLECTION_ID
-        description: "The unique ID of the collection"
+        description: "The address of the NFT collection"
+        tests:
+          - not_null
+          - unique
       - name: NFT_COLLECTION_NAME
         description: "The name of the collection provided by Solscan"
       - name: _inserted_timestamp
