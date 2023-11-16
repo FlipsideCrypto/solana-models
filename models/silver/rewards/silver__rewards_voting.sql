@@ -101,11 +101,11 @@ epoch AS (
 
 {% if is_incremental() %}
 WHERE
-    epoch <= (
+    start_block <= (
         SELECT
-            MAX(epoch_earned) + 10
+            MAX(block_id)
         FROM
-            {{ this }}
+            base
     )
 {% else %}
 WHERE

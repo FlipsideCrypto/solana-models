@@ -40,7 +40,7 @@ WITH base AS (
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(_partition_id), 1) + 25, 28780)
+            LEAST(COALESCE(MAX(_partition_id), 1) + 50, 28780)
         FROM
             {{ this }}
         ) 
@@ -100,11 +100,11 @@ epoch AS (
 
 {% if is_incremental() %}
 WHERE
-    epoch <= (
+    start_block <= (
         SELECT
-            MAX(epoch_earned) + 10
+            MAX(block_id)
         FROM
-            {{ this }}
+            base
     )
 {% else %}
 WHERE

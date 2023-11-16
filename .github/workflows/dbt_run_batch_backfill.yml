@@ -18,6 +18,7 @@ env:
   DATABASE: "${{ secrets.DATABASE }}"
   WAREHOUSE: DBT_EMERGENCY
   SCHEMA: "${{ secrets.SCHEMA }}"
+  DBT_IS_BATCH_LOAD: true
 
 concurrency:
   group: ${{ github.workflow }}
@@ -41,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -s models/silver/rewards/silver__rewards_fee.sql models/silver/rewards/silver__rewards_rent.sql models/silver/rewards/silver__rewards_voting.sql models/silver/rewards/silver__rewards_staking.sql --vars '{DBT_IS_BATCH_LOAD: true}'
+            dbt run -s models/silver/rewards/silver__rewards_rent.sql
