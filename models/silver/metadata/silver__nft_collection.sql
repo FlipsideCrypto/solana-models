@@ -63,7 +63,7 @@ AND
 {% endif %}
 
 ),
-response AS ({% for item in range(1, 500) %}
+response AS ({% for item in range(1, 150) %}
     (
     SELECT
         mint, 
