@@ -5,14 +5,14 @@ models:
     columns:
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
-      - name: MAX_BLOCK_ID
-        description: "The most current block where events have been decoded for a program"
-      - name: MIN_BLOCK_ID
-        description: "The oldest block where events have been decoded for a program"
-      - name: FIRST_BLOCK_ID
-        description: "The earliest block where program events occur"
-      - name: STATUS_HISTORICAL_DATA
-        description: "Whether the program has been fully decoded from its inception"
+      - name: IDL
+        description: "The IDL submitted for decoding events"
+      - name: IDL_SOURCE
+        description: "The source from which the IDL was submitted"
+      - name: IDL_HASH
+        description: "The deployed hash of the program IDL"
+      - name: EARLIEST_DECODED_BLOCK
+        description: "The oldest block where program events has been decoded"
       - name: DIM_IDL_ID
         description: "{{ doc('id') }}"
       - name: MODIFIED_TIMESTAMP

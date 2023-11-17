@@ -6,10 +6,10 @@
 
 SELECT
     program_id,
-    max_block_id,
-    min_block_id,
-    first_block_id,
-    status_historical_data,
+    idl,
+    idl_source,
+    idl_hash,
+    earliest_decoded_block,
     idl_id as dim_idl_id,
     inserted_timestamp,
     modified_timestamp
