@@ -32,7 +32,7 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: DIM_NFT_METADATA_ID
-        description: "{{ doc('id') }}"
+        description: "{{ doc('pk') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: MODIFIED_TIMESTAMP
