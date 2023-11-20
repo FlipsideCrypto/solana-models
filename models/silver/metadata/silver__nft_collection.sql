@@ -61,15 +61,17 @@ AND
 {% else %}
     AND _inserted_timestamp :: DATE = '2023-10-03'
 {% endif %}
+order by rn
+limit 150
 
 ),
-response AS ({% for item in range(1, 150) %}
+response AS
     (
     SELECT
         mint, 
         collection_id, 
         _inserted_timestamp, 
-        solana.live.udf_api('GET', 'https://pro-api.solscan.io/v1.0/nft/token/info/' || (mint), OBJECT_CONSTRUCT('Accept', 'application/json', 'token', (
+        live.udf_api('GET', 'https://pro-api.solscan.io/v1.0/nft/token/info/' || (mint), OBJECT_CONSTRUCT('Accept', 'application/json', 'token', (
             SELECT
                 api_key
             FROM
@@ -77,12 +79,7 @@ response AS ({% for item in range(1, 150) %}
             WHERE
                 api_name = 'solscan')),{}) AS DATA
     FROM
-        distinct_collections
-WHERE
-    rn = {{ item }}) {% if not loop.last %}
-    UNION ALL
-    {% endif %}
-{% endfor %})
+        distinct_collections)
 SELECT
     collection_id,
     CASE 
@@ -92,11 +89,7 @@ SELECT
     END AS nft_collection_name,
     DATA :data :data [0] :nft_collection_id :: STRING AS solscan_collection_id,
     _inserted_timestamp,
-    CASE 
-        WHEN collection_id IS NULL 
-        THEN NULL 
-        ELSE {{ dbt_utils.generate_surrogate_key(['collection_id']) }} 
-    END AS nft_collection_id,
+    {{ dbt_utils.generate_surrogate_key(['collection_id']) }} AS nft_collection_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS invocation_id
