@@ -15,10 +15,6 @@ models:
         description: "{{ doc('image_url') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: EDITION
-        description: "Numeric value that identifies the NFT within it's collection"
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: NFT_NAME
         description: "The name of the NFT"
         tests:
