@@ -54,7 +54,7 @@ distinct_collections AS (
 AND
     collection_id not in (
         SELECT
-            distinct collection_id
+            collection_id
         FROM
             {{ this }}
     )
@@ -69,7 +69,7 @@ response AS ({% for item in range(1, 150) %}
         mint, 
         collection_id, 
         _inserted_timestamp, 
-        livequery_dev.live.udf_api('GET', 'https://pro-api.solscan.io/v1.0/nft/token/info/' || (mint), OBJECT_CONSTRUCT('Accept', 'application/json', 'token', (
+        solana.live.udf_api('GET', 'https://pro-api.solscan.io/v1.0/nft/token/info/' || (mint), OBJECT_CONSTRUCT('Accept', 'application/json', 'token', (
             SELECT
                 api_key
             FROM
@@ -90,6 +90,7 @@ SELECT
         THEN NULL 
         ELSE DATA :data :data [0] :nft_collection_name :: STRING 
     END AS nft_collection_name,
+    DATA :data :data [0] :nft_collection_id :: STRING AS solscan_collection_id,
     _inserted_timestamp,
     CASE 
         WHEN collection_id IS NULL 

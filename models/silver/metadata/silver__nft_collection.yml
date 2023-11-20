@@ -9,6 +9,8 @@ models:
           - unique
       - name: NFT_COLLECTION_NAME
         description: "The name of the collection provided by Solscan"
+      - name: SOLSCAN_COLLECTION_ID
+        description: "Solscan's unique id for the collection"
       - name: _inserted_timestamp
         description: "{{ doc('_inserted_timestamp') }}"
         tests:
