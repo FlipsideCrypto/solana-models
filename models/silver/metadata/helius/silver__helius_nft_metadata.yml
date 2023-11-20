@@ -16,8 +16,6 @@ models:
         description: "{{ doc('image_url') }}"
       - name: METADATA_URI
         description: "{{ doc('token_metadata_uri') }}"
-      - name: EDITION
-        description: "Numeric value that identifies the NFT within it's collection"
       - name: NFT_NAME
         description: "The name of the NFT"
       - name: _INSERTED_TIMESTAMP
