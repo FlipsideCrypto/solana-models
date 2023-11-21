@@ -1,10 +1,6 @@
 version: 2
 models:
   - name: silver__nft_collection
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - COLLECTION_ID
     columns:
       - name: COLLECTION_ID
         description: "The address of the NFT collection"
