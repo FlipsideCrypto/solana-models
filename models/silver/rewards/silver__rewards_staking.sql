@@ -57,6 +57,12 @@ WITH base AS (
         FROM
         {{ source('solana_streamline','complete_block_rewards') }}
     )
+    AND a._inserted_timestamp > (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
 {% else %}
     AND _partition_id <= 10
 {% endif %}
