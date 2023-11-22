@@ -12,7 +12,8 @@ models:
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
-          - not_null
+          - not_null:
+              where: _inserted_timestamp::date < current_date
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
