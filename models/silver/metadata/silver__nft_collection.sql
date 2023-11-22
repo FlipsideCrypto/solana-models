@@ -8,7 +8,6 @@
 
 with collections as (
 SELECT
-    items.value ['id'] :: STRING AS mint,
     items.value ['grouping'] AS GROUPING,
     grouping[0]:group_key::string AS group_key,
     grouping[0]:group_value::string AS collection_id,
@@ -39,7 +38,6 @@ AND
     ),
 distinct_collections AS (
     SELECT
-        mint,
         collection_id,
         _inserted_timestamp,
         ROW_NUMBER() over (
@@ -68,10 +66,9 @@ limit 150
 response AS
     (
     SELECT
-        mint, 
         collection_id, 
         _inserted_timestamp, 
-        live.udf_api('GET', 'https://pro-api.solscan.io/v1.0/nft/token/info/' || (mint), OBJECT_CONSTRUCT('Accept', 'application/json', 'token', (
+        live.udf_api('GET', 'https://pro-api.solscan.io/v1.0/nft/token/info/' || (collection_id), OBJECT_CONSTRUCT('Accept', 'application/json', 'token', (
             SELECT
                 api_key
             FROM
@@ -87,7 +84,11 @@ SELECT
         THEN NULL 
         ELSE DATA :data :data [0] :nft_collection_name :: STRING 
     END AS nft_collection_name,
-    DATA :data :data [0] :nft_collection_id :: STRING AS solscan_collection_id,
+    CASE 
+        WHEN DATA :data :data [0] :nft_collection_id :: STRING = '' 
+        THEN NULL 
+        ELSE DATA :data :data [0] :nft_collection_id :: STRING 
+    END AS solscan_collection_id,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['collection_id']) }} AS nft_collection_id,
     SYSDATE() AS inserted_timestamp,
