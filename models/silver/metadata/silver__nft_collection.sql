@@ -39,7 +39,11 @@ AND
 distinct_collections AS (
     SELECT
         collection_id,
-        _inserted_timestamp
+        _inserted_timestamp,
+                ROW_NUMBER() over (
+            ORDER BY
+                _inserted_timestamp
+        ) AS rn
     FROM
         collections
     WHERE
@@ -58,20 +62,29 @@ AND
 qualify(ROW_NUMBER() over (ORDER BY _inserted_timestamp)) <= 150
 
 ),
-response AS
-    (
-    SELECT
-        collection_id, 
-        _inserted_timestamp, 
-        live.udf_api('GET', 'https://pro-api.solscan.io/v1.0/nft/token/info/' || (collection_id), OBJECT_CONSTRUCT('Accept', 'application/json', 'token', (
-            SELECT
-                api_key
-            FROM
-                crosschain.silver.apis_keys
-            WHERE
-                api_name = 'solscan')),{}) AS DATA
-    FROM
-        distinct_collections)
+response AS (
+    {% for batch in range(1, 11) %} -- 10 iterations
+        (
+        SELECT
+            collection_id, 
+            _inserted_timestamp, 
+            live.udf_api('GET', 'https://pro-api.solscan.io/v1.0/nft/token/info/' || (collection_id), OBJECT_CONSTRUCT('Accept', 'application/json', 'token', (
+                SELECT
+                    api_key
+                FROM
+                    crosschain.silver.apis_keys
+                WHERE
+                    api_name = 'solscan')),{}) AS DATA
+        FROM
+            distinct_collections
+        WHERE
+            rn BETWEEN {{ (batch - 1) * 15 + 1 }} AND {{ batch * 15 }}
+        )
+        {% if not loop.last %}
+        UNION ALL
+        {% endif %}
+    {% endfor %}
+)
 SELECT
     collection_id,
     CASE 
