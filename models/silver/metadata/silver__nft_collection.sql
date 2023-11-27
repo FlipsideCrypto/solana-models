@@ -39,11 +39,7 @@ AND
 distinct_collections AS (
     SELECT
         collection_id,
-        _inserted_timestamp,
-        ROW_NUMBER() over (
-            ORDER BY
-                _inserted_timestamp
-        ) AS rn
+        _inserted_timestamp
     FROM
         collections
     WHERE
@@ -59,8 +55,7 @@ AND
 {% else %}
     AND _inserted_timestamp :: DATE = '2023-10-03'
 {% endif %}
-order by rn
-limit 150
+qualify(ROW_NUMBER() over (ORDER BY _inserted_timestamp)) <= 150
 
 ),
 response AS
