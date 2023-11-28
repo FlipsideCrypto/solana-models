@@ -63,7 +63,7 @@ qualify(ROW_NUMBER() over (ORDER BY _inserted_timestamp)) <= 150
 
 ),
 response AS (
-    {% for batch in range(1, 11) %} -- 10 iterations
+    {% for batch in range(1, 16) %} -- 10 iterations
         (
         SELECT
             collection_id, 
@@ -78,7 +78,7 @@ response AS (
         FROM
             distinct_collections
         WHERE
-            rn BETWEEN {{ (batch - 1) * 15 + 1 }} AND {{ batch * 15 }}
+            rn BETWEEN {{ (batch - 1) * 10 + 1 }} AND {{ batch * 10 }}
         )
         {% if not loop.last %}
         UNION ALL
