@@ -5,4 +5,7 @@
 SELECT
     *
 FROM
-    {{ ref('silver__swaps_intermediate_jupiterv6') }}
+    {{ source(
+        'solana_silver',
+        'swaps_intermediate_jupiterv5_1'
+    ) }}
