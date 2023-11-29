@@ -58,7 +58,7 @@ SELECT
     l.address_name AS swap_program,
     concat_ws('-',tx_id,swap_index) as _log_id
 FROM
-    {{ source('solana_silver','swaps_intermediate_jupiterv5_1') }}
+    {{ ref('silver__swaps_intermediate_jupiterv5_1_view') }}
     s
     LEFT OUTER JOIN {{ ref('core__dim_labels') }}
     l
@@ -78,7 +78,7 @@ SELECT
     l.address_name AS swap_program,
     concat_ws('-',tx_id,swap_index) as _log_id
 FROM
-    {{ source('solana_silver','swaps_intermediate_jupiterv5_2') }}
+    {{ ref('silver__swaps_intermediate_jupiterv5_2_view') }}
     s
     LEFT OUTER JOIN {{ ref('core__dim_labels') }}
     l
