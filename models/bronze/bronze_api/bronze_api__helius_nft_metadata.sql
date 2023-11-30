@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = '_id',
+    cluster_by = '_inserted_timestamp::date',
     full_refresh = false,
     tags = ['helius']
 ) }}

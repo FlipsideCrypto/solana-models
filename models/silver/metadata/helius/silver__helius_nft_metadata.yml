@@ -8,30 +8,16 @@ models:
         tests:
           - not_null
           - unique
-      - name: AUTHORITIES
-        description: "Array of authority address for the NFT mint"
-      - name: BURNT
-        description: "If the NFT has been burned" 
-      - name: COMPRESSION
-        description: "Details on compression status" 
-      - name: CONTENT
-        description: "Various links to NFT content"
-      - name: METADATA
-        description: "The metadata for the NFT"
-      - name: CREATORS
-        description:  "Array of creator addresses"
-      - name: GROUPING
-        description: "The collection or grouping of the NFT"
-      - name: INTERFACE
-        description: "The twitter account for the project"
-      - name: MUTABLE
-        description:  "The website for the project"
-      - name: OWNERSHIP
-        description: "Ownership details for the NFT"
-      - name: ROYALTY
-        description: "Royalty details for NFT sale"
-      - name: SUPPLY
-        description: "Supply and edition id"
+      - name: CREATOR_ADDRESS
+        description: "Authority address for the NFT mint"
+      - name: NFT_METADATA
+        description: "Metadata attributes that describe the NFT"
+      - name: IMAGE_URL
+        description: "{{ doc('image_url') }}"
+      - name: METADATA_URI
+        description: "{{ doc('token_metadata_uri') }}"
+      - name: NFT_NAME
+        description: "The name of the NFT"
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 

@@ -1,57 +1,69 @@
 version: 2
 models:
   - name: nft__dim_nft_metadata
-    description: Contains NFT metadata for some collections. This table is sourced from the Magic Eden and Helius API. 
+    description: Contains NFT metadata sourced from Solscan and Helius API. 
     columns:
-      - name: BLOCKCHAIN
-        description: "{{ doc('blockchain') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
-      - name: CONTRACT_ADDRESS
-        description: "{{ doc('contract_address') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
-      - name: CONTRACT_NAME
-        description: "{{ doc('contract_name') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
-      - name: CREATED_AT_TIMESTAMP
-        description: "{{ doc('created_at_timestamp') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: MINT
         description: "{{ doc('mint') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: CREATOR_ADDRESS
-        description: "{{ doc('creator_address') }}"
-        tests:  
-          - dbt_expectations.expect_column_to_exist
-      - name: CREATOR_NAME
-        description: "{{ doc('creator_name') }}"
+        description: "Authority address for the NFT mint"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: IMAGE_URL
         description: "{{ doc('image_url') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: PROJECT_NAME
-        description: "{{ doc('project_name') }}"
+      - name: NFT_NAME
+        description: "The name of the NFT"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: TOKEN_ID
-        description: "{{ doc('token_id') }}"
+      - name: NFT_COLLECTION_NAME
+        description: "The name of the collection provided by Solscan"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: TOKEN_METADATA
+      - name: METADATA
         description: "{{ doc('token_metadata') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: TOKEN_METADATA_URI
+      - name: METADATA_URI
         description: "{{ doc('token_metadata_uri') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: TOKEN_NAME
-        description: "{{ doc('token_name') }}"
+      - name: DIM_NFT_METADATA_ID
+        description: "{{ doc('pk') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: MODIFIED_TIMESTAMP
+        description: "{{ doc('modified_timestamp') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: INSERTED_TIMESTAMP
+        description: "{{ doc('inserted_timestamp') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCKCHAIN
+        description: "Deprecating this column on 2023-12-04"
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: CONTRACT_ADDRESS
+        description: "Deprecating this column on 2023-12-04"
+      - name: CONTRACT_NAME
+        description: "Deprecating this column on 2023-12-04"
+      - name: CREATED_AT_TIMESTAMP
+        description: "Deprecating this column on 2023-12-04"
+      - name: CREATOR_NAME
+        description: "Deprecating this column on 2023-12-04"
+      - name: IMAGE_URL
+        description: "Deprecating this column on 2023-12-04"
+      - name: PROJECT_NAME
+        description: "Deprecating this column on 2023-12-04"
+      - name: TOKEN_ID
+        description: "Deprecating this column on 2023-12-04"
+      - name: TOKEN_METADATA
+        description: "Deprecating this column on 2023-12-04"
+      - name: TOKEN_METADATA_URI
+        description: "Deprecating this column on 2023-12-04"
+      - name: TOKEN_NAME
+        description: "Deprecating this column on 2023-12-04"
