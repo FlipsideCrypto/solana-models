@@ -7,6 +7,7 @@
 SELECT
   a.mint,
   b.nft_collection_name,
+  b.collection_id,
   a.creator_address,
   a.metadata,
   a.image_url,
