@@ -109,7 +109,7 @@ SELECT
     s_agg.programs_used,
     s_agg._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
-        ['signer']
+        ['s_min.signer']
     ) }} AS signers_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,

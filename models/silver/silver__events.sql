@@ -111,7 +111,7 @@ SELECT
     ii.inner_instruction_program_ids,
     i._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
-        ['block_id', 'tx_id', 'index']
+        ['i.block_id', 'i.tx_id', 'i.index']
     ) }} AS events_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
