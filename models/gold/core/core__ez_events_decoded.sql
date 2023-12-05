@@ -17,7 +17,7 @@ SELECT
     COALESCE (
         decoded_instructions_id,
         {{ dbt_utils.generate_surrogate_key(
-            ['tx_id', 'index']
+            ['b.tx_id', 'b.index']
         ) }}
     ) AS ez_events_decoded_id,
     GREATEST(COALESCE(A.inserted_timestamp, '2000-01-01'), COALESCE(b.inserted_timestamp, '2000-01-01')) AS inserted_timestamp,
