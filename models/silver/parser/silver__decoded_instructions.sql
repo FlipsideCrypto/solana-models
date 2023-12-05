@@ -23,7 +23,13 @@ SELECT
         A.value :data [1],
         A.value :data
     ) AS decoded_instruction,
-    A._inserted_timestamp
+    A._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['A.tx_id', 'A.index']
+    ) }} AS decoded_instructions_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
 
 {% if is_incremental() %}

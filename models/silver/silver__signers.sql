@@ -107,7 +107,13 @@ SELECT
     s_agg.num_txs,
     s_agg.total_fees,
     s_agg.programs_used,
-    s_agg._inserted_timestamp
+    s_agg._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['signer']
+    ) }} AS signers_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     final_min_signers s_min
     JOIN final_max_signers s_max
