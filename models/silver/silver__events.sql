@@ -109,7 +109,13 @@ SELECT
     i.value AS instruction,
     ii.value AS inner_instruction,
     ii.inner_instruction_program_ids,
-    i._inserted_timestamp
+    i._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['i.block_id', 'i.tx_id', 'i.index']
+    ) }} AS events_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     base_i i
 LEFT OUTER JOIN base_ii ii
