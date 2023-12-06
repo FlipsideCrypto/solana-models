@@ -19,6 +19,7 @@ WITH base_events AS(
             '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h',
             '93BgeoLHo5AdNbpqy9bD12dtfxtA5M2fh3rj72bE35Y3',
             'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS',
+            'CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK',
             --program ids for acct mapping
             'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
             'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
@@ -48,6 +49,7 @@ dex_txs AS (
                 '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
                 '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
             ) THEN e.instruction :accounts [instruction_account_size-3] :: STRING
+            WHEN program_id = 'CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK' THEN e.instruction :accounts [3] :: STRING
             ELSE NULL
         END AS source_token_account,
         CASE
@@ -55,6 +57,7 @@ dex_txs AS (
                 '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
                 '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
             ) THEN e.instruction :accounts [instruction_account_size-2] :: STRING
+            WHEN program_id = 'CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK' THEN e.instruction :accounts [4] :: STRING
             ELSE NULL
         END AS dest_token_account,
         CASE
@@ -62,6 +65,7 @@ dex_txs AS (
                 '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
                 '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
             ) THEN e.instruction :accounts [instruction_account_size-1] :: STRING
+            WHEN program_id = 'CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK' THEN e.instruction :accounts [0]
             ELSE NULL
         END AS user_owner
     FROM
@@ -76,8 +80,14 @@ dex_txs AS (
                         instruction :accounts
                     ) >= 17
                     AND (
-                        instruction :accounts [6] :: STRING = '9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin'
-                        OR instruction :accounts [7] :: STRING = '9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin'
+                        instruction :accounts [6] :: STRING IN (
+                            '9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin',
+                            'srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX'
+                        )
+                        OR instruction :accounts [7] :: STRING IN (
+                            '9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin',
+                            'srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX'
+                        )
                     )
                 )
                 OR (
@@ -94,6 +104,18 @@ dex_txs AS (
                 OR program_id IN (
                     '93BgeoLHo5AdNbpqy9bD12dtfxtA5M2fh3rj72bE35Y3',
                     'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS'
+                )
+                OR (
+                    program_id = 'CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK'
+                    AND (
+                        instruction :accounts [8] = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+                        AND instruction :accounts [9] = 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb'
+                        AND instruction :accounts [10] = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'
+                    )
+                    OR (
+                        instruction :accounts [8] = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+                        AND instruction :accounts [9] <> 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb'
+                    )
                 )
             )
         )
@@ -194,7 +216,8 @@ raydium_account_mapping AS(
             '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
             '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h',
             '93BgeoLHo5AdNbpqy9bD12dtfxtA5M2fh3rj72bE35Y3',
-            'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS'
+            'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS',
+            'CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK'
         )
         AND associated_account IS NOT NULL
 ),
