@@ -112,8 +112,9 @@ metaplex_events AS (
         e.inner_instruction,
         _inserted_timestamp
     FROM
-        base_events e,
-        TABLE(FLATTEN(inner_instruction :instructions)) i
+        base_events e
+        -- ,
+        -- TABLE(FLATTEN(inner_instruction :instructions)) i -- does this even do anything?
     WHERE
         program_id = 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
         AND succeeded
@@ -126,6 +127,10 @@ metaplex_events AS (
             OR (ARRAY_SIZE(accounts) = 9
             AND accounts [7] = '11111111111111111111111111111111'
             AND accounts [8] = 'SysvarRent111111111111111111111111111111111')
+            OR (ARRAY_SIZE(accounts) = 9
+            AND accounts [6] = '11111111111111111111111111111111'
+            AND accounts [7] = 'Sysvar1nstructions1111111111111111111111111'
+            AND accounts [8] = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
             OR (ARRAY_SIZE(accounts) = 14
             AND accounts [11] = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
             AND accounts [12] = '11111111111111111111111111111111'
@@ -162,6 +167,10 @@ metaplex_events AS (
             OR (ARRAY_SIZE(accounts) = 9
             AND accounts [7] = '11111111111111111111111111111111'
             AND accounts [8] = 'SysvarRent111111111111111111111111111111111')
+            OR (ARRAY_SIZE(accounts) = 9
+            AND accounts [6] = '11111111111111111111111111111111'
+            AND accounts [7] = 'Sysvar1nstructions1111111111111111111111111'
+            AND accounts [8] = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
             OR (ARRAY_SIZE(accounts) = 14
             AND accounts [11] = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
             AND accounts [12] = '11111111111111111111111111111111'
@@ -183,6 +192,7 @@ mint_price_events AS (
         i.value:parsed:info:source::string as temp_source,
         CASE
             WHEN num_accounts in (14,17) THEN me.accounts [3] :: STRING
+            WHEN num_accounts = 9 and accounts[7] = 'Sysvar1nstructions1111111111111111111111111' THEN me.accounts [2] :: STRING
             ELSE me.accounts [1] :: STRING
         END AS mint,
         CASE
