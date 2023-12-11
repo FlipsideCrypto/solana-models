@@ -172,7 +172,13 @@ SELECT
         '-',
         recorded_hour,
         id
-    ) AS _unique_key
+    ) AS _unique_key,
+    {{ dbt_utils.generate_surrogate_key(
+        ['recorded_hour', 'id']
+    ) }} AS token_prices_coin_gecko_hourly_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     imputed_prices p
 WHERE

@@ -224,7 +224,13 @@ SELECT
     purchaser,
     seller,
     mint,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_id','mint']
+    ) }} AS nft_sales_exchange_art_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     buys
 WHERE
@@ -240,7 +246,13 @@ SELECT
     purchaser,
     seller,
     mint,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_id','mint']
+    ) }} AS nft_sales_exchange_art_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     buy_nows
 UNION ALL
@@ -254,7 +266,13 @@ SELECT
     purchaser,
     seller,
     mint,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['r.tx_id','mint']
+    ) }} AS nft_sales_exchange_art_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     redeems r
     INNER JOIN final_bid f

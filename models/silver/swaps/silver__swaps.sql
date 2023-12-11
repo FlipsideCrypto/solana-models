@@ -251,7 +251,13 @@ SELECT
     ) AS to_amt,
     pf.to_mint,
     pf._log_id,
-    pf._inserted_timestamp
+    pf._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ["pf.block_id","pf.tx_id","pf.program_id"]
+    ) }} AS swaps_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     pre_final pf
     LEFT OUTER JOIN refunds r
@@ -278,7 +284,13 @@ SELECT
     0 AS to_amt,
     pf.to_mint,
     pf._log_id,
-    pf._inserted_timestamp
+    pf._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ["pf.block_id","pf.tx_id","pf.program_id"]
+    ) }} AS swaps_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     pre_final pf
 WHERE

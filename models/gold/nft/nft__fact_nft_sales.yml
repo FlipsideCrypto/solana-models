@@ -43,3 +43,9 @@ models:
         description: "{{ doc('marketplace') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: FACT_NFT_SALES_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

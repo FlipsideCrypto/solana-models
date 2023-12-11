@@ -96,7 +96,13 @@ SELECT
         ),
         'shares: '
     ) :: NUMBER AS delegated_shares,
-    e._inserted_timestamp
+    e._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['e.tx_id','voter','gauge']
+    ) }} AS guages_votes_saber_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     all_saber_gauges_events e
     LEFT OUTER JOIN tx_logs l

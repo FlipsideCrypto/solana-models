@@ -25,7 +25,21 @@ SELECT
   validator_name,
   software_version,
   updated_at,
-  www_url
+  www_url,
+  COALESCE (
+        snapshot_validators_app_data_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['epoch', 'node_pubkey']
+        ) }}
+    ) AS fact_validators_id,
+  COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+  COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
   {{ ref('silver__snapshot_validators_app_data') }}
 UNION ALL
@@ -50,6 +64,11 @@ SELECT
   validator_name,
   software_version,
   updated_at,
-  www_url
+  www_url,
+  {{ dbt_utils.generate_surrogate_key(
+        ['epoch', 'node_pubkey']
+  ) }} AS fact_validators_id,
+  '2000-01-01' as inserted_timestamp,
+  '2000-01-01' AS modified_timestamp
 FROM
   {{ ref('silver__historical_validator_app_data') }}

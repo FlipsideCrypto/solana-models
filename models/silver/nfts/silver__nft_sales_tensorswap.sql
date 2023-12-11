@@ -5,7 +5,7 @@
     cluster_by = ['block_timestamp::DATE'],
     tags = ['scheduled_non_core']
 ) }}
-
+with pre_final as (
 SELECT
     block_id, 
     block_timestamp, 
@@ -171,4 +171,24 @@ GROUP BY
     i.value:accounts[10],
     i.value:accounts[6], 
     _inserted_timestamp
+)
 
+SELECT
+    block_id, 
+    block_timestamp, 
+    tx_id, 
+    succeeded,
+    program_id, 
+    mint,
+    purchaser, 
+    seller,
+    sales_amount, 
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_id','mint','purchaser']
+    ) }} AS nft_sales_tensorswap_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
+FROM    
+    pre_final

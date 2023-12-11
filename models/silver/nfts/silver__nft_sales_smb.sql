@@ -69,7 +69,13 @@ SELECT
      b.acct_1 AS purchaser, 
      b.seller, 
      p.amount / POW(10,9) AS sales_amount, 
-     b._inserted_timestamp
+     b._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['b.tx_id']
+    ) }} AS nft_sales_smb_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM base_table b
 
 INNER JOIN price p

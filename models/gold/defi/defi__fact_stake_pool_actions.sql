@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }}},
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }} },
     tags = ['scheduled_non_core']
 ) }}
 
@@ -27,7 +27,30 @@
         address,
         stake_pool,
         amount,
-        'SOL' as token
+        'SOL' AS token,
+        mint_standard_type,
+        CASE
+            WHEN '{{ model_suffix }}' = 'generic' THEN COALESCE (
+                'stake_pool_actions_' + model_suffix + '_id',
+                {{ dbt_utils.generate_surrogate_key(
+                    ['tx_id', 'index', 'inner_index']
+                ) }}
+            )
+            ELSE COALESCE (
+                'stake_pool_actions_' + model_suffix + '_id',
+                {{ dbt_utils.generate_surrogate_key(
+                    ['tx_id', 'index']
+                ) }}
+            )
+        END AS fact_token_stake_pool_actions_id,
+        COALESCE(
+            inserted_timestamp,
+            '2000-01-01'
+        ) AS inserted_timestamp,
+        COALESCE(
+            modified_timestamp,
+            '2000-01-01'
+        ) AS modified_timestamp
     FROM
         {{ ref(
             'silver__stake_pool_actions_' + model_suffix
@@ -37,20 +60,34 @@
         UNION ALL
         {% endif %}
     {% endfor %}
-    UNION ALL
-    SELECT
-        'marinade' as stake_pool_name,
-        tx_id,
-        block_id,
-        block_timestamp,
-        INDEX,
-        succeeded,
-        action,
-        address,
-        stake_pool,
-        amount,
-        token
-    FROM
-        {{ ref(
-            'silver__stake_pool_actions_marinade'
+UNION ALL
+SELECT
+    'marinade' AS stake_pool_name,
+    tx_id,
+    block_id,
+    block_timestamp,
+    INDEX,
+    succeeded,
+    action,
+    address,
+    stake_pool,
+    amount,
+    token,
+    COALESCE (
+        stake_pool_actions_marinade_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_id','index']
         ) }}
+    ) AS fact_take_pool_actions_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
+FROM
+    {{ ref(
+        'silver__stake_pool_actions_marinade'
+    ) }}

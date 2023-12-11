@@ -20,7 +20,22 @@ SELECT
         WHEN cmc.imputed = FALSE THEN cmc.imputed
         WHEN cg.imputed = TRUE THEN cg.imputed
         WHEN cmc.imputed = TRUE THEN cmc.imputed
-    END AS is_imputed
+    END AS is_imputed,
+    COALESCE (
+        token_prices_coin_gecko_hourly_id,
+        token_prices_coin_market_cap_hourly_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['b.date_hour', 'id']
+        ) }}
+    ) AS ez_token_prices_hourly_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__token_metadata') }} A
     CROSS JOIN {{ ref('silver__date_hours') }}

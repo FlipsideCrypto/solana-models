@@ -47,27 +47,3 @@ models:
         description: "{{ doc('inserted_timestamp') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
-      - name: BLOCKCHAIN
-        description: "Deprecating this column on 2023-12-04"
-        tests:
-          - dbt_expectations.expect_column_to_exist
-      - name: CONTRACT_ADDRESS
-        description: "Deprecating this column on 2023-12-04"
-      - name: CONTRACT_NAME
-        description: "Deprecating this column on 2023-12-04"
-      - name: CREATED_AT_TIMESTAMP
-        description: "Deprecating this column on 2023-12-04"
-      - name: CREATOR_NAME
-        description: "Deprecating this column on 2023-12-04"
-      - name: IMAGE_URL
-        description: "Deprecating this column on 2023-12-04"
-      - name: PROJECT_NAME
-        description: "Deprecating this column on 2023-12-04"
-      - name: TOKEN_ID
-        description: "Deprecating this column on 2023-12-04"
-      - name: TOKEN_METADATA
-        description: "Deprecating this column on 2023-12-04"
-      - name: TOKEN_METADATA_URI
-        description: "Deprecating this column on 2023-12-04"
-      - name: TOKEN_NAME
-        description: "Deprecating this column on 2023-12-04"
