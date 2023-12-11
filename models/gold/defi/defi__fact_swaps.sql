@@ -16,6 +16,7 @@ SELECT
     to_mint AS swap_to_mint,
     program_id,
     l.address_name AS swap_program,
+    _log_id,
     COALESCE (
        swaps_id,
         {{ dbt_utils.generate_surrogate_key(
@@ -49,6 +50,7 @@ SELECT
     to_mint AS swap_to_mint,
     program_id,
     l.address_name AS swap_program,
+    concat_ws('-',tx_id,swap_index) as _log_id,
     swaps_intermediate_jupiterv6_id as fact_swaps_id,
     s.inserted_timestamp,
     s.modified_timestamp
@@ -71,6 +73,7 @@ SELECT
     to_mint AS swap_to_mint,
     program_id,
     l.address_name AS swap_program,
+    concat_ws('-',tx_id,swap_index) as _log_id,
     swaps_intermediate_jupiterv5_id as fact_swaps_id,
     s.inserted_timestamp,
     s.modified_timestamp
@@ -93,6 +96,7 @@ SELECT
     to_mint AS swap_to_mint,
     program_id,
     l.address_name AS swap_program,
+    concat_ws('-',tx_id,swap_index) as _log_id,
     swaps_intermediate_jupiterv5_id as fact_swaps_id,
     s.inserted_timestamp,
     s.modified_timestamp

@@ -47,6 +47,10 @@ models:
         description: name of decentralized exchange used to perform the swap
         tests:
           - not_null
+      - name: _LOG_ID
+        description: "Combination of TX_ID and event index"
+        tests: 
+          - not_null
       - name: FACT_SWAPS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
