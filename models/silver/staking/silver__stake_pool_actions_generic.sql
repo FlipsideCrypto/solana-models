@@ -3,6 +3,7 @@
     unique_key = "_unique_key",
     incremental_strategy = 'merge',
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::date'],
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['scheduled_non_core']
 ) }}
 
@@ -390,8 +391,8 @@ SELECT
     _inserted_timestamp,
     _unique_key,
     {{ dbt_utils.generate_surrogate_key(
-        ['e.tx_id', 'e.index', 'e.inner_index']
-    ) }} AS stake_pool_actions_eversol_id,
+        ['tx_id', 'index', 'inner_index']
+    ) }} AS stake_pool_actions_generic_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id

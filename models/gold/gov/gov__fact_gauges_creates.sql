@@ -15,7 +15,7 @@ SELECT
     gaugemeister,
     validator_account,
     {{ dbt_utils.generate_surrogate_key(
-        ['tx_id', 'index']
+        ['tx_id']
     ) }} AS fact_gauges_creates_id,
     '2000-01-01' as inserted_timestamp,
     '2000-01-01' AS modified_timestamp

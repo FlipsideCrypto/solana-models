@@ -74,7 +74,7 @@ SELECT
     COALESCE (
         liquidity_pool_actions_saber_id,
         {{ dbt_utils.generate_surrogate_key(
-            ['BLOCK_ID','TX_ID','INDEX','INNER_INDEX']
+            ['BLOCK_ID','TX_ID','ACTION_INDEX']
         ) }}
     ) AS fact_liquidity_pool_actions_id,
     COALESCE(

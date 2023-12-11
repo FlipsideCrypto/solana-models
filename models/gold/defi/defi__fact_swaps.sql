@@ -17,17 +17,17 @@ SELECT
     program_id,
     l.address_name AS swap_program,
     COALESCE (
-        swaps_id,
+       swaps_id,
         {{ dbt_utils.generate_surrogate_key(
             ['block_id','tx_id','program_id']
         ) }}
     ) AS fact_swaps_id,
     COALESCE(
-        inserted_timestamp,
+        s.inserted_timestamp,
         '2000-01-01'
     ) AS inserted_timestamp,
     COALESCE(
-        modified_timestamp,
+        s.modified_timestamp,
         '2000-01-01'
     ) AS modified_timestamp
 FROM
@@ -50,8 +50,8 @@ SELECT
     program_id,
     l.address_name AS swap_program,
     swaps_intermediate_jupiterv6_id as fact_swaps_id,
-    inserted_timestamp,
-    modified_timestamp
+    s.inserted_timestamp,
+    s.modified_timestamp
 FROM
     {{ ref('silver__swaps_intermediate_jupiterv6') }}
     s
@@ -71,10 +71,9 @@ SELECT
     to_mint AS swap_to_mint,
     program_id,
     l.address_name AS swap_program,
-    swaps_intermediate_jupiterv5_1_view_id as fact_swaps_id,
-    inserted_timestamp,
-    modified_timestamp
-
+    swaps_intermediate_jupiterv5_id as fact_swaps_id,
+    s.inserted_timestamp,
+    s.modified_timestamp
 FROM
     {{ ref('silver__swaps_intermediate_jupiterv5_1_view') }}
     s
@@ -94,9 +93,9 @@ SELECT
     to_mint AS swap_to_mint,
     program_id,
     l.address_name AS swap_program,
-    swaps_intermediate_jupiterv5_2_view_id as fact_swaps_id,
-    inserted_timestamp,
-    modified_timestamp
+    swaps_intermediate_jupiterv5_id as fact_swaps_id,
+    s.inserted_timestamp,
+    s.modified_timestamp
 FROM
     {{ ref('silver__swaps_intermediate_jupiterv5_2_view') }}
     s

@@ -22,7 +22,7 @@ SELECT
   account_sol,
   rent_epoch,
   COALESCE (
-  snapshot_block_production_id,
+  snapshot_stake_accounts_id,
         {{ dbt_utils.generate_surrogate_key(
             ['epoch', 'stake_pubkey']
         ) }}

@@ -16,7 +16,7 @@ SELECT
     power,
     delegated_shares,
     COALESCE (
-        guages_votes_saber_id,
+        gauges_votes_saber_id,
         {{ dbt_utils.generate_surrogate_key(
             ['tx_id','voter','gauge']
         ) }}
@@ -44,7 +44,7 @@ SELECT
     NULL AS power,
     delegated_shares,
     {{ dbt_utils.generate_surrogate_key(
-        ['tx_id,' 'voter', 'voter_nft', 'gauge']
+        ['tx_id', 'voter', 'voter_nft', 'gauge']
     ) }} AS fact_gauges_votes_id,
     '2000-01-01' as inserted_timestamp,
     '2000-01-01' AS modified_timestamp

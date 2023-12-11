@@ -28,21 +28,20 @@
         stake_pool,
         amount,
         'SOL' AS token,
-        mint_standard_type,
         CASE
             WHEN '{{ model_suffix }}' = 'generic' THEN COALESCE (
-                'stake_pool_actions_' + model_suffix + '_id',
+                'stake_pool_actions_' + '{{ model_suffix }}' + '_id',
                 {{ dbt_utils.generate_surrogate_key(
                     ['tx_id', 'index', 'inner_index']
                 ) }}
             )
-            ELSE COALESCE (
-                'stake_pool_actions_' + model_suffix + '_id',
+            WHEN '{{ model_suffix }}' in ('socean','lido','eversol') THEN COALESCE (
+                'stake_pool_actions_' + '{{ model_suffix }}' + '_id',
                 {{ dbt_utils.generate_surrogate_key(
                     ['tx_id', 'index']
                 ) }}
             )
-        END AS fact_token_stake_pool_actions_id,
+        END AS fact_stake_pool_actions_id,
         COALESCE(
             inserted_timestamp,
             '2000-01-01'
@@ -78,7 +77,7 @@ SELECT
         {{ dbt_utils.generate_surrogate_key(
             ['tx_id','index']
         ) }}
-    ) AS fact_take_pool_actions_id,
+    ) AS fact_stake_pool_actions_id,
     COALESCE(
         inserted_timestamp,
         '2000-01-01'

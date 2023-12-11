@@ -24,7 +24,7 @@ SELECT
   v.block_id, 
   num_votes,
   {{ dbt_utils.generate_surrogate_key(
-        ['block_id']
+        ['v.block_id']
   ) }} AS votes_agg_block_id,
   SYSDATE() AS inserted_timestamp,
   SYSDATE() AS modified_timestamp,

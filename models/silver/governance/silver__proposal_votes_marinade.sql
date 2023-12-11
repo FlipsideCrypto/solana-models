@@ -147,7 +147,7 @@ SELECT
     e._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
         ['e.tx_id', 'voter_nft', 'proposal']
-    ) }} AS proposal_votes_realms_id,
+    ) }} AS proposal_votes_marinade_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
