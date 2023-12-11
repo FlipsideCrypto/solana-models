@@ -15,6 +15,7 @@ SELECT
     liquidity_pool_address,
     amount,
     mint,
+    _inserted_timestamp,
     COALESCE (
         liquidity_pool_actions_raydium_id,
         {{ dbt_utils.generate_surrogate_key(
@@ -43,6 +44,7 @@ SELECT
     liquidity_pool_address,
     amount,
     mint,
+    _inserted_timestamp,
     COALESCE (
         liquidity_pool_actions_orca_id,
         {{ dbt_utils.generate_surrogate_key(
@@ -71,6 +73,7 @@ SELECT
     liquidity_pool_address,
     amount,
     mint,
+    _inserted_timestamp,
     COALESCE (
         liquidity_pool_actions_saber_id,
         {{ dbt_utils.generate_surrogate_key(
