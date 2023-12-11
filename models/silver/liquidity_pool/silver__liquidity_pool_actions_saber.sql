@@ -510,7 +510,12 @@ SELECT
             INDEX,
             inner_index
     ) AS action_index,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['block_id', 'tx_id','action_index']
+    ) }} AS liquidity_pool_actions_saber_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp
 FROM
     temp_final
 WHERE

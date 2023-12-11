@@ -17,6 +17,20 @@ SELECT
     burn_authority,
     signers,
     DECIMAL,
-    MINT_STANDARD_TYPE
+    MINT_STANDARD_TYPE,
+    COALESCE (
+        nft_burn_actions_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_id', 'index', 'inner_index', 'mint']
+        ) }}
+    ) AS fact_nft_burn_actions_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_burn_actions') }}

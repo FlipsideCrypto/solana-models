@@ -144,7 +144,13 @@ SELECT
     e.instruction :accounts [1] :: STRING AS voter_nft,
     e.instruction :accounts [5] :: STRING AS voter_account,
     e.instruction :accounts [6] :: STRING AS proposal,
-    e._inserted_timestamp
+    e._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['e.tx_id', 'voter_nft', 'proposal']
+    ) }} AS proposal_votes_marinade_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     {{ ref('silver__events') }}
     e

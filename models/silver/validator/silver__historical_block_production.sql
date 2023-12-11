@@ -1,6 +1,6 @@
 {{ config (
     materialized = 'view',
-    tags = ['validator']
+    tags = ['validator_historical']
 ) }}
 
 SELECT

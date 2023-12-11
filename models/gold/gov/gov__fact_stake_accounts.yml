@@ -67,3 +67,9 @@ models:
         description: "Epoch at which this account will next owe rent"
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: FACT_STAKE_ACCOUNTS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

@@ -68,7 +68,13 @@ SELECT
     mint,
     action,
     amount,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_id']
+    ) }} AS gov_actions_marinade_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     {{ ref ('silver__gov_actions_marinade_tmp') }}
 WHERE
@@ -103,7 +109,13 @@ SELECT
             -9
         )
     ) :: FLOAT AS amount,
-    e._inserted_timestamp
+    e._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['e.tx_id']
+    ) }} AS gov_actions_marinade_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     {{ ref ('silver__events') }}
     e

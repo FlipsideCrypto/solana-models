@@ -160,7 +160,13 @@ SELECT
         10,
         p.decimal
     ) AS amount,
-    e._inserted_timestamp
+    e._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['e.tx_id']
+    ) }} AS gov_actions_saber_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     saber_gov_lock_events e
     INNER JOIN post_token_balances p

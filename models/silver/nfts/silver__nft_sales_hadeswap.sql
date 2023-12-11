@@ -210,7 +210,13 @@ SELECT
   purchaser,
   seller,
   sales_amount,
-  _inserted_timestamp
+  _inserted_timestamp,
+  {{ dbt_utils.generate_surrogate_key(
+        ['b.tx_id','mint']
+  ) }} AS nft_sales_hadeswap_id,
+  SYSDATE() AS inserted_timestamp,
+  SYSDATE() AS modified_timestamp,
+  '{{ invocation_id }}' AS _invocation_id
 FROM
   buy_amount A
   INNER JOIN buys b
@@ -227,7 +233,13 @@ SELECT
   purchaser,
   seller,
   sales_amount,
-  _inserted_timestamp
+  _inserted_timestamp,
+  {{ dbt_utils.generate_surrogate_key(
+        ['b.tx_id','mint']
+  ) }} AS nft_sales_hadeswap_id,
+  SYSDATE() AS inserted_timestamp,
+  SYSDATE() AS modified_timestamp,
+  '{{ invocation_id }}' AS _invocation_id
 FROM
   lp_amount A
   INNER JOIN lp_buys b

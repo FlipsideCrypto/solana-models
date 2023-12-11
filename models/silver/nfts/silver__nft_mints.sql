@@ -103,7 +103,12 @@ SELECT
     b.token_account, 
     mp.mint_currency,
     mp.mint_price,
-    b._inserted_timestamp
+    b._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['initialization_tx_id', 'b.mint', 'purchaser', 'mp.mint_currency']
+    ) }} AS nft_mints_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp
 FROM
     b
     LEFT OUTER JOIN base_mint_price mp

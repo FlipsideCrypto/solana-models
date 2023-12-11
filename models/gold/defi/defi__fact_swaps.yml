@@ -51,3 +51,9 @@ models:
         description: "Combination of TX_ID and event index"
         tests: 
           - not_null
+      - name: FACT_SWAPS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

@@ -80,7 +80,12 @@ SELECT
     b.mint,
     b.mint_price,
     b.mint_currency,
-    b.program_id
+    b.program_id,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_id']
+    ) }} AS nft_compressed_mints_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp
 FROM
     onchain A
     LEFT JOIN offchain_ordered b

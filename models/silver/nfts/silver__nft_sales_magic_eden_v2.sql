@@ -280,7 +280,13 @@ SELECT
         10,
         9
     ) AS sales_amount,
-    b._inserted_timestamp
+    b._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['b.tx_id']
+    ) }} AS nft_sales_magic_eden_v2_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     base b
     LEFT OUTER JOIN post_token_balances p

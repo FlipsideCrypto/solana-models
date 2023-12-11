@@ -66,7 +66,13 @@ SELECT
     b.seller,
     b.mint,
     sales_amount,
-    b._inserted_timestamp
+    b._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['b.tx_id','b.mint']
+    ) }} AS nft_sales_hyperspace_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     sale_amt e
     INNER JOIN base_table b

@@ -208,7 +208,13 @@ SELECT
     A.seller,
     b.sales_amount,
     A.marketplace,
-    A._inserted_timestamp
+    A._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['A.tx_id','A.mint']
+    ) }} AS nft_sales_amm_sell_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     coral_cube_sales A
     LEFT JOIN coral_cube_nft_sale_amount b
@@ -227,7 +233,13 @@ SELECT
     A.seller,
     b.sales_amount,
     A.marketplace,
-    A._inserted_timestamp
+    A._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['A.tx_id','A.mint']
+    ) }} AS nft_sales_amm_sell_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     mev2_sales A
     LEFT JOIN mev2_nft_sale_amount b
