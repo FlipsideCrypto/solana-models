@@ -19,7 +19,7 @@
         amount,
         'SOL' AS token,
         COALESCE (
-         'stake_pool_actions_' + '{{ model_suffix }}' + '_id',
+         {{ 'stake_pool_actions_' ~ model_suffix ~ '_id' }},
             {{ dbt_utils.generate_surrogate_key(
                 ['tx_id','index']
             ) }}
