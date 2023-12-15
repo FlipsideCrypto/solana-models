@@ -8,6 +8,7 @@ models:
             - TX_ID
             - INDEX
             - INNER_INDEX
+          where: block_timestamp::date > current_date - 30
       - compare_model_subset:
           name: silver__liquidity_pool_actions_raydium_business_logic_test
           compare_model: ref('testing__liquidity_pool_actions_raydium')

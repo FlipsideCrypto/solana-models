@@ -7,6 +7,7 @@ models:
             - BLOCK_ID
             - TX_ID
             - SWAP_INDEX
+          where: block_timestamp::date > current_date - 30
       - compare_model_subset:
           name: silver__swaps_intermediate_raydium_business_logic_test
           compare_model: ref('testing__swaps_intermediate_raydium')

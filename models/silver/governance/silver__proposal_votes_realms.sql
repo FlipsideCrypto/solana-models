@@ -3,7 +3,7 @@
   unique_key = "CONCAT_WS('-', tx_id, index)",
   incremental_strategy = 'delete+insert',
   cluster_by = ['block_timestamp::DATE'],
-  tags = ['scheduled_non_core']
+  tags = ['daily']
 ) }}
 
 WITH vote_programs AS (
