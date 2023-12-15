@@ -17,7 +17,7 @@ WITH base_events AS(
             --raydium program_ids
             '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
             '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h',
-            '93BgeoLHo5AdNbpqy9bD12dtfxtA5M2fh3rj72bE35Y3',
+            -- '93BgeoLHo5AdNbpqy9bD12dtfxtA5M2fh3rj72bE35Y3', -- latest event 2023-03-25
             'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS',
             'CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK',
             --program ids for acct mapping
@@ -102,7 +102,7 @@ dex_txs AS (
                     )
                 )
                 OR program_id IN (
-                    '93BgeoLHo5AdNbpqy9bD12dtfxtA5M2fh3rj72bE35Y3',
+                    -- '93BgeoLHo5AdNbpqy9bD12dtfxtA5M2fh3rj72bE35Y3', -- latest event 2023-03-25
                     'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS'
                 )
                 OR (
@@ -215,7 +215,7 @@ raydium_account_mapping AS(
         d.program_id IN (
             '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
             '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h',
-            '93BgeoLHo5AdNbpqy9bD12dtfxtA5M2fh3rj72bE35Y3',
+            -- '93BgeoLHo5AdNbpqy9bD12dtfxtA5M2fh3rj72bE35Y3', --latest event 2023-03-25
             'routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS',
             'CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK'
         )
