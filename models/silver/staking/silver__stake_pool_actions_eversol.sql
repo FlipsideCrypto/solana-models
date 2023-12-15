@@ -4,7 +4,8 @@
     incremental_strategy = 'merge',
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::date'],
     merge_exclude_columns = ["inserted_timestamp"],
-    tags = ['scheduled_non_core']
+    full_refresh = false,
+    enabled = false
 ) }}
 
 WITH base_stake_pool_events AS (

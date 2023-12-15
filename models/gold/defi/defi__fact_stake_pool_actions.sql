@@ -4,7 +4,7 @@
     tags = ['scheduled_non_core']
 ) }}
 
-{% for model_suffix in ["socean","lido","eversol"] %}
+{% for model_suffix in ["socean","lido"] %}
 
     SELECT
         '{{ model_suffix }}' AS stake_pool_name,
@@ -41,6 +41,28 @@
         UNION ALL
         {% endif %}
     {% endfor %}
+UNION ALL
+SELECT
+    'eversol' as stake_pool_name,
+    tx_id,
+    block_id,
+    block_timestamp,
+    INDEX,
+    succeeded,
+    action,
+    address,
+    stake_pool,
+    amount,
+    'SOL' AS token,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_id', 'index']
+    ) }} AS fact_stake_pool_actions_id,
+    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS modified_timestamp
+FROM
+    {{ ref(
+        'silver__stake_pool_actions_eversol_view'
+    ) }}
 UNION ALL
 SELECT
     CASE

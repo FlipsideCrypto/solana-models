@@ -2,7 +2,8 @@
     materialized = 'incremental',
     unique_key = "CONCAT_WS('-', contract_address, token_id)",
     incremental_strategy = 'delete+insert',
-    tags = ['scheduled_non_core']
+    full_refresh = false,
+    enabled = false
 ) }}
 
 WITH base AS (
