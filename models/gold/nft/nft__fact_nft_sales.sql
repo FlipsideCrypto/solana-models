@@ -93,22 +93,13 @@ SELECT
     seller,
     mint,
     sales_amount,
-    COALESCE (
-        nft_sales_smb_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_id']
-        ) }}
-    ) AS fact_nft_sales_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_id']
+    ) }} AS fact_nft_sales_id,
+    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS modified_timestamp
 FROM
-    {{ ref('silver__nft_sales_smb') }}
+    {{ ref('silver__nft_sales_smb_view') }}
 UNION
 SELECT
     'solport',

@@ -3,7 +3,8 @@
     unique_key = "tx_id",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['scheduled_non_core']
+    full_refresh = false,
+    enabled = false
 ) }}
 
 WITH base_table AS (

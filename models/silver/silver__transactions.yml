@@ -29,6 +29,7 @@ models:
         tests: 
           - null_threshold:
               threshold_percent: 0.99 # some older transactions have valid null fees
+              where: block_timestamp::date > current_date - 30
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests: 

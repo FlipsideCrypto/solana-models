@@ -49,4 +49,5 @@ jobs:
           dbt run -s models/bronze/bronze__validators_app_api.sql models/bronze/bronze__vote_accounts.sql models/bronze/bronze__stake_program_accounts.sql models/bronze/bronze__vote_accounts_extended_stats.sql
           dbt run -s models/silver/validator/silver__snapshot_stake_accounts.sql models/silver/validator/silver__snapshot_validators_app_data.sql models/silver/validator/silver__snapshot_vote_accounts.sql models/silver/validator/silver__snapshot_vote_accounts_extended_stats.sql
           dbt run -s tag:nft_api
+          dbt run -s tag:daily
 
