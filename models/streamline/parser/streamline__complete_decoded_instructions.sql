@@ -3,7 +3,7 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(block_id, -3)",
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(id)",
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(id)'),
     tags = ['streamline'],
 ) }}
 
