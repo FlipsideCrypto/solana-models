@@ -3,7 +3,7 @@
     unique_key = ['block_id','tx_id','index'],
     incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE','program_id'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION", 
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}'), 
     full_refresh = false,
     merge_exclude_columns = ["inserted_timestamp"],
     tags = ['scheduled_core']
