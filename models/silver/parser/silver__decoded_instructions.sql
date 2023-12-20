@@ -18,6 +18,7 @@ SELECT
         VALUE :data :data [0] [0],
         VALUE :data [0] [0]
     ) :: INT AS INDEX,
+    A.inner_index,
     A.program_id,
     COALESCE(
         A.value :data :data [0] [1],
@@ -26,7 +27,7 @@ SELECT
     ) AS decoded_instruction,
     A._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
-        ['A.tx_id', 'A.index']
+        ['A.tx_id', 'A.index', 'A.inner_index']
     ) }} AS decoded_instructions_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
@@ -34,9 +35,9 @@ SELECT
 FROM
 
 {% if is_incremental() %}
-{{ ref('bronze__streamline_program_parser') }} A
+{{ ref('bronze__streamline_decoded_instructions_2') }} A
 {% else %}
-    {{ ref('bronze__streamline_FR_program_parser') }} A
+    {{ ref('bronze__streamline_FR_decoded_instructions_2') }} A
 {% endif %}
 JOIN {{ ref('silver__blocks') }}
 b
