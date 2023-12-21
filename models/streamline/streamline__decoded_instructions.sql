@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_bulk_solana_decoder(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'decoded_instructions_2', 'sql_limit', {{var('sql_limit','2500000')}}, 'producer_batch_size', {{var('producer_batch_size','1000000')}}, 'worker_batch_size', {{var('worker_batch_size','50000')}}, 'batch_call_limit', {{var('batch_call_limit','1000')}}))",
+        func = "{{this.schema}}.udf_bulk_instructions_decoder(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'decoded_instructions_2', 'sql_limit', {{var('sql_limit','2500000')}}, 'producer_batch_size', {{var('producer_batch_size','1000000')}}, 'worker_batch_size', {{var('worker_batch_size','50000')}}, 'batch_call_limit', {{var('batch_call_limit','1000')}}))",
         target = "{{this.schema}}.{{this.identifier}}"
     ),
     tags = ['streamline_decoder']
@@ -35,14 +35,14 @@ event_subset AS (
         e.succeeded
     UNION 
     SELECT
-        i.value :programId :: STRING AS program_id,
+        i.value :programId :: STRING AS inner_program_id,
         e.tx_id,
         e.index,
         i.index AS inner_index,
         i.value AS instruction,
         e.block_id,
         e.block_timestamp,
-        {{ dbt_utils.generate_surrogate_key(['e.block_id','e.tx_id','e.index','inner_index','e.program_id']) }} as id
+        {{ dbt_utils.generate_surrogate_key(['e.block_id','e.tx_id','e.index','inner_index','inner_program_id']) }} as id
     FROM
         {{ ref('silver__events') }}
         e
