@@ -1,4 +1,4 @@
-{% macro generate_decoded_instructions_backfill_views(program_id) %}
+{% macro decoded_instructions_backfill_generate_views(program_id) %}
     {% set result_cols = run_query("""select 
             first_block_id, 
             default_backfill_start_block_id
@@ -73,10 +73,29 @@
 
         {% do run_query(query) %}
     {% endfor %}
-
 {% endmacro %}
 
-{% macro queue_decoded_instructions_backfill() %}
+{% macro decoded_instructions_backill_cleanup_views() %}
+    {% set results = run_query("""select
+            table_schema,
+            table_name
+        from information_schema.views
+        where table_name like 'DECODED_INSTRUCTIONS_BACKFILL_%'
+        order by 2 desc
+        limit 20;""").columns %}
+    
+    {% set schema_names = results[0].values() %}
+    {% set table_names = results[1].values() %}
+    {% for table_name in table_names %}
+        {% set has_requests = run_query("""select 1 from """ ~ schema_names[0] ~ """.""" ~ table_name ~ """ limit 1""").columns[0].values()[0] %}
+        {% if not has_requests %}
+            {% do run_query("""drop view """ ~ schema_names[0] ~ """.""" ~ table_name) %}
+            {% do run_query("""insert into """ ~ ref('streamline__complete_decoded_instructions_2_backfill') ~ """ values('""" ~ schema_names[0] ~ """','""" ~ table_name ~ """')""") %}
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
+
+{% macro decoded_instructions_backfill_calls() %}
     {% set sql_limit = 2500000 %}
     {% set producer_batch_size = 1000000 %}
     {% set worker_batch_size = 50000 %}
@@ -102,25 +121,5 @@
         target = schema_names[0] ~ "." ~ table_name) %}
         
         {% do run_query(udf_call) %}
-    {% endfor %}
-{% endmacro %}
-
-{% macro cleanup_decoded_instructions_backill_views() %}
-    {% set results = run_query("""select
-            table_schema,
-            table_name
-        from information_schema.views
-        where table_name like 'DECODED_INSTRUCTIONS_BACKFILL_%'
-        order by 2 desc
-        limit 20;""").columns %}
-    
-    {% set schema_names = results[0].values() %}
-    {% set table_names = results[1].values() %}
-    {% for table_name in table_names %}
-        {% set has_requests = run_query("""select 1 from """ ~ schema_names[0] ~ """.""" ~ table_name ~ """ limit 1""").columns[0].values()[0] %}
-        {% if not has_requests %}
-            {% do run_query("""drop view """ ~ schema_names[0] ~ """.""" ~ table_name) %}
-            {% do run_query("""insert into """ ~ ref('streamline__complete_decoded_instructions_2_backfill') ~ """ values('""" ~ schema_names[0] ~ """','""" ~ table_name ~ """')""") %}
-        {% endif %}
     {% endfor %}
 {% endmacro %}
