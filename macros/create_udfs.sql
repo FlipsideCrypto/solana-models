@@ -16,6 +16,7 @@
             {{ udf_bulk_parse_compressed_nft_mints() }};
             {{ udf_bulk_get_solscan_blocks() }};
             {{ create_udf_bulk_instructions_decoder() }};
+            {{ create_udf_verify_idl() }};
         {% endif %}
 
         {{ create_udf_ordered_signers(
