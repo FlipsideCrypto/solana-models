@@ -73,6 +73,8 @@ AND
         TABLE(FLATTEN(i.value :instructions)) ii
     WHERE
         ii.value :programId :: STRING = 'Stake11111111111111111111111111111111111111'
+    AND 
+        ii.value :parsed is not null
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
