@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   schedule:
     # Runs "at minute 0 past hour 3 and 15" (see https://crontab.guru)
-    - cron: '0 3,15 * * *'
+    - cron: '12,22,42,52 * * * *'
     
 env:
   DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
