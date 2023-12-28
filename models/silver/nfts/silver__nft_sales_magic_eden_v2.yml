@@ -22,7 +22,9 @@ models:
             '3WsFjjoNNUH85N8qf3FkA5Qf8PVT2VT2BZJxjLLFq8qybh3TJqiz182aJz4mhydgcx1CoEpenRbZ28vrqMEWzPzn',
             '2L6ki6khMddp56WYeNiKnS5ZVwtk63x3Y3RanP63kobANx51XbCFTyX97C2aoLQZMZ3P5kKSRZc1KxiB1DU2KuNs',
             '3qp2hRooXJaatbBuNyfT271aNhmgvAa8iVqDkALxHTaaqS2BLXeZUB6eXWhJy3nDU4gMLwtP3UriqWRvUyeUfpmu',
-            '5eEkaFyoKGvuTRKbV6G8yKaJrsgqDMer1fXTR9tA4Ab3MTNuKkALKdT4Mdzs3K8sTbJmfB69UQuuDH54QREZhJHa')"
+            '5eEkaFyoKGvuTRKbV6G8yKaJrsgqDMer1fXTR9tA4Ab3MTNuKkALKdT4Mdzs3K8sTbJmfB69UQuuDH54QREZhJHa',
+            '3kP1mPBGASKQFECHcMbDhTLWkNcW497idg9qGbJ2pvza8ppmDEBwd6qokPaqWsUkoTYTK3CuoAbJMQc3XEFrHURy',
+            '2pefayEWXHTHuE2D8imy8JyR3smhwouh83jtX9meAPtyaNwzsSrBhiDT8pDRVUHptUiRGoX3sNWeKKjEWzfJh4Sh')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
