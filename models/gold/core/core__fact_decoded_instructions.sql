@@ -7,12 +7,13 @@ SELECT
     block_id,
     tx_id,
     INDEX,
+    inner_index,
     program_id,
     decoded_instruction,
     COALESCE (
         decoded_instructions_id,
         {{ dbt_utils.generate_surrogate_key(
-            ['tx_id', 'index']
+            ['tx_id', 'index', 'inner_index']
         ) }}
     ) AS fact_decoded_instructions_id,
     COALESCE(
