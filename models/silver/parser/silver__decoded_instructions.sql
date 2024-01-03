@@ -6,7 +6,6 @@
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE','program_id'],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}'),
     merge_exclude_columns = ["inserted_timestamp"],
-    tags = ['scheduled_non_core'],
 ) }}
 
 SELECT
