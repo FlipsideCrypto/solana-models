@@ -2,7 +2,7 @@
     {% set result_cols = run_query("""select 
             first_block_id, 
             default_backfill_start_block_id
-        from solana.streamline.idls_history
+        from """ ~ ref('streamline__idls_history') ~ """ 
         where program_id = '""" ~ program_id ~ """';""").columns %}
     {% set min_block_id = result_cols[0].values()[0] | int %}
     {% set max_block_id = result_cols[1].values()[0] | int %}
@@ -44,7 +44,7 @@
                 e.program_id,
                 e.block_timestamp,
                 """ ~ dbt_utils.generate_surrogate_key(['e.block_id','e.tx_id','e.index','inner_index','e.program_id']) ~ """ as id
-            from solana.silver.events e 
+            from """ ~ ref('silver__events') ~ """ e 
             where program_id = '""" ~ program_id ~ """'
             and block_id between """ ~ start_block ~ """ and """ ~ end_block ~ """
             and succeeded
@@ -58,7 +58,7 @@
                 i.value :programId :: STRING AS inner_program_id,
                 e.block_timestamp,
                 """ ~ dbt_utils.generate_surrogate_key(['e.block_id','e.tx_id','e.index','inner_index','inner_program_id']) ~ """ as id
-            from solana.silver.events e,
+            from """ ~ ref('silver__events') ~ """ e ,
             table(flatten(inner_instruction:instructions)) i
             where array_contains(program_id::variant, inner_instruction_program_ids)
             and inner_program_id = '""" ~ program_id ~ """'
