@@ -1,6 +1,8 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'address'
+    unique_key = 'address',
+    merge_exclude_columns = ["inserted_timestamp"],
+    tags=['scheduled_non_core'],
 ) }}
 
 SELECT
@@ -12,7 +14,13 @@ SELECT
     label_type,
     label_subtype,
     address_name,
-    project_name
+    project_name,
+    {{ dbt_utils.generate_surrogate_key(
+        ['address']
+    ) }} AS labels_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     {{ ref('bronze__labels') }}
 WHERE

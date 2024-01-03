@@ -1,0 +1,41 @@
+version: 2
+models:
+  - name: silver__rewards_rent
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - VOTE_PUBKEY
+            - EPOCH_EARNED
+            - BLOCK_ID
+          where: block_timestamp::date > current_date - 30
+    columns:
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null:
+              where: _inserted_timestamp::date < current_date
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null:
+              where: block_id > 39824213
+      - name: REWARD_AMOUNT_SOL
+        description: "The amount of rent rewards received or rent paid in SOL, with rent payments being negative."
+        tests:
+          - not_null
+      - name: POST_BALANCE_SOL
+        description: "{{ doc('post_balance') }}"
+        tests:
+          - not_null
+      - name: VOTE_PUBKEY
+        description: "{{ doc('vote_pubkey') }}"
+        tests:
+          - not_null
+      - name: EPOCH_EARNED
+        description: "{{ doc('epoch_earned') }}"
+        tests: 
+          - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null

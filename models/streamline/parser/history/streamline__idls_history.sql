@@ -1,6 +1,7 @@
 {{ config (
     materialized = "incremental",
-    unique_key = 'program_id'
+    unique_key = 'program_id',
+    tags = ['streamline'],
 ) }}
 
 WITH idls AS (

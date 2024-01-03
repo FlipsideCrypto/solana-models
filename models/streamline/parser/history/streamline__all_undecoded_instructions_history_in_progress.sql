@@ -1,7 +1,8 @@
 {{ config (
     materialized = 'incremental',
     cluster_by = "ROUND(block_id, -6)",
-    full_refresh = false
+    full_refresh = false,
+    tags = ['streamline'],
 ) }}
 
 SELECT

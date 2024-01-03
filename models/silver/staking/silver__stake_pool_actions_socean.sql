@@ -2,7 +2,9 @@
     materialized = 'incremental',
     unique_key = "_unique_key",
     incremental_strategy = 'merge',
-    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::date']
+    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::date'],
+    merge_exclude_columns = ["inserted_timestamp"],
+    tags = ['scheduled_non_core']
 ) }}
 
 WITH base_stake_pool_events AS (
@@ -132,7 +134,8 @@ deposit_stake_merge AS (
     WHERE
         i.value :parsed :type = 'merge'
         AND i.value :programId = 'Stake11111111111111111111111111111111111111'
-)
+),
+pre_final as (
 SELECT
     e.tx_id,
     e.block_id,
@@ -204,3 +207,27 @@ FROM
     TABLE(FLATTEN(inner_instruction :instructions)) i
 WHERE
     i.value :parsed :info :lamports IS NOT NULL
+)
+SELECT
+    tx_id,
+    block_id,
+    block_timestamp,
+    index,
+    succeeded,
+    action,
+    stake_pool,
+    stake_pool_withdraw_authority,
+    stake_pool_deposit_authority,
+    address,
+    reserve_stake_address,
+    amount,
+    _inserted_timestamp,
+    _unique_key,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_id', 'index']
+    ) }} AS stake_pool_actions_socean_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
+FROM
+    pre_final

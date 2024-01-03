@@ -1,5 +1,6 @@
 {{ config (
-    materialized = 'view'
+    materialized = 'view',
+    tags = ['validator_historical']
 ) }}
 
 WITH base AS (

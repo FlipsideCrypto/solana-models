@@ -3,6 +3,7 @@
     unique_key = ["block_id","tx_id","action_index"],
     merge_predicates = ["DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from {{ this }}__dbt_tmp))"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
+    tags = ['scheduled_non_core']
 ) }}
 
 WITH base_events AS(
@@ -509,7 +510,12 @@ SELECT
             INDEX,
             inner_index
     ) AS action_index,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['block_id', 'tx_id','action_index']
+    ) }} AS liquidity_pool_actions_saber_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp
 FROM
     temp_final
 WHERE

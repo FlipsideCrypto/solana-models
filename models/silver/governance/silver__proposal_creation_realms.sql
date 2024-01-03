@@ -3,6 +3,7 @@
   unique_key = "tx_id",
   incremental_strategy = 'delete+insert',
   cluster_by = ['block_timestamp::DATE'],
+  tags = ['daily']
 ) }}
 
 WITH vote_programs AS (
@@ -136,7 +137,13 @@ SELECT
     SPLIT_PART(SPLIT_PART(log_message, 'name:', 2), ', description_link:', 0) AS proposal_name, 
     SPLIT_PART(SPLIT_PART(log_message, 'vote_type:', 2), ', options:', 0) AS vote_type,
     SPLIT_PART(SPLIT_PART(log_message, 'options: ', 2), ', use_deny_option:', 0) AS vote_options,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['p.tx_id']
+    ) }} AS proposal_creation_realms_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM prop_txs p
 
 INNER JOIN create_vote_logs l 

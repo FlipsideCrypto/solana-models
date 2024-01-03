@@ -1,0 +1,46 @@
+version: 2
+models:
+  - name: gov__fact_rewards_fee
+    description: Vote and non-vote fee rewards sent to the leader of a block. The leader receives 1/2 the total fees paid in the block.
+    columns:
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: REWARD_AMOUNT_SOL
+        description: "{{ doc('amount') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: POST_BALANCE_SOL
+        description: "{{ doc('post_balance') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: VOTE_PUBKEY
+        description: "{{ doc('vote_pubkey') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: EPOCH_EARNED
+        description: "{{ doc('epoch_earned') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: FACT_REWARDS_FEE_ID
+        description: "{{ doc('id') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: MODIFIED_TIMESTAMP
+        description: "{{ doc('modified_timestamp') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: INSERTED_TIMESTAMP
+        description: "{{ doc('inserted_timestamp') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: DIM_EPOCH_ID
+        description: "Join key to the dim_epoch table"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      

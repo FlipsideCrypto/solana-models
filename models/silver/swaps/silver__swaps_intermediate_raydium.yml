@@ -7,6 +7,7 @@ models:
             - BLOCK_ID
             - TX_ID
             - SWAP_INDEX
+          where: block_timestamp::date > current_date - 30
       - compare_model_subset:
           name: silver__swaps_intermediate_raydium_business_logic_test
           compare_model: ref('testing__swaps_intermediate_raydium')
@@ -30,7 +31,15 @@ models:
           '5UjXW6NCAJSUMzL9uU3e41r7KmUEuX9i9RT2QS5YSG6FKf6HUh6iRopxBkFsL9A7Bhx3PR1GZeUL561Y6DNehj52',
           'MtNdTT2uq9hy7woK4mRyPYZ5SNKFoKJY3UNvi4uRiLQJCrQSY7WMV13dLTDCuAWpHZzinNzAXyXRGXjQUYENtvU',
           '39nyp3f5rUMSC4oaYnCVtkiwdbwMByKz7esgmRTFKPhoMgW3RprMgyj9jcrAwoAX9UWLNVGqpB9k79c4gAN7ug1q',
-          '3XEzUVGbpruCZFKcHFsa3yCZAJ4MQ1TTyaHPFi5odqQ3XEpjA5TzUXHuEVSFRoSGiaRSKQpMwGPzw61ZTb9gRfv5')"
+          '3XEzUVGbpruCZFKcHFsa3yCZAJ4MQ1TTyaHPFi5odqQ3XEpjA5TzUXHuEVSFRoSGiaRSKQpMwGPzw61ZTb9gRfv5',
+          '3KSw2G1rhok4YG5H8nuuqf3G2sDtohp8wk57Wi1dV4cBXUoWXmkHXHdSdbB8LhMzJ6gEVbzSTuZdqAKEoF9rddX3',
+          'EHZv3mk1JjV6ChLMyfFbvFAu81xaVQnKH6kPExw182UfJ3PPG9oU1opDugmFeowPpsKBxoFGH3AssCcwDd2oJJ7',
+          'Z4DgsAuxcdqhXyvKHsdmkpcvnM98uZ3gmVDnzw8Z6vY2vttvhVhDSdjrRuYnXMxiZ34t4Xzvg3LfDbc79dBKnN3',
+          '5ofBBKrLxLeP7VQVkkdwMpvB2Fxn9Umnc7X7B5XryinCCAco2B88Proknf4hjE3yvBMwxR3gcwTHpeNNxDfUNGp9',
+          '3bSApVyoPDHhamzYmW96PxQaAHYrsmS6enywjrpnqb1HJy558jscLYoC3MsTBMNQcWinEf2puJv8n3kgJHTwZT6R',
+          'mU9oSurPbzTSaAe8NFjNfbvhaxWv5crNHMLpydwjFYJL7Ht91dvSAwVzZNWrYvUC4cq5zi7hU8jdynxF48xc5Bi',
+          'tRJ24G2SSMgrdxzH4vpFwaz1H2TKHjg9dKfWa9ephLW5r67e7ydzSBDPS5QSR5LwxbZVEK1y7QFHqNe14KDDtUU',
+          '3ihPQXSUBw42dRAsMTR2ZQUhkEpdv8ApZSPCR7ZPfqv3XeXgQ6exaon8eF6EwNYoE9HDpPRFeQ5dz6cuEengkNqg')"
       - tx_excluded:
           name: silver__swaps_intermediate_raydium_tx_excluded_test
           excluded_tx_ids:

@@ -4,7 +4,9 @@
     materialized = 'incremental',
     unique_key = ["tx_id", "index" ],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE','program_id'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}'),
+    merge_exclude_columns = ["inserted_timestamp"],
+    tags = ['scheduled_non_core']
 ) }}
 
 SELECT
@@ -22,7 +24,13 @@ SELECT
         A.value :data [1],
         A.value :data
     ) AS decoded_instruction,
-    A._inserted_timestamp
+    A._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['A.tx_id', 'A.index']
+    ) }} AS decoded_instructions_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
 
 {% if is_incremental() %}

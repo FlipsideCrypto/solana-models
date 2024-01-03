@@ -2,7 +2,10 @@
     materialized = 'incremental',
     unique_key = "_unique_key",
     incremental_strategy = 'merge',
-    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::date']
+    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::date'],
+    merge_exclude_columns = ["inserted_timestamp"],
+    full_refresh = false,
+    enabled = false
 ) }}
 
 WITH base_stake_pool_events AS (
@@ -224,7 +227,13 @@ select
     e.instruction :accounts [2] :: STRING AS reserve_stake_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp,
-    concat_ws('-',e.tx_id,e.index) as _unique_key
+    concat_ws('-',e.tx_id,e.index) as _unique_key,
+    {{ dbt_utils.generate_surrogate_key(
+        ['e.tx_id', 'e.index']
+    ) }} AS stake_pool_actions_eversol_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 from deposit_events e
 LEFT OUTER JOIN base_balances b
         ON b.tx_id = e.tx_id
@@ -246,7 +255,13 @@ select
     e.instruction :accounts [2] :: STRING AS reserve_stake_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp,
-    concat_ws('-',e.tx_id,e.index) as _unique_key
+    concat_ws('-',e.tx_id,e.index) as _unique_key,
+    {{ dbt_utils.generate_surrogate_key(
+        ['e.tx_id', 'e.index']
+    ) }} AS stake_pool_actions_eversol_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 from deposit_dao_events e
 LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
 WHERE
@@ -266,7 +281,13 @@ select
     e.instruction :accounts [2] :: STRING AS reserve_stake_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp,
-    concat_ws('-',e.tx_id,e.index) as _unique_key
+    concat_ws('-',e.tx_id,e.index) as _unique_key,
+    {{ dbt_utils.generate_surrogate_key(
+        ['e.tx_id', 'e.index']
+    ) }} AS stake_pool_actions_eversol_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 from deposit_dao_with_referrer_events e
 LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
 WHERE
@@ -293,7 +314,13 @@ select
         '-',
         e.tx_id,
         e.index
-    ) AS _unique_key
+    ) AS _unique_key,
+    {{ dbt_utils.generate_surrogate_key(
+        ['e.tx_id', 'e.index']
+    ) }} AS stake_pool_actions_eversol_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 from deposit_dao_stake_merge e 
 union 
 select 
@@ -310,7 +337,13 @@ select
     e.instruction :accounts [4] :: STRING AS reserve_stake_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp,
-    concat_ws('-',e.tx_id,e.index) as _unique_key
+    concat_ws('-',e.tx_id,e.index) as _unique_key,
+    {{ dbt_utils.generate_surrogate_key(
+        ['e.tx_id', 'e.index']
+    ) }} AS stake_pool_actions_eversol_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 from withdraw_events e
 LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
 WHERE
@@ -330,7 +363,13 @@ select
     e.instruction :accounts [5] :: STRING AS reserve_stake_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp,
-    concat_ws('-',e.tx_id,e.index) as _unique_key
+    concat_ws('-',e.tx_id,e.index) as _unique_key,
+    {{ dbt_utils.generate_surrogate_key(
+        ['e.tx_id', 'e.index']
+    ) }} AS stake_pool_actions_eversol_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 from withdraw_dao_events e
 LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
 WHERE
@@ -350,7 +389,13 @@ select
     NULL AS reserve_stake_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp,
-    concat_ws('-',e.tx_id,e.index) as _unique_key
+    concat_ws('-',e.tx_id,e.index) as _unique_key,
+    {{ dbt_utils.generate_surrogate_key(
+        ['e.tx_id', 'e.index']
+    ) }} AS stake_pool_actions_eversol_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 from withdraw_stake_events e
 LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
 WHERE
@@ -370,7 +415,13 @@ select
     NULL AS reserve_stake_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp,
-    concat_ws('-',e.tx_id,e.index) as _unique_key
+    concat_ws('-',e.tx_id,e.index) as _unique_key,
+    {{ dbt_utils.generate_surrogate_key(
+        ['e.tx_id', 'e.index']
+    ) }} AS stake_pool_actions_eversol_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 from withdraw_dao_stake_events e
 LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
 WHERE

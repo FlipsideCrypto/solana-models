@@ -3,6 +3,7 @@
     unique_key = "tx_id",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
+    tags = ['scheduled_non_core']
 ) }}
 
 WITH txs AS (
@@ -167,7 +168,7 @@ sellers AS (
     WHERE 
         i.value :program :: STRING = 'spl-token'
     AND i.value :programId :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-    AND i.value :parsed :type :: STRING = 'transfer'
+    AND i.value :parsed :type :: STRING in ('transfer','closeAccount')
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -205,7 +206,7 @@ AND
     e.block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
     AND '2022-02-08'
 {% endif %}
-
+    qualify(row_number() over (partition by e.tx_id order by i.index desc)) = 1
 ),
 base AS (
     SELECT
@@ -279,7 +280,13 @@ SELECT
         10,
         9
     ) AS sales_amount,
-    b._inserted_timestamp
+    b._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['b.tx_id']
+    ) }} AS nft_sales_magic_eden_v2_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     base b
     LEFT OUTER JOIN post_token_balances p

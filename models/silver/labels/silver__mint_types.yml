@@ -1,0 +1,22 @@
+version: 2
+models:
+  - name: silver__mint_types
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - mint
+    columns:
+      - name: mint
+        description: "{{ doc('mint') }}"
+        tests:
+          - not_null
+      - name: decimal
+        description: "{{ doc('decimal') }}"
+        tests:
+          - not_null
+      - name: mint_type
+        description: "General type of the mint"
+        tests:
+          - not_null
+      - name: mint_standard_type
+        description: "{{ doc('mint_standard_type') }}"

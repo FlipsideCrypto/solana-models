@@ -3,6 +3,7 @@
     unique_key = "CONCAT_WS('-', tx_id, mint)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
+    tags = ['scheduled_non_core']
 ) }}
 
 WITH sales_inner_instructions AS (
@@ -78,7 +79,13 @@ SELECT
         10,
         9
     ) AS sales_amount,
-    s._inserted_timestamp
+    s._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['s.tx_id','p.mint']
+    ) }} AS nft_sales_solanart_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     sales_inner_instructions s
     INNER JOIN post_token_balances p
@@ -93,7 +100,11 @@ GROUP BY
     p.mint,
     s.purchaser,
     s.seller, 
-    s._inserted_timestamp
+    s._inserted_timestamp,
+    nft_sales_solanart_id,
+    inserted_timestamp,
+    modified_timestamp,
+    _invocation_id
 HAVING
     SUM(
         s.amount

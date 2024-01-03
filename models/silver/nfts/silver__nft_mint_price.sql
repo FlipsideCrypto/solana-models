@@ -1,5 +1,6 @@
 {{ config(
-    materialized = 'view'
+    materialized = 'view',
+    tags = ['scheduled_non_core']
 ) }}
 
 with base as (
@@ -27,7 +28,7 @@ with base as (
         _inserted_timestamp,
         2 as ranking
     from 
-        {{ ref('silver__nft_mint_price_other') }}
+        {{ ref('silver__nft_mint_price_other_view') }}
     where 
         mint_price is not null
     union 

@@ -3,8 +3,10 @@
     unique_key = ["block_id","tx_id","index"],
     incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-    full_refresh = false
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}'),
+    full_refresh = false,
+    merge_exclude_columns = ["inserted_timestamp"],
+    tags = ['scheduled_core']
 ) }}
 
 WITH base_transfers_i AS (
@@ -292,7 +294,13 @@ SELECT
     mint,
     source_token_account,
     dest_token_account,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['block_id', 'tx_id', 'index']
+    ) }} AS transfers_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     spl_transfers
 UNION
@@ -309,6 +317,12 @@ SELECT
     mint,
     source_token_account,
     dest_token_account,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['block_id', 'tx_id', 'index']
+    ) }} AS transfers_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     sol_transfers

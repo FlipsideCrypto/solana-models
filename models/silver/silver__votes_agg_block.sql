@@ -3,6 +3,7 @@
     unique_key = "block_id",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
+    tags = ['scheduled_non_core']
 ) }}
 
 WITH v AS (
@@ -21,7 +22,13 @@ WITH v AS (
 SELECT 
   t.block_timestamp,
   v.block_id, 
-  num_votes
+  num_votes,
+  {{ dbt_utils.generate_surrogate_key(
+        ['v.block_id']
+  ) }} AS votes_agg_block_id,
+  SYSDATE() AS inserted_timestamp,
+  SYSDATE() AS modified_timestamp,
+  '{{ invocation_id }}' AS _invocation_id
 
 FROM v
 

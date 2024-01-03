@@ -3,6 +3,8 @@
     unique_key = "CONCAT_WS('-', tx_id, voter, voter_nft, gauge)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
+    full_refresh = false,
+    enabled = false,
 ) }}
 
 WITH all_marinade_gov_events AS (

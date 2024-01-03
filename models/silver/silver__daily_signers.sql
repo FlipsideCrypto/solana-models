@@ -3,7 +3,8 @@
     unique_key = "CONCAT_WS('-', signer, b_date)",
     incremental_strategy = 'delete+insert',
     cluster_by = 'signer',
-    full_refresh = false
+    full_refresh = false,
+    tags = ['scheduled_daily','signers']
 ) }}
 
 WITH dates_changed AS (

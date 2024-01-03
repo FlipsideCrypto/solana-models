@@ -1,0 +1,5 @@
+workflow_name,workflow_schedule
+dbt_run_get_nft_compressed_backfill,"*/15 * * * *"
+dbt_run_incremental,"16,46 * * * *"
+dbt_run_incremental_non_core,"1,31 * * * *"
+dbt_test_tasks,"0,30 * * * *"

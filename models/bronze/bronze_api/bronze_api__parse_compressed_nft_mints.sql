@@ -1,34 +1,47 @@
+-- depends_on: {{ ref('silver__nft_compressed_mints_onchain') }}
 {{ config(
     materialized = 'incremental',
-    tags = ['bronze_api']
+    tags = ['bronze_api'],
+    cluster_by = ['end_inserted_timestamp::date']
 ) }}
 
-WITH collection_subset AS (
-
-    SELECT
-        block_timestamp,
-        block_id,
-        tx_id,
-        _inserted_timestamp
-    FROM
-        {{ ref('silver__nft_compressed_mints_onchain') }}
-
-{% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
+{% if execute %}
+    {% set query = """
+        CREATE OR REPLACE TEMPORARY TABLE bronze_api.parse_compressed_nft_mints__intermediate_tmp AS 
         SELECT
-            MAX(end_inserted_timestamp)
+            block_timestamp,
+            block_id,
+            tx_id,
+            _inserted_timestamp
         FROM
-            {{ this }}
-    )
-{% else %}
-WHERE
-    _inserted_timestamp :: DATE = '2023-02-07'
+            """ ~ ref('silver__nft_compressed_mints_onchain')
+    %}
+    {% set incr = "" %}
+    {% if is_incremental() %}
+        {% set incr = """
+            WHERE
+                _inserted_timestamp >= (
+                    SELECT
+                        MAX(end_inserted_timestamp)
+                    FROM
+                        """ ~ this ~ """
+                )
+        """ %}
+    {% endif %}
+    {% set query2 = """
+        qualify(ROW_NUMBER() over (
+        ORDER BY
+            _inserted_timestamp)) <= 10000""" %}
+    {% do run_query(query ~ incr ~ query2) %}
+    {% set min_inserted_timestamp = run_query("""SELECT min(_inserted_timestamp) FROM bronze_api.parse_compressed_nft_mints__intermediate_tmp""").columns[0].values()[0] %}
+    {% set max_inserted_timestamp = run_query("""SELECT max(_inserted_timestamp) FROM bronze_api.parse_compressed_nft_mints__intermediate_tmp""").columns[0].values()[0] %}
 {% endif %}
 
-qualify(ROW_NUMBER() over (
-ORDER BY
-    _inserted_timestamp)) <= 5000
+WITH collection_subset AS (
+    SELECT
+        *
+    FROM
+        bronze_api.parse_compressed_nft_mints__intermediate_tmp
 ),
 base AS (
     SELECT
@@ -69,6 +82,7 @@ base AS (
         )
         AND e.block_timestamp :: DATE = C.block_timestamp :: DATE
         AND ii_program_id = 'noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'
+        AND e._inserted_timestamp between '{{ min_inserted_timestamp }}' and '{{ max_inserted_timestamp }}'
 )
 SELECT
     ARRAY_AGG(request) AS batch_request,
@@ -82,7 +96,5 @@ SELECT
     ) AS _id
 FROM
     base
-WHERE
-    gn < 5
 GROUP BY
     gn

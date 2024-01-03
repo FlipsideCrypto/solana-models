@@ -14,6 +14,7 @@
             {{ udf_bulk_program_parser() }};
             {{ udf_decode_instructions() }};
             {{ udf_bulk_parse_compressed_nft_mints() }};
+            {{ udf_bulk_get_solscan_blocks() }};
         {% endif %}
 
         {{ create_udf_ordered_signers(
@@ -47,6 +48,10 @@
         ) }}
         {{
             create_udf_get_tx_size(
+            schema = "silver"
+        ) }}
+        {{
+            create_udf_get_account_pubkey_by_name(
             schema = "silver"
         ) }}
         {% endset %}

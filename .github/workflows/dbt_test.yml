@@ -41,4 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt test -s ./models
+          dbt test -s "solana_models,./models"

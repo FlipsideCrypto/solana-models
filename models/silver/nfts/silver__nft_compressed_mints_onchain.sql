@@ -2,6 +2,7 @@
   materialized = 'incremental',
   unique_key = "tx_id",
   incremental_strategy = 'delete+insert',
+  tags = ['compressed_nft']
 ) }}
 
 WITH bgum_mints AS (
@@ -31,7 +32,8 @@ WITH bgum_mints AS (
       'Program log: Instruction: MintToCollectionV1' :: variant,
       log_messages
     )
-
+    AND collection_mint IS NOT NULL
+    
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
   SELECT

@@ -3,6 +3,8 @@
     unique_key = ["block_id","tx_id","program_id"],
     incremental_strategy = 'merge',
     cluster_by = ['block_timestamp::DATE'],
+    merge_exclude_columns = ["inserted_timestamp"],
+    tags = ['scheduled_non_core']
 ) }}
 
 WITH base AS (
@@ -250,7 +252,13 @@ SELECT
     ) AS to_amt,
     pf.to_mint,
     pf._log_id,
-    pf._inserted_timestamp
+    pf._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ["pf.block_id","pf.tx_id","pf.program_id"]
+    ) }} AS swaps_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     pre_final pf
     LEFT OUTER JOIN refunds r
@@ -277,7 +285,13 @@ SELECT
     0 AS to_amt,
     pf.to_mint,
     pf._log_id,
-    pf._inserted_timestamp
+    pf._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['pf.block_id','pf.tx_id','pf.program_id']
+    ) }} AS swaps_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     pre_final pf
 WHERE

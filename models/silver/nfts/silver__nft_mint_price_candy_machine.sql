@@ -3,6 +3,7 @@
     unique_key = "CONCAT_WS('-', mint, payer, mint_currency)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
+    tags = ['scheduled_non_core']
 ) }}
 
 WITH base_candy_machine_events AS (

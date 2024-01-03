@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }} }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }} },
+    tags = ['scheduled_non_core']
 ) }}
 
 SELECT
@@ -13,7 +14,13 @@ SELECT
     purchaser,
     seller,
     mint,
-    sales_amount
+    sales_amount,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_id', 'mint']
+    ) }} AS fact_nft_sales_id,
+    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS modified_timestamp
+    
 FROM
     {{ ref(
         'silver__nft_sales_magic_eden_v1_view'
@@ -29,7 +36,21 @@ SELECT
     purchaser,
     seller,
     mint,
-    sales_amount
+    sales_amount,
+    COALESCE (
+        nft_sales_magic_eden_v2_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_id']
+        ) }}
+    ) AS fact_nft_sales_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_magic_eden_v2') }}
 UNION
@@ -43,7 +64,21 @@ SELECT
     purchaser,
     seller,
     mint,
-    sales_amount
+    sales_amount,
+    COALESCE (
+        nft_sales_solanart_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_id']
+        ) }}
+    ) AS fact_nft_sales_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_solanart') }}
 UNION
@@ -57,9 +92,14 @@ SELECT
     purchaser,
     seller,
     mint,
-    sales_amount
+    sales_amount,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_id']
+    ) }} AS fact_nft_sales_id,
+    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS modified_timestamp
 FROM
-    {{ ref('silver__nft_sales_smb') }}
+    {{ ref('silver__nft_sales_smb_view') }}
 UNION
 SELECT
     'solport',
@@ -71,7 +111,12 @@ SELECT
     purchaser,
     seller,
     mint,
-    sales_amount
+    sales_amount,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_id', 'mint']
+    ) }} AS fact_nft_sales_id,
+    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS modified_timestamp
 FROM
     {{ ref(
         'silver__nft_sales_solport_view'
@@ -87,7 +132,12 @@ SELECT
     purchaser,
     seller,
     mint,
-    sales_amount
+    sales_amount,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_id', 'mint']
+    ) }} AS fact_nft_sales_id,
+    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_opensea_view') }}
 UNION
@@ -101,7 +151,12 @@ SELECT
     purchaser,
     seller,
     mint,
-    sales_amount
+    sales_amount,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_id']
+    ) }} AS fact_nft_sales_id,
+    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_yawww_view') }}
 UNION
@@ -115,7 +170,21 @@ SELECT
     purchaser,
     seller,
     mint,
-    sales_amount
+    sales_amount,
+    COALESCE (
+        nft_sales_hadeswap_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_id','mint']
+        ) }}
+    ) AS fact_nft_sales_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_hadeswap') }}
 UNION
@@ -129,7 +198,21 @@ SELECT
     purchaser,
     seller,
     mint,
-    sales_amount
+    sales_amount,
+    COALESCE (
+        nft_sales_hyperspace_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_id','mint']
+        ) }}
+    ) AS fact_nft_sales_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_hyperspace') }}
 UNION
@@ -143,9 +226,14 @@ SELECT
     purchaser,
     seller,
     mint,
-    sales_amount
+    sales_amount,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_id','mint']
+    ) }} AS fact_nft_sales_id,
+    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS modified_timestamp
 FROM
-    {{ ref('silver__nft_sales_coral_cube') }}
+    {{ ref('silver__nft_sales_coral_cube_view') }}
 UNION
 SELECT
     'exchange art',
@@ -157,7 +245,21 @@ SELECT
     purchaser,
     seller,
     mint,
-    sales_amount
+    sales_amount,
+    COALESCE (
+        nft_sales_exchange_art_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_id','mint']
+        ) }}
+    ) AS fact_nft_sales_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_exchange_art') }}
 UNION
@@ -171,7 +273,21 @@ SELECT
     purchaser,
     seller,
     mint,
-    sales_amount
+    sales_amount,
+    COALESCE (
+        nft_sales_amm_sell_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_id','mint']
+        ) }}
+    ) AS fact_nft_sales_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_amm_sell') }}
 UNION
@@ -185,6 +301,20 @@ SELECT
     purchaser,
     seller,
     mint,
-    sales_amount
+    sales_amount,
+    COALESCE (
+        nft_sales_tensorswap_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_id','mint','purchaser']
+        ) }}
+    ) AS fact_nft_sales_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_tensorswap') }}

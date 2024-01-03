@@ -2,7 +2,9 @@
     materialized = 'incremental',
     unique_key = "CONCAT_WS('-', tx_id, event_type, mint)",
     incremental_strategy = 'delete+insert',
-    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE']
+    incremental_predicates = ['block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
+    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
+    tags = ['scheduled_non_core']
 ) }}
 
 WITH base_events AS (

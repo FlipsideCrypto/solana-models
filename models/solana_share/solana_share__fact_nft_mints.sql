@@ -15,5 +15,5 @@
     mint_price,
     mint_currency, 
     mint 
-FROM {{ref('core__fact_nft_mints')}}
+FROM {{ref('nft__fact_nft_mints')}}
 where block_timestamp::date between '2021-12-01' and '2021-12-31'

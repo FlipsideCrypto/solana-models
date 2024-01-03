@@ -3,8 +3,10 @@
     unique_key = "tx_id",
     incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     cluster_by = ['block_timestamp::DATE','block_id','_inserted_timestamp::DATE'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION", 
-    full_refresh = false
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}'), 
+    full_refresh = false,
+    merge_exclude_columns = ["inserted_timestamp"],
+    tags = ['scheduled_core']
 ) }}
 
 WITH pre_final AS (
@@ -57,7 +59,7 @@ WITH pre_final AS (
         SELECT 
             MAX(_partition_id)
         FROM 
-            {{ source('solana_streamline','complete_block_txs') }}
+           {{ source('solana_streamline','complete_block_txs') }}
     )
     AND t._inserted_timestamp > (
         SELECT
@@ -134,7 +136,13 @@ SELECT
     silver.udf_get_tx_size(account_keys,instructions,version,address_table_lookups,signers) as tx_size,
     version,
     _partition_id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_id']
+    ) }} AS transactions_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     pre_final b qualify(ROW_NUMBER() over(PARTITION BY block_id, tx_id
 ORDER BY
@@ -143,7 +151,13 @@ ORDER BY
 {% if is_incremental() %}
 UNION
 SELECT
-    *
+    *,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_id']
+    ) }} AS transactions_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     prev_null_block_timestamp_txs
 {% endif %}

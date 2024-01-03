@@ -63,3 +63,9 @@ models:
         description: The percentage of staked earnings given to the validator. 
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: EZ_STAKING_LP_ACTIONS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

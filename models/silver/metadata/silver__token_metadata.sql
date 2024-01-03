@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "token_address",
-    incremental_strategy = 'merge'
+    incremental_strategy = 'merge',
+    tags = ['scheduled_non_core']
 ) }}
 
 WITH cmc_base AS (
@@ -194,6 +195,12 @@ SELECT
         cmc_urls
     ) AS website,
     cmc_description AS description,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['token_address']
+    ) }} AS labels_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     fin

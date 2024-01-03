@@ -2,7 +2,9 @@
   materialized = 'incremental',
   unique_key = "block_id",
   incremental_strategy = 'delete+insert',
-  cluster_by = ['block_timestamp::DATE','_inserted_timestamp::date']
+  cluster_by = ['block_timestamp::DATE','_inserted_timestamp::date'],
+  tags = ['scheduled_core'],
+  full_refresh = false
 ) }}
 
 {% if is_incremental() %}
@@ -110,6 +112,12 @@ SELECT
   previous_block_id,
   previous_block_hash,
   _inserted_date,
-  _inserted_timestamp
+  _inserted_timestamp,
+  {{ dbt_utils.generate_surrogate_key(
+        ['block_id']
+    ) }} AS blocks_id,
+  SYSDATE() AS inserted_timestamp,
+  SYSDATE() AS modified_timestamp,
+  '{{ invocation_id }}' AS _invocation_id
 FROM
   pre_final
