@@ -5,9 +5,6 @@ on:
   workflow_dispatch:
     branches:
       - "main"
-#   schedule:
-#     # Runs every 30 mins (see https://crontab.guru)
-#     - cron: '*/30 * * * *'
     
 env:
   DBT_PROFILES_DIR: "${{ vars.DBT_PROFILES_DIR }}"

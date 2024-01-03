@@ -2,10 +2,11 @@
 -- depends_on: {{ ref('bronze__streamline_FR_decoded_instructions_2') }}
 {{ config(
     materialized = 'incremental',
-    unique_key = ["tx_id", "index", "inner_index" ],
+    unique_key = "decoded_instructions_id",
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE','program_id'],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}'),
     merge_exclude_columns = ["inserted_timestamp"],
+    tags = ['scheduled_non_core'],
 ) }}
 
 SELECT
@@ -54,6 +55,6 @@ WHERE
     )
 {% endif %}
 
-qualify(ROW_NUMBER() over (PARTITION BY tx_id, INDEX, inner_index
+qualify(ROW_NUMBER() over (PARTITION BY tx_id, INDEX, coalesce(inner_index,-1)
 ORDER BY
     A._inserted_timestamp DESC)) = 1
