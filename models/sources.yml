@@ -63,6 +63,7 @@ sources:
       - name: solscan_token_list
       - name: token_metadata
       - name: block_production
+      - name: wormhole_txs
   - name: solana_silver
     schema: silver
     tables:
