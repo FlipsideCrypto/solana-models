@@ -15,6 +15,8 @@ WITH base AS (
         {{ ref('silver__decoded_instructions') }}
     WHERE
         program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+    AND 
+        inner_index is null /* temp disable inner instruction process, matches existing behavior using previous decoded table */
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
