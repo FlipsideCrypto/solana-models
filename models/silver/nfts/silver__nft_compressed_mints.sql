@@ -61,7 +61,7 @@ SELECT
     b.mint_currency,
     b.program_id,
     {{ dbt_utils.generate_surrogate_key(
-        ['tx_id']
+        ['b.tx_id']
     ) }} AS nft_compressed_mints_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp
