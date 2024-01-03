@@ -42,7 +42,7 @@ sources:
       - name: prod_nft_metadata_uploads_1828572827
   - name: bronze_streamline
     database: streamline
-    schema: solana
+    schema: "{{ 'solana' if target.database == 'SOLANA' else 'solana_dev' }}"
     tables:
       - name: decode_instructions_idls
       - name: decoded_instructions_data_api
@@ -57,6 +57,7 @@ sources:
       - name: stake_program_accounts
       - name: validator_vote_program_accounts
       - name: program_parser
+      - name: decoded_instructions_2
   - name: bronze_api
     schema: bronze_api
     tables:
