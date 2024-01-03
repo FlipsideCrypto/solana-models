@@ -4,6 +4,7 @@
     cluster_by = '_inserted_timestamp::date',
     full_refresh = false
 ) }}
+--update
 
 WITH pre_requests AS (
 
@@ -23,6 +24,8 @@ final_requests AS (
 response AS (
     SELECT
         tx_id,
+        block_id,
+        block_timestamp,
         livequery_dev.live.udf_api(
             'GET',
             'https://stats-api.dln.trade/api/Transaction/' || (
@@ -41,6 +44,8 @@ response AS (
 )
 SELECT
     tx_id,
+    block_id,
+    block_timestamp,
     PARSE_JSON(
         response :data
     ) AS json_data,
