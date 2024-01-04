@@ -18,22 +18,17 @@ SELECT
    ) calls
 FROM
     (
-        WITH request AS (
-            SELECT
-                utils.udf_json_rpc_call(
-                    'getEpochInfo',
-                    []
-                ) AS rpc_request
-        ),
-        current_epoch_data AS (
+        WITH current_epoch_data AS (
             SELECT
                 live.udf_api(
                     'POST',
-                    'https://api.mainnet-beta.solana.com',{},
-                    rpc_request
+                    'https://api.mainnet-beta.solana.com',
+                    {},
+                    utils.udf_json_rpc_call(
+                        'getEpochInfo',
+                        []
+                    )
                 ) DATA
-            FROM
-                request
         ),
         temp AS (
             SELECT
