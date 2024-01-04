@@ -1,14 +1,14 @@
-name: dbt_test_intraday
-run-name: dbt_test_intraday
+name: dbt_run_helius_metadata
+run-name: dbt_run_helius_metadata
 
 on:
   workflow_dispatch:
   schedule:
-    # Runs “At minute 45 past every 4th hour.” (see https://crontab.guru)
-    - cron: '45 */4 * * *'
+    # Runs "at minute 0 past hour 3 and 15" (see https://crontab.guru)
+    - cron: '0 3,15 * * *'
     
 env:
-  DBT_PROFILES_DIR: ./
+  DBT_PROFILES_DIR: "${{ vars.DBT_PROFILES_DIR }}"
 
   ACCOUNT: "${{ vars.ACCOUNT }}"
   ROLE: "${{ vars.ROLE }}"
@@ -31,9 +31,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v4
         with:
-          python-version: "3.7.x"
+          python-version: "${{ vars.PYTHON_VERSION }}"
+          cache: "pip"
 
       - name: install dependencies
         run: |
@@ -41,4 +42,6 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m models/silver/_observability
+          dbt run -s models/silver/metadata/helius/silver__helius_nft_requests.sql models/bronze/bronze_api/bronze_api__helius_nft_metadata.sql
+          
+          

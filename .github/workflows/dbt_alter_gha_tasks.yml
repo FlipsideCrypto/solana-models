@@ -36,7 +36,7 @@ concurrency:
 
 jobs:
   called_workflow_template:
-    uses: FlipsideCrypto/analytics-workflow-templates/.github/workflows/dbt_alter_gha_tasks.yml@main
+    uses: FlipsideCrypto/analytics-workflow-templates/.github/workflows/dbt_alter_gha_tasks.yml@AN-4374/upgrade-dbt-1.7
     with:
       workflow_name: |
          ${{ inputs.workflow_name }}
