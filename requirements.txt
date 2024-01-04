@@ -1,1 +1,1 @@
-dbt-snowflake>=1.7,<1.8
+dbt-snowflake>=1.4,<1.8
