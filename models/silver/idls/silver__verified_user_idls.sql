@@ -47,10 +47,18 @@ LIMIT
 ), program_requests AS (
     SELECT
         e.program_id,
-        ARRAY_CONSTRUCT(
+        OBJECT_CONSTRUCT(
+            'tx_id',
+            e.tx_id,
+            'block_id',
+            e.block_id,
+            'index',
             e.index,
+            'program_id',
             e.program_id,
+            'instruction',
             e.instruction,
+            'is_verify',
             TRUE
         ) AS request
     FROM
@@ -75,7 +83,7 @@ groupings AS (
 responses AS (
     SELECT
         program_id,
-        streamline.udf_decode_instructions(requests) AS response
+        streamline.udf_verify_idl(requests) AS response
     FROM
         groupings
 ),
@@ -83,14 +91,14 @@ results as (
     select 
         program_id,
         response :status_code :: INTEGER as status_code,
-        try_parse_json(response:body):data::array as decoded_instructions
+        try_parse_json(response:body)::array as decoded_instructions
     from responses
 ),
 expanded as (
     select
         r.program_id,
         r.status_code,
-        iff(coalesce(d.value:error::string,'') = '' or status_code <> 200,false,true) is_error
+        iff(coalesce(d.value:error::string,'') = '' and coalesce(d.value:data:error::string,'') = '' and status_code = 200,false,true) is_error
     from results r,
     table(flatten(decoded_instructions)) d
 ),
