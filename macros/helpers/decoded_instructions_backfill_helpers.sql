@@ -48,7 +48,7 @@
             where program_id = '""" ~ program_id ~ """'
             and block_id between """ ~ start_block ~ """ and """ ~ end_block ~ """
             and succeeded
-            union 
+            union all
             select
                 e.block_id,
                 e.tx_id,
@@ -60,7 +60,7 @@
                 """ ~ dbt_utils.generate_surrogate_key(['e.block_id','e.tx_id','e.index','inner_index','inner_program_id']) ~ """ as id
             from """ ~ ref('silver__events') ~ """ e ,
             table(flatten(inner_instruction:instructions)) i
-            where array_contains(program_id::variant, inner_instruction_program_ids)
+            where array_contains('""" ~ program_id ~ """'::variant, inner_instruction_program_ids)
             and inner_program_id = '""" ~ program_id ~ """'
             and e.block_id between """ ~ start_block ~ """ and """ ~ end_block ~ """
             and e.succeeded
