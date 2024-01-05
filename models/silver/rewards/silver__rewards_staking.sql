@@ -117,40 +117,46 @@ WHERE
 WHERE
     epoch <= 540
 {% endif %}
+),
+pre_final as (
+    SELECT
+        A.block_timestamp,
+        A.block_id,
+        A.amount / pow(
+            10,
+            9
+        ) AS reward_amount_sol,
+        A.post_balance / pow(
+            10,
+            9
+        ) AS post_balance_sol,
+        A.commission,
+        A.account AS stake_pubkey,
+        (b.epoch-1) AS epoch_earned, -- the rewards are based on the previous epoch activity
+        A._partition_id,
+        {{ dbt_utils.generate_surrogate_key(['epoch_earned','a.block_id','a.account']) }} AS rewards_staking_id,
+        {{ dbt_utils.generate_surrogate_key(['epoch_earned']) }} AS epoch_id,
+        SYSDATE() AS inserted_timestamp,
+        SYSDATE() AS modified_timestamp,
+        '{{ invocation_id }}' AS invocation_id,
+        A._inserted_timestamp
+    FROM
+        base A
+        LEFT JOIN epoch b
+        ON A.block_id BETWEEN b.start_block
+        AND b.end_block 
+    {% if is_incremental() %}
+    UNION
+    SELECT
+        *
+    FROM
+        prev_null_block_timestamp_txs
+    {% endif %}
 )
-SELECT
-    A.block_timestamp,
-    A.block_id,
-    A.amount / pow(
-        10,
-        9
-    ) AS reward_amount_sol,
-    A.post_balance / pow(
-        10,
-        9
-    ) AS post_balance_sol,
-    A.commission,
-    A.account AS stake_pubkey,
-    (b.epoch-1) AS epoch_earned, -- the rewards are based on the previous epoch activity
-    A._partition_id,
-    {{ dbt_utils.generate_surrogate_key(['epoch_earned','a.block_id','a.account']) }} AS rewards_staking_id,
-    {{ dbt_utils.generate_surrogate_key(['epoch_earned']) }} AS epoch_id,
-    SYSDATE() AS inserted_timestamp,
-    SYSDATE() AS modified_timestamp,
-    '{{ invocation_id }}' AS invocation_id,
-    A._inserted_timestamp
-FROM
-    base A
-    LEFT JOIN epoch b
-    ON A.block_id BETWEEN b.start_block
-    AND b.end_block qualify(ROW_NUMBER() over(PARTITION BY epoch_earned, account, block_id
-ORDER BY
-    _inserted_timestamp DESC)) = 1
-
-{% if is_incremental() %}
-UNION
-SELECT
+SELECT 
     *
-FROM
-    prev_null_block_timestamp_txs
-{% endif %}
+FROM 
+    pre_final 
+qualify(ROW_NUMBER() over(PARTITION BY epoch_earned, stake_pubkey, block_id
+    ORDER BY
+        _inserted_timestamp DESC)) = 1
