@@ -47,9 +47,7 @@ ON A.block_id = b.block_id
 WHERE
     A._inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) _inserted_timestamp
+             dateadd('hour', -2, MAX(_inserted_timestamp)) as _inserted_timestamp
         FROM
             {{ this }}
     )
