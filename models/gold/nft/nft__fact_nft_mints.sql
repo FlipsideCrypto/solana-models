@@ -46,7 +46,7 @@ SELECT
     COALESCE (
         nft_compressed_mints_id,
         {{ dbt_utils.generate_surrogate_key(
-            ['tx_id']
+            ['tx_id','mint']
         ) }}
     ) AS fact_nft_mints_id,
     COALESCE(
