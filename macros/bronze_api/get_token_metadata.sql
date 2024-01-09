@@ -18,7 +18,7 @@ with base as (
 )
 select 
     address,
-    livequery_dev.live.udf_api(
+    live.udf_api(
       'GET',
       'https://pro-api.solscan.io/v1.0/token/meta?tokenAddress=' || (
         address
