@@ -53,7 +53,7 @@ WHERE
             {{ this }}
     )
 AND 
-    A._partition_by_created_date_hour >= dateadd('hour', -3, MAX(current_timestamp()))
+    A._partition_by_created_date_hour >= dateadd('hour', -3, current_timestamp())
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY tx_id, INDEX, coalesce(inner_index,-1)

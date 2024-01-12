@@ -27,7 +27,7 @@ WHERE
             {{ this }}
     )
 AND 
-    _partition_by_created_date_hour >= dateadd('hour', -3, MAX(current_timestamp()))
+    _partition_by_created_date_hour >= dateadd('hour', -3, current_timestamp())
 {% else %}
     {{ ref('bronze__streamline_FR_decoded_instructions_2') }}
 {% endif %}
