@@ -22,11 +22,22 @@ WITH base AS (
         AND NOT is_duplicate
 
 {% if is_incremental() %}
-AND program_id NOT IN (
-    SELECT
-        program_id
-    FROM
-        {{ this }}
+AND (
+    program_id NOT IN (
+        SELECT
+            program_id
+        FROM
+            {{ this }}
+    )
+    OR 
+    program_id IN (
+        SELECT
+            program_id
+        FROM
+            {{ this }}
+        WHERE 
+            is_valid = FALSE
+    ) 
 )
 AND _inserted_timestamp > (
     SELECT
