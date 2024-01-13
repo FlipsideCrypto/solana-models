@@ -59,6 +59,8 @@ models:
         description: "{{ doc('mint') }}"
         tests: 
           - not_null
+      - name: TOKEN_ACCOUNT
+        description: The account address where tokens are burned from
       - name: BURN_AMOUNT
         description: Number of tokens burned
         tests: 

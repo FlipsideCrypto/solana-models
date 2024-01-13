@@ -36,6 +36,7 @@ SELECT
     A.mint,
     A.mint_amount,
     A.mint_authority,
+    A.token_account,
     A.signers,
     b.decimal,
     b.mint_standard_type,

@@ -52,6 +52,7 @@ SELECT
     null as inner_index,
     event_type,
     instruction :parsed :info :mint :: STRING AS mint,
+    instruction :parsed :info :account :: STRING as token_account, 
     COALESCE(
         instruction :parsed :info :amount :: INTEGER,
         instruction :parsed :info :tokenAmount: amount :: INTEGER
@@ -79,6 +80,7 @@ SELECT
     i.index as inner_index,
     i.value :parsed :type :: STRING AS event_type,
     i.value :parsed :info :mint :: STRING AS mint,
+    i.value :parsed :info :account :: STRING as token_account, 
     COALESCE(
         i.value :parsed :info :amount :: INTEGER,
         i.value :parsed :info :tokenAmount: amount :: INTEGER
