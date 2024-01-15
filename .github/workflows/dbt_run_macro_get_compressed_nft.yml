@@ -42,5 +42,4 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run -s models/silver/nfts/silver__nft_compressed_mints_onchain.sql
-          dbt run-operation get_helius_compressed_nft
           dbt run -s models/silver/nfts/silver__nft_compressed_mints.sql

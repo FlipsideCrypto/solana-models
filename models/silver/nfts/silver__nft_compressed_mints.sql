@@ -8,88 +8,121 @@
 WITH offchain AS (
 
     SELECT
-        items.value,
-        items.value ['id'] :: STRING AS mint,
+        r.value :tx_id :: STRING AS tx_id,
+        r.value :index :: INTEGER AS mint_index,
+        r.value :inner_index :: INTEGER AS mint_inner_index,
+        COALESCE(
+            r.value :mint :: STRING,
+            ''
+        ) AS mint,
         0.000005 AS mint_price,
         'So11111111111111111111111111111111111111111' AS mint_currency,
         'BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY' AS program_id,
-        page,
-        _inserted_timestamp,
-        nft_collection_mint,
-        items.seq AS seq
+        start_inserted_timestamp AS _inserted_timestamp
     FROM
-        {{ target.database }}.bronze_api.helius_compressed_nfts,
-        LATERAL FLATTEN(
-            input => DATA :data [0] :result :items
-        ) AS items
-
-{% if is_incremental() %}
-WHERE _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-{% endif %}
-
-qualify(ROW_NUMBER() over (PARTITION BY mint
-ORDER BY
-    _inserted_timestamp DESC)) = 1
+        {{ ref('bronze_api__parse_compressed_nft_mints') }},
+        TABLE(FLATTEN(responses)) AS r
+    WHERE
+        mint <> '' 
+    {% if is_incremental() %}
+    AND _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+    {% endif %}
+    qualify(ROW_NUMBER() over (PARTITION BY tx_id, mint
+    ORDER BY
+        _inserted_timestamp DESC)) = 1
 ),
 offchain_ordered AS (
     SELECT
         *,
         ROW_NUMBER() over (
-            PARTITION BY nft_collection_mint
+            PARTITION BY tx_id
             ORDER BY
-                page,
-                seq
-        ) AS ROW_NUMBER
+                mint_index,
+                mint_inner_index
+        ) AS instruction_order
     FROM
         offchain
 ),
+decoded AS (
+    SELECT
+        decoded_instruction :name :: STRING AS instruction_name,
+        *
+    FROM
+        {{ ref('silver__decoded_instructions') }}
+    WHERE
+        program_id = 'BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY'
+    {% if is_incremental() %}
+    AND _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+    {% endif %}
+),
 onchain AS (
     SELECT
-        *,
+        m.*,
+        d.instruction_name,
         ROW_NUMBER() over (
-            PARTITION BY collection_mint
+            PARTITION BY m.tx_id
             ORDER BY
-                block_timestamp DESC
-        ) AS ROW_NUMBER
+                m.index,
+                m.inner_index
+        ) AS instruction_order
     FROM
         {{ ref('silver__nft_compressed_mints_onchain') }}
-
-{% if is_incremental() %}
-WHERE _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-{% endif %}
+        m
+        LEFT OUTER JOIN decoded d
+        ON d.tx_id = m.tx_id
+        AND d.index = m.index
+        AND COALESCE(
+            d.inner_index,
+            -1
+        ) = COALESCE(
+            m.inner_index,
+            -1
+        )
+    {% if is_incremental() %}
+    WHERE _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+    {% endif %}
 )
 SELECT
     A.block_timestamp,
     A.block_id,
     A.succeeded,
-    A.tx_id,
+    b.tx_id,
     A.leaf_owner,
     A.collection_mint,
-    A._inserted_timestamp,
+    b._inserted_timestamp,
     A.creator_address AS purchaser,
     b.mint,
     b.mint_price,
     b.mint_currency,
     b.program_id,
+    A.instruction_name,
     {{ dbt_utils.generate_surrogate_key(
-        ['tx_id']
+        ['b.tx_id','b.mint']
     ) }} AS nft_compressed_mints_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp
 FROM
-    onchain A
-    LEFT JOIN offchain_ordered b
-    ON A.row_number = b.row_number
-    AND A.collection_mint = b.nft_collection_mint
+    offchain_ordered b
+    LEFT JOIN onchain A
+    ON A.tx_id = b.tx_id
+    AND A.instruction_order = b.instruction_order
 WHERE
-    b.row_number IS NOT NULL
+    (
+        A.instruction_name LIKE 'mint%'
+        OR A.instruction_name IS NULL
+    )
