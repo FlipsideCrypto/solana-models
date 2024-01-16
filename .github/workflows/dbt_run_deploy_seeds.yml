@@ -1,12 +1,12 @@
-name: dbt_run_deploy_udfs_and_sps
-run-name: dbt_run_deploy_udfs_and_sps
+name: dbt_run_deploy_seeds
+run-name: dbt_run_deploy_seeds
 
 on:
   push:
     branches:
       - main  
     paths:
-      - 'macros/**'
+      - 'data/**'
     
 env:
   DBT_PROFILES_DIR: "${{ vars.DBT_PROFILES_DIR }}"
@@ -44,5 +44,5 @@ jobs:
 
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"UPDATE_UDFS_AND_SPS": True}' -s models/bronze/bronze__blocks.sql
+          dbt seed -s ./data --full-refresh
           
