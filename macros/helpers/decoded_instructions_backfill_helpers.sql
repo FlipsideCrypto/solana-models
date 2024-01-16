@@ -192,28 +192,30 @@
 {% endmacro %}
 
 {% macro register_files_bronze_decoded_instructions_2(lookback_hours) %}
-    {% set date_hour_parts = run_query("""
-        WITH times as (
-            SELECT
-                *
-            from 
-                crosschain.core.dim_date_hours
-            where date_hour between date_trunc('hour',dateadd('hour',-1,sysdate())) and date_trunc('hour',sysdate())
-        )
-        , base as (
-            SELECT
-            split(date_hour::string,'-') as s,
-            split(s[2],' ') as s2,
-            split(s2[1],':') as s3,
-            concat_ws('/',s[0],s[1],s2[0],s3[0]) as part
-            from times
-        )
-        select 
-            part
-        from base""").columns[0].values()
-    %}
+    {% if execute %}
+        {% set date_hour_parts = run_query("""
+            WITH times as (
+                SELECT
+                    *
+                from 
+                    crosschain.core.dim_date_hours
+                where date_hour between date_trunc('hour',dateadd('hour',-1,sysdate())) and date_trunc('hour',sysdate())
+            )
+            , base as (
+                SELECT
+                split(date_hour::string,'-') as s,
+                split(s[2],' ') as s2,
+                split(s2[1],':') as s3,
+                concat_ws('/',s[0],s[1],s2[0],s3[0]) as part
+                from times
+            )
+            select 
+                part
+            from base""").columns[0].values()
+        %}
 
-    {% for date_hour_part in date_hour_parts %}
-        {% do run_query("""alter external table streamline.solana_dev.decoded_instructions_2 refresh '""" ~ date_hour_part ~ """'""") %}
-    {% endfor %}
+        {% for date_hour_part in date_hour_parts %}
+            {% do run_query("""alter external table streamline.""" ~ target.database ~ """.decoded_instructions_2 refresh '""" ~ date_hour_part ~ """'""") %}
+        {% endfor %}
+    {% endif %}
 {% endmacro %}
