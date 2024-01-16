@@ -43,5 +43,6 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run-operation run_sp_refresh_external_tables_full
+          dbt run-operation register_files_bronze_decoded_instructions_2 --args "{'lookback_hours': -1}"
           dbt run -s "solana_models,tag:scheduled_core" "solana_models,tag:scheduled_non_core" 
           
