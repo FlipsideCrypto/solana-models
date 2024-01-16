@@ -43,6 +43,10 @@ models:
         description: The account address with authority to confirm burn event
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: TOKEN_ACCOUNT
+        description: The account address where tokens are burned from
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: SIGNERS
         description: "{{ doc('signers') }}"
         tests: 
