@@ -222,7 +222,7 @@ wormhole AS (
         AND A.burn_amount > 0
         AND b.program_id = 'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb'
 ),
-prefinal AS (
+pre_final AS (
     SELECT
         *
     FROM
