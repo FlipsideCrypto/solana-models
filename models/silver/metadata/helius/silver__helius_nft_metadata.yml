@@ -8,8 +8,10 @@ models:
         tests:
           - not_null
           - unique
-      - name: CREATOR_ADDRESS
-        description: "Authority address for the NFT mint"
+      - name: CREATORS
+        description: "Creators of the NFT and what percentage of royalties they receive"
+      - name: AUTHORITY
+        description: "Authority address for the mint. When editions are minted, the master NFT is the authority"
       - name: NFT_METADATA
         description: "Metadata attributes that describe the NFT"
       - name: IMAGE_URL
