@@ -4,15 +4,43 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - BLOCK_ID
-            - TX_ID
+            - BRIDGE_TRANSFERS_ID
+      - compare_model_subset:
+          name: silver__bridge_transfers_logic_test
+          compare_model: ref('testing__bridge_transfers')
+          compare_columns: 
+            - tx_id
+            - program_id
+            - direction
+            - user_address
+            - round(amount,8)
+            - mint
+          model_condition: "where tx_id in ('4qqEcftiXE4ug5dmEPNpqqJ2f82CYTYwmhVJRWTpwftrLxQTwQzGW8D6sWFbR7BxXjKfvuitHPUFJTME6B5cxiE8',
+          '4qqEcftiXE4ug5dmEPNpqqJ2f82CYTYwmhVJRWTpwftrLxQTwQzGW8D6sWFbR7BxXjKfvuitHPUFJTME6B5cxiE8',
+          '39QnQNLPgA8EfZdw6vbjQYdUhR9fb9Rw5K9EzJ7Br3S51yCY2NrSAi3YSM3F1rH6xYmvBE4oq9krSrjUvQGSrmzM',
+          '3FrmUUacSrahxpqzViWF9A3ZkvkgXvArnxmrCSD9UjtWBuduPFPtfTw7SxJDgBBrhBfUhfxZYnL16nr9jCgU7Pvt',
+          'faHTAkhRb1zs4nkwdvFMMCsnGi1ro3HrsAsqeq5kYPWaBsXo2ukFohPqE4ja1SYnFyEGAdSETAZZ3iMBDsbnhzH',
+          '38ZPcqmWfzkW47aUVBnYWehPFGHUtvRJrH4XrWLLUSnxvvXndMFcntCe297ppp6RHbmpgQNbEM3pTvCn4mEF7o1V',
+          '2C6vZnTWkJ3FXJpW1zj18dfWKLGH26GWSHUr9j6Mpx7hwBdauWoDkE6B8ra54qRPN6BBw4PTsvW8ZqUtFRV3Bgdr',
+          'XtM25TbM8BW7L5JXoceVJoF41GuWMP69WjdxdWJUrKyYdV8DRXyGG81ey8JfRnS6UKYi67D2X3MYz1SCnVLvHmJ',
+          '1NSyLSuHwMmb7c6DSW5wsqf8B85i5tdTrXrw1dPS3eGL46EikLhZm6qbHUQRZReLkcuR7Es42xAidmk54N13FgC',
+          '1VFGjNWtmhTS6ahfvU5xxXHuQmMPF5bohEk5TEZyGsUrPRwEr92cz9UNtiY5scVsUtHUEFRu1mdqAoP4ydnCGVD',
+          '3g7GGbBJpGDfCaa1MQVQGpieqYi6j9XWUtsUKXh6ogUi1ss7asthzd81irNrpx1WGW5h7B75FN7jhN4UCyicxgCe',
+          '2AzNhDD9GWUrJvhhrdCcaVnuU4Mb3aZKNozhCMJZJ52b9SwrQNg42JVmcx2GvfCxk6cKaPGdSz8gUWqqpaznRg3f',
+          '4g5MiEFhfTWpctmWAS5Q435NxZxQWkTNQ22Lj7VVRx9BS6Tbeg8ACq7k25qN2EyUBG5eVFenqcSyFJKQgxFyud2Q',
+          '3ySH2GiuWxpXm4nH25Cc1n9MT3Zahdku2wzyve3E1hFeA83VV3AN7hWoWBp39Mtfyr6tHhwiSNeqMEkNn9a6aBEF',
+          '4AcYHm3GoS7efSHTXfsrPhmwFfeT9QASFraSeJHoJyZA3mpPfWuzeG9eyFKyn8ibW1dfCsuwfr3iFMx4GFTeBWHy',
+          '51bkYq62kFw9zX88KbbwBMGKeWgoNz7DXo8wU2aD6qbtL3LvvX2m58n6JS2HdYoUHmckHQkZMvnWA98aLQ1TAS29',
+          '4EP7wWKhma2dsi4mconqsWPCBM9ow4JaVRydxLEcrLwriaFEEgHu9uuJccqSb1o9pdF6wVdZq1tqvTjD9me4ciVc',
+          '4sy3zM6EjNuZ65gFqfKUChRtVCQiHxedUhq8SSNEXJbckxHKExdig3zaJwSFNGTp9uYxLUHBWtr6maaGR1LAruMQ',
+          '4oUbo4UMmdpFsAd6mNtuN17ho43oLU5UYYR1mzKFmG5PRuKQMQnenEPkpS6S4RPWewqD2kBfB5wN92WEmMVV2bba')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
-              interval: 14
+              interval: 2
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
@@ -21,31 +49,34 @@ models:
         description: "{{ doc('tx_id') }}"
         tests:
           - not_null
-      - name: LIQUIDITY_POOL
-        description: "Address of the liquidity pool"
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
         tests: 
           - not_null
-      - name: OWNER
-        description: "Owner account address of the Liquidity Pool"
+      - name: PLATFORM
+        description: Name of the bridge
         tests: 
           - not_null
-      - name: MINT_AUTHORITY
-        description: "Account address of the mint authority for the liquidity pool"
+      - name: DIRECTION
+        description: Direction of the bridge - either inbound to Solana or outbound from Solana
         tests: 
           - not_null
-      - name: TOKEN_A_ACCOUNT
-        description: "Token address for first token used in the liquidity pool"
+      - name: USER_ADDRESS
+        description: The address receiving or sending bridged tokens
         tests: 
           - not_null 
-      - name: TOKEN_B_Account
-        description: "Token address for second token used in the liquidity pool"
+      - name: AMOUNT
+        description: "{{ doc('amount') }}"
         tests: 
           - not_null 
-      - name: POOL_TOKEN
-        description: "Address for pool token associated with the liquidity pool"
+      - name: MINT
+        description:  "{{ doc('mint') }}"
         tests: 
-          - not_null:
-              where: owner <> 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc'
+          - not_null
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('tx_id') }}"
         tests: 

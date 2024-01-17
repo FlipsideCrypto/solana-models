@@ -11,13 +11,13 @@ WITH base_events AS (
     SELECT
         *
     FROM
-        solana.silver.events
+        {{ ref('silver__events') }}
     WHERE
         program_id IN (
-            'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb',
-            'dst5MGcFPoBeREFAA5E3tU5ij8m5uVYwkzkSAbsLbNo',
-            'src5qyZHqTqecJV4aY6Cb6zDZLMDzrDKKezs22MPHr4',
-            '8LPjGDbxhW4G2Q8S6FvdvUdfGWssgtqmvsc63bwNFA7E'
+            'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb', --wormhole
+            'dst5MGcFPoBeREFAA5E3tU5ij8m5uVYwkzkSAbsLbNo', -- debridge in
+            'src5qyZHqTqecJV4aY6Cb6zDZLMDzrDKKezs22MPHr4', -- debridge out
+            '8LPjGDbxhW4G2Q8S6FvdvUdfGWssgtqmvsc63bwNFA7E' -- mayan finance
         )
 
 {% if is_incremental() %}
@@ -47,7 +47,7 @@ base_transfers AS (
         b.program_id AS event_program_id,
         A._inserted_timestamp
     FROM
-        solana.silver.transfers A
+        {{ ref('silver__transfers') }} A
         INNER JOIN base_events b
         ON A.tx_id = b.tx_id
 
@@ -73,7 +73,7 @@ inbound_debridge AS (
         A.index,
         A.program_id,
         'deBridge' AS platform,
-        'in' AS bridge_type,
+        'inbound' AS direction,
         tx_to AS user_address,
         b.amount AS amount,
         b.mint,
@@ -83,10 +83,11 @@ inbound_debridge AS (
         LEFT JOIN base_transfers b
         ON A.tx_id = b.tx_id
         AND A.index = b.index
-        AND A.signers [0] = A.instruction :accounts [1] :: STRING
-        AND A.succeeded
+        AND A.signers [0] = A.instruction :accounts [1] :: STRING -- AND A.succeeded
     WHERE
         A.program_id = 'dst5MGcFPoBeREFAA5E3tU5ij8m5uVYwkzkSAbsLbNo'
+        AND b.mint IS NOT NULL
+        AND A.instruction :accounts [6] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
 ),
 outbound_debridge AS (
     SELECT
@@ -97,7 +98,7 @@ outbound_debridge AS (
         A.index,
         A.program_id,
         'deBridge' AS platform,
-        'out' AS bridge_type,
+        'outbound' AS direction,
         tx_from AS user_address,
         b.amount AS amount,
         b.mint,
@@ -109,48 +110,61 @@ outbound_debridge AS (
         AND A.index = b.index
     WHERE
         A.program_id = 'src5qyZHqTqecJV4aY6Cb6zDZLMDzrDKKezs22MPHr4'
-        AND amount != 0.01735944
+        AND amount != 0.01735944 qualify ROW_NUMBER() over (
+            PARTITION BY A.tx_id
+            ORDER BY
+                A.index
+        ) = 1
 ),
 outbound_mayan AS (
     SELECT
-        block_timestamp,
-        block_id,
-        tx_id,
-        succeeded,
-        INDEX,
-        event_program_id,
-        'mayan_finance' AS project,
-        'out' AS bridge_type,
-        tx_from AS user_address,
-        amount,
-        mint,
-        _inserted_timestamp
+        A.block_timestamp,
+        A.block_id,
+        A.tx_id,
+        A.succeeded,
+        A.index,
+        A.program_id,
+        'mayan finance' AS project,
+        'outbound' AS direction,
+        b.tx_from AS user_address,
+        b.amount,
+        b.mint,
+        A._inserted_timestamp
     FROM
-        base_transfers
+        base_events A
+        LEFT JOIN base_transfers b
+        ON A.tx_id = b.tx_id
+        AND A.index = b.index
     WHERE
-        tx_to = '5yZiE74sGLCT4uRoyeqz4iTYiUwX5uykiPRggCVih9PN'
-        AND event_program_id = '8LPjGDbxhW4G2Q8S6FvdvUdfGWssgtqmvsc63bwNFA7E'
+        b.tx_to = '5yZiE74sGLCT4uRoyeqz4iTYiUwX5uykiPRggCVih9PN'
+        AND A.instruction :accounts [11] :: STRING = '11111111111111111111111111111111'
+        AND A.program_id = '8LPjGDbxhW4G2Q8S6FvdvUdfGWssgtqmvsc63bwNFA7E'
 ),
 inbound_mayan AS (
     SELECT
-        block_timestamp,
-        block_id,
-        tx_id,
-        succeeded,
-        INDEX,
-        event_program_id,
-        'mayan_finance' AS project,
-        'in' AS bridge_type,
-        tx_to AS user_address,
-        amount,
-        mint,
-        _inserted_timestamp
+        A.block_timestamp,
+        A.block_id,
+        A.tx_id,
+        A.succeeded,
+        A.index,
+        A.program_id,
+        'mayan finance' AS project,
+        'inbound' AS direction,
+        b.tx_to AS user_address,
+        b.amount,
+        b.mint,
+        A._inserted_timestamp
     FROM
-        base_transfers
+        base_events A
+        LEFT JOIN base_transfers b
+        ON A.tx_id = b.tx_id
+        AND A.index = b.index
     WHERE
-        tx_from = '5yZiE74sGLCT4uRoyeqz4iTYiUwX5uykiPRggCVih9PN'
-        AND NOT tx_to = '7dm9am6Qx7cH64RB99Mzf7ZsLbEfmXM7ihXXCvMiT2X1'
-        AND event_program_id = '8LPjGDbxhW4G2Q8S6FvdvUdfGWssgtqmvsc63bwNFA7E'
+        b.tx_from = '5yZiE74sGLCT4uRoyeqz4iTYiUwX5uykiPRggCVih9PN'
+        AND NOT b.tx_to = '7dm9am6Qx7cH64RB99Mzf7ZsLbEfmXM7ihXXCvMiT2X1'
+        AND A.instruction :accounts [9] :: STRING = 'SysvarC1ock11111111111111111111111111111111'
+        AND A.instruction :accounts [10] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+        AND A.program_id = '8LPjGDbxhW4G2Q8S6FvdvUdfGWssgtqmvsc63bwNFA7E'
 ),
 wormhole AS (
     SELECT
@@ -162,11 +176,13 @@ wormhole AS (
         A.program_id,
         'wormhole' AS platform,
         CASE
-            WHEN b.tx_from = 'GugU1tP7doLeTw9hQP51xRJyS8Da1fWxuiy2rVrnMD2m' THEN 'in'
-            ELSE 'out'
-        END AS bridge_type,
+            WHEN b.tx_from = 'GugU1tP7doLeTw9hQP51xRJyS8Da1fWxuiy2rVrnMD2m' THEN 'inbound'
+            ELSE 'outbound'
+        END AS direction,
         A.signers [0] :: STRING AS user_address,
-        b.amount,
+        SUM(
+            b.amount
+        ) AS amount,
         b.mint,
         A._inserted_timestamp
     FROM
@@ -179,6 +195,18 @@ wormhole AS (
             OR b.tx_to = 'GugU1tP7doLeTw9hQP51xRJyS8Da1fWxuiy2rVrnMD2m'
         )
         AND program_id = 'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb'
+    GROUP BY
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        11,
+        12
     UNION ALL
     SELECT
         A.block_timestamp,
@@ -188,9 +216,12 @@ wormhole AS (
         b.index,
         b.program_id,
         'wormhole' AS platform,
-        'in' AS bridge_type,
+        'inbound' AS direction,
         b.signers [0] :: STRING AS user_address,
-        A.mint_amount AS amount,
+        A.mint_amount / pow(
+            10,
+            A.decimal
+        ) AS amount,
         A.mint,
         A._inserted_timestamp
     FROM
@@ -200,6 +231,12 @@ wormhole AS (
         succeeded
         AND A.mint_amount > 0
         AND b.program_id = 'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb'
+        AND b.instruction :accounts [5] = A.token_account qualify ROW_NUMBER() over (
+            PARTITION BY A.tx_id
+            ORDER BY
+                A.index,
+                A.inner_index
+        ) = 1
     UNION ALL
     SELECT
         A.block_timestamp,
@@ -209,9 +246,12 @@ wormhole AS (
         b.index,
         b.program_id,
         'wormhole' AS platform,
-        'out' AS bridge_type,
+        'outbound' AS direction,
         b.signers [0] :: STRING AS user_address,
-        A.burn_amount AS amount,
+        A.burn_amount / pow(
+            10,
+            A.decimal
+        ) AS amount,
         A.mint,
         A._inserted_timestamp
     FROM
@@ -251,7 +291,7 @@ pre_final AS (
 SELECT
     *,
     {{ dbt_utils.generate_surrogate_key(
-        ['tx_id', 'index']
+        ['block_id','tx_id', 'index']
     ) }} AS bridge_transfers_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
