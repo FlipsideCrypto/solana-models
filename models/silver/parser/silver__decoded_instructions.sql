@@ -2,6 +2,7 @@
 -- depends_on: {{ ref('bronze__streamline_FR_decoded_instructions_2') }}
 {{ config(
     materialized = 'incremental',
+    incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     unique_key = "decoded_instructions_id",
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE','program_id'],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}'),
@@ -47,12 +48,12 @@ ON A.block_id = b.block_id
 WHERE
     A._inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) _inserted_timestamp
+             dateadd('hour', -2, MAX(_inserted_timestamp)) as _inserted_timestamp
         FROM
             {{ this }}
     )
+AND 
+    A._partition_by_created_date_hour >= dateadd('hour', -3, current_timestamp())
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY tx_id, INDEX, coalesce(inner_index,-1)

@@ -10,7 +10,7 @@
     )
   SELECT
     rn,
-    livequery_dev.live.udf_api(
+    live.udf_api(
       'GET',
       'https://pro-api.solscan.io/v1.0/token/list?sortBy=volume&direction=desc&limit=50&offset=' || (
         rn * 50
