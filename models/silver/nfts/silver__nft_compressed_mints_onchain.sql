@@ -12,6 +12,8 @@ WITH bgum_mints AS (
     block_id,
     succeeded,
     tx_id,
+    e.index,
+    null as inner_index,
     instruction :accounts [1] :: STRING AS leaf_owner,
     instruction :accounts [8] :: STRING AS collection_mint,
     signers [0] :: STRING AS creator_address,
@@ -32,7 +34,8 @@ WITH bgum_mints AS (
       'Program log: Instruction: MintToCollectionV1' :: variant,
       log_messages
     )
-
+    AND collection_mint IS NOT NULL
+    
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
   SELECT
@@ -55,6 +58,8 @@ SELECT
   block_id,
   succeeded,
   tx_id,
+  e.index,
+  f.index as inner_index,
   f.value :accounts [1] :: STRING AS leaf_owner,
   f.value :accounts [8] :: STRING AS collection_mint,
   signers [0] :: STRING AS creator_address,

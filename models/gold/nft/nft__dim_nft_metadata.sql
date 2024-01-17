@@ -5,18 +5,22 @@
 ) }}
 
 SELECT
-  blockchain,
-  contract_address,
-  contract_name,
-  created_at_timestamp,
-  mint,
-  creator_address,
-  creator_name,
-  image_url,
-  project_name,
-  token_id,
-  token_metadata,
-  token_metadata_uri,
-  token_name
+  a.mint,
+  b.nft_collection_name,
+  b.collection_id,
+  a.creator_address,
+  a.metadata,
+  a.image_url,
+  a.metadata_uri,
+  a.nft_name,
+  a.helius_nft_metadata_id as dim_nft_metadata_id,
+  a.inserted_timestamp,
+  a.modified_timestamp
 FROM
-  {{ ref('silver__nft_metadata') }}
+  {{ ref('silver__helius_nft_metadata') }} a
+  left join {{ ref('silver__nft_collection') }} b
+  on a.nft_collection_id = b.nft_collection_id
+
+
+
+

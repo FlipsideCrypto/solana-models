@@ -39,7 +39,12 @@ SELECT
     A.signers,
     b.decimal,
     b.mint_standard_type,
-     A._inserted_timestamp
+    A._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['A.tx_id', 'A.index', 'inner_index', 'A.mint']
+    ) }} AS nft_mint_actions_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp
 FROM
     base_mint_actions A
     INNER JOIN {{ ref('silver__mint_types') }}

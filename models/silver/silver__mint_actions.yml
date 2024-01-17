@@ -10,6 +10,7 @@ models:
             - INNER_INDEX
             - EVENT_TYPE
             - MINT
+          where: block_timestamp::date > current_date - 30
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

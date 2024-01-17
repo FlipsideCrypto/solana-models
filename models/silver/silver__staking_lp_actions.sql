@@ -73,6 +73,8 @@ AND
         TABLE(FLATTEN(i.value :instructions)) ii
     WHERE
         ii.value :programId :: STRING = 'Stake11111111111111111111111111111111111111'
+    AND 
+        ii.value :parsed is not null
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -163,7 +165,13 @@ SELECT
     t.post_balances,
     t.pre_token_balances,
     t.post_token_balances,
-    e._inserted_timestamp
+    e._inserted_timestamp,
+   {{ dbt_utils.generate_surrogate_key(
+        ['e.block_id', 'e.tx_id', 'e.index']
+    ) }} AS staking_lp_actions_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     base_e e
     LEFT OUTER JOIN base_t t

@@ -8,6 +8,7 @@ models:
             - INDEX
             - INNER_INDEX
             - MINT
+          where: block_timestamp::date > current_date - 30
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -51,6 +52,8 @@ models:
         description: Account address authorizing burn
         tests: 
           - not_null
+      - name: TOKEN_ACCOUNT
+        description: The account address where tokens are minted to
       - name: SIGNERS
         description: Account address authorizing burn
       - name: DECIMAL

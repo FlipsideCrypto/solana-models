@@ -43,6 +43,10 @@ models:
         description: The account address with authority to confirm burn event
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: TOKEN_ACCOUNT
+        description: The account address where tokens are burned from
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: SIGNERS
         description: "{{ doc('signers') }}"
         tests: 
@@ -55,3 +59,9 @@ models:
         description: "{{ doc('mint_standard_type') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: FACT_TOKEN_BURN_ACTIONS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

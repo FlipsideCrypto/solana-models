@@ -19,6 +19,10 @@ models:
         description: Location of the event within the instructions of a transaction
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
         tests:
@@ -27,3 +31,9 @@ models:
         description: An instruction specifies which program it is calling, which accounts it wants to read or modify, and additional data that serves as auxiliary input to the program
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: FACT_DECODED_INSTRUCTIONS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

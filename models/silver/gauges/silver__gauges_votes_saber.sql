@@ -3,6 +3,7 @@
     unique_key = "CONCAT_WS('-', tx_id, voter, gauge)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['scheduled_non_core']
 ) }}
 
@@ -96,7 +97,13 @@ SELECT
         ),
         'shares: '
     ) :: NUMBER AS delegated_shares,
-    e._inserted_timestamp
+    e._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['e.tx_id','voter','gauge']
+    ) }} AS gauges_votes_saber_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     all_saber_gauges_events e
     LEFT OUTER JOIN tx_logs l

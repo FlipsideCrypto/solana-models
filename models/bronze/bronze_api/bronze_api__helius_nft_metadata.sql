@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = '_id',
+    cluster_by = '_inserted_timestamp::date',
     full_refresh = false,
     tags = ['helius']
 ) }}
@@ -65,7 +66,7 @@ final_requests AS (
 response AS ({% for item in range(1, 51) %}
     (
     SELECT
-        livequery_dev.live.udf_api('POST', 'https://rpc.helius.xyz/?api-key=' || (
+        live.udf_api('POST', 'https://rpc.helius.xyz/?api-key=' || (
         SELECT
             api_key
         FROM

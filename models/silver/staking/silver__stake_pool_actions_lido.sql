@@ -3,6 +3,7 @@
     unique_key = "_unique_key",
     incremental_strategy = 'merge',
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::date'],
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['scheduled_non_core']
 ) }}
 
@@ -89,7 +90,13 @@ SELECT
     e.instruction :accounts [4] :: STRING AS reserve_stake_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp,
-    concat_ws('-',tx_id,e.index) as _unique_key
+    concat_ws('-',tx_id,e.index) as _unique_key,
+    {{ dbt_utils.generate_surrogate_key(
+        ['e.tx_id', 'e.index']
+    ) }} AS stake_pool_actions_lido_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     deposit_events e,
     TABLE(FLATTEN(inner_instruction :instructions)) i
@@ -110,7 +117,14 @@ SELECT
     NULL AS reserve_stake_address,
     i.value :parsed :info :lamports AS amount,
     e._inserted_timestamp,
-    concat_ws('-',tx_id,e.index) as _unique_key
+    concat_ws('-',tx_id,e.index) as _unique_key,
+    {{ dbt_utils.generate_surrogate_key(
+        ['e.tx_id', 'e.index']
+    ) }} AS stake_pool_actions_lido_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
+
 FROM
     withdraw_events e,
     TABLE(FLATTEN(inner_instruction :instructions)) i

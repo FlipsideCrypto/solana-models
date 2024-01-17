@@ -12,6 +12,10 @@ $$
         snowflake.execute({sqlText: `DROP SCHEMA IF EXISTS ${DESTINATION_DB_NAME}._INTERNAL`}); /* this only needs to be in prod */
         snowflake.execute({sqlText: `GRANT USAGE ON DATABASE ${DESTINATION_DB_NAME} TO AWS_LAMBDA_SOLANA_API`}); 
 
+        snowflake.execute({sqlText: `ALTER TABLE ${DESTINATION_DB_NAME}.SILVER.TRANSACTIONS DROP SEARCH OPTIMIZATION;`});
+        snowflake.execute({sqlText: `ALTER TABLE ${DESTINATION_DB_NAME}.SILVER.VOTES DROP SEARCH OPTIMIZATION;`});
+        snowflake.execute({sqlText: `ALTER TABLE ${DESTINATION_DB_NAME}.SILVER.EVENTS DROP SEARCH OPTIMIZATION;`});
+
         snowflake.execute({sqlText: `GRANT OWNERSHIP ON ALL SCHEMAS IN DATABASE ${DESTINATION_DB_NAME} TO ROLE ${ROLE_NAME} COPY CURRENT GRANTS;`}); 
         snowflake.execute({sqlText: `GRANT OWNERSHIP ON ALL FUNCTIONS IN DATABASE ${DESTINATION_DB_NAME} TO ROLE ${ROLE_NAME} COPY CURRENT GRANTS;`}); 
         snowflake.execute({sqlText: `GRANT OWNERSHIP ON ALL PROCEDURES IN DATABASE ${DESTINATION_DB_NAME} TO ROLE ${ROLE_NAME} COPY CURRENT GRANTS;`}); 
@@ -26,6 +30,8 @@ $$
         snowflake.execute({sqlText: `GRANT USAGE ON ALL STAGES IN DATABASE ${DESTINATION_DB_NAME} TO ROLE AWS_LAMBDA_SOLANA_API;`}); 
 
         snowflake.execute({sqlText: `GRANT OWNERSHIP ON DATABASE ${DESTINATION_DB_NAME} TO ROLE ${ROLE_NAME} COPY CURRENT GRANTS;`})
+
+        
 
         snowflake.execute({sqlText: `COMMIT;`});
     } catch (err) {

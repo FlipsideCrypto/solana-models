@@ -16,4 +16,4 @@ SELECT
     inserted_timestamp,
     epoch_id as dim_epoch_id
 from
-  {{ ref('silver__rewards_rent') }}
+  {{ ref('silver__rewards_rent_view') }}

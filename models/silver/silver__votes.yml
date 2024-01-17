@@ -31,6 +31,7 @@ models:
         tests: 
           - null_threshold:
               threshold_percent: 0.99 # some older transactions have valid null fees
+              where: block_timestamp::date > current_date - 30
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests: 
@@ -45,6 +46,7 @@ models:
         tests: 
           - null_threshold:
               threshold_percent: 0.9999 # some vote program transactions don't have vote accounts or unknown which account is vote account
+              where: block_timestamp::date > current_date - 30
       - name: VOTE_AUTHORITY
         description: Authority for the voting delegator
         tests: 

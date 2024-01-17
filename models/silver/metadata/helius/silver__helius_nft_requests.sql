@@ -63,7 +63,7 @@ list_mints AS (
         group_num
 )
 SELECT
-    livequery_dev.utils.udf_json_rpc_call(
+    utils.udf_json_rpc_call(
         'getAssetBatch',
         OBJECT_CONSTRUCT(
             'ids',

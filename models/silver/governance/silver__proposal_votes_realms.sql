@@ -3,7 +3,7 @@
   unique_key = "CONCAT_WS('-', tx_id, index)",
   incremental_strategy = 'delete+insert',
   cluster_by = ['block_timestamp::DATE'],
-  tags = ['scheduled_non_core']
+  tags = ['daily']
 ) }}
 
 WITH vote_programs AS (
@@ -158,7 +158,13 @@ SELECT
     ELSE 
         0
     END AS vote_weight,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['v.tx_id','v.index']
+    ) }} AS proposal_votes_realms_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM vote_txs v 
 
 INNER JOIN create_vote_logs l 

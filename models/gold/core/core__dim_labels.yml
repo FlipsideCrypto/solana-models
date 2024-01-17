@@ -29,3 +29,9 @@ models:
         description: Address that the label is for. This is the field that should be used to join other tables with labels. 
         tests:
           - not_null
+      - name: DIM_LABELS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

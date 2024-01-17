@@ -3,8 +3,10 @@
     unique_key = ["vote_pubkey","epoch_earned","block_id"],
     merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_timestamp::DATE','floor(block_id,-6)','_inserted_timestamp::DATE'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(vote_pubkey, epoch_earned);",
-    tags = ['rewards']
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(vote_pubkey, epoch_earned)'),
+    tags = ['rewards'],
+    full_refresh = false,
+    enabled = false
 ) }}
 
 WITH base AS (
@@ -40,7 +42,7 @@ WITH base AS (
         )
         AND (
         SELECT
-            LEAST(COALESCE(MAX(_partition_id), 1) + 25, 28780)
+            LEAST(COALESCE(MAX(_partition_id), 1) + 50, 28780)
         FROM
             {{ this }}
         ) 
@@ -56,6 +58,12 @@ WITH base AS (
             MAX(_partition_id)
         FROM
         {{ source('solana_streamline','complete_block_rewards') }}
+    )
+    AND a._inserted_timestamp > (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
     )
 {% else %}
     AND _partition_id <= 10
@@ -100,49 +108,55 @@ epoch AS (
 
 {% if is_incremental() %}
 WHERE
-    epoch <= (
+    start_block <= (
         SELECT
-            MAX(epoch_earned) + 10
+            MAX(block_id)
         FROM
-            {{ this }}
+            base
     )
 {% else %}
 WHERE
     epoch <= 540
 {% endif %}
+),
+pre_final as (
+    SELECT
+        A.block_timestamp,
+        A.block_id,
+        A.amount / pow(
+            10,
+            9
+        ) AS reward_amount_sol,
+        A.post_balance / pow(
+            10,
+            9
+        ) AS post_balance_sol,
+        A.account AS vote_pubkey,
+        b.epoch AS epoch_earned,
+        A._partition_id,
+        {{ dbt_utils.generate_surrogate_key(['b.epoch','a.block_id','a.account']) }} AS rewards_rent_id,
+        {{ dbt_utils.generate_surrogate_key(['b.epoch']) }} AS epoch_id,
+        SYSDATE() AS inserted_timestamp,
+        SYSDATE() AS modified_timestamp,
+        '{{ invocation_id }}' AS invocation_id,
+        A._inserted_timestamp
+    FROM
+        base A
+        LEFT JOIN epoch b
+        ON A.block_id BETWEEN b.start_block
+        AND b.end_block 
+    {% if is_incremental() %}
+    UNION
+    SELECT
+        *
+    FROM
+        prev_null_block_timestamp_txs
+    {% endif %}
 )
-SELECT
-    A.block_timestamp,
-    A.block_id,
-    A.amount / pow(
-        10,
-        9
-    ) AS reward_amount_sol,
-    A.post_balance / pow(
-        10,
-        9
-    ) AS post_balance_sol,
-    A.account AS vote_pubkey,
-    b.epoch AS epoch_earned,
-    A._partition_id,
-    {{ dbt_utils.generate_surrogate_key(['b.epoch','a.block_id','a.account']) }} AS rewards_rent_id,
-    {{ dbt_utils.generate_surrogate_key(['b.epoch']) }} AS epoch_id,
-    SYSDATE() AS inserted_timestamp,
-    SYSDATE() AS modified_timestamp,
-    '{{ invocation_id }}' AS invocation_id,
-    A._inserted_timestamp
-FROM
-    base A
-    LEFT JOIN epoch b
-    ON A.block_id BETWEEN b.start_block
-    AND b.end_block qualify(ROW_NUMBER() over(PARTITION BY epoch_earned, account, block_id
-ORDER BY
-    _inserted_timestamp DESC)) = 1
-
-{% if is_incremental() %}
-UNION
-SELECT
+SELECT 
     *
-FROM
-    prev_null_block_timestamp_txs
-{% endif %}
+FROM 
+    pre_final 
+qualify(ROW_NUMBER() over(PARTITION BY epoch_earned, vote_pubkey, block_id
+    ORDER BY
+        _inserted_timestamp DESC)) = 1

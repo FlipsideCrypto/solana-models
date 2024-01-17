@@ -7,11 +7,13 @@ models:
             - VOTE_PUBKEY
             - EPOCH_EARNED
             - BLOCK_ID
+          where: block_timestamp::date > current_date - 30
     columns:
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
-          - not_null
+          - not_null:
+              where: _inserted_timestamp::date < current_date
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:

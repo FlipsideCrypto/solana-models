@@ -35,6 +35,10 @@ models:
         description: "{{ doc('mint') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: TOKEN_ACCOUNT
+        description: The account address where tokens are minted to
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: MINT_AMOUNT
         description: "{{ doc('mint_amount') }}"
         tests: 
@@ -55,4 +59,10 @@ models:
         description: "{{ doc('mint_standard_type') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: FACT_TOKEN_MINT_ACTIONS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
           

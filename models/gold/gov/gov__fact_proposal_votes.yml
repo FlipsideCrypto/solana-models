@@ -59,3 +59,9 @@ models:
         description: Percentage of voting power put towards a voting option on Realms
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: FACT_PROPOSAL_VOTES_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

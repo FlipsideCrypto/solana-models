@@ -31,6 +31,8 @@ event_subset AS (
         ) = b.program_id
     WHERE
         e.block_timestamp >= CURRENT_DATE - 2
+    AND 
+        e.succeeded
 ),
 completed_subset AS (
     SELECT

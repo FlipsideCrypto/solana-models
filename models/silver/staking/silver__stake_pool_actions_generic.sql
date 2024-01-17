@@ -3,6 +3,7 @@
     unique_key = "_unique_key",
     incremental_strategy = 'merge',
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::date'],
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['scheduled_non_core']
 ) }}
 
@@ -254,7 +255,8 @@ deposit_stake_merge AS (
         amount IS NOT NULL
         AND i.temp_stake_authority = stake_pool_withdraw_authority
         and i.merge_destination = e.accounts [5] :: STRING
-)
+),
+pre_final as (
 SELECT
     e.tx_id,
     e.block_id,
@@ -370,4 +372,29 @@ FROM
 WHERE
     i.value :parsed :info :lamports IS NOT NULL
     AND i.value :parsed :type :: STRING = 'split'
-    AND i.value :parsed :info :newSplitAccount = e.accounts [4] 
+    AND i.value :parsed :info :newSplitAccount = e.accounts [4]
+)
+SELECT
+    tx_id,
+    block_id,
+    block_timestamp,
+    index,
+    inner_index,
+    succeeded,
+    action,
+    stake_pool,
+    stake_pool_withdraw_authority,
+    stake_pool_deposit_authority,
+    address,
+    reserve_stake_address,
+    amount,
+    _inserted_timestamp,
+    _unique_key,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_id', 'index', 'inner_index']
+    ) }} AS stake_pool_actions_generic_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
+FROM
+    pre_final

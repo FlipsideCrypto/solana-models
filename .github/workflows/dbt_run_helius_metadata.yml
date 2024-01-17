@@ -8,16 +8,16 @@ on:
     - cron: '0 3,15 * * *'
     
 env:
-  DBT_PROFILES_DIR: "${{ secrets.DBT_PROFILES_DIR }}"
+  DBT_PROFILES_DIR: "${{ vars.DBT_PROFILES_DIR }}"
 
-  ACCOUNT: "${{ secrets.ACCOUNT }}"
-  ROLE: "${{ secrets.ROLE }}"
-  USER: "${{ secrets.USER }}"
+  ACCOUNT: "${{ vars.ACCOUNT }}"
+  ROLE: "${{ vars.ROLE }}"
+  USER: "${{ vars.USER }}"
   PASSWORD: "${{ secrets.PASSWORD }}"
-  REGION: "${{ secrets.REGION }}"
-  DATABASE: "${{ secrets.DATABASE }}"
-  WAREHOUSE: "${{ secrets.WAREHOUSE }}"
-  SCHEMA: "${{ secrets.SCHEMA }}"
+  REGION: "${{ vars.REGION }}"
+  DATABASE: "${{ vars.DATABASE }}"
+  WAREHOUSE: "${{ vars.WAREHOUSE }}"
+  SCHEMA: "${{ vars.SCHEMA }}"
 
 concurrency:
   group: ${{ github.workflow }}
@@ -31,13 +31,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v4
         with:
-          python-version: "3.7.x"
+          python-version: "${{ vars.PYTHON_VERSION }}"
+          cache: "pip"
 
       - name: install dependencies
         run: |
-          pip3 install dbt-snowflake==${{ secrets.DBT_VERSION }} cli_passthrough requests click
+          pip3 install dbt-snowflake==${{ vars.DBT_VERSION }} cli_passthrough requests click
           dbt deps
       - name: Run DBT Jobs
         run: |

@@ -4,7 +4,7 @@
     incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
-    tags = ['scheduled_non_core']
+    tags = ['scheduled_non_core'],
 ) }}
 
 WITH base AS (
@@ -15,11 +15,13 @@ WITH base AS (
         {{ ref('silver__decoded_instructions') }}
     WHERE
         program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+    AND 
+        inner_index is null /* temp disable inner instruction process, matches existing behavior using previous decoded table */
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp)
+        MAX(_inserted_timestamp) - INTERVAL '1 hour'
     FROM
         {{ this }}
 )
@@ -63,7 +65,7 @@ transfers AS (
 AND
     A._inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp)
+            MAX(_inserted_timestamp)  - INTERVAL '1 day'
         FROM
             {{ this }}
     )

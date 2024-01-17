@@ -21,6 +21,8 @@ models:
         description: "{{ doc('event_index') }}"
         tests:  
           - not_null
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
       - name: DECODED_INSTRUCTION
