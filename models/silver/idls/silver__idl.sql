@@ -19,14 +19,13 @@ pre_final AS (
         A.earliest_decoded_block,
         A.program_id,
         C.idl,
-        C.idl_source,
         C.idl_hash
     FROM
         idls A
         LEFT JOIN {{ ref('streamline__idls_history') }}
         b
         ON A.program_id = b.program_id
-        LEFT JOIN {{ ref('silver__verified_idls') }} C
+        INNER JOIN {{ ref('silver__verified_idls') }} C
         ON A.program_id = C.program_id
 )
 SELECT

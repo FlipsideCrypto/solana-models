@@ -10,4 +10,12 @@ models:
         description: "The oldest block where program events has been decoded"
         tests:
           - not_null
+      - name: IDL
+        description: "The complete IDL that defines the program"
+        tests:
+          - not_null
+      - name: IDL_HASH
+        description: "The deployed hash of the program IDL"
+        tests:
+          - not_null
 

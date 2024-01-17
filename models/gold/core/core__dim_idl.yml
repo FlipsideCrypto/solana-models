@@ -6,9 +6,7 @@ models:
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
       - name: IDL
-        description: "The IDL submitted for decoding events"
-      - name: IDL_SOURCE
-        description: "The source from which the IDL was submitted"
+        description: "The complete submitted IDL that defines the program"
       - name: IDL_HASH
         description: "The deployed hash of the program IDL"
       - name: EARLIEST_DECODED_BLOCK

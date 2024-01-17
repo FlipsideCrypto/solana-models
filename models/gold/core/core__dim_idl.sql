@@ -7,7 +7,6 @@
 SELECT
     program_id,
     idl,
-    idl_source,
     idl_hash,
     earliest_decoded_block,
     idl_id as dim_idl_id,
