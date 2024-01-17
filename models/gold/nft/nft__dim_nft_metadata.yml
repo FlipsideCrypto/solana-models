@@ -16,7 +16,7 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: AUTHORITY
-        description: "Authority address for the mint. When editions are minted, the master NFT is the authority"
+        description: "Authority address for the mint. When editions are minted, the authority remains the one from the master NFT"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: IMAGE_URL
