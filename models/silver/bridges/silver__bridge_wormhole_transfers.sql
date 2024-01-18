@@ -13,12 +13,9 @@ WITH base_events AS (
     FROM
         {{ ref('silver__events') }}
     WHERE
-        program_id IN (
-            'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb', --wormhole
-            'dst5MGcFPoBeREFAA5E3tU5ij8m5uVYwkzkSAbsLbNo', -- debridge in
-            'src5qyZHqTqecJV4aY6Cb6zDZLMDzrDKKezs22MPHr4', -- debridge out
-            '8LPjGDbxhW4G2Q8S6FvdvUdfGWssgtqmvsc63bwNFA7E' -- mayan finance
-        )
+        program_id =
+            'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb'
+
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -63,109 +60,7 @@ WHERE
 WHERE
     A.block_timestamp :: DATE >= '2021-09-13'
 {% endif %}
-),
-inbound_debridge AS (
-    SELECT
-        A.block_timestamp,
-        A.block_id,
-        A.tx_id,
-        A.succeeded,
-        A.index,
-        A.program_id,
-        'deBridge' AS platform,
-        'inbound' AS direction,
-        tx_to AS user_address,
-        b.amount AS amount,
-        b.mint,
-        A._inserted_timestamp
-    FROM
-        base_events A
-        LEFT JOIN base_transfers b
-        ON A.tx_id = b.tx_id
-        AND A.index = b.index
-        AND A.signers [0] = A.instruction :accounts [1] :: STRING -- AND A.succeeded
-    WHERE
-        A.program_id = 'dst5MGcFPoBeREFAA5E3tU5ij8m5uVYwkzkSAbsLbNo'
-        AND b.mint IS NOT NULL
-        AND A.instruction :accounts [6] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-),
-outbound_debridge AS (
-    SELECT
-        A.block_timestamp,
-        A.block_id,
-        A.tx_id,
-        A.succeeded,
-        A.index,
-        A.program_id,
-        'deBridge' AS platform,
-        'outbound' AS direction,
-        tx_from AS user_address,
-        b.amount AS amount,
-        b.mint,
-        A._inserted_timestamp
-    FROM
-        base_events A
-        LEFT JOIN base_transfers b
-        ON A.tx_id = b.tx_id
-        AND A.index = b.index
-    WHERE
-        A.program_id = 'src5qyZHqTqecJV4aY6Cb6zDZLMDzrDKKezs22MPHr4'
-        AND amount != 0.01735944 qualify ROW_NUMBER() over (
-            PARTITION BY A.tx_id
-            ORDER BY
-                A.index
-        ) = 1
-),
-outbound_mayan AS (
-    SELECT
-        A.block_timestamp,
-        A.block_id,
-        A.tx_id,
-        A.succeeded,
-        A.index,
-        A.program_id,
-        'mayan finance' AS project,
-        'outbound' AS direction,
-        b.tx_from AS user_address,
-        b.amount,
-        b.mint,
-        A._inserted_timestamp
-    FROM
-        base_events A
-        LEFT JOIN base_transfers b
-        ON A.tx_id = b.tx_id
-        AND A.index = b.index
-    WHERE
-        b.tx_to = '5yZiE74sGLCT4uRoyeqz4iTYiUwX5uykiPRggCVih9PN'
-        AND A.instruction :accounts [11] :: STRING = '11111111111111111111111111111111'
-        AND A.program_id = '8LPjGDbxhW4G2Q8S6FvdvUdfGWssgtqmvsc63bwNFA7E'
-),
-inbound_mayan AS (
-    SELECT
-        A.block_timestamp,
-        A.block_id,
-        A.tx_id,
-        A.succeeded,
-        A.index,
-        A.program_id,
-        'mayan finance' AS project,
-        'inbound' AS direction,
-        b.tx_to AS user_address,
-        b.amount,
-        b.mint,
-        A._inserted_timestamp
-    FROM
-        base_events A
-        LEFT JOIN base_transfers b
-        ON A.tx_id = b.tx_id
-        AND A.index = b.index
-    WHERE
-        b.tx_from = '5yZiE74sGLCT4uRoyeqz4iTYiUwX5uykiPRggCVih9PN'
-        AND NOT b.tx_to = '7dm9am6Qx7cH64RB99Mzf7ZsLbEfmXM7ihXXCvMiT2X1'
-        AND A.instruction :accounts [9] :: STRING = 'SysvarC1ock11111111111111111111111111111111'
-        AND A.instruction :accounts [10] :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-        AND A.program_id = '8LPjGDbxhW4G2Q8S6FvdvUdfGWssgtqmvsc63bwNFA7E'
-),
+)
 wormhole AS (
     SELECT
         A.block_timestamp,
@@ -267,26 +162,6 @@ pre_final AS (
         *
     FROM
         wormhole
-    UNION ALL
-    SELECT
-        *
-    FROM
-        inbound_mayan
-    UNION ALL
-    SELECT
-        *
-    FROM
-        outbound_mayan
-    UNION ALL
-    SELECT
-        *
-    FROM
-        outbound_debridge
-    UNION ALL
-    SELECT
-        *
-    FROM
-        inbound_debridge
 )
 SELECT
     *,
