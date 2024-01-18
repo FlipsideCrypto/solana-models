@@ -18,7 +18,7 @@ WITH user_abis AS (
         is_valid
 {% if is_incremental() %}
     AND
-        _inserted_timestamp >= (
+        _inserted_timestamp > (
             SELECT
                 COALESCE(
                     MAX(
@@ -31,12 +31,6 @@ WITH user_abis AS (
             WHERE
                 idl_source = 'user'
         )
-    AND program_id NOT IN (
-        SELECT
-            program_id
-        FROM
-            {{ this }}
-    )
 {% endif %}
 )
 SELECT
