@@ -37,7 +37,8 @@ ORDER BY
 
 select 
     mint,
-    authorities[0]:address::string as creator_address,
+    authorities[0]:address::string as authority,
+    creators,
     metadata:attributes::array as metadata,
     content:links:image::string as image_url,
     content:json_uri::string as metadata_uri,
