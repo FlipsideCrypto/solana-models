@@ -15,6 +15,7 @@ SELECT
     mint,
     mint_amount,
     mint_authority,
+    token_account,
     signers,
     DECIMAL,
     mint_standard_type,

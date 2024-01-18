@@ -1,14 +1,15 @@
-name: dbt_run_full_observability
-run-name: dbt_run_full_observability
+name: dbt_run_deploy_seeds
+run-name: dbt_run_deploy_seeds
 
 on:
-  workflow_dispatch:
-  schedule:
-    # Runs “At 06:00 on day-of-month 1.” (see https://crontab.guru)
-    - cron: '0 6 1 * *'
+  push:
+    branches:
+      - main  
+    paths:
+      - 'data/**'
     
 env:
-  DBT_PROFILES_DIR: ./
+  DBT_PROFILES_DIR: "${{ vars.DBT_PROFILES_DIR }}"
 
   ACCOUNT: "${{ vars.ACCOUNT }}"
   ROLE: "${{ vars.ROLE }}"
@@ -40,6 +41,8 @@ jobs:
         run: |
           pip3 install dbt-snowflake==${{ vars.DBT_VERSION }} cli_passthrough requests click
           dbt deps
+
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"OBSERV_FULL_TEST":True}' -m models/silver/_observability
+          dbt seed -s ./data --full-refresh
+          

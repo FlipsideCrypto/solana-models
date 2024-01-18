@@ -8,6 +8,22 @@ models:
             - TX_ID
             - MINT
             - PURCHASER
+      - compare_model_subset:
+          name: silver__nft_compressed_mints_business_logic_test
+          compare_model: ref('testing__nft_compressed_mints')
+          compare_columns: 
+            - tx_id
+            - mint
+            - leaf_owner
+            - collection_mint
+            - purchaser
+            - instruction_name
+          model_condition: "where tx_id in ('43nKZtMkpcKAJF5Sj9sekrVqM3StnTzuQkBqghzdgvWNDxoG3hTtQ8H2qHLaiYy4ogjErYxrAGShpfbKashFtqG9',
+            '43cY1oaPwhJeQGbVCbhN8Pw9JsfN8CjHJ8xoPstEPebDVaWX9ZrvUDNfNXrdM1HxyWfkkMXogFm1VdmjPmhU4NqE',
+            '4pvJwVszQfX8JWpNMvv1hmvduTigCVnZabcs9KbqwusbPFjTWxLJzHCvzHZVCrg7svHgzuqaACp7uxMNMqemRc4',
+            '3hnRu4Sp6s3pPKZ2pRCkrM1zQkC6HxrruKhDfBmX3qNbKn4mu4UL2M5W8JonnEn7zQKT3fpsSjyGu4qb5JbhXNZf',
+            '2mHjoyQ1fCnjeJk51ZiTU3RWXejjSsbzEgrEbHkgeRjQX4b5Y36FzLQzsKxYXpP8RcLeYPbuyMWXj4qfVGqa8cFD',
+            'rQ4y9cvCKYKYUZPcxn6MJMpxPo3LYDSJ85Y4jpN59k7KPb1niZrWoFJ6XqShfDdWrxCFccRJuXMqwV3N3aNr7W2')" 
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -46,6 +62,10 @@ models:
       - name: COLLECTION_MINT
         description: "Address of the NFT collection"
         tests: 
+          - not_null
+      - name: INSTRUCTION_NAME
+        description: "Name of instruction being performed by the program"
+        tests:
           - not_null
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"

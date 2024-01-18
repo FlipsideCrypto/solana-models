@@ -15,6 +15,7 @@ SELECT
     mint,
     burn_amount,
     burn_authority,
+    token_account,
     signers,
     DECIMAL,
     mint_standard_type,
