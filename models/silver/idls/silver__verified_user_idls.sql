@@ -123,7 +123,7 @@ FROM
     ON b.program_id = t.program_id
 WHERE 
     (
-        t.program_id is NULL 
+        t.program_id is NULL -- brand new
         OR 
         (
             t.idl_hash <> b.idl_hash -- updated
