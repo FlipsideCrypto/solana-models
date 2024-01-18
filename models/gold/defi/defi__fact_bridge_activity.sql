@@ -17,11 +17,11 @@ SELECT
     amount,
     mint,
     COALESCE (
-        bridge_transfers_id,
+        bridge_wormhole_transfers_id,
         {{ dbt_utils.generate_surrogate_key(
             ['block_id','tx_id', 'index']
         ) }}
-    ) AS fact_bridge_transfers_id,
+    ) AS fact_bridge_activity_id,
     COALESCE(
         inserted_timestamp,
         '2000-01-01'
@@ -46,11 +46,11 @@ SELECT
     amount,
     mint,
     COALESCE (
-        bridge_transfers_id,
+        bridge_debridge_transfers_id,
         {{ dbt_utils.generate_surrogate_key(
             ['block_id','tx_id', 'index']
         ) }}
-    ) AS fact_bridge_transfers_id,
+    ) AS fact_bridge_activity_id,
     COALESCE(
         inserted_timestamp,
         '2000-01-01'
@@ -75,11 +75,11 @@ SELECT
     amount,
     mint,
     COALESCE (
-        bridge_transfers_id,
+        bridge_mayan_transfers_id,
         {{ dbt_utils.generate_surrogate_key(
             ['block_id','tx_id', 'index']
         ) }}
-    ) AS fact_bridge_transfers_id,
+    ) AS fact_bridge_activity_id,
     COALESCE(
         inserted_timestamp,
         '2000-01-01'
