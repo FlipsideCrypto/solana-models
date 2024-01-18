@@ -3,7 +3,6 @@
     materialized = "incremental",
     unique_key = "complete_decoded_instructions_2_id",
     cluster_by = ["ROUND(block_id, -3)","program_id"],
-    pre_hook = register_files_bronze_decoded_instructions_2(-1),
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(complete_decoded_instructions_2_id)'),
     tags = ['streamline_decoder'],
 ) }}
