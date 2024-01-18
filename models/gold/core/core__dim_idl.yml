@@ -1,0 +1,33 @@
+version: 2
+models:
+  - name: core__dim_idl
+    description: The status of Program IDL's submitted for decoding events 
+    columns:
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: IDL
+        description: "The complete submitted IDL that defines the program"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: IDL_HASH
+        description: "The deployed hash of the program IDL"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: EARLIEST_DECODED_BLOCK
+        description: "The oldest block where program events has been decoded"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: DIM_IDL_ID
+        description: "{{ doc('id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: MODIFIED_TIMESTAMP
+        description: "{{ doc('modified_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: INSERTED_TIMESTAMP
+        description: "{{ doc('inserted_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
