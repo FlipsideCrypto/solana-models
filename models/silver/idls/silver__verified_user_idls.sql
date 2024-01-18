@@ -22,23 +22,6 @@ WITH base AS (
         AND NOT is_duplicate
 
 {% if is_incremental() %}
-AND (
-    program_id NOT IN (
-        SELECT
-            program_id
-        FROM
-            {{ this }}
-    )
-    OR 
-    program_id IN (
-        SELECT
-            program_id
-        FROM
-            {{ this }}
-        WHERE 
-            is_valid = FALSE
-    ) 
-)
 AND _inserted_timestamp > (
     SELECT
         COALESCE(
@@ -136,6 +119,17 @@ FROM
     program_error_rates r
     JOIN base b
     ON b.program_id = r.program_id
+    LEFT OUTER JOIN {{ this }} t 
+    ON b.program_id = t.program_id
+WHERE 
+    (
+        t.program_id is NULL 
+        OR 
+        (
+            t.idl_hash <> b.idl_hash -- updated
+            AND is_valid -- only update if the new one is valid
+        )
+    )
 qualify(ROW_NUMBER() over(PARTITION BY b.program_id
 ORDER BY
-    _inserted_timestamp DESC)) = 1
+    b._inserted_timestamp DESC)) = 1
