@@ -4,7 +4,7 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - BRIDGE_TRANSFERS_ID
+            - BRIDGE_WORMHOLE_TRANSFERS_ID
       - compare_model_subset:
           name: silver__bridge_wormhole_transfers_logic_test
           compare_model: ref('testing__bridge_wormhole_transfers')

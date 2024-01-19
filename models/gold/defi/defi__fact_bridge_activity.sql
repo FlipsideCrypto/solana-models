@@ -19,7 +19,7 @@ SELECT
     COALESCE (
         bridge_wormhole_transfers_id,
         {{ dbt_utils.generate_surrogate_key(
-            ['block_id','tx_id', 'index']
+            ['block_id','tx_id', 'index','direction']
         ) }}
     ) AS fact_bridge_activity_id,
     COALESCE(
