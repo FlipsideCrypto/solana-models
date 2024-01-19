@@ -7,7 +7,7 @@ models:
             - BRIDGE_DEBRIDGE_TRANSFERS_ID
       - compare_model_subset:
           name: silver__bridge_debridge_transfers_logic_test
-          compare_model: ref('testing__bridge_transfers')
+          compare_model: ref('testing__bridge_debridge_transfers')
           compare_columns: 
             - tx_id
             - program_id
@@ -15,9 +15,11 @@ models:
             - user_address
             - round(amount,8)
             - mint
-          model_condition: "where tx_id in ('4qqEcftiXE4ug5dmEPNpqqJ2f82CYTYwmhVJRWTpwftrLxQTwQzGW8D6sWFbR7BxXjKfvuitHPUFJTME6B5cxiE8',
-          '4g5MiEFhfTWpctmWAS5Q435NxZxQWkTNQ22Lj7VVRx9BS6Tbeg8ACq7k25qN2EyUBG5eVFenqcSyFJKQgxFyud2Q',
-          '4AcYHm3GoS7efSHTXfsrPhmwFfeT9QASFraSeJHoJyZA3mpPfWuzeG9eyFKyn8ibW1dfCsuwfr3iFMx4GFTeBWHy')"
+          model_condition: "where tx_id in ('5QQhyhN51i34hwwA5GExb8QZ2QXvWyLJEyoh6F7CPReKbh2DPxEeek69z2rZqddkt844sBFfw7Jy7Uy8YoKM9qVs',
+          '3ySH2GiuWxpXm4nH25Cc1n9MT3Zahdku2wzyve3E1hFeA83VV3AN7hWoWBp39Mtfyr6tHhwiSNeqMEkNn9a6aBEF',
+          '4EP7wWKhma2dsi4mconqsWPCBM9ow4JaVRydxLEcrLwriaFEEgHu9uuJccqSb1o9pdF6wVdZq1tqvTjD9me4ciVc',
+          '4sy3zM6EjNuZ65gFqfKUChRtVCQiHxedUhq8SSNEXJbckxHKExdig3zaJwSFNGTp9uYxLUHBWtr6maaGR1LAruMQ',
+          '4oUbo4UMmdpFsAd6mNtuN17ho43oLU5UYYR1mzKFmG5PRuKQMQnenEPkpS6S4RPWewqD2kBfB5wN92WEmMVV2bba')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

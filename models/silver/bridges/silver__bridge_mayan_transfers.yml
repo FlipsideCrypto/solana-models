@@ -7,7 +7,7 @@ models:
             - BRIDGE_MAYAN_TRANSFERS_ID
       - compare_model_subset:
           name: silver__bridge_mayan_transfers_logic_test
-          compare_model: ref('testing__bridge_transfers')
+          compare_model: ref('testing__bridge_mayan_transfers')
           compare_columns: 
             - tx_id
             - program_id
