@@ -30,10 +30,18 @@ WITH bgum_mints AS (
   WHERE
     succeeded
     AND program_id = 'BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY'
-    AND ARRAY_CONTAINS(
-      'Program log: Instruction: MintToCollectionV1' :: variant,
-      log_messages
-    )
+    AND 
+      (
+        ARRAY_CONTAINS(
+        'Program log: Instruction: MintToCollectionV1' :: variant,
+        log_messages
+        )
+        OR 
+        ARRAY_CONTAINS(
+        'Program log: Instruction: MintV1' :: variant,
+        log_messages
+        )
+      )
     AND collection_mint IS NOT NULL
     
 {% if is_incremental() %}
