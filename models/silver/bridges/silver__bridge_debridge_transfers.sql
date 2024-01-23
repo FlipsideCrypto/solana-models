@@ -124,7 +124,9 @@ outbound AS (
         AND A.index = b.index
     WHERE
         A.program_id = 'src5qyZHqTqecJV4aY6Cb6zDZLMDzrDKKezs22MPHr4'
-        AND amount != 0.01735944 qualify ROW_NUMBER() over (
+        AND amount != 0.01735944
+        AND b.program_id <> '11111111111111111111111111111111'
+        qualify ROW_NUMBER() over (
             PARTITION BY A.tx_id
             ORDER BY
                 A.index
