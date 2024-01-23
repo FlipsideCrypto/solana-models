@@ -15,9 +15,12 @@ WITH base_events AS (
     WHERE
         (
             program_id = 'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb'
-            OR ARRAY_CONTAINS(
-                'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb' :: variant,
-                inner_instruction_program_ids
+            OR (
+                ARRAY_CONTAINS(
+                    'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb' :: variant,
+                    inner_instruction_program_ids
+                )
+                AND program_id <> '8LPjGDbxhW4G2Q8S6FvdvUdfGWssgtqmvsc63bwNFA7E' -- exclude mayan bridge tx's
             )
         )
 
@@ -175,7 +178,8 @@ inbound AS (
                 AND b.program_id = 'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb'
             )
         )
-        AND b.instruction :accounts [5] = A.token_account qualify ROW_NUMBER() over (
+        AND b.instruction :accounts [5] = A.token_account
+        qualify ROW_NUMBER() over (
             PARTITION BY A.tx_id
             ORDER BY
                 A.index,
