@@ -10,6 +10,20 @@
     tags = ['scheduled_non_core'],
 ) }}
 
+/* run incremental timestamp value first then use it as a static value */
+{% if execute %}
+    {% if is_incremental() %}
+        {% set query %}
+            SELECT
+                dateadd('hour', -2, MAX(_inserted_timestamp)) as _inserted_timestamp
+            FROM
+                {{ this }}
+        {% endset %}
+
+        {% set max_inserted_timestamp = run_query(query).columns[0].values()[0] %}
+    {% endif %}
+{% endif %}
+
 SELECT
     b.block_timestamp,
     A.block_id,
@@ -46,14 +60,9 @@ ON A.block_id = b.block_id
 
 {% if is_incremental() %}
 WHERE
-    A._inserted_timestamp >= (
-        SELECT
-             dateadd('hour', -2, MAX(_inserted_timestamp)) as _inserted_timestamp
-        FROM
-            {{ this }}
-    )
+    A._inserted_timestamp >= '{{ max_inserted_timestamp }}'
 AND 
-    A._partition_by_created_date_hour >= dateadd('hour', -3, current_timestamp())
+    A._partition_by_created_date_hour between dateadd('hour', -2, date_trunc('hour','{{ max_inserted_timestamp }}'::timestamp_ntz)) and date_trunc('hour','{{ max_inserted_timestamp }}'::timestamp_ntz)
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY tx_id, INDEX, coalesce(inner_index,-1)
