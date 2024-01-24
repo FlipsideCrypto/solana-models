@@ -1,0 +1,51 @@
+version: 2
+models:
+  - name: defi__fact_bridge_activity
+    description: Table containing bridging actions on Wormhole, DeBridge and Mayan Finance
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}" 
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: PLATFORM
+        description: Name of the bridge protocol
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: DIRECTION
+        description: Direction of the bridge - either inbound to Solana or outbound from Solana
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: USER_ADDRESS
+        description: The address receiving or sending bridged tokens
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: AMOUNT
+        description: "{{ doc('amount') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: FACT_BRIDGE_ACTIVITY_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

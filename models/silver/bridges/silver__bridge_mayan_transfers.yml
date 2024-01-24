@@ -1,0 +1,67 @@
+version: 2
+models:
+  - name: silver__bridge_mayan_transfers
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BRIDGE_MAYAN_TRANSFERS_ID
+      - compare_model_subset:
+          name: silver__bridge_mayan_transfers_logic_test
+          compare_model: ref('testing__bridge_mayan_transfers')
+          compare_columns: 
+            - tx_id
+            - program_id
+            - direction
+            - user_address
+            - round(amount,8)
+            - mint
+          model_condition: "where tx_id in ('4qqEcftiXE4ug5dmEPNpqqJ2f82CYTYwmhVJRWTpwftrLxQTwQzGW8D6sWFbR7BxXjKfvuitHPUFJTME6B5cxiE8',
+          '4g5MiEFhfTWpctmWAS5Q435NxZxQWkTNQ22Lj7VVRx9BS6Tbeg8ACq7k25qN2EyUBG5eVFenqcSyFJKQgxFyud2Q',
+          '4AcYHm3GoS7efSHTXfsrPhmwFfeT9QASFraSeJHoJyZA3mpPfWuzeG9eyFKyn8ibW1dfCsuwfr3iFMx4GFTeBWHy')"
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null
+      - name: PLATFORM
+        description: Name of the bridge
+        tests: 
+          - not_null
+      - name: DIRECTION
+        description: Direction of the bridge - either inbound to Solana or outbound from Solana
+        tests: 
+          - not_null
+      - name: USER_ADDRESS
+        description: The address receiving or sending bridged tokens
+        tests: 
+          - not_null 
+      - name: AMOUNT
+        description: "{{ doc('amount') }}"
+        tests: 
+          - not_null 
+      - name: MINT
+        description:  "{{ doc('mint') }}"
+        tests: 
+          - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('tx_id') }}"
+        tests: 
+          - not_null
