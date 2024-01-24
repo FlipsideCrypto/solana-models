@@ -4,9 +4,9 @@
             default_backfill_start_block_id
         from """ ~ ref('streamline__idls_history') ~ """ 
         where program_id = '""" ~ program_id ~ """';""").columns %}
-    {% set min_block_id = result_cols[0].values()[0] | int %}
-    {% set max_block_id = result_cols[1].values()[0] | int %}
-    {% set step = 1000000 %}
+    {% set min_block_id = 86813920 %}
+    {% set max_block_id = 243627006 %}
+    {% set step = 200000 %}
 
     {% for i in range(min_block_id, max_block_id, step) %}
         {% if i == min_block_id %}
@@ -149,7 +149,7 @@
         from information_schema.views
         where table_name like 'DECODED_INSTRUCTIONS_BACKFILL_%'
         order by 2 desc
-        limit 20;""").columns %}
+        limit 1;""").columns %}
     
     {% set schema_names = results[0].values() %}
     {% set table_names = results[1].values() %}
@@ -163,9 +163,9 @@
 {% endmacro %}
 
 {% macro decoded_instructions_backfill_calls() %}
-    {% set sql_limit = 2500000 %}
-    {% set producer_batch_size = 1000000 %}
-    {% set worker_batch_size = 50000 %}
+    {% set sql_limit = 100000000 %}
+    {% set producer_batch_size = 20000000 %}
+    {% set worker_batch_size = 500000 %}
     {% set batch_call_limit = 1000 %}
 
     {% set results = run_query("""select
@@ -179,7 +179,7 @@
             table_name
         from """ ~ ref('streamline__complete_decoded_instructions_2_backfill') ~ """
         order by 2 desc
-        limit 10;""").columns %}
+        limit 1;""").columns %}
     {% set schema_names = results[0].values() %}
     {% set table_names = results[1].values() %}
     {% for table_name in table_names %}
