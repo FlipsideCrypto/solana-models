@@ -7,6 +7,20 @@
     tags = ['streamline_decoder'],
 ) }}
 
+/* run incremental timestamp value first then use it as a static value */
+{% if execute %}
+    {% if is_incremental() %}
+        {% set query %}
+            SELECT
+                COALESCE(MAX(_inserted_timestamp),'2000-01-01'::timestamp_ntz) _inserted_timestamp
+            FROM
+                {{ this }}
+        {% endset %}
+
+        {% set max_inserted_timestamp = run_query(query).columns[0].values()[0] %}
+    {% endif %}
+{% endif %}
+
 SELECT
     block_id,
     tx_id,
@@ -20,14 +34,9 @@ FROM
 {% if is_incremental() %}
 {{ ref('bronze__streamline_decoded_instructions_2') }}
 WHERE
-    _inserted_timestamp >= (
-        SELECT
-            COALESCE(MAX(_inserted_timestamp),'2000-01-01'::timestamp_ntz) _inserted_timestamp
-        FROM
-            {{ this }}
-    )
+    _inserted_timestamp >= '{{ max_inserted_timestamp }}'
 AND 
-    _partition_by_created_date_hour >= dateadd('hour', -3, current_timestamp())
+    _partition_by_created_date_hour >= dateadd('hour', -1, '{{ max_inserted_timestamp }}'::timestamp_ntz)
 {% else %}
     {{ ref('bronze__streamline_FR_decoded_instructions_2') }}
 {% endif %}
