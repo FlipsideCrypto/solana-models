@@ -36,7 +36,7 @@ FROM
 WHERE
     _inserted_timestamp >= '{{ max_inserted_timestamp }}'
 AND 
-    _partition_by_created_date_hour >= dateadd('hour', -1, '{{ max_inserted_timestamp }}'::timestamp_ntz)
+    _partition_by_created_date_hour >= dateadd('hour', -1, date_trunc('hour','{{ max_inserted_timestamp }}'::timestamp_ntz))
 {% else %}
     {{ ref('bronze__streamline_FR_decoded_instructions_2') }}
 {% endif %}
