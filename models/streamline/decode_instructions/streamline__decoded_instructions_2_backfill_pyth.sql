@@ -9,7 +9,20 @@
 
 {% set backfill_date = '2023-03-04' %}
 
-WITH event_subset AS (
+
+with completed_subset AS (
+            SELECT
+                block_id,
+                program_id,
+                complete_decoded_instructions_2_id as id
+            FROM
+                solana.streamline.complete_decoded_instructions_2
+            WHERE
+                program_id = 'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH'
+            AND
+                block_id between 0 and 1
+        ),
+event_subset AS (
     SELECT
         e.program_id,
         e.tx_id,
