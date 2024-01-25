@@ -39,6 +39,11 @@ jobs:
         run: |
           pip3 install dbt-snowflake==${{ vars.DBT_VERSION }} cli_passthrough requests click
           dbt deps
+        
+      - name: Log Formatted Minute
+        run: |
+          formatted_minute=$(date -d "${{ github.event.created_at }}" '+%M')
+          echo "Formatted Minute: $formatted_minute"
 
       - name: Run DBT Jobs
         run: |
