@@ -61,10 +61,10 @@ jobs:
       
       - name: Run Real Time Core on minutes 0 and 30 every hour
         run: |
-          dbt run-operation dispatch_decode_instructions --args "{'workflow_name': 'dbt_run_decode_instructions'}"
+          dbt run-operation dispatch_decode_instructions --args "{'workflow_name': 'test2'}"
         if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["00", "30"]'),format('%M', github.event.created_at)) }}
 
       - name: Run Backfill on minutes 20 and 50 every hour
         run: |
-          dbt run-operation dispatch_decode_instructions --args "{'workflow_name': 'dbt_run_decode_instructions_backfill'}"
+          dbt run-operation dispatch_decode_instructions --args "{'workflow_name': 'test3'}"
         if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["20", "50"]'),format('%M', github.event.created_at)) }}
