@@ -39,10 +39,20 @@ jobs:
         run: |
           pip3 install dbt-snowflake==${{ vars.DBT_VERSION }} cli_passthrough requests click
           dbt deps
+        
+      - name: Log Formatted Minute
+        run: |
+          minute=$(github.event.created_at.minute)
+          echo "Formatted Minute: $minute"
+        
+      - name: Log Formatted Minute
+        run: |
+          formatted_minute=$(format('{0:2}', github.event.created_at.minute))
+          echo "Formatted Minute: $formatted_minute"
 
       - name: Run DBT Jobs
         run: |
-          dbt run-operation run_query --args "{'sql': 'select 1'}"
+          dbt run -s models/streamline/decode_instructions/streamline__complete_decoded_instructions_2.sql 
       
       - name: Run Real Time Pyth Every 15 minutes
         run: |
@@ -51,10 +61,10 @@ jobs:
       
       - name: Run Real Time Core on minutes 0 and 30 every hour
         run: |
-          dbt run-operation dispatch_decode_instructions --args "{'workflow_name': 'test2'}"
+          dbt run-operation dispatch_decode_instructions --args "{'workflow_name': 'dbt_run_decode_instructions'}"
         if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["00", "30"]'),format('%M', github.event.created_at)) }}
 
       - name: Run Backfill on minutes 20 and 50 every hour
         run: |
-          dbt run-operation dispatch_decode_instructions --args "{'workflow_name': 'test3'}"
+          dbt run-operation dispatch_decode_instructions --args "{'workflow_name': 'dbt_run_decode_instructions_backfill'}"
         if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["20", "50"]'),format('%M', github.event.created_at)) }}
