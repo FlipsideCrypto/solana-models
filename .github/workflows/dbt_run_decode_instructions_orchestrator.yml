@@ -34,16 +34,18 @@ jobs:
         with:
           python-version: "${{ vars.PYTHON_VERSION }}"
           cache: "pip"
+      
+      - name: Capture Formatted Minute
+        id: capture_minute
+        run: |
+          formatted_minute=$(date '+%M')
+          echo "Formatted Minute: $formatted_minute"
+          echo "::set-output name=formatted_minute::$formatted_minute"
 
       - name: install dependencies
         run: |
           pip3 install dbt-snowflake==${{ vars.DBT_VERSION }} cli_passthrough requests click
           dbt deps
-        
-      - name: Log Formatted Minute
-        run: |
-          formatted_minute=$(date -d "${{ github.event.created_at }}" '+%M')
-          echo "Formatted Minute: $formatted_minute"
 
       - name: Run DBT Jobs
         run: |
@@ -52,14 +54,14 @@ jobs:
       - name: Run Real Time Pyth Every 15 minutes
         run: |
           dbt run-operation dispatch_decode_instructions --args "{'workflow_name': 'test1'}"
-        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["00", "15", "30", "45"]'),format('%M', github.event.created_at)) }}
+        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["00", "15", "30", "45"]'),format('%M', steps.capture_minute.outputs.formatted_minute)) }}
       
       - name: Run Real Time Core on minutes 0 and 30 every hour
         run: |
           dbt run-operation dispatch_decode_instructions --args "{'workflow_name': 'test2'}"
-        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["00", "30"]'),format('%M', github.event.created_at)) }}
+        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["00", "30"]'),format('%M', steps.capture_minute.outputs.formatted_minute)) }}
 
       - name: Run Backfill on minutes 20 and 50 every hour
         run: |
           dbt run-operation dispatch_decode_instructions --args "{'workflow_name': 'test3'}"
-        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["20", "50"]'),format('%M', github.event.created_at)) }}
+        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["20", "50"]'),format('%M', steps.capture_minute.outputs.formatted_minute)) }}
