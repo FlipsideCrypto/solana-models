@@ -47,14 +47,14 @@ jobs:
       - name: Run Real Time Pyth Every 15 minutes
         run: |
           dbt run-operation dispatch_decode_instructions --args "{'workflow_name': 'test1'}"
-        if: ${{ github.event_name == 'workflow_dispatch' && contains(format('%M', github.event.created_at), ['00', '15', '30', '45']) }}
+        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["00", "15", "30", "45"]'),format('%M', github.event.created_at)) }}
       
       - name: Run Real Time Core on minutes 0 and 30 every hour
         run: |
           dbt run-operation dispatch_decode_instructions --args "{'workflow_name': 'test2'}"
-        if: ${{ github.event_name == 'workflow_dispatch' && (contains(format('%M', github.event.created_at), ['00', '30'])) }}
+        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["00", "30"]'),format('%M', github.event.created_at)) }}
 
       - name: Run Backfill on minutes 20 and 50 every hour
         run: |
           dbt run-operation dispatch_decode_instructions --args "{'workflow_name': 'test3'}"
-        if: ${{ github.event_name == 'workflow_dispatch' && contains(format('%M', github.event.created_at), ['20', '50']) }}
+        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["20", "50"]'),format('%M', github.event.created_at)) }}
