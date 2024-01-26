@@ -40,7 +40,11 @@ jobs:
         run: |
           formatted_minute=$(date '+%M')
           echo "Formatted Minute: $formatted_minute"
-          echo "::set-output name=formatted_minute::$formatted_minute"
+          echo "formatted_minute=$formatted_minute" >> "$GITHUB_OUTPUT"
+
+      - name: Log step
+        run: |
+          echo "Using Formatted Minute: ${{ steps.capture_minute.outputs.formatted_minute }}"
 
       - name: install dependencies
         run: |
@@ -49,19 +53,19 @@ jobs:
 
       - name: Run DBT Jobs
         run: |
-          dbt run-operation run_query --args "{'sql': 'select 1'}"
+          dbt run -s models/streamline/decode_instructions/streamline__complete_decoded_instructions_2.sql
       
       - name: Run Real Time Pyth Every 15 minutes
         run: |
-          dbt run-operation dispatch_decode_instructions --args "{'workflow_name': 'test1'}"
-        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["00", "15", "30", "45"]'),format('%M', steps.capture_minute.outputs.formatted_minute)) }}
+          dbt run-operation dispatch_github_workflow --args "{'workflow_name': 'test3'}"
+        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["00", "15", "30", "45"]'), steps.capture_minute.outputs.formatted_minute) }}
       
       - name: Run Real Time Core on minutes 0 and 30 every hour
         run: |
-          dbt run-operation dispatch_decode_instructions --args "{'workflow_name': 'test2'}"
-        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["00", "30"]'),format('%M', steps.capture_minute.outputs.formatted_minute)) }}
+          dbt run-operation dispatch_github_workflow --args "{'workflow_name': 'dbt_run_decode_instructions'}"
+        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["00", "30"]'), steps.capture_minute.outputs.formatted_minute) }}
 
       - name: Run Backfill on minutes 20 and 50 every hour
         run: |
-          dbt run-operation dispatch_decode_instructions --args "{'workflow_name': 'test3'}"
-        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["20", "50"]'),format('%M', steps.capture_minute.outputs.formatted_minute)) }}
+          dbt run-operation dispatch_github_workflow --args "{'workflow_name': 'dbt_run_decode_instructions_backfill'}"
+        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["20", "50"]'), steps.capture_minute.outputs.formatted_minute) }}
