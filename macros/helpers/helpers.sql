@@ -29,3 +29,14 @@
         {{ "and " ~ alias ~ "._inserted_timestamp >= (select max(_inserted_timestamp) from " ~ model_name ~ ")"}}
     {% endif %}
 {%- endmacro %}
+
+{% macro dispatch_github_workflow(workflow_name) %}
+    {% set context_query %}
+        SET LIVEQUERY_CONTEXT = '{"userId":"SYSTEM"}';
+    {% endset %}
+    {% do run_query(context_query) %}
+    {% set query %}
+        SELECT github_actions.workflow_dispatches('FlipsideCrypto', 'solana-models', '{{ workflow_name }}.yml', NULL)
+    {% endset %}
+    {% do run_query(query) %}
+{% endmacro %}

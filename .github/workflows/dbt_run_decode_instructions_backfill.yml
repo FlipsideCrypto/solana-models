@@ -41,6 +41,5 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -s models/streamline/decode_instructions/streamline__complete_decoded_instructions_2.sql 
           dbt run-operation decoded_instructions_backill_cleanup_views 
           dbt run-operation decoded_instructions_backfill_calls --vars '{"STREAMLINE_INVOKE_STREAMS": True}' 
