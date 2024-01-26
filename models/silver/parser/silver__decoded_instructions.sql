@@ -15,7 +15,7 @@
     {% if is_incremental() %}
         {% set query %}
             SELECT
-                dateadd('hour', -2, MAX(_inserted_timestamp)) as _inserted_timestamp
+                MAX(_inserted_timestamp) as _inserted_timestamp
             FROM
                 {{ this }}
         {% endset %}
@@ -68,7 +68,7 @@ ON a.tx_id = c.tx_id
 WHERE
     A._inserted_timestamp >= '{{ max_inserted_timestamp }}'
 AND 
-    A._partition_by_created_date_hour between dateadd('hour', -2, date_trunc('hour','{{ max_inserted_timestamp }}'::timestamp_ntz)) and date_trunc('hour','{{ max_inserted_timestamp }}'::timestamp_ntz)
+    A._partition_by_created_date_hour between dateadd('hour', -2, date_trunc('hour','{{ max_inserted_timestamp }}'::timestamp_ntz)) and dateadd('hour',1,date_trunc('hour','{{ max_inserted_timestamp }}'::timestamp_ntz))
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY a.tx_id, a.index, coalesce(inner_index,-1)

@@ -1,0 +1,71 @@
+name: dbt_run_decode_instructions_orchestrator
+run-name: dbt_run_decode_instructions_orchestrator
+
+on:
+  workflow_dispatch:
+    branches:
+      - "main"
+    
+env:
+  DBT_PROFILES_DIR: "${{ vars.DBT_PROFILES_DIR }}"
+
+  ACCOUNT: "${{ vars.ACCOUNT }}"
+  ROLE: "${{ vars.ROLE }}"
+  USER: "${{ vars.USER }}"
+  PASSWORD: "${{ secrets.PASSWORD }}"
+  REGION: "${{ vars.REGION }}"
+  DATABASE: "${{ vars.DATABASE }}"
+  WAREHOUSE: "${{ vars.WAREHOUSE }}"
+  SCHEMA: "${{ vars.SCHEMA }}"
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  run_dbt_jobs:
+    runs-on: ubuntu-latest
+    environment: 
+      name: workflow_prod
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "${{ vars.PYTHON_VERSION }}"
+          cache: "pip"
+      
+      - name: Capture Formatted Minute
+        id: capture_minute
+        run: |
+          formatted_minute=$(date '+%M')
+          echo "Formatted Minute: $formatted_minute"
+          echo "formatted_minute=$formatted_minute" >> "$GITHUB_OUTPUT"
+
+      - name: Log step
+        run: |
+          echo "Using Formatted Minute: ${{ steps.capture_minute.outputs.formatted_minute }}"
+
+      - name: install dependencies
+        run: |
+          pip3 install dbt-snowflake==${{ vars.DBT_VERSION }} cli_passthrough requests click
+          dbt deps
+
+      - name: Run DBT Jobs
+        run: |
+          dbt run -s models/streamline/decode_instructions/streamline__complete_decoded_instructions_2.sql
+      
+      - name: Run Real Time Pyth Every 15 minutes
+        run: |
+          dbt run-operation dispatch_github_workflow --args "{'workflow_name': 'dbt_run_decode_instructions_pyth'}"
+        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["00", "15", "30", "45"]'), steps.capture_minute.outputs.formatted_minute) }}
+      
+      - name: Run Real Time Core on minutes 0 and 30 every hour
+        run: |
+          dbt run-operation dispatch_github_workflow --args "{'workflow_name': 'dbt_run_decode_instructions'}"
+        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["00", "30"]'), steps.capture_minute.outputs.formatted_minute) }}
+
+      - name: Run Backfill on minutes 20 and 50 every hour
+        run: |
+          dbt run-operation dispatch_github_workflow --args "{'workflow_name': 'dbt_run_decode_instructions_backfill'}"
+        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["20", "50"]'), steps.capture_minute.outputs.formatted_minute) }}
