@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_bulk_instructions_decoder(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'decoded_instructions_2', 'sql_limit', {{var('sql_limit','2500000')}}, 'producer_batch_size', {{var('producer_batch_size','1000000')}}, 'worker_batch_size', {{var('worker_batch_size','50000')}}, 'batch_call_limit', {{var('batch_call_limit','1000')}}))",
+        func = "{{this.schema}}.udf_bulk_instructions_decoder(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'decoded_instructions_2', 'sql_limit', {{var('sql_limit','10000000')}}, 'producer_batch_size', {{var('producer_batch_size','10000000')}}, 'worker_batch_size', {{var('worker_batch_size','500000')}}, 'batch_call_limit', {{var('batch_call_limit','1000')}}, 'call_type', 'backfill'))",
         target = "{{this.schema}}.{{this.identifier}}"
     ),
     tags = ['streamline_decoder']
@@ -13,8 +13,7 @@ WITH idl_in_play AS (
         program_id
     FROM
         {{ ref('silver__verified_idls') }}
-    WHERE   
-        program_id <> 'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH'
+    WHERE program_id = 'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH'
 ),
 event_subset AS (
     SELECT
@@ -32,7 +31,7 @@ event_subset AS (
         JOIN idl_in_play b
         ON e.program_id = b.program_id
     WHERE
-        e.block_timestamp >= CURRENT_DATE - 2
+        e.block_timestamp >= CURRENT_DATE - 1
     AND 
         e.succeeded
     UNION ALL
@@ -52,7 +51,7 @@ event_subset AS (
         ON ARRAY_CONTAINS(b.program_id::variant, e.inner_instruction_program_ids) 
         JOIN table(flatten(e.inner_instruction:instructions)) i 
     WHERE
-        e.block_timestamp >= CURRENT_DATE - 2
+        e.block_timestamp >= CURRENT_DATE - 1
     AND 
         e.succeeded
     AND 
@@ -88,4 +87,3 @@ FROM
     AND e.id = C.id
 WHERE
     C.block_id IS NULL
-qualify(row_number() over (order by e.block_id, e.tx_id)) <= {{ var('sql_limit','2500000') }}

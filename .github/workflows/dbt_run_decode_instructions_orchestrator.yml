@@ -57,7 +57,7 @@ jobs:
       
       - name: Run Real Time Pyth Every 15 minutes
         run: |
-          dbt run-operation dispatch_github_workflow --args "{'workflow_name': 'test3'}"
+          dbt run-operation dispatch_github_workflow --args "{'workflow_name': 'dbt_run_decode_instructions_pyth'}"
         if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["00", "15", "30", "45"]'), steps.capture_minute.outputs.formatted_minute) }}
       
       - name: Run Real Time Core on minutes 0 and 30 every hour

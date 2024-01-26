@@ -1,5 +1,5 @@
-name: test3
-run-name: test3
+name: dbt_run_decode_instructions_pyth
+run-name: dbt_run_decode_instructions_pyth
 
 on:
   workflow_dispatch:
@@ -34,3 +34,11 @@ jobs:
         with:
           python-version: "${{ vars.PYTHON_VERSION }}"
           cache: "pip"
+
+      - name: install dependencies
+        run: |
+          pip3 install dbt-snowflake==${{ vars.DBT_VERSION }} cli_passthrough requests click
+          dbt deps
+      - name: Run DBT Jobs
+        run: |
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS": True}' -s models/streamline/decode_instructions/streamline__decode_instructions_2_pyth_realtime.sql
