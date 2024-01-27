@@ -4,9 +4,9 @@
             default_backfill_start_block_id
         from """ ~ ref('streamline__idls_history') ~ """ 
         where program_id = '""" ~ program_id ~ """';""").columns %}
-    {% set min_block_id = 86813920 %}
-    {% set max_block_id = 243627006 %}
-    {% set step = 200000 %}
+    {% set min_block_id = result_cols[0].values()[0] | int %}
+    {% set max_block_id = result_cols[1].values()[0] | int %}
+    {% set step = 10000000 %}
 
     {% for i in range(min_block_id, max_block_id, step) %}
         {% if i == min_block_id %}
