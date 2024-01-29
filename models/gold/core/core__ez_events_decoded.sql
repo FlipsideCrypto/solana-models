@@ -15,6 +15,9 @@ SELECT
     A.program_id,
     NULL AS instruction,
     A.decoded_instruction,
+    A.decoded_instruction :accounts :: ARRAY AS decoded_accounts,
+    A.decoded_instruction :args :: variant AS decoded_args,
+    A.decoded_instruction :error :: STRING AS decoding_error,
     COALESCE (
         decoded_instructions_id,
         {{ dbt_utils.generate_surrogate_key(
