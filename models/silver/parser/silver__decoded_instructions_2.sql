@@ -64,6 +64,7 @@ b
 ON A.block_id = b.block_id
 JOIN {{ ref('silver__transactions') }} C
 ON A.tx_id = C.tx_id
+AND b.block_timestamp :: DATE = b.block_timestamp :: DATE
 
 {% if is_incremental() %}
 WHERE
