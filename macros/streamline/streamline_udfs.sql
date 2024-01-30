@@ -18,7 +18,7 @@
     {%- endif %}
 {% endmacro %}
 
-{% macro create_udf_decode_compressed_mint_change_logs %}
+{% macro create_udf_decode_compressed_mint_change_logs() %}
     CREATE
     OR REPLACE EXTERNAL FUNCTION streamline.udf_decode_compressed_mint_change_logs("JSON" ARRAY) returns VARIANT api_integration = aws_solana_api_dev AS {% if target.database == 'SOLANA' -%}
         'https://l426aqju0g.execute-api.us-east-1.amazonaws.com/prod/udf_decode_compressed_mint_change_logs'

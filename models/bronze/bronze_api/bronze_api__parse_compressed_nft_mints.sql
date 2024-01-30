@@ -31,7 +31,7 @@
     {% set query2 = """
         qualify(ROW_NUMBER() over (
         ORDER BY
-            _inserted_timestamp)) <= 10000""" %}
+            _inserted_timestamp)) <= 2000""" %}
     {% do run_query(query ~ incr ~ query2) %}
     {% set min_inserted_timestamp = run_query("""SELECT min(_inserted_timestamp) FROM bronze_api.parse_compressed_nft_mints__intermediate_tmp""").columns[0].values()[0] %}
     {% set max_inserted_timestamp = run_query("""SELECT max(_inserted_timestamp) FROM bronze_api.parse_compressed_nft_mints__intermediate_tmp""").columns[0].values()[0] %}
@@ -66,7 +66,7 @@ base AS (
                 e.tx_id
         ) AS rn,
         FLOOR(
-            rn / 1000
+            rn / 200
         ) AS gn,
         e._inserted_timestamp AS event_inserted_timestamp
     FROM
@@ -83,6 +83,7 @@ base AS (
         AND e.block_timestamp :: DATE = C.block_timestamp :: DATE
         AND ii_program_id = 'noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'
         AND e._inserted_timestamp between '{{ min_inserted_timestamp }}' and '{{ max_inserted_timestamp }}'
+        AND NOT startswith(DATA, '2GJh')
 )
 SELECT
     ARRAY_AGG(request) AS batch_request,
