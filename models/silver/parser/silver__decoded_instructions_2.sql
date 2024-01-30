@@ -10,7 +10,6 @@
         '{{this.identifier}}'
     ),
     merge_exclude_columns = ["inserted_timestamp"],
-    tags = ['scheduled_non_core'],
 ) }}
 /* run incremental timestamp value first then use it as a static value */
 {% if execute %}
