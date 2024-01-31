@@ -4,8 +4,7 @@
     materialized = 'incremental',
     incremental_predicates = ["dynamic_block_date_ranges"],
     unique_key = "decoded_instructions_id",
-    cluster_by = ['program_id','block_timestamp::DATE','_inserted_timestamp::DATE'],
-    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}'),
+    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE','program_id'],
     merge_exclude_columns = ["inserted_timestamp"],
     tags = ['scheduled_non_core'],
 ) }}
@@ -28,7 +27,6 @@ SELECT
     b.block_timestamp,
     A.block_id,
     A.tx_id,
-    c.signers,
     COALESCE(
         A.index,
         VALUE :data :data [0] [0],
@@ -41,7 +39,6 @@ SELECT
         A.value :data [1],
         A.value :data
     ) AS decoded_instruction,
-    decoded_instruction:name::string as event_type,
     A._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
         ['A.tx_id', 'A.index', 'A.inner_index']
@@ -59,10 +56,6 @@ FROM
 JOIN {{ ref('silver__blocks') }}
 b
 ON A.block_id = b.block_id
-JOIN {{ ref('silver__transactions') }}
-c
-ON a.tx_id = c.tx_id
-
 
 {% if is_incremental() %}
 WHERE
@@ -71,6 +64,6 @@ AND
     A._partition_by_created_date_hour between dateadd('hour', -2, date_trunc('hour','{{ max_inserted_timestamp }}'::timestamp_ntz)) and dateadd('hour',1,date_trunc('hour','{{ max_inserted_timestamp }}'::timestamp_ntz))
 {% endif %}
 
-qualify(ROW_NUMBER() over (PARTITION BY a.tx_id, a.index, coalesce(inner_index,-1)
+qualify(ROW_NUMBER() over (PARTITION BY tx_id, INDEX, coalesce(inner_index,-1)
 ORDER BY
     A._inserted_timestamp DESC)) = 1

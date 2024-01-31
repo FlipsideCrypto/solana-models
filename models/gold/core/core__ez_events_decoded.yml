@@ -45,6 +45,18 @@ models:
         description: An instruction specifies which program it is calling, which accounts it wants to read or modify, and additional data that serves as auxiliary input to the program
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: DECODED_ACCOUNTS
+        description: The accounts object within the decoded instruction
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: DECODED_ARGS
+        description: The args object within the decoded instruction
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: DECODING_ERROR
+        description: The error if the decoding failed
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: EZ_EVENTS_DECODED_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP

@@ -13,19 +13,8 @@ SELECT
     program_id,
     event_type,
     decoded_instruction,
-    COALESCE (
-        decoded_instructions_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_id', 'index', 'inner_index']
-        ) }}
-    ) AS fact_decoded_instructions_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
+    decoded_instructions_combined_id AS fact_decoded_instructions_combined_id,
+    inserted_timestamp,
+    modified_timestamp
 FROM
-    {{ ref('silver__decoded_instructions') }}
+    {{ ref('silver__decoded_instructions_combined') }}
