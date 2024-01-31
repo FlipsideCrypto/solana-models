@@ -1,12 +1,11 @@
-name: dbt_run_deploy_udfs_and_sps
-run-name: dbt_run_deploy_udfs_and_sps
+name: dbt_run_incremental_decoded_instructions_temporary
+run-name: dbt_run_incremental_decoded_instructions_temporary
 
 on:
-  push:
-    branches:
-      - main  
-    paths:
-      - 'macros/**'
+  workflow_dispatch:
+  schedule:
+     # Every hour at minute 1,31 (see https://crontab.guru)
+    - cron: "1,31 * * * *"
     
 env:
   DBT_PROFILES_DIR: "${{ vars.DBT_PROFILES_DIR }}"
@@ -41,8 +40,7 @@ jobs:
         run: |
           pip3 install dbt-snowflake==${{ vars.DBT_VERSION }} cli_passthrough requests click
           dbt deps
-
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"UPDATE_UDFS_AND_SPS": True}' -s models/bronze/bronze__blocks2.sql
+          dbt run -s models/silver/parser/silver__decoded_instructions_combined.sql
           
