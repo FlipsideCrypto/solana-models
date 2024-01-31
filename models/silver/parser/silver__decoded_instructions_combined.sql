@@ -27,7 +27,7 @@
     {% set query = """ CREATE OR REPLACE TEMPORARY TABLE silver.decoded_instructions__intermediate_tmp AS SELECT block_timestamp, block_id, tx_id, inner_index, program_id, decoded_instruction, decoded_instructions_id, _inserted_timestamp FROM """ ~ ref('silver__decoded_instructions') ~ """ WHERE block_timestamp::date >= '2024-01-28'""" %}
     {% set incr = "" %}
     {% if is_incremental() %}
-        {% set incr = """ AND _inserted_timestamp >= '{{ max_inserted_timestamp }}' """ %}
+        {% set incr = """ AND _inserted_timestamp >= '""" ~ max_inserted_timestamp ~ """' """ %}
     {% endif %}
 
     {% do run_query(query ~ incr) %}
