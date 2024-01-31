@@ -44,5 +44,5 @@ jobs:
 
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"UPDATE_UDFS_AND_SPS": True}' -s models/bronze/bronze__blocks.sql
+          dbt run --vars '{"UPDATE_UDFS_AND_SPS": True}' -s models/bronze/bronze__blocks2.sql
           
