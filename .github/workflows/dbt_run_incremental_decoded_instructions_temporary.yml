@@ -42,5 +42,5 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -s models/silver/parser/silver__decoded_instructions_2.sql
+          dbt run -s models/silver/parser/silver__decoded_instructions_combined.sql
           
