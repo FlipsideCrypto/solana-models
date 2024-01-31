@@ -13,55 +13,47 @@
 /* run incremental timestamp value first then use it as a static value */
 {% if execute %}
 
-{% if is_incremental() %}
-{% set query %}
+    {% if is_incremental() %}
+        {% set max_inserted_query %}
+        SELECT
+            MAX(_inserted_timestamp) AS _inserted_timestamp
+        FROM
+            {{ this }}
 
-SELECT
-    MAX(_inserted_timestamp) AS _inserted_timestamp
-FROM
-    {{ this }}
+        {% endset %}
+        {% set max_inserted_timestamp = run_query(max_inserted_query).columns [0].values() [0] %}
+    {% endif %}
 
-    {% endset %}
-    {% set max_inserted_timestamp = run_query(query).columns [0].values() [0] %}
-{% endif %}
-{% endif %}
-
-{% if execute %}
-    {% set query = """ CREATE OR REPLACE TEMPORARY TABLE silver.decoded_instructions__intermediate_tmp AS SELECT block_timestamp, block_id, tx_id, inner_index, program_id, decoded_instruction, decoded_instructions_id, _inserted_timestamp FROM """ ~ ref('silver__decoded_instructions') ~ """ WHERE block_timestamp::Date >= '2024-01-28'""" %}
+    {% set query = """ CREATE OR REPLACE TEMPORARY TABLE silver.decoded_instructions__intermediate_tmp AS SELECT block_timestamp, block_id, tx_id, inner_index, program_id, decoded_instruction, decoded_instructions_id, _inserted_timestamp FROM """ ~ ref('silver__decoded_instructions') ~ """ WHERE block_timestamp::date >= '2024-01-28'""" %}
     {% set incr = "" %}
+    {% if is_incremental() %}
+        {% set incr = """ AND _inserted_timestamp >= '{{ max_inserted_timestamp }}' """ %}
+    {% endif %}
 
-{% if is_incremental() %}
-{% set incr = """ AND _inserted_timestamp >= '{{ max_inserted_timestamp }}' """ %}
+    {% do run_query(query ~ incr) %}
+
+    {% set between_stmts = dynamic_block_date_ranges("silver.decoded_instructions__intermediate_tmp") %}
 {% endif %}
 
-{% do run_query(
-    query ~ incr
-) %}
-{% endif %}
 
 WITH txs AS (
     SELECT
-        program_id,
+        block_timestamp,
         tx_id,
-        signers
+        signers, 
+        succeeded
     FROM
-        { ref('silver__transactions') }}
+        {{ ref('silver__transactions') }}
     WHERE
-        block_timestamp :: DATE >= (
-            SELECT
-                MAX(
-                    block_timestamp :: DATE
-                )
-            FROM
-                silver.decoded_instructions__intermediate_tmp
-        )
+        {{ between_stmts }}
 )
 SELECT
     A.block_timestamp,
     A.block_id,
     A.tx_id,
-    b.signers,
     A.inner_index,
+    b.signers,
+    b.succeeded,
     A.program_id,
     A.decoded_instruction,
     A._inserted_timestamp,
