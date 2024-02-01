@@ -29,6 +29,8 @@ sources:
       - name: coin_market_cap_cryptocurrency_info
       - name: apis_keys
       - name: number_sequence
+      - name: labels_combined
+    
 
   - name: shared
     database: flipside_prod_db

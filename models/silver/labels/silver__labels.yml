@@ -1,0 +1,11 @@
+version: 2
+models:
+  - name: silver__labels
+
+    columns:
+      - name: BLOCKCHAIN
+        tests:
+          - not_null  
+      - name: ADDRESS
+        tests:
+          - not_null
