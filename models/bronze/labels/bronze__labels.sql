@@ -12,9 +12,11 @@ SELECT
     label_type,
     label_subtype,
     address_name,
-    project_name
-FROM {{ source(
-        'crosschain',
-        'dim_labels'
-    ) }} 
+    project_name,
+    _is_deleted,
+    labels_combined_id
+FROM  {{ source(
+        'crosschain_silver',
+        'labels_combined'
+    ) }}
 WHERE blockchain = 'solana'
