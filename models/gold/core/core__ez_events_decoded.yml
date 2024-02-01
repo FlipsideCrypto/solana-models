@@ -38,7 +38,7 @@ models:
       - name: EVENT_TYPE
         description: "{{ doc('event_type') }}"
       - name: INSTRUCTION
-        description: Deprecating soon! This is always NULL - please use fact_events for the raw instructions
+        description: Deprecating soon! This is always NULL - please use fact_events for the raw instructions. This field will be removed on 2024-02-15
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: DECODED_INSTRUCTION
