@@ -1,6 +1,7 @@
 -- depends_on: {{ ref('bronze__streamline_decoded_instructions_2') }}
 {{ config (
     materialized = "incremental",
+    incremental_predicates = ['DBT_INTERNAL_DEST._inserted_timestamp::date >= LEAST(current_date-2,(select min(_inserted_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     unique_key = "complete_decoded_instructions_2_id",
     cluster_by = ["ROUND(block_id, -3)","program_id"],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(complete_decoded_instructions_2_id)'),
