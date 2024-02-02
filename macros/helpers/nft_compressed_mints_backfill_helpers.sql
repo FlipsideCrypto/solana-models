@@ -17,7 +17,7 @@
 {% endmacro %}
 
 {% macro nft_compressed_mints_backfill_make_call() %}
-    {% do run_query('BEGIN TRANSACTION;') %}
+
     {% set request_batch_setup %}
         create or replace temporary table bronze_api.nft_compressed_mints_backfill_requests_batch as 
         SELECT
@@ -93,12 +93,12 @@
     {% endset %}
     {% do run_query(make_requests) %}
 
-    {% set insert_into_brozne_api %}
+    {% set insert_into_bronze_api %}
         insert into bronze_api.parse_compressed_nft_mints
         select *
         from bronze_api.parse_compressed_nft_mints_backfill_responses;
     {% endset %}
-    {% do run_query(insert_into_brozne_api) %}
+
 
     {% set incremental_model %}
         create temporary table silver.nft_compressed_mints__merge_tmp as
@@ -217,7 +217,7 @@
                 OR A.instruction_name IS NULL
             );
     {% endset %}
-    {% do run_query(incremental_model) %}
+
         
     {% set merge_model %}
         MERGE INTO silver.nft_compressed_mints AS target
@@ -273,7 +273,7 @@
                 source.inserted_timestamp,
                 source.modified_timestamp);
     {% endset %}
-    {% do run_query(merge_model) %}
+    {% do run_query("BEGIN TRANSACTION; " ~ insert_into_bronze_api ~ " " ~ incremental_model ~ " " ~ merge_model ~ " COMMIT;") %}
 
-    {% do run_query('COMMIT;') %}
+
 {% endmacro %}
