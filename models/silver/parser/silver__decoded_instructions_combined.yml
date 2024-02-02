@@ -1,0 +1,41 @@
+version: 2
+models:
+  - name: silver__decoded_instructions_combined
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SIGNERS
+      - name: SUCCEEDED
+      - name: INDEX
+        description: "{{ doc('event_index') }}"
+        tests:  
+          - not_null
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+      - name: EVENT_TYPE
+        description: "{{ doc('event_type') }}"
+      - name: DECODED_INSTRUCTION
+        description: An instruction specifies which program it is calling, which accounts it wants to read or modify, and additional data that serves as auxiliary input to the program
+        tests: 
+          - not_null:
+              where: block_timestamp::date > current_date - 30
+      - name: EVENT_TYPE
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null

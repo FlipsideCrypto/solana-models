@@ -15,6 +15,10 @@ models:
         description: "{{ doc('tx_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: SIGNERS
+        description: "{{ doc('signers') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
       - name: INDEX
         description: Location of the event within the instructions of a transaction
         tests:
@@ -27,6 +31,8 @@ models:
         description: "{{ doc('program_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: EVENT_TYPE
+        description: "{{ doc('event_type') }}"
       - name: DECODED_INSTRUCTION
         description: An instruction specifies which program it is calling, which accounts it wants to read or modify, and additional data that serves as auxiliary input to the program
         tests:

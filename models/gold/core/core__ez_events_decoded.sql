@@ -4,30 +4,22 @@
 ) }}
 
 SELECT
-    b.block_timestamp,
-    b.block_id,
-    b.tx_id,
-    b.signers,
-    b.succeeded,
-    b.index,
+    A.block_timestamp,
+    A.block_id,
+    A.tx_id,
+    A.signers,
+    A.succeeded,
+    A.index,
     A.inner_index,
-    b.event_type,
-    b.program_id,
-    b.instruction,
+    A.event_type,
+    A.program_id,
+    NULL AS instruction,
     A.decoded_instruction,
-    COALESCE (
-        decoded_instructions_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['b.tx_id', 'b.index', 'A.inner_index']
-        ) }}
-    ) AS ez_events_decoded_id,
-    GREATEST(COALESCE(A.inserted_timestamp, '2000-01-01'), COALESCE(b.inserted_timestamp, '2000-01-01')) AS inserted_timestamp,
-    GREATEST(COALESCE(A.modified_timestamp, '2000-01-01'), COALESCE(b.modified_timestamp, '2000-01-01')) AS modified_timestamp
+    A.decoded_instruction :accounts :: ARRAY AS decoded_accounts,
+    A.decoded_instruction :args :: variant AS decoded_args,
+    A.decoded_instruction :error :: STRING AS decoding_error,
+    A.decoded_instructions_combined_id AS ez_events_decoded_id,
+    A.inserted_timestamp,
+    A.modified_timestamp
 FROM
-    {{ ref('silver__decoded_instructions') }} A
-    JOIN {{ ref('silver__events') }}
-    b
-    ON A.block_timestamp::date = b.block_timestamp::date
-    AND A.program_id = b.program_id
-    AND A.tx_id = b.tx_id
-    AND A.index = b.index
+    {{ ref('silver__decoded_instructions_combined') }} A
