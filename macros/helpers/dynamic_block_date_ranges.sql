@@ -1,82 +1,103 @@
-{% macro dynamic_block_date_ranges(source) -%}
+{% macro dynamic_block_range_predicate(source, predicate_column) -%}
+    {% set predicate_column_data_type_query %}
+        SELECT typeof({{predicate_column}}::variant)
+        FROM {{ source }}
+        WHERE {{predicate_column}} IS NOT NULL
+        LIMIT 1;
+    {% endset %}
+    {% set predicate_column_data_type = run_query(predicate_column_data_type_query).columns[0].values()[0] %}
+
     {% set get_limits_query %}
         WITH full_range AS (
             SELECT
                 MIN(
-                    block_timestamp :: DATE
-                ) AS full_range_start_block_date,
+                    {{ predicate_column }}
+                ) AS full_range_start,
                 MAX(
-                    block_timestamp :: DATE
-                ) AS full_range_end_block_date
+                    {{ predicate_column }}
+                ) AS full_range_end
             FROM
                 {{ source }}
         ),
         block_range AS (
-            SELECT
-                date_day,
-                ROW_NUMBER() over (
-                    ORDER BY
-                        date_day
-                ) - 1 AS rn
-            FROM
-                crosschain.core.dim_dates
-            WHERE
-                date_day BETWEEN (
-                    SELECT
-                        full_range_start_block_date
-                    FROM
-                        full_range
-                )
-                AND (
-                    SELECT
-                        full_range_end_block_date
-                    FROM
-                        full_range
-                )
+            {% if predicate_column_data_type == "INTEGER" %}
+                {{ dbt_utils.generate_series(
+                    start = (select full_range_start from full_range),
+                    end = (select full_range_end from full_range),
+                    step = '1'
+                ) }}
+            {% else %}
+                {{ dbt_utils.generate_series(
+                    start_date = (select full_range_start from full_range),
+                    end_date = (select full_range_end from full_range),
+                    step = '1 day'
+                ) }}
+            {% endif %}
+            -- SELECT
+            --     date_day,
+            --     ROW_NUMBER() over (
+            --         ORDER BY
+            --             date_day
+            --     ) - 1 AS rn
+            -- FROM
+            --     crosschain.core.dim_dates
+            -- WHERE
+            --     date_day BETWEEN (
+            --         SELECT
+            --             full_range_start
+            --         FROM
+            --             full_range
+            --     )
+            --     AND (
+            --         SELECT
+            --             full_range_end
+            --         FROM
+            --             full_range
+            --     )
         ),
         partition_block_counts AS (
             SELECT
-                b.date_day AS block_date,
-                COUNT(*) AS count_in_window
+                b.date_day AS predicate_value,
+                COUNT(r.{{ predicate_column }}) AS count_in_window
             FROM
                 block_range b
                 LEFT OUTER JOIN {{ source }}
                 r
-                ON r.block_timestamp :: DATE = b.date_day
+                ON r.{{ predicate_column }} = b.date_day
             GROUP BY
                 1
         ),
         range_groupings AS (
             SELECT
-                block_date,
+                predicate_value,
                 count_in_window,
                 conditional_change_event(
-                    count_in_window > 1
+                    count_in_window > 0
                 ) over (
                     ORDER BY
-                        block_date
+                        predicate_value
                 ) AS group_val
             FROM
                 partition_block_counts
         ),
         contiguous_ranges AS (
             SELECT
-                MIN(block_date) AS start_block_date,
-                MAX(block_date) AS end_block_date
+                MIN(predicate_value) AS start_value,
+                MAX(predicate_value) AS end_value
             FROM
                 range_groupings
             WHERE
-                count_in_window > 1
+                count_in_window > 0
             GROUP BY
                 group_val
         ),
         between_stmts AS (
             SELECT
                 CONCAT(
-                    'block_timestamp::date between \'',
-                    start_block_date,
+                    '{{ predicate_column }} between \'',
+                    start_value,
                     '\' and \'',
-                    end_block_date,
+                    end_value,
                     '\''
                 ) AS b
             FROM
