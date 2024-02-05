@@ -25,7 +25,7 @@
             block_timestamp
         FROM
             bronze_api.nft_compressed_mints_backfill_requests
-        qualify(row_number() over (order by block_timestamp)) <= 2000;
+        qualify(row_number() over (order by block_timestamp)) <= 1500;
     {% endset %}
     {% do run_query(request_batch_setup) %}
 
@@ -60,7 +60,7 @@
                             e.tx_id
                     ) AS rn,
                     FLOOR(
-                        rn / 200
+                        rn / 150
                     ) AS gn,
                     e._inserted_timestamp AS event_inserted_timestamp
                 FROM
