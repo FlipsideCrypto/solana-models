@@ -1,5 +1,5 @@
-name: dbt_run_get_nft_compressed_backfill
-run-name: dbt_run_get_nft_compressed_backfill
+name: dbt_run_nft_compressed_mints_realtime
+run-name: dbt_run_nft_compressed_mints_realtime
 
 on:
   workflow_dispatch:

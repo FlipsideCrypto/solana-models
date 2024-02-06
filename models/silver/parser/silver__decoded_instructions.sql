@@ -59,7 +59,7 @@ ON A.block_id = b.block_id
 
 {% if is_incremental() %}
 WHERE
-    A._inserted_timestamp >= '{{ max_inserted_timestamp }}'
+    A._inserted_timestamp >= dateadd('minute', -5, '{{ max_inserted_timestamp }}')
 AND 
     A._partition_by_created_date_hour between dateadd('hour', -2, date_trunc('hour','{{ max_inserted_timestamp }}'::timestamp_ntz)) and dateadd('hour',1,date_trunc('hour','{{ max_inserted_timestamp }}'::timestamp_ntz))
 {% endif %}
