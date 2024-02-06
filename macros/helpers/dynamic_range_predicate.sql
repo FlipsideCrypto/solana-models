@@ -1,4 +1,5 @@
-{% macro dynamic_block_range_predicate(source, predicate_column) -%}
+{% macro dynamic_range_predicate(source, predicate_column, output_alias="") -%}
+    {% set supported_data_types = ["INTEGER","DATE"] %}
     {% set predicate_column_data_type_query %}
         SELECT typeof({{predicate_column}}::variant)
         FROM {{ source }}
@@ -6,64 +7,52 @@
         LIMIT 1;
     {% endset %}
     {% set predicate_column_data_type = run_query(predicate_column_data_type_query).columns[0].values()[0] %}
+    
+
+    {% if predicate_column_data_type not in supported_data_types %}
+        {{ exceptions.raise_compiler_error("Data type of "~ predicate_column_data_type ~" is not supported, use one of "~ supported_data_types ~" column instead") }}
+    {% endif %}
+
+    {% set get_start_end_query %}
+        SELECT
+            MIN(
+                {{ predicate_column }}
+            ) AS full_range_start,
+            MAX(
+                {{ predicate_column }}
+            ) AS full_range_end
+        FROM
+            {{ source }}
+    {% endset %}
+    {% set start_end_results = run_query(get_start_end_query).columns %}
+    {% set start_preciate_value = start_end_results[0].values()[0] %}
+    {% set end_predicate_value = start_end_results[1].values()[0] %}
 
     {% set get_limits_query %}
-        WITH full_range AS (
-            SELECT
-                MIN(
-                    {{ predicate_column }}
-                ) AS full_range_start,
-                MAX(
-                    {{ predicate_column }}
-                ) AS full_range_end
-            FROM
-                {{ source }}
-        ),
-        block_range AS (
+        WITH block_range AS (
             {% if predicate_column_data_type == "INTEGER" %}
-                {{ dbt_utils.generate_series(
-                    start = (select full_range_start from full_range),
-                    end = (select full_range_end from full_range),
-                    step = '1'
-                ) }}
+                SELECT 
+                    SEQ4() + {{ start_preciate_value }} as predicate_value
+                FROM 
+                    TABLE(GENERATOR(rowcount => {{ end_predicate_value - start_preciate_value }}+1))
             {% else %}
-                {{ dbt_utils.generate_series(
-                    start_date = (select full_range_start from full_range),
-                    end_date = (select full_range_end from full_range),
-                    step = '1 day'
-                ) }}
+                SELECT
+                    date_day as predicate_value
+                FROM
+                    crosschain.core.dim_dates
+                WHERE
+                    date_day BETWEEN '{{ start_preciate_value }}' AND '{{ end_predicate_value }}'
             {% endif %}
-            -- SELECT
-            --     date_day,
-            --     ROW_NUMBER() over (
-            --         ORDER BY
-            --             date_day
-            --     ) - 1 AS rn
-            -- FROM
-            --     crosschain.core.dim_dates
-            -- WHERE
-            --     date_day BETWEEN (
-            --         SELECT
-            --             full_range_start
-            --         FROM
-            --             full_range
-            --     )
-            --     AND (
-            --         SELECT
-            --             full_range_end
-            --         FROM
-            --             full_range
-            --     )
         ),
         partition_block_counts AS (
             SELECT
-                b.date_day AS predicate_value,
+                b.predicate_value,
                 COUNT(r.{{ predicate_column }}) AS count_in_window
             FROM
                 block_range b
                 LEFT OUTER JOIN {{ source }}
                 r
-                ON r.{{ predicate_column }} = b.date_day
+                ON r.{{ predicate_column }} = b.predicate_value
             GROUP BY
                 1
         ),
@@ -94,6 +83,7 @@
         between_stmts AS (
             SELECT
                 CONCAT(
+                    '{{ output_alias~"." if output_alias else "" }}',
                     '{{ predicate_column }} between \'',
                     start_value,
                     '\' and \'',
@@ -116,7 +106,7 @@
         {% set predicate_override = between_stmts %}
     {% else %}
         {% set predicate_override = '1=1' %}
-        /* need to have something or it will error since 'dynamic_block_date_ranges' is not a column */
+        /* need to have something or it will error since it expects at least 1 predicate */
     {% endif %}
 
     {{ return(predicate_override) }}
