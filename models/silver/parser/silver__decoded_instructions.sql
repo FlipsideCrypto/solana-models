@@ -2,7 +2,7 @@
 -- depends_on: {{ ref('bronze__streamline_FR_decoded_instructions_2') }}
 {{ config(
     materialized = 'incremental',
-    incremental_predicates = ["dynamic_block_date_ranges"],
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     unique_key = "decoded_instructions_id",
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE','program_id'],
     merge_exclude_columns = ["inserted_timestamp"],

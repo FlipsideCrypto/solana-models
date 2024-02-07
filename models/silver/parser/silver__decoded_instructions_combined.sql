@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    incremental_predicates = ["dynamic_block_date_ranges"],
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     unique_key = "decoded_instructions_combined_id",
     cluster_by = ['program_id','block_timestamp::DATE','_inserted_timestamp::DATE'],
     post_hook = enable_search_optimization(
@@ -36,7 +36,7 @@ FROM
 {% do run_query(
     query ~ incr
 ) %}
-{% set between_stmts = dynamic_block_date_ranges("silver.decoded_instructions__intermediate_tmp") %}
+{% set between_stmts = dynamic_range_predicate("silver.decoded_instructions__intermediate_tmp","block_timestamp::date") %}
 {% endif %}
 
 WITH txs AS (
