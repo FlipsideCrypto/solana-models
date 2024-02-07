@@ -36,7 +36,7 @@ FROM
 {% do run_query(
     query ~ incr
 ) %}
-{% set between_stmts = dynamic_range_predicate("silver.decoded_instructions__intermediate_tmp","block_timestamp::date") %}
+{% set between_stmts = fsc_utils.dynamic_range_predicate("silver.decoded_instructions__intermediate_tmp","block_timestamp::date") %}
 {% endif %}
 
 WITH txs AS (
