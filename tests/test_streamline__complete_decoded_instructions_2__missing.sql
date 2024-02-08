@@ -14,4 +14,4 @@ SELECT
 FROM
     {{ ref('streamline__complete_decoded_instructions_2') }}
 WHERE
-    _inserted_timestamp BETWEEN dateadd('hour',-3,date_trunc('hour',current_timestamp())) and dateadd('hour',-2, date_trunc('hour',current_timestamp()));
+    _inserted_timestamp BETWEEN dateadd('hour',-3,date_trunc('hour',current_timestamp())) and dateadd('hour',-2, date_trunc('hour',current_timestamp()))
