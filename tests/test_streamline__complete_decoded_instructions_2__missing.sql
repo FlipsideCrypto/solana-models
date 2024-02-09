@@ -7,11 +7,13 @@ SELECT
 FROM
     {{ target.database }}.bronze.streamline_decoded_instructions_2
 WHERE
-    _partition_by_created_date_hour BETWEEN dateadd('hour',-3,date_trunc('hour',current_timestamp())) and dateadd('hour',-2, date_trunc('hour',current_timestamp()))
+    _partition_by_created_date_hour >= dateadd('hour',-3,date_trunc('hour',current_timestamp())) 
+    AND _partition_by_created_date_hour <dateadd('hour',-2, date_trunc('hour',current_timestamp()))
 EXCEPT
 SELECT
     complete_decoded_instructions_2_id
 FROM
     {{ ref('streamline__complete_decoded_instructions_2') }}
 WHERE
-    _inserted_timestamp BETWEEN dateadd('hour',-3,date_trunc('hour',current_timestamp())) and dateadd('hour',-2, date_trunc('hour',current_timestamp()))
+    _inserted_timestamp >= dateadd('hour',-3,date_trunc('hour',current_timestamp()))
+    AND _inserted_timestamp < dateadd('hour',-2, date_trunc('hour',current_timestamp()))
