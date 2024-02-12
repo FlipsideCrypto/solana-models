@@ -7,15 +7,16 @@
     tags = ['streamline_decoder']
 ) }}
 
-WITH idl_in_play AS (
+{% if execute %}
+    {% set max_block_id_query %}
+        select max(block_id)
+        from {{ ref('silver__events') }}
+    {% endset %}
+    {% set max_block_id = run_query(max_block_id_query).columns[0].values()[0] %}
+    {% set min_block_id = max_block_id - 150000 %}
+{% endif %}
 
-    SELECT
-        program_id
-    FROM
-        {{ ref('silver__verified_idls') }}
-    WHERE program_id = 'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH'
-),
-event_subset AS (
+WITH event_subset AS (
     SELECT
         e.program_id,
         e.tx_id,
@@ -28,10 +29,12 @@ event_subset AS (
     FROM
         {{ ref('silver__events') }}
         e
-        JOIN idl_in_play b
-        ON e.program_id = b.program_id
     WHERE
+        e.program_id = 'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH'
+    AND 
         e.block_timestamp >= CURRENT_DATE - 1
+    AND 
+        e.block_id between {{ min_block_id }} and {{ max_block_id}}
     AND 
         e.succeeded
     UNION ALL
@@ -47,15 +50,17 @@ event_subset AS (
     FROM
         {{ ref('silver__events') }}
         e
-        JOIN idl_in_play b
-        ON ARRAY_CONTAINS(b.program_id::variant, e.inner_instruction_program_ids) 
         JOIN table(flatten(e.inner_instruction:instructions)) i 
     WHERE
+        ARRAY_CONTAINS('FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH'::variant, e.inner_instruction_program_ids) 
+    AND
         e.block_timestamp >= CURRENT_DATE - 1
+    AND 
+        e.block_id between {{ min_block_id }} and {{ max_block_id}}
     AND 
         e.succeeded
     AND 
-        i.value :programId :: STRING = b.program_id
+        inner_program_id = 'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH'
     
 ),
 completed_subset AS (
