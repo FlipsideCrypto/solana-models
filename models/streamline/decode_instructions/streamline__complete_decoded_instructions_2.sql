@@ -35,7 +35,7 @@ FROM
 {% if is_incremental() %}
 {{ ref('bronze__streamline_decoded_instructions_2') }}
 WHERE
-    _inserted_timestamp >= '{{ max_inserted_timestamp }}'
+    _inserted_timestamp >= dateadd('minute', -5, '{{ max_inserted_timestamp }}')
 AND 
     _partition_by_created_date_hour >= dateadd('hour', -1, date_trunc('hour','{{ max_inserted_timestamp }}'::timestamp_ntz))
 {% else %}
