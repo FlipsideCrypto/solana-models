@@ -143,7 +143,7 @@ SELECT
     address,
     stake_pool,
     amount,
-    token,
+    'SOL' AS token,
     stake_pool_actions_jito_id AS fact_stake_pool_actions_id,
     inserted_timestamp,
      modified_timestamp
