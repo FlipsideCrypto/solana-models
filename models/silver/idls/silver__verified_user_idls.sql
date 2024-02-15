@@ -107,7 +107,7 @@ SELECT
     b.program_id,
     b.idl,
     b.idl_hash,
-    iff(r.error_rate <= 0.25,true,false) as is_valid,
+    (r.error_rate <= 0.25) as new_is_valid,
     b.discord_username,
     b._inserted_timestamp,
     CONCAT(
@@ -127,7 +127,7 @@ WHERE
         OR 
         (
             t.idl_hash <> b.idl_hash -- updated
-            AND is_valid -- only update if the new one is valid
+            AND new_is_valid -- only update if the new one is valid
         )
     )
 qualify(ROW_NUMBER() over(PARTITION BY b.program_id
