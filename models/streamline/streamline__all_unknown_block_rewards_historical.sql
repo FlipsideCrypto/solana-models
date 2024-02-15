@@ -6,9 +6,15 @@
 WITH pre_final AS (
 
     SELECT
-        SEQ8()+99360012 AS block_id
+    --     SEQ8()+99360012 AS block_id
+    -- FROM
+    --     TABLE(GENERATOR(rowcount => 80000000))
+    -- WHERE
+    --     block_id >= 99360012
+    --     AND block_id <= 163728008
+        DISTINCT(block_id) AS block_id
     FROM
-        TABLE(GENERATOR(rowcount => 80000000))
+        solana.silver.rewards_staking
     WHERE
         block_id >= 99360012
         AND block_id <= 163728008
