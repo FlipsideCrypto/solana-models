@@ -13,7 +13,6 @@ SELECT
     A.inner_index,
     A.event_type,
     A.program_id,
-    NULL AS instruction,
     A.decoded_instruction,
     A.decoded_instruction :accounts :: ARRAY AS decoded_accounts,
     A.decoded_instruction :args :: variant AS decoded_args,
