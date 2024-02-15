@@ -102,34 +102,45 @@ program_error_rates as (
         count_if(is_error)/count(*) as error_rate
     from expanded
     group by program_id
-)
-SELECT
-    b.program_id,
-    b.idl,
-    b.idl_hash,
-    (r.error_rate <= 0.25) as new_is_valid,
-    b.discord_username,
-    b._inserted_timestamp,
-    CONCAT(
+),
+pre_final as (
+    SELECT
         b.program_id,
-        '-',
-        b.idl_hash
-    ) AS id
-FROM
-    program_error_rates r
-    JOIN base b
-    ON b.program_id = r.program_id
-    LEFT OUTER JOIN {{ this }} t 
-    ON b.program_id = t.program_id
-WHERE 
-    (
-        t.program_id is NULL -- brand new
-        OR 
+        b.idl,
+        b.idl_hash,
+        (r.error_rate <= 0.25) as new_is_valid,
+        b.discord_username,
+        b._inserted_timestamp,
+        CONCAT(
+            b.program_id,
+            '-',
+            b.idl_hash
+        ) AS id
+    FROM
+        program_error_rates r
+        JOIN base b
+        ON b.program_id = r.program_id
+        LEFT OUTER JOIN {{ this }} t 
+        ON b.program_id = t.program_id
+    WHERE 
         (
-            t.idl_hash <> b.idl_hash -- updated
-            AND new_is_valid -- only update if the new one is valid
+            t.program_id is NULL -- brand new
+            OR 
+            (
+                t.idl_hash <> b.idl_hash -- updated
+                AND new_is_valid -- only update if the new one is valid
+            )
         )
-    )
-qualify(ROW_NUMBER() over(PARTITION BY b.program_id
-ORDER BY
-    b._inserted_timestamp DESC)) = 1
+    qualify(ROW_NUMBER() over(PARTITION BY b.program_id
+    ORDER BY
+        b._inserted_timestamp DESC)) = 1
+)
+SELECT 
+    program_id,
+    idl,
+    idl_hash,
+    new_is_valid as is_valid,
+    discord_username,
+    _inserted_timestamp,
+    id
+FROM pre_final
