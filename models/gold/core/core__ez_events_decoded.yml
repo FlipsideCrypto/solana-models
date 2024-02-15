@@ -37,10 +37,6 @@ models:
           - dbt_expectations.expect_column_to_exist
       - name: EVENT_TYPE
         description: "{{ doc('event_type') }}"
-      - name: INSTRUCTION
-        description: Deprecating soon! This is always NULL - please use fact_events for the raw instructions. This field will be removed on 2024-02-15
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: DECODED_INSTRUCTION
         description: An instruction specifies which program it is calling, which accounts it wants to read or modify, and additional data that serves as auxiliary input to the program
         tests:
