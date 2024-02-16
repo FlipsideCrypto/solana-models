@@ -16,5 +16,3 @@ FROM
     {{ ref('streamline__complete_decoded_instructions_2') }}
 WHERE
     _inserted_timestamp >= dateadd('hour',-3,date_trunc('hour',current_timestamp()))
-    -- seeing situations where _inserted_timestamp hour != _partition_by_created_date_hour when files are written right at XX:00:00.000
-    AND _inserted_timestamp <= dateadd('hour',-2, date_trunc('hour',current_timestamp()))
