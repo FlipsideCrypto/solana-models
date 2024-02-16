@@ -36,3 +36,5 @@ SELECT
     ) AS batch_id
 FROM
     pre_final
+ORDER BY block_id
+LIMIT 3
