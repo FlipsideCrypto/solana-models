@@ -14,7 +14,9 @@ WITH base AS (
     FROM
         {{ ref('silver__decoded_instructions_combined') }}
     WHERE
-        program_id = 'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB'
+        program_id in ('LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo', -- DLMM program
+                       'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB' -- AMM program
+                        )
     AND 
         event_type = 'swap'
 {% if is_incremental() %}
@@ -38,6 +40,25 @@ decoded AS (
         _inserted_timestamp,
         program_id,
         solana.silver.udf_get_account_pubkey_by_name('user', decoded_instruction:accounts) as swapper,
+        solana.silver.udf_get_account_pubkey_by_name('userTokenIn', decoded_instruction:accounts) as source_token_account, --1 source
+        solana.silver.udf_get_account_pubkey_by_name('tokenXMint', decoded_instruction:accounts) as source_mint,
+        solana.silver.udf_get_account_pubkey_by_name('tokenYMint', decoded_instruction:accounts) as destination_mint,
+        solana.silver.udf_get_account_pubkey_by_name('userTokenOut', decoded_instruction:accounts) as destination_token_account, --2 dest
+        solana.silver.udf_get_account_pubkey_by_name('reserveY', decoded_instruction:accounts) as program_destination_token_account, --2 source
+        solana.silver.udf_get_account_pubkey_by_name('reserveX', decoded_instruction:accounts) as program_source_token_account -- 1 dest
+    FROM
+        base
+    where program_id = 'LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo'
+    union all
+    SELECT
+        block_timestamp,
+        block_id,
+        tx_id,
+        index,
+        inner_index,
+        _inserted_timestamp,
+        program_id,
+        solana.silver.udf_get_account_pubkey_by_name('user', decoded_instruction:accounts) as swapper,
         solana.silver.udf_get_account_pubkey_by_name('userSourceToken', decoded_instruction:accounts) as source_token_account,
         null as source_mint,
         null as destination_mint,
@@ -46,6 +67,8 @@ decoded AS (
         solana.silver.udf_get_account_pubkey_by_name('bTokenVault', decoded_instruction:accounts) as program_source_token_account 
     FROM
         base
+    where program_id = 'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB'
+    and (decoded_instruction:args:amountIn::int <> 0 or decoded_instruction:args:inAmount::int <> 0)
 ),
 transfers AS (
     SELECT
@@ -84,7 +107,7 @@ SELECT
             a.INDEX,
             a.inner_index
     ) AS swap_index,
-    coalesce (c.succeeded,e.succeeded) AS succeeded,
+    coalesce (b.succeeded,d.succeeded) AS succeeded,
     A.swapper,
     coalesce (b.amount,d.amount) AS from_amt,
     coalesce(b.mint,d.mint) AS from_mint,
