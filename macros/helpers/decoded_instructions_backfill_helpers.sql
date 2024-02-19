@@ -145,6 +145,7 @@
 {% endmacro %}
 
 -- USE THIS TO BACKFILL PARSER 2.0 ERRORS
+-- THIS ONLY HANDLES ERRORS ie: `decoded_instruction:error::string is not null`
 {% macro decoded_instructions_backfill_retries_generate_views(program_id, start_date, end_date) %}
     {% set get_block_id_range_query %}
         select 
