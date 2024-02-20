@@ -37,13 +37,13 @@ decoded AS (
         inner_index,
         _inserted_timestamp,
         program_id,
-        solana.silver.udf_get_account_pubkey_by_name('trader', decoded_instruction:accounts) as swapper,
-        solana.silver.udf_get_account_pubkey_by_name('quoteVault', decoded_instruction:accounts) as source_token_account,
+        silver.udf_get_account_pubkey_by_name('trader', decoded_instruction:accounts) as swapper,
+        silver.udf_get_account_pubkey_by_name('quoteVault', decoded_instruction:accounts) as source_token_account,
         null as source_mint,
         null as destination_mint,
-        solana.silver.udf_get_account_pubkey_by_name('baseVault', decoded_instruction:accounts) as destination_token_account,
-        solana.silver.udf_get_account_pubkey_by_name('baseAccount', decoded_instruction:accounts) as program_destination_token_account,
-        solana.silver.udf_get_account_pubkey_by_name('quoteAccount', decoded_instruction:accounts) as program_source_token_account
+        silver.udf_get_account_pubkey_by_name('baseVault', decoded_instruction:accounts) as destination_token_account,
+        silver.udf_get_account_pubkey_by_name('baseAccount', decoded_instruction:accounts) as program_destination_token_account,
+        silver.udf_get_account_pubkey_by_name('quoteAccount', decoded_instruction:accounts) as program_source_token_account
     FROM
         base
 ),
