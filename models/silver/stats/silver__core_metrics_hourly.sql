@@ -47,7 +47,6 @@ WHERE
         'hour',
         CURRENT_TIMESTAMP
     )
-
 {% if is_incremental() %}
 AND DATE_TRUNC(
     'hour',
@@ -58,7 +57,9 @@ AND DATE_TRUNC(
     FROM
         {{ this }}
 )
-AND block_id > 39824213
+{% else %}
+WHERE
+    block_id > 39824213
 {% endif %}
 GROUP BY
     1

@@ -1,9 +1,7 @@
 {{ config(
     materialized = 'view',
-    persist_docs ={ "relation": true,
-    "columns": true },
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STATS, METRICS, CORE, HOURLY',
-    } } }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STATS, METRICS, CORE, HOURLY', } } },
+    tags = ['scheduled_non_core']
 ) }}
 
 SELECT
@@ -20,7 +18,7 @@ SELECT
         (total_fees / pow(
             10,
             9
-        )) * p.price,
+        )) * p.close,
         2
     ) AS total_fees_usd,
     core_metrics_hourly_id AS ez_core_metrics_hourly_id,
@@ -31,5 +29,5 @@ FROM
     s
     LEFT JOIN {{ ref('price__ez_token_prices_hourly') }}
     p
-    ON s.block_timestamp_hour = p.hour
+    ON s.block_timestamp_hour = p.recorded_hour
     AND p.token_address = 'So11111111111111111111111111111111111111112'
