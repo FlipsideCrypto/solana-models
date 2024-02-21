@@ -58,7 +58,7 @@ AND DATE_TRUNC(
         {{ this }}
 )
 {% else %}
-WHERE
+AND
     block_id > 39824213
 {% endif %}
 GROUP BY
