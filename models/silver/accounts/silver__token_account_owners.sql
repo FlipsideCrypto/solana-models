@@ -1,23 +1,27 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = ["account_address"],
+    unique_key = ["account_address","start_block_id"],
     cluster_by = ['_inserted_timestamp::DATE'],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}'),
     full_refresh = false,
-    enabled = false,
 ) }}
 
 /* need to rebucket and regroup the intermediate model due to possibility of change events coming in out of order */
 with last_updated_at as (
     select max(_inserted_timestamp) as _inserted_timestamp
     from {{ ref('silver__token_account_owners_intermediate') }}
+    --testing
+    -- where _inserted_timestamp::date < '2023-04-25'
+
 )
 , changed_addresses as (
     select distinct account_address
     from {{ ref('silver__token_account_owners_intermediate') }}
     {% if is_incremental() %}
     where _inserted_timestamp > (select max(_inserted_timestamp) from {{ this }})
+    --testing
+    -- and _inserted_timestamp::date < '2023-04-25'
     {% endif %}
 ),
 rebucket as (
