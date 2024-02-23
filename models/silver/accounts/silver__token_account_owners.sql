@@ -11,8 +11,6 @@
 with last_updated_at as (
     select max(_inserted_timestamp) as _inserted_timestamp
     from {{ ref('silver__token_account_owners_intermediate') }}
-    --testing
-    -- where _inserted_timestamp::date < '2023-04-25'
 
 )
 , changed_addresses as (
@@ -20,8 +18,6 @@ with last_updated_at as (
     from {{ ref('silver__token_account_owners_intermediate') }}
     {% if is_incremental() %}
     where _inserted_timestamp > (select max(_inserted_timestamp) from {{ this }})
-    --testing
-    -- and _inserted_timestamp::date < '2023-04-25'
     {% endif %}
 ),
 rebucket as (
