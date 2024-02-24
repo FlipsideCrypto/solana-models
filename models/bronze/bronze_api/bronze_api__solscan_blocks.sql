@@ -5,23 +5,15 @@
 ) }}
 
 {% set producer_limit_size = 1000 %}
-{% if execute %}
-    {% if is_incremental() %}
-        {% set max_block_id = run_query("""select max(block_id) from """ ~ target.database ~ """.silver._blocks_tx_count""").columns[0].values()[0] %}
-    {% else %}
-        {% set max_block_id = 225999999 %}
-    {% endif %}
-{% endif %}
 
 with block_ids as (
-    select 
-        a._id+{{ max_block_id }}+1 as block_id
-    from 
-        {{ ref('silver___number_sequence') }} a
-    where 
-        block_id <= (select max(block_id) from {{ ref('silver__blocks')}} )
-    and block_id >= 226000000
-    qualify(row_number() over (order by block_id)) <= {{ producer_limit_size }}
+    select b.block_id
+    from {{ ref('silver__blocks') }} b
+    left outer join {{ source('solana_silver','_blocks_tx_count') }} b2 on b.block_id = b2.block_id
+    where b.block_id >= 226000000
+    and b2.block_id is null
+    and b.block_timestamp::date <= current_date
+    qualify(row_number() over (order by b.block_id desc)) <= {{ producer_limit_size }}
 )
 , make_requests as (
     select 

@@ -48,5 +48,9 @@ jobs:
           dbt run -s models/bronze/bronze_api/bronze_api__solscan_blocks.sql models/silver/silver___blocks_tx_count.sql
           dbt run -s models/bronze/bronze_api/bronze_api__solscan_blocks.sql models/silver/silver___blocks_tx_count.sql
           dbt run -s models/bronze/bronze_api/bronze_api__solscan_blocks.sql models/silver/silver___blocks_tx_count.sql
+          dbt run -s models/bronze/bronze_api/bronze_api__solscan_blocks.sql models/silver/silver___blocks_tx_count.sql
+          dbt run -s models/bronze/bronze_api/bronze_api__solscan_blocks.sql models/silver/silver___blocks_tx_count.sql
+          dbt run -s models/bronze/bronze_api/bronze_api__solscan_blocks.sql models/silver/silver___blocks_tx_count.sql
+          dbt run -s models/bronze/bronze_api/bronze_api__solscan_blocks.sql models/silver/silver___blocks_tx_count.sql
           
           
