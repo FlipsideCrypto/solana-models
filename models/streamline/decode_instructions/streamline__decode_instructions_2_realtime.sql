@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_bulk_instructions_decoder(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'decoded_instructions_2', 'sql_limit', {{var('sql_limit','20000000')}}, 'producer_batch_size', {{var('producer_batch_size','20000000')}}, 'worker_batch_size', {{var('worker_batch_size','500000')}}, 'batch_call_limit', {{var('batch_call_limit','1000')}}, 'call_type', 'RT'))",
+        func = "{{this.schema}}.udf_bulk_instructions_decoder(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'decoded_instructions_2', 'sql_limit', {{var('sql_limit','2500000')}}, 'producer_batch_size', {{var('producer_batch_size','2500000')}}, 'worker_batch_size', {{var('worker_batch_size','250000')}}, 'batch_call_limit', {{var('batch_call_limit','1000')}}, 'call_type', 'RT'))",
         target = "{{this.schema}}.{{this.identifier}}"
     ),
     tags = ['streamline_decoder']
@@ -88,4 +88,4 @@ FROM
     AND e.id = C.id
 WHERE
     C.block_id IS NULL
-qualify(row_number() over (order by e.block_id, e.tx_id)) <= {{ var('sql_limit','20000000') }}
+qualify(row_number() over (order by e.block_id, e.tx_id)) <= {{ var('sql_limit','2500000') }}
