@@ -166,9 +166,14 @@ sellers AS (
         ) > 1
         LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
     WHERE 
-        i.value :program :: STRING = 'spl-token'
+        (i.value :program :: STRING = 'spl-token'
     AND i.value :programId :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-    AND i.value :parsed :type :: STRING in ('transfer','closeAccount')
+    AND i.value :parsed :type :: STRING in ('transfer','closeAccount'))
+    OR (
+    i.value :program :: STRING = 'system'
+    AND i.value :programId :: STRING = '11111111111111111111111111111111'
+    AND i.value :parsed :type :: STRING in ('transfer')
+    )
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
