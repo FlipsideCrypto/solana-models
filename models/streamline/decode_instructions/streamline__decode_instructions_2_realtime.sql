@@ -88,4 +88,4 @@ FROM
     AND e.id = C.id
 WHERE
     C.block_id IS NULL
-qualify(row_number() over (order by e.block_id, e.tx_id)) <= {{ var('sql_limit','2500000') }}
+qualify(row_number() over (order by e.block_id, e.tx_id)) <= {{ var('sql_limit','100000000') }}
