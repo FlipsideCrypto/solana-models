@@ -6,7 +6,7 @@
     unique_key = "decoded_instructions_id",
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE','program_id'],
     merge_exclude_columns = ["inserted_timestamp"],
-    
+    tags = ['scheduled_non_core'],
 ) }}
 
 /* run incremental timestamp value first then use it as a static value */
