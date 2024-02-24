@@ -8,7 +8,7 @@
         '{{this.identifier}}'
     ),
     merge_exclude_columns = ["inserted_timestamp"],
-    tags = ['scheduled_non_core']
+    
 ) }}
 -- depends_on: {{ ref('silver__decoded_instructions') }}
 /* run incremental timestamp value first then use it as a static value */
