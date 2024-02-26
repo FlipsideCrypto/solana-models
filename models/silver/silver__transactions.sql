@@ -61,12 +61,6 @@ WITH pre_final AS (
         FROM 
            {{ source('solana_streamline','complete_block_txs') }}
     )
-    AND t._inserted_timestamp > (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
 {% else %}
     AND _partition_id IN (
         1,
