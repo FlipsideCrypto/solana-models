@@ -99,6 +99,34 @@ potential_missing_txs AS (
 --                 {{ ref('bronze__transactions2') }}
 --         )
 -- )
+, completed_retries as (
+    select block_id
+    from {{ ref('streamline__complete_block_txs') }}
+    where _partition_id > PLEASE EDIT THIS
+)
+, stuff_to_retry as (
+    select *
+    from (
+        select block_id,
+            (
+                SELECT
+                    COALESCE(MAX(_partition_id) + 1, 1)
+                FROM
+                    {{ ref('streamline__complete_block_txs') }}
+            ) AS batch_id
+        from solana.streamline.blocks_backfill_20240226_2
+        except 
+        select block_id,
+            (
+                SELECT
+                    COALESCE(MAX(_partition_id) + 1, 1)
+                FROM
+                    {{ ref('streamline__complete_block_txs') }}
+            ) AS batch_id
+        from completed_retries
+    )
+    limit 200
+)
 SELECT
     block_id,
     (
@@ -125,6 +153,9 @@ FROM
 WHERE
     cmp.error IS NOT NULL
     OR cmp.block_id IS NULL
+UNION 
+select *
+from stuff_to_retry
 -- UNION
 -- SELECT
 --     block_id,
