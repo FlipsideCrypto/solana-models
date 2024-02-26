@@ -31,4 +31,4 @@ left outer join silver_counts a
     on e.block_id = a.block_id
 where 
     delta <> 0
-    or a.block_id is null;
+    or a.block_id is null
