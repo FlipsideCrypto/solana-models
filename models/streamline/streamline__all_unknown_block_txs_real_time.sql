@@ -97,6 +97,7 @@ solscan_discrepancy_retries AS (
         ON C.block_id = m.block_id
     WHERE
         C._partition_id <= m._partition_id
+    LIMIT 200
 )
 SELECT
     block_id,
