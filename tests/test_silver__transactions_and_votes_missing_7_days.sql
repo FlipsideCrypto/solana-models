@@ -45,11 +45,14 @@ SELECT
     e.block_id,
     e.transaction_count AS ect,
     A.transaction_count AS act,
-    e.transaction_count - A.transaction_count AS delta
+    e.transaction_count - A.transaction_count AS delta,
+    coalesce(c._partition_id,0) as _partition_id
 FROM
     solscan_counts e
     LEFT OUTER JOIN silver_counts A
     ON e.block_id = A.block_id
+    LEFT OUTER JOIN streamline.complete_block_txs c
+    ON e.block_id = c.block_id
 WHERE
     ect <> 0
     AND (

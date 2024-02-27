@@ -110,3 +110,7 @@ sources:
     schema: github_actions
     tables:
       - name: workflows
+  - name: solana_test_silver
+    schema: test_silver 
+    tables: 
+      - name: transactions_and_votes_missing_7_days
