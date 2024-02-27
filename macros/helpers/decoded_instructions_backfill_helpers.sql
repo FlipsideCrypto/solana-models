@@ -274,6 +274,7 @@
     {% set min_block_id = 243913016 | int %}
     {% set max_block_id = 248213854 | int %}
     {% set step = 250000 %}
+    {% set retry_start_timestamp = modules.datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") %}
 
     {% for i in range(min_block_id, max_block_id, step) %}
         {% if i == min_block_id %}
@@ -293,6 +294,7 @@
             select *
             from {{ ref('silver__decoded_instructions_combined') }}
             where program_id = 'PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY'
+            and succeeded
             and block_id between {{ start_block }} and {{ end_block }}
             and event_type is null      
         ),
