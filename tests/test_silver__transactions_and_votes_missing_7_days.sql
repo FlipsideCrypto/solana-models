@@ -1,34 +1,58 @@
-
-
-with solscan_counts as (
-    select s.*
-    from solana.silver._blocks_tx_count s
-    join solana.silver.blocks b on b.block_id = s.block_id 
-    where b.block_timestamp::date between current_date - 8 and current_date - 1
+WITH solscan_counts AS (
+    SELECT
+        s.*
+    FROM
+        solana.silver._blocks_tx_count s
+        JOIN solana.silver.blocks b
+        ON b.block_id = s.block_id
+    WHERE
+        b.block_timestamp :: DATE BETWEEN CURRENT_DATE - 8
+        AND CURRENT_DATE - INTERVAL '12 HOUR'
 ),
-silver_counts as (
-    select block_id, sum(transaction_count) as transaction_count
-    from (
-        select block_id, count(block_id) as transaction_count 
-        from {{ ref('silver__transactions') }} t 
-        where block_timestamp::date between current_date - 8 and current_date - 1
-        group by 1
-        union all 
-        select block_id, count(block_id) as transaction_count 
-        from solana.silver.votes t 
-        where block_timestamp::date between current_date - 8 and current_date - 1
-        group by 1
-    )
-    group by 1
+silver_counts AS (
+    SELECT
+        block_id,
+        SUM(transaction_count) AS transaction_count
+    FROM
+        (
+            SELECT
+                block_id,
+                COUNT(block_id) AS transaction_count
+            FROM
+                {{ ref('silver__transactions') }}
+                t
+            WHERE
+                block_timestamp :: DATE BETWEEN CURRENT_DATE - 8
+                AND CURRENT_DATE - INTERVAL '12 HOUR'
+            GROUP BY
+                1
+            UNION ALL
+            SELECT
+                block_id,
+                COUNT(block_id) AS transaction_count
+            FROM
+                solana.silver.votes t
+            WHERE
+                block_timestamp :: DATE BETWEEN CURRENT_DATE - 8
+                AND CURRENT_DATE - INTERVAL '12 HOUR'
+            GROUP BY
+                1
+        )
+    GROUP BY
+        1
 )
-select 
+SELECT
     e.block_id,
-    e.transaction_count as ect,
-    a.transaction_count as act,
-    e.transaction_count - a.transaction_count as delta 
-from solscan_counts e 
-left outer join silver_counts a 
-    on e.block_id = a.block_id
-where 
-    delta <> 0
-    or a.block_id is null
+    e.transaction_count AS ect,
+    A.transaction_count AS act,
+    e.transaction_count - A.transaction_count AS delta
+FROM
+    solscan_counts e
+    LEFT OUTER JOIN silver_counts A
+    ON e.block_id = A.block_id
+WHERE
+    ect <> 0
+    AND (
+        delta <> 0
+        OR A.block_id IS NULL
+    )
