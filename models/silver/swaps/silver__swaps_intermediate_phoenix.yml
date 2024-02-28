@@ -21,7 +21,14 @@ models:
             - swap_index
           model_condition: "where tx_id in ('3fp9QzP6EMn9cUDgCRmHACSxmDhh3zrMebYKSm8Auq3xyBck7X6nRSrrVDThDhM1wRBaVidwh4BCDLn86Bve3thL',
           '671GWKC1AGyvrAThDzM9tq9UqVW8W2WdULAikkLaaTSZVYEmzLEhXutdDjZTenLp5oAtc4G7f4bztZ978rN1Zz1d',
-          '3FgxCNCndXDSx95mrsBwcfsHSM9fDzWSq2bJqN74ym5MTgF2VrLJRn4w5UfdKpeKNA3mzCmm7KJfy7wuDAo4y7Ko')"  
+          '3FgxCNCndXDSx95mrsBwcfsHSM9fDzWSq2bJqN74ym5MTgF2VrLJRn4w5UfdKpeKNA3mzCmm7KJfy7wuDAo4y7Ko',
+          '21qdi1d8vYyMp3AcJmPdKBi1VsEoaBn4qhB1WJhzRR9N3qvtXRkENh5caaBGDaeUVD68CUw72bD2neCQA7dmgUuS')"  
+      - tx_excluded:
+          name: silver__swaps_intermediate_phoenix_tx_excluded_test
+          excluded_tx_ids:
+            - 44b7tkzuKHqQsn7Eoh3RnTy12sLijudPFz3ZX2ewJ7vxKqs5LveeNKxBVLUstggr5Jk3LFzoNs9SSZxcMSSgVE7j
+            - 1M48Smd6EQ4phktTsGfdk3HjXf2sEW6J8TpUpPjEaGjLy5viWPC9D4rS9SoutVWTJkLkjbVLQpEG9eboscoybQ6
+            - fLwJbyNV8kF3qZcmUrPrQB7B1keipAB5XNiEsJ8oFtvMroZ4SttabxgP2nhUsTT1jKvN4NfrSf8DMYVoadY57Da
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
