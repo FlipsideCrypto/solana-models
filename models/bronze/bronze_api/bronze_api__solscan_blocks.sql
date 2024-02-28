@@ -17,6 +17,7 @@ with base as (
     select b.block_id 
     from solana.bronze_api.solscan_blocks_to_get b
     left outer join  solana.silver._blocks_tx_count b2 on b.block_id = b2.block_id
+    where b2.block_id is null
 ),
 block_ids as (
     select block_id 
