@@ -22,7 +22,9 @@ models:
           model_condition: "where tx_id in ('3DjUBQE4GwTMSFLGMi69TGMiBoNE8FfnryR8BCEmovGVmMz9Jfh9dG3ikLAPuQPWpv12ypS4nYx1Esc4TYUw3s44',
           '3RCs1zgEKNemq1syYM3ZZKHkckZgBbkgtKVq41W7j2yh5Ce4pVgHLU6QSiZX3nrijZ4S2yhYDb3K61seLR4c9FYu',
           'iBuwG5mU4LKMrN6iNVzGZSC7vXqvAfRQ98YJeKXPoDbM2oi7dvV8ZMnwgv55Db6JT4iokQ6JbVpN7jHnKkFtJqC',
-          'NfvsjHzJx5s5JWDK7pJaWUv7hXJGdWUYwqaoRVLxQ2d5q3Jyrs2uft9FUyeNFVyxVSVZFPdsTv45dpgdog9RyzQ')"  
+          'NfvsjHzJx5s5JWDK7pJaWUv7hXJGdWUYwqaoRVLxQ2d5q3Jyrs2uft9FUyeNFVyxVSVZFPdsTv45dpgdog9RyzQ',
+          '2eV5PUm4WL7X9T1X4nSbBmAGDLTx9pUiygK34ngMSyR9QwQUS8ZpnzGKTCbuJHeVGYNHjHBGtPh4fLYxkBLGVJeB',
+          '35QkSCVWRNFaqFM8DZrDWKWsBdDTrHVMmskd3H9D3pcQstdYsWqZiXVhMpkaCFrBQTi8XZaWgNZaWnQZzwPpZ1dv')"  
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

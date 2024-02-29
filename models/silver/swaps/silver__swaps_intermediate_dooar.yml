@@ -20,7 +20,9 @@ models:
             - to_mint
             - swap_index
           model_condition: "where tx_id in ('31at6mYffEH2eFEFQxFt5vqsJpNpZx8Uofn1R53ABLaLyqAsgrUDQDqxiWSJ5k7JEZk8NF9V4kzT87PTctBHy28G',
-          '4n6VDefX6cPhJ3pdTpUSqo7FxSDeqeymz7abto5V7KJppBZfhH7KDvZ4m8FCEdkeckkajbjW1KbMq6zqpzYptQk5')"  
+          '4n6VDefX6cPhJ3pdTpUSqo7FxSDeqeymz7abto5V7KJppBZfhH7KDvZ4m8FCEdkeckkajbjW1KbMq6zqpzYptQk5',
+          '4KvNEeQpzCx9QmsoGt8QNjtBDomYBnGMSNn1GeyWn6qQn2tsavPGEH26jbfoHHHUcesVbogJfXr9ghD6hv9rz6hD',
+          '3dKk8sbjZ2yocabr8qUaLHsa7bkd4qxnW8gjsqwhTprVfMrPGeCFqmwu2vYFytaE1NViqtiY4ALZjR2we3xnsmP')"  
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

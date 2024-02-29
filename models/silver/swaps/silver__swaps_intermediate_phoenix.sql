@@ -38,7 +38,6 @@ decoded AS (
         COALESCE(LEAD(inner_index) over (PARTITION BY tx_id, INDEX
     ORDER BY
         inner_index) -1, 999999) AS inner_index_end,
-        _inserted_timestamp,
         program_id,
         CASE
             WHEN decoded_instruction :args :orderPacket :immediateOrCancel :side :bid IS NOT NULL THEN 'bid'
@@ -89,7 +88,8 @@ decoded AS (
                 'baseAccount',
                 decoded_instruction :accounts
             )
-        END AS program_source_token_account
+        END AS program_source_token_account,
+    _inserted_timestamp
     FROM
         base
 ),
@@ -144,15 +144,13 @@ pre_final AS (
         AND A.source_token_account = b.source_token_account
         AND A.program_source_token_account = b.dest_token_account
         AND A.index = b.index_1
-        AND b.inner_index_1 BETWEEN A.inner_index
-        AND A.inner_index_end
+        AND b.inner_index_1 BETWEEN A.inner_index AND A.inner_index_end
         INNER JOIN transfers C
         ON A.tx_id = C.tx_id
         AND A.destination_token_account = C.dest_token_account
         AND A.program_destination_token_account = C.source_token_account
-        AND A.index = b.index_1
-        AND C.inner_index_1 BETWEEN A.inner_index
-        AND A.inner_index_end
+        AND A.index = C.index_1
+        AND C.inner_index_1 BETWEEN A.inner_index  AND A.inner_index_end
         qualify(ROW_NUMBER() over (PARTITION BY A.tx_id, A.index, A.inner_INDEX
     ORDER BY
         inner_index)) = 1
