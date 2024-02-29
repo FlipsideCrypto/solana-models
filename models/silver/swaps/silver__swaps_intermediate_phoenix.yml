@@ -22,7 +22,8 @@ models:
           model_condition: "where tx_id in ('3fp9QzP6EMn9cUDgCRmHACSxmDhh3zrMebYKSm8Auq3xyBck7X6nRSrrVDThDhM1wRBaVidwh4BCDLn86Bve3thL',
           '671GWKC1AGyvrAThDzM9tq9UqVW8W2WdULAikkLaaTSZVYEmzLEhXutdDjZTenLp5oAtc4G7f4bztZ978rN1Zz1d',
           '3FgxCNCndXDSx95mrsBwcfsHSM9fDzWSq2bJqN74ym5MTgF2VrLJRn4w5UfdKpeKNA3mzCmm7KJfy7wuDAo4y7Ko',
-          '21qdi1d8vYyMp3AcJmPdKBi1VsEoaBn4qhB1WJhzRR9N3qvtXRkENh5caaBGDaeUVD68CUw72bD2neCQA7dmgUuS')"  
+          '21qdi1d8vYyMp3AcJmPdKBi1VsEoaBn4qhB1WJhzRR9N3qvtXRkENh5caaBGDaeUVD68CUw72bD2neCQA7dmgUuS',
+          '3EweEGRQkdQ4e5sRRcU5V9Jz2E9sMHzDrbmSD13C2wLQJkANJEZkk9EHJqpUSKUSWCAnY5nFnLgXUqJF5ham6ARk')"  
       - tx_excluded:
           name: silver__swaps_intermediate_phoenix_tx_excluded_test
           excluded_tx_ids:

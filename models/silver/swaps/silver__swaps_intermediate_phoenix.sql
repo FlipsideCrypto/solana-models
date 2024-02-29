@@ -15,8 +15,8 @@ WITH base AS (
         {{ ref('silver__decoded_instructions_combined') }}
     WHERE
         program_id = 'PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY'
-    AND 
-        event_type = 'Swap'
+        AND event_type = 'Swap'
+
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -33,8 +33,11 @@ decoded AS (
         block_timestamp,
         block_id,
         tx_id,
-        index,
+        INDEX,
         inner_index,
+        COALESCE(LEAD(inner_index) over (PARTITION BY tx_id, INDEX
+    ORDER BY
+        inner_index) -1, 999999) AS inner_index_end,
         _inserted_timestamp,
         program_id,
         CASE
@@ -92,7 +95,9 @@ decoded AS (
 ),
 transfers AS (
     SELECT
-        A.*
+        A.*,
+        COALESCE(SPLIT_PART(INDEX :: text, '.', 1) :: INT, INDEX :: INT) AS index_1,
+        NULLIF(SPLIT_PART(INDEX :: text, '.', 2), '') :: INT AS inner_index_1
     FROM
         {{ ref('silver__transfers') }} A
         INNER JOIN (
@@ -115,38 +120,64 @@ AND A._inserted_timestamp >= (
 {% else %}
     AND A.block_timestamp :: DATE >= '2023-02-15'
 {% endif %}
+),
+pre_final AS (
+    SELECT
+        A.block_id,
+        A.block_timestamp,
+        A.program_id,
+        A.tx_id,
+        A.index,
+        A.inner_index,
+        A.inner_index_end,
+        C.succeeded,
+        A.swapper,
+        b.amount AS from_amt,
+        b.mint AS from_mint,
+        C.amount AS to_amt,
+        C.mint AS to_mint,
+        A._inserted_timestamp
+    FROM
+        decoded A
+        INNER JOIN transfers b
+        ON A.tx_id = b.tx_id
+        AND A.source_token_account = b.source_token_account
+        AND A.program_source_token_account = b.dest_token_account
+        AND A.index = b.index_1
+        AND b.inner_index_1 BETWEEN A.inner_index
+        AND A.inner_index_end
+        INNER JOIN transfers C
+        ON A.tx_id = C.tx_id
+        AND A.destination_token_account = C.dest_token_account
+        AND A.program_destination_token_account = C.source_token_account
+        AND A.index = b.index_1
+        AND C.inner_index_1 BETWEEN A.inner_index
+        AND A.inner_index_end
+        qualify(ROW_NUMBER() over (PARTITION BY A.tx_id, A.index, A.inner_INDEX
+    ORDER BY
+        inner_index)) = 1
 )
 SELECT
-    A.block_id,
-    A.block_timestamp,
-    A.program_id,
-    A.tx_id,
+    block_id,
+    block_timestamp,
+    program_id,
+    tx_id,
     ROW_NUMBER() over (
-        PARTITION BY a.tx_id
+        PARTITION BY tx_id
         ORDER BY
-            a.INDEX,
-            a.inner_index
+            INDEX,
+            inner_index
     ) AS swap_index,
-    C.succeeded,
-    A.swapper,
-    b.amount AS from_amt,
-    b.mint AS from_mint,
-    C.amount AS to_amt,
-    c.mint AS to_mint,
-    A._inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(['A.tx_id','swap_index','A.program_id']) }} AS swaps_intermediate_phoenix_id,
+    succeeded,
+    swapper,
+    from_amt,
+    from_mint,
+    to_amt,
+    to_mint,
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(['tx_id','swap_index','program_id']) }} AS swaps_intermediate_phoenix_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS invocation_id
 FROM
-    decoded A
-    INNER JOIN transfers b
-    ON A.tx_id = b.tx_id
-    AND A.source_token_account = b.source_token_account
-    AND A.program_source_token_account = b.dest_token_account
-    AND COALESCE(SPLIT_PART(b.index :: text, '.', 1) :: INT, b.index :: INT) = A.index
-    INNER JOIN transfers C
-    ON A.tx_id = C.tx_id
-    AND A.destination_token_account = C.dest_token_account
-    AND A.program_destination_token_account = C.source_token_account
-    AND COALESCE(SPLIT_PART(C.index :: text, '.', 1) :: INT, C.index :: INT) = A.index
+    pre_final
