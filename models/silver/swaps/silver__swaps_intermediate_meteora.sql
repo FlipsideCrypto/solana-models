@@ -27,7 +27,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND block_timestamp :: DATE >= '2023-01-07'
+    AND block_timestamp :: DATE >= '2022-07-14'
 {% endif %}
 ),
 decoded AS (
@@ -93,7 +93,7 @@ AND A._inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND A.block_timestamp :: DATE >= '2023-01-07'
+    AND A.block_timestamp :: DATE >= '2022-07-14'
 {% endif %}
 )
 SELECT
