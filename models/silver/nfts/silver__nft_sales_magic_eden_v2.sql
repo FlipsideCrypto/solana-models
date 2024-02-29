@@ -49,8 +49,8 @@ AND _inserted_timestamp >= (
 )
 {% else %}
     AND 
-        block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
-        AND '2022-02-08'
+        _inserted_timestamp :: DATE BETWEEN '2022-08-01'
+        AND '2022-09-01'
 {% endif %}
 GROUP BY
     1,
@@ -143,8 +143,8 @@ AND e._inserted_timestamp >= (
 )
 {% else %}
     AND 
-        e.block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
-        AND '2022-02-08'
+        e._inserted_timestamp :: DATE BETWEEN '2022-08-01'
+        AND '2022-09-01'
 {% endif %}
 ),
 sellers AS (
@@ -166,9 +166,14 @@ sellers AS (
         ) > 1
         LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
     WHERE 
-        i.value :program :: STRING = 'spl-token'
+        (i.value :program :: STRING = 'spl-token'
     AND i.value :programId :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-    AND i.value :parsed :type :: STRING in ('transfer','closeAccount')
+    AND i.value :parsed :type :: STRING in ('transfer','closeAccount'))
+    OR (
+    i.value :program :: STRING = 'system'
+    AND i.value :programId :: STRING = '11111111111111111111111111111111'
+    AND i.value :parsed :type :: STRING in ('transfer')
+    )
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -203,8 +208,8 @@ AND
     )
 {% else %}
 AND
-    e.block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
-    AND '2022-02-08'
+    e._inserted_timestamp :: DATE BETWEEN '2022-08-01' 
+        AND '2022-09-01'
 {% endif %}
     qualify(row_number() over (partition by e.tx_id order by i.index desc)) = 1
 ),
@@ -257,8 +262,8 @@ WHERE
     )
 {% else %}
 WHERE
-    block_timestamp :: DATE BETWEEN '2022-01-08' -- no ME V2 contract before this date
-    AND '2022-02-08'
+    _inserted_timestamp :: DATE BETWEEN '2022-08-01'
+        AND '2022-09-01'
 {% endif %}
 )
 SELECT

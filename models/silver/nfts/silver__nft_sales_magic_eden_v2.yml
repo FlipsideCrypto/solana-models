@@ -24,7 +24,8 @@ models:
             '3qp2hRooXJaatbBuNyfT271aNhmgvAa8iVqDkALxHTaaqS2BLXeZUB6eXWhJy3nDU4gMLwtP3UriqWRvUyeUfpmu',
             '5eEkaFyoKGvuTRKbV6G8yKaJrsgqDMer1fXTR9tA4Ab3MTNuKkALKdT4Mdzs3K8sTbJmfB69UQuuDH54QREZhJHa',
             '3kP1mPBGASKQFECHcMbDhTLWkNcW497idg9qGbJ2pvza8ppmDEBwd6qokPaqWsUkoTYTK3CuoAbJMQc3XEFrHURy',
-            '2pefayEWXHTHuE2D8imy8JyR3smhwouh83jtX9meAPtyaNwzsSrBhiDT8pDRVUHptUiRGoX3sNWeKKjEWzfJh4Sh')"
+            '2pefayEWXHTHuE2D8imy8JyR3smhwouh83jtX9meAPtyaNwzsSrBhiDT8pDRVUHptUiRGoX3sNWeKKjEWzfJh4Sh',
+            'EMNndx2kUTZ2gPKhUC5DTQNuK1eVDBqMYfWvrnEHA1uAnpa5JC5HpjatDDBKey3b3zT9xDvAH9rB8B47SoV7nmK')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
