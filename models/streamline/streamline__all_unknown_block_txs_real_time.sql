@@ -102,7 +102,7 @@ potential_missing_txs AS (
 , completed_retries as (
     select block_id
     from {{ ref('streamline__complete_block_txs') }}
-    where _partition_id > 66030
+    where _partition_id > 66266
 )
 , stuff_to_retry as (
     select *
@@ -114,7 +114,7 @@ potential_missing_txs AS (
                 FROM
                     {{ ref('streamline__complete_block_txs') }}
             ) AS batch_id
-        from solana.streamline.blocks_backfill_20240229
+        from solana.streamline.blocks_backfill_20240301
         except 
         select block_id,
             (
