@@ -43,16 +43,16 @@ decoded AS (
             WHEN decoded_instruction :args :orderPacket :immediateOrCancel :side :bid IS NOT NULL THEN 'bid'
             ELSE 'ask'
         END AS side,
-        solana.silver.udf_get_account_pubkey_by_name(
+        silver.udf_get_account_pubkey_by_name(
             'trader',
             decoded_instruction :accounts
         ) AS swapper,
         CASE
-            WHEN side = 'ask' THEN solana.silver.udf_get_account_pubkey_by_name(
+            WHEN side = 'ask' THEN silver.udf_get_account_pubkey_by_name(
                 'quoteVault',
                 decoded_instruction :accounts
             )
-            ELSE solana.silver.udf_get_account_pubkey_by_name(
+            ELSE silver.udf_get_account_pubkey_by_name(
                 'baseVault',
                 decoded_instruction :accounts
             )
@@ -60,31 +60,31 @@ decoded AS (
         NULL AS source_mint,
         NULL AS destination_mint,
         CASE
-            WHEN side = 'ask' THEN solana.silver.udf_get_account_pubkey_by_name(
+            WHEN side = 'ask' THEN silver.udf_get_account_pubkey_by_name(
                 'baseVault',
                 decoded_instruction :accounts
             )
-            ELSE solana.silver.udf_get_account_pubkey_by_name(
+            ELSE silver.udf_get_account_pubkey_by_name(
                 'quoteVault',
                 decoded_instruction :accounts
             )
         END AS destination_token_account,
         CASE
-            WHEN side = 'ask' THEN solana.silver.udf_get_account_pubkey_by_name(
+            WHEN side = 'ask' THEN silver.udf_get_account_pubkey_by_name(
                 'baseAccount',
                 decoded_instruction :accounts
             )
-            ELSE solana.silver.udf_get_account_pubkey_by_name(
+            ELSE silver.udf_get_account_pubkey_by_name(
                 'quoteAccount',
                 decoded_instruction :accounts
             )
         END AS program_destination_token_account,
         CASE
-            WHEN side = 'ask' THEN solana.silver.udf_get_account_pubkey_by_name(
+            WHEN side = 'ask' THEN silver.udf_get_account_pubkey_by_name(
                 'quoteAccount',
                 decoded_instruction :accounts
             )
-            ELSE solana.silver.udf_get_account_pubkey_by_name(
+            ELSE silver.udf_get_account_pubkey_by_name(
                 'baseAccount',
                 decoded_instruction :accounts
             )

@@ -45,11 +45,11 @@ decoded AS (
             decoded_instruction :accounts
         ) AS swapper,
         CASE
-            WHEN xToY THEN solana.silver.udf_get_account_pubkey_by_name(
+            WHEN xToY THEN silver.udf_get_account_pubkey_by_name(
                 'swapperXAccount',
                 decoded_instruction :accounts
             )
-            ELSE solana.silver.udf_get_account_pubkey_by_name(
+            ELSE silver.udf_get_account_pubkey_by_name(
                 'swapperYAccount',
                 decoded_instruction :accounts
             )
@@ -63,31 +63,31 @@ decoded AS (
             decoded_instruction :accounts
         ) AS destination_mint,
         CASE
-            WHEN xToY THEN solana.silver.udf_get_account_pubkey_by_name(
+            WHEN xToY THEN silver.udf_get_account_pubkey_by_name(
                 'swapperYAccount',
                 decoded_instruction :accounts
             )
-            ELSE solana.silver.udf_get_account_pubkey_by_name(
+            ELSE silver.udf_get_account_pubkey_by_name(
                 'swapperXAccount',
                 decoded_instruction :accounts
             )
         END AS destination_token_account,
         CASE
-            WHEN xToY THEN solana.silver.udf_get_account_pubkey_by_name(
+            WHEN xToY THEN silver.udf_get_account_pubkey_by_name(
                 'poolYAccount',
                 decoded_instruction :accounts
             )
-            ELSE solana.silver.udf_get_account_pubkey_by_name(
+            ELSE silver.udf_get_account_pubkey_by_name(
                 'poolXAccount',
                 decoded_instruction :accounts
             )
         END AS program_destination_token_account,
         CASE
-            WHEN xToY THEN solana.silver.udf_get_account_pubkey_by_name(
+            WHEN xToY THEN silver.udf_get_account_pubkey_by_name(
                 'poolXAccount',
                 decoded_instruction :accounts
             )
-            ELSE solana.silver.udf_get_account_pubkey_by_name(
+            ELSE silver.udf_get_account_pubkey_by_name(
                 'poolYAccount',
                 decoded_instruction :accounts
             )
