@@ -9,7 +9,7 @@
 {% if execute %}
 
 {% if is_incremental() %}
-{% set query_1 = """ CREATE OR REPLACE TEMPORARY TABLE silver.core_metrics_hourly__intermediate_tmp AS SELECT distinct(block_timestamp)::date as dist_block_ts FROM solana.silver.transactions WHERE _inserted_timestamp >= (SELECT MAX(_INSERTED_TIMESTAMP) FROM solana.silver.core_metrics_hourly)""" %}
+{% set query_1 = """ CREATE OR REPLACE TEMPORARY TABLE silver.core_metrics_hourly__intermediate_tmp AS SELECT distinct(block_timestamp)::date as dist_block_ts FROM """ ~ ref('silver__transactions') ~ """ WHERE _inserted_timestamp >= (SELECT MAX(_INSERTED_TIMESTAMP) FROM """ ~ this ~ """)""" %}
 {% do run_query(
     query_1
 ) %}
