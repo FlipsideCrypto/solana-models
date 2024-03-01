@@ -5,6 +5,7 @@
     cluster_by = ['_inserted_timestamp::DATE'],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}'),
     full_refresh = false,
+    tags = ['scheduled_non_core'],
 ) }}
 
 /* need to rebucket and regroup the intermediate model due to possibility of change events coming in out of order */
@@ -51,7 +52,14 @@ pre_final as (
     from regroup 
     join last_updated_at
 )
-select *
+select 
+    *,
+    {{ dbt_utils.generate_surrogate_key(
+        ['account_address','start_block_id']
+    ) }} AS token_account_owners_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 from pre_final
 where start_block_id <> end_block_id 
 or end_block_id is null
