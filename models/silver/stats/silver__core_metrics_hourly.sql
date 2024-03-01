@@ -5,6 +5,38 @@
     cluster_by = ['block_timestamp_hour::DATE'],
     tags = ['curated','scheduled_non_core']
 ) }}
+/* run incremental timestamp value first then use it as a static value */
+{% if execute %}
+
+{% if is_incremental() %}
+{% set query %}
+
+SELECT
+    MIN(DATE_TRUNC('hour', block_timestamp)) block_timestamp_hour
+FROM
+    {{ ref('silver__transactions') }}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    ) {% endset %}
+    {% set min_block_timestamp_hour = run_query(query).columns [0].values() [0]%}
+
+{% endif %}
+{% endif %}
+
+{% if execute %}
+{% if is_incremental() %}
+-- temp while older txs/blocks are being updated
+{% set query_1 = """ CREATE OR REPLACE TEMPORARY TABLE silver.core_metrics_hourly__intermediate_tmp AS SELECT distinct(block_timestamp)::date as dist_block FROM solana.silver.transactions WHERE _inserted_timestamp >= (SELECT MAX(_INSERTED_TIMESTAMP) FROM solana.silver.core_metrics_hourly)""" %}
+
+{% do run_query(
+    query_1
+) %}
+{% endif %}
+{% endif %}
 
 WITH block_stats AS (
 
@@ -30,13 +62,10 @@ WITH block_stats AS (
 {% if is_incremental() %}
 AND DATE_TRUNC(
     'hour',
-    _inserted_timestamp
-) >= (
-    SELECT
-        MAX(DATE_TRUNC('hour', _inserted_timestamp)) - INTERVAL '12 hours'
-    FROM
-        {{ this }}
-)
+    block_timestamp
+) >= '{{ min_block_timestamp_hour }}'
+-- temp while older txs/blocks are being updated
+and block_timestamp::date in (select dist_block from silver.core_metrics_hourly__intermediate_tmp)
 {% else %}
     AND block_id > 39824213
 {% endif %}
@@ -78,13 +107,10 @@ tx_stats AS (
 {% if is_incremental() %}
 AND DATE_TRUNC(
     'hour',
-    _inserted_timestamp
-) >= (
-    SELECT
-        MAX(DATE_TRUNC('hour', _inserted_timestamp)) - INTERVAL '12 hours'
-    FROM
-        {{ this }}
-)
+    block_timestamp
+) >= '{{ min_block_timestamp_hour }}'
+-- temp while older txs/blocks are being updated
+and block_timestamp::date in (select dist_block from silver.core_metrics_hourly__intermediate_tmp)
 {% else %}
     AND block_id > 39824213
 {% endif %}
