@@ -78,8 +78,8 @@ base_legacy_prices AS (
         price AS CLOSE
     FROM
         {{ source(
-            'shared',
-            'prices_v2'
+            'crosschain_bronze',
+            'legacy_prices'
         ) }}
     WHERE
         provider = 'coinmarketcap'
