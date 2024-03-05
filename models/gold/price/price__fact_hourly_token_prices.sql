@@ -27,7 +27,7 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__token_prices_coin_market_cap_hourly') }}
-UNION
+UNION ALL
 SELECT
     'coingecko' AS provider,
     recorded_hour as hour,
