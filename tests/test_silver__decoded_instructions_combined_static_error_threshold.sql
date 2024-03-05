@@ -19,4 +19,4 @@ SELECT
 FROM
     current_rates
 WHERE
-    error_rate > 0.05;
+    error_rate > 0.01
