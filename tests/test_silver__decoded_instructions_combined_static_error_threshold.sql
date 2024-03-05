@@ -7,7 +7,7 @@ WITH current_rates AS (
         ) AS error_count,
         error_count / COUNT(*) AS error_rate
     FROM
-        solana.silver.decoded_instructions_combined
+        {{ ref('silver__decoded_instructions_combined') }}
     WHERE
         block_timestamp :: DATE = CURRENT_DATE - 1
     GROUP BY
