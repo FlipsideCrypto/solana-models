@@ -43,7 +43,7 @@ current_rates AS (
     FROM
         {{ ref('silver__decoded_instructions_combined') }}
     WHERE
-        block_timestamp :: DATE = CURRENT_DATE - 1
+        block_timestamp :: DATE >= CURRENT_DATE - 7
     GROUP BY
         1,
         2
