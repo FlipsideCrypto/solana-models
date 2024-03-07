@@ -1,0 +1,32 @@
+version: 2
+models:
+  - name: stats__ez_core_metrics_hourly
+    description: '{{ doc("ez_core_metrics_hourly_table_doc") }}'
+
+    columns:
+      - name: BLOCK_TIMESTAMP_HOUR
+        description: '{{ doc("block_timestamp_hour") }}'
+      - name: BLOCK_NUMBER_MIN
+        description: '{{ doc("block_number_min") }}'
+      - name: BLOCK_NUMBER_MAX
+        description: '{{ doc("block_number_max") }}'
+      - name: BLOCK_COUNT
+        description: '{{ doc("block_count") }}'
+      - name: TRANSACTION_COUNT
+        description: '{{ doc("transaction_count") }}'
+      - name: TRANSACTION_COUNT_SUCCESS
+        description: '{{ doc("transaction_count_success") }}'
+      - name: TRANSACTION_COUNT_FAILED
+        description: '{{ doc("transaction_count_failed") }}'
+      - name: UNIQUE_SIGNERS_COUNT
+        description: '{{ doc("unique_signers_count") }}'
+      - name: TOTAL_FEES_NATIVE
+        description: '{{ doc("total_fees_native") }}'
+      - name: TOTAL_FEES_USD
+        description: '{{ doc("total_fees_usd") }}'
+      - name: EZ_CORE_METRICS_HOURLY_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
