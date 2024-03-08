@@ -318,3 +318,20 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_tensorswap') }}
+UNION
+SELECT
+    'solsniper',
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    purchaser,
+    seller,
+    mint,
+    sales_amount,
+    nft_sales_solsniper_id AS fact_nft_sales_id,
+    inserted_timestamp,
+     modified_timestamp
+FROM
+    {{ ref('silver__nft_sales_solsniper') }}
