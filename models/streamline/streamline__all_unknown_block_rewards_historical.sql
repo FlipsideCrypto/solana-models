@@ -12,19 +12,16 @@ WITH pre_final AS (
     -- WHERE
     --     block_id >= 99360012
     --     AND block_id <= 163728008
-        DISTINCT(block_id) AS block_id
+        block_id
     FROM
-        solana.silver.rewards_staking
-    WHERE
-        block_id >= 99360012
-        AND block_id <= 163728008
+        solana_dev.silver.backfill_rewards_blocks_240308
     EXCEPT
     SELECT
         block_id
     FROM
         {{ ref('streamline__complete_block_rewards') }}
     WHERE 
-        _partition_id > 38754
+        _partition_id > 41169
 )
 SELECT
     block_id,
@@ -37,4 +34,4 @@ SELECT
 FROM
     pre_final
 ORDER BY block_id
-LIMIT 3
+LIMIT 1
