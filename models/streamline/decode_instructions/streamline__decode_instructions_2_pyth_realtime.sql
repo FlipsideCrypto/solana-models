@@ -70,12 +70,7 @@ completed_subset AS (
     FROM
         {{ ref('streamline__complete_decoded_instructions_2') }}
     WHERE
-        block_id >= (
-            SELECT
-                MIN(block_id)
-            FROM
-                event_subset
-        )
+        block_id >= {{ min_block_id }}
 )
 SELECT
     e.program_id,
