@@ -1,0 +1,45 @@
+name: dbt_test_scheduled_weekly
+run-name: dbt_test_scheduled_weekly
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run every Sunday at 07:42 UTC (see https://crontab.guru)
+    - cron: '42 7 * * SUN'
+    
+env:
+  DBT_PROFILES_DIR: "${{ vars.DBT_PROFILES_DIR }}"
+
+  ACCOUNT: "${{ vars.ACCOUNT }}"
+  ROLE: "${{ vars.ROLE }}"
+  USER: "${{ vars.USER }}"
+  PASSWORD: "${{ secrets.PASSWORD }}"
+  REGION: "${{ vars.REGION }}"
+  DATABASE: "${{ vars.DATABASE }}"
+  WAREHOUSE: "${{ vars.WAREHOUSE }}"
+  SCHEMA: "${{ vars.SCHEMA }}"
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  run_dbt_jobs:
+    runs-on: ubuntu-latest
+    environment: 
+      name: workflow_prod
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "${{ vars.PYTHON_VERSION }}"
+          cache: "pip"
+
+      - name: install dependencies
+        run: |
+          pip3 install dbt-snowflake==${{ vars.DBT_VERSION }} cli_passthrough requests click
+          dbt deps
+      - name: Run DBT Jobs
+        run: |
+          dbt test --select tests/test_silver__decoded_instructions_combined_error_threshold_7_days.sql tests/test_silver__decoded_instructions_combined_static_error_threshold_7_days.sql
