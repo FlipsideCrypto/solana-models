@@ -7,6 +7,16 @@
     tags = ['streamline_decoder']
 ) }}
 
+{% if execute %}
+    {% set min_event_block_id_query %}
+        select min(block_id)
+        from {{ ref('silver__events') }}
+        where 
+            block_timestamp >= CURRENT_DATE - 2
+    {% endset %}
+    {% set min_event_block_id = run_query(min_event_block_id_query).columns[0].values()[0] %}
+{% endif %}
+
 WITH idl_in_play AS (
 
     SELECT
@@ -72,7 +82,8 @@ completed_subset AS (
     FROM
         {{ ref('streamline__complete_decoded_instructions_2') }}
     WHERE
-        block_id >= (
+        block_id >= {{ min_event_block_id }} --ensure we at least prune to last 2 days worth of blocks since the dynamic below will scan everything
+    AND block_id >= (
             SELECT
                 MIN(block_id)
             FROM
