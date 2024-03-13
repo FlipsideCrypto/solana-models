@@ -42,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt test --select tests/test_silver__decoded_instructions_combined_error_threshold_7_days.sql tests/test_silver__decoded_instructions_combined_static_error_threshold_7_days.sql
+          dbt test -s tag:test_weekly
