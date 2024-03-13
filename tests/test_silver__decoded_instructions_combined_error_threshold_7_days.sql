@@ -1,3 +1,9 @@
+{{
+    config(
+        tags=["test_weekly"]
+    )
+}}
+
 WITH base AS (
     SELECT
         program_id,
