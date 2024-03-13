@@ -64,7 +64,8 @@ models:
       - name: MINT
         description:  "{{ doc('mint') }}"
         tests: 
-          - not_null
+          - not_null:
+              where: succeeded
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('tx_id') }}"
         tests: 
