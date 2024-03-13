@@ -86,6 +86,7 @@ sources:
       - name: nft_metadata
       - name: proposal_votes_marinade
       - name: _blocks_tx_count
+      - name: nft_sales_solsniper_v1_events
   - name: solana_streamline
     database: solana
     schema: streamline

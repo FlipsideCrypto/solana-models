@@ -78,15 +78,13 @@ pre_final AS (
         A.block_timestamp,
         A.program_id,
         A.tx_id,
-        A.index,
-        A.inner_index,
         b.succeeded,
         A.buyer AS purchaser,
         A.seller,
-        b.amount AS sale_amt,
         C.amount AS fee_amt,
         A.mint,
-        A._inserted_timestamp
+        A._inserted_timestamp,
+        sum(b.amount) AS sale_amt,
     FROM
         decoded A
         INNER JOIN transfers b
@@ -99,6 +97,7 @@ pre_final AS (
         AND A.buyer_escrow_vault = C.tx_from
         AND A.treasury_fee_account = C.tx_to
         AND A.index = C.index_1
+    group by 1,2,3,4,5,6,7,8,9,10
 )
 SELECT
     block_timestamp,
@@ -117,3 +116,21 @@ SELECT
     '{{ invocation_id }}' AS invocation_id
 FROM
     pre_final
+union all
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    purchaser,
+    seller,
+    mint,
+    sales_amount,
+    _inserted_timestamp,
+    nft_sales_solsniper_id,
+    inserted_timestamp,
+    modified_timestamp,
+    invocation_id
+FROM
+    {{ ref('silver__nft_sales_solsniper_v1_events_view') }}

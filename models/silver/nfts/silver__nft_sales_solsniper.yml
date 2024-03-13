@@ -56,13 +56,11 @@ models:
       - name: MINT
         description: "{{ doc('mint') }}"
         tests: 
-          - not_null:
-              where: succeeded = TRUE
+          - not_null
       - name: SALES_AMOUNT
         description: "{{ doc('sales_amount') }}"
         tests: 
-          - not_null:
-              where: succeeded = TRUE
+          - not_null
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
