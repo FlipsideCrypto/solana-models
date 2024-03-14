@@ -27,7 +27,8 @@ WITH base_transfers_i AS (
     event_type IN (
         'transfer',
         'transferChecked',
-        'transferWithSeed'
+        'transferWithSeed',
+        'transferCheckedWithFee'
     )
 
 {% if is_incremental() and env_var(
@@ -83,7 +84,8 @@ AND
         ii.value :parsed :type :: STRING IN (
         'transfer',
         'transferChecked',
-        'transferWithSeed'
+        'transferWithSeed',
+        'transferCheckedWithFee'
         )
 
 {% if is_incremental() and env_var(

@@ -22,7 +22,8 @@ WITH base_events AS (
     {% else %}
         AND _inserted_timestamp::date between '2022-08-12' and '2022-09-05'
     {% endif %}
-)
+),
+prefinal as (
 SELECT
     block_id,
     block_timestamp,
@@ -40,7 +41,8 @@ SELECT
     ) AS mint_amount,
     COALESCE(
         instruction :parsed :info :mintAuthority :: string,
-        instruction :parsed :info :multisigMintAuthority :: string
+        instruction :parsed :info :multisigMintAuthority :: string,
+        instruction :parsed :info :authority :: string
     ) AS mint_authority,
     instruction :parsed :info :signers :: string AS signers,
     _inserted_timestamp
@@ -51,7 +53,9 @@ WHERE
         'mintTo',
         'initializeMint',
         'mintToChecked',
-        'initializeMint2'
+        'initializeMint2',
+        'initializeConfidentialTransferMint',
+        'initializeNonTransferableMint'
     )
 UNION
 SELECT
@@ -71,7 +75,8 @@ SELECT
     ) AS mint_amount,
     COALESCE(
         i.value :parsed :info :mintAuthority :: string,
-        i.value :parsed :info :multisigMintAuthority :: string
+        i.value :parsed :info :multisigMintAuthority :: string,
+        instruction :parsed :info :authority :: string
     ) AS mint_authority,
     i.value :parsed :info :signers :: string AS signers,
     _inserted_timestamp
@@ -83,5 +88,40 @@ WHERE
         'mintTo',
         'initializeMint',
         'mintToChecked',
-        'initializeMint2'
+        'initializeMint2',
+        'initializeConfidentialTransferMint',
+        'initializeNonTransferableMint'
     )
+)
+
+SELECT
+    block_id,
+    block_timestamp,
+    tx_id,
+    succeeded,
+    INDEX,
+    inner_index,
+    event_type,
+    mint,
+    token_account,
+    DECIMAL,
+    mint_amount,
+    CASE
+        WHEN event_type IN (
+            'initializeConfidentialTransferMint',
+            'initializeNonTransferableMint'
+        ) THEN FIRST_VALUE(mint_authority) ignore nulls over (
+            PARTITION BY tx_id
+            ORDER BY
+                CASE
+                    WHEN mint_authority IS NOT NULL THEN 0
+                    ELSE 1
+                END,
+                INDEX
+        )
+        ELSE mint_authority
+    END AS mint_authority,
+    signers,
+    _inserted_timestamp
+FROM
+    prefinal
