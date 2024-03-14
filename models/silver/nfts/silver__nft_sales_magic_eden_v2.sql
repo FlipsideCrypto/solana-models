@@ -9,6 +9,7 @@
 WITH txs AS (
 
     SELECT
+        block_timestamp::date as block_date,
         tx_id,
         succeeded,
         signers[0] :: STRING as signer, 
@@ -55,7 +56,8 @@ AND _inserted_timestamp >= (
 GROUP BY
     1,
     2, 
-    3
+    3,
+    4
 HAVING
     COUNT(
         tx_id
@@ -95,7 +97,8 @@ base_tmp AS (
         {{ ref('silver__events') }}
         e
         INNER JOIN txs t
-        ON t.tx_id = e.tx_id
+        ON t.block_date = e.block_timestamp::date
+        AND t.tx_id = e.tx_id
         AND t.max_event_index = e.index
         AND ARRAY_SIZE(
             e.inner_instruction :instructions
@@ -159,7 +162,8 @@ sellers AS (
         {{ ref('silver__events') }}
         e
         INNER JOIN txs t
-        ON t.tx_id = e.tx_id
+        ON t.block_date = e.block_timestamp::date
+        AND t.tx_id = e.tx_id
         AND t.max_event_index = e.index
         AND ARRAY_SIZE(
             e.inner_instruction :instructions
