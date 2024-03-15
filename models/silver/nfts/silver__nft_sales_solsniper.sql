@@ -92,12 +92,12 @@ pre_final AS (
         sum(b.amount) AS sale_amt,
     FROM
         decoded A
-        INNER JOIN transfers b
+        left JOIN transfers b
         ON A.tx_id = b.tx_id
         AND A.buyer_escrow_vault = b.tx_from
         AND A.seller = b.tx_to
         AND A.index = b.index_1
-        INNER JOIN transfers C
+        left JOIN transfers C
         ON A.tx_id = C.tx_id
         AND A.buyer_escrow_vault = C.tx_from
         AND A.treasury_fee_account = C.tx_to
