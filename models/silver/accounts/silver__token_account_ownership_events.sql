@@ -33,7 +33,7 @@ ownership_change_events as (
     from base_events
     where event_type in ('assign','assignWithSeed','close','closeAccount','create','createAccount','createAccountWithSeed','createIdempotent',
     'initializeAccount','initializeAccount2','initializeAccount3','revoke','setAuthority')
-    union 
+    union all
     select 
         block_timestamp,
         block_id,
@@ -65,7 +65,7 @@ combined as (
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('assign','assignWithSeed')
-    union 
+    union all
     select 
         block_timestamp,
         block_id,
@@ -80,7 +80,7 @@ combined as (
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('initializeAccount','initializeAccount2','initializeAccount3')
-    union
+    union all
     select 
         block_timestamp,
         block_id,
@@ -95,7 +95,7 @@ combined as (
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('close')
-    union 
+    union all
     select 
         block_timestamp,
         block_id,
@@ -110,7 +110,7 @@ combined as (
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('create','createIdempotent')
-    union 
+    union all
     select 
         block_timestamp,
         block_id,
@@ -125,7 +125,7 @@ combined as (
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('createAccount','createAccountWithSeed')
-    union 
+    union all
     select 
         block_timestamp,
         block_id,
@@ -140,7 +140,7 @@ combined as (
         _inserted_timestamp
     from ownership_change_events 
     where event_type in ('revoke')
-    union 
+    union all
     select 
         block_timestamp,
         block_id,
@@ -158,7 +158,7 @@ combined as (
     and (instruction:parsed:info:authorityType::string is null 
         or instruction:parsed:info:authorityType::string = 'accountOwner')
     and owner is not null /* some events have an invalid new authority object even though tx is successful, ex: 4oHAf4fmEFmdiYG6Rchh4FoMH4de97iwnZqHEYrvQ5oo3UgwumPxkkkX6KAWCwmk4e5GzsHXqFQYVa2VyoQUYyyD */
-    union 
+    union all
     select 
         block_timestamp,
         block_id,

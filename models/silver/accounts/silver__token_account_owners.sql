@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    incremental_strategy = 'delete+insert',
+    incremental_predicates = ["dynamic_range_predicate", "_inserted_timestamp::date"],
     unique_key = ["account_address","start_block_id"],
     cluster_by = ['_inserted_timestamp::DATE'],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}'),

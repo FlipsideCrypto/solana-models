@@ -1,23 +1,46 @@
 {{ config(
     materialized = 'incremental',
+    incremental_predicates = ["dynamic_range_predicate", "_inserted_timestamp::date"],
     unique_key = ["account_address","owner","start_block_id"],
     cluster_by = ['_inserted_timestamp::DATE'],
     full_refresh = false,
     tags = ['scheduled_non_core']
 ) }}
+-- depends_on: {{ ref('silver__token_account_ownership_events') }}
+/* run incremental timestamp value first then use it as a static value */
+{% if execute %}
+
+{% if is_incremental() %}
+{% set max_inserted_query %}
+
+SELECT
+    MAX(_inserted_timestamp) AS _inserted_timestamp
+FROM
+    silver.token_account_ownership_events
+
+    {% endset %}
+    {% set max_inserted_timestamp = run_query(max_inserted_query).columns [0].values() [0] %}
+{% endif %}
+
+{% set query = """ CREATE OR REPLACE TEMPORARY TABLE silver.token_account_ownership_events__intermediate_tmp AS SELECT account_address, owner, block_id, event_type, _inserted_timestamp  FROM """ ~ ref('silver__token_account_ownership_events') %}
+{% set incr = "" %}
+
+{% if is_incremental() %}
+{% set incr = """ WHERE _inserted_timestamp >= '""" ~ max_inserted_timestamp ~ """' """ %}
+{% endif %}
+
+{% do run_query(
+    query ~ incr
+) %}
+{% endif %}
 
 /*
 for incrementals also select all null end date accounts and combine
 join to eliminate accounts that are not in the subset
 remove all accounts that have the same owner + start block + end block
 */
-with last_updated_at as (
-    select max(_inserted_timestamp) as _inserted_timestamp
-    from {{ ref('silver__token_account_ownership_events') }}
-    --testing
-    -- where _inserted_timestamp::date < '2023-06-25'
-),
-base as (
+
+with base as (
     select 
         account_address, 
         owner, 
@@ -29,13 +52,8 @@ base as (
                 1
             else 2
         end as same_block_order_index
-    from {{ ref('silver__token_account_ownership_events') }}
-    /* incremental condition here */
-    {% if is_incremental() %}
-        where _inserted_timestamp >= (select max(_inserted_timestamp) from {{ this }})
-        --testing
-    -- and _inserted_timestamp::date < '2023-06-25'
-    {% endif %}
+    FROM
+        silver.token_account_ownership_events__intermediate_tmp
 ),
 {% if is_incremental() %}
 current_ownership as (
@@ -83,6 +101,6 @@ select
                 PARTITION BY account_address
                 ORDER BY bucket
             ) as end_block_id,
-    _inserted_timestamp
+    '{{ max_inserted_timestamp }}' as _inserted_timestamp
 from c
-join last_updated_at
+-- join last_updated_at
