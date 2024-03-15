@@ -1,33 +1,48 @@
 {{ config(
     materialized = 'incremental',
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     unique_key = ['nft_sales_solsniper_id'],
-    incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['scheduled_non_core']
 ) }}
 
-WITH base AS (
-
-    SELECT
-        *
-    FROM
-        {{ ref('silver__decoded_instructions_combined') }}
-    WHERE
-        program_id = 'SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g'
-        AND event_type = 'executeSolNftOrder'
+-- depends_on: {{ ref('silver__decoded_instructions_combined') }}
+/* run incremental timestamp value first then use it as a static value */
+{% if execute %}
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) - INTERVAL '1 hour'
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND block_timestamp :: DATE >= '2023-05-02'
+{% set max_inserted_query %}
+
+SELECT
+    MAX(_inserted_timestamp) AS _inserted_timestamp
+FROM
+    {{ this }}
+
+    {% endset %}
+    {% set max_inserted_timestamp = run_query(max_inserted_query).columns [0].values() [0] %}
 {% endif %}
-),
-decoded AS (
+
+{% set query = """ CREATE OR REPLACE TEMPORARY TABLE silver.decoded_instructions_solsniper__intermediate_tmp AS SELECT block_timestamp, block_id, tx_id, index, inner_index, program_id, decoded_instruction, event_type, _inserted_timestamp FROM """ ~ ref('silver__decoded_instructions_combined') ~ """ 
+    WHERE 
+        program_id = 'SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g' 
+    AND 
+        event_type = 'executeSolNftOrder'""" %}     
+{% set incr = "" %}
+
+{% if is_incremental() %}
+{% set incr = """ AND _inserted_timestamp >= '""" ~ max_inserted_timestamp ~ """' """ %}
+{% else %}
+    {% set incr = """ AND block_timestamp :: DATE >= '2023-05-02' """ %}
+{% endif %}
+
+{% do run_query(
+    query ~ incr
+) %}
+{% set between_stmts = fsc_utils.dynamic_range_predicate("silver.decoded_instructions_solsniper__intermediate_tmp","block_timestamp::date") %}
+{% endif %}
+
+WITH decoded AS (
     SELECT
         block_timestamp,
         block_id,
@@ -42,7 +57,7 @@ decoded AS (
         silver.udf_get_account_pubkey_by_name('sellNftMint',decoded_instruction :accounts) AS mint,
         _inserted_timestamp
     FROM
-        base
+        silver.decoded_instructions_solsniper__intermediate_tmp
 ),
 transfers AS (
     SELECT
@@ -60,17 +75,7 @@ transfers AS (
         ON d.tx_id = A.tx_id
     WHERE
         A.succeeded
-
-{% if is_incremental() %}
-AND A._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) - INTERVAL '1 day'
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND A.block_timestamp :: DATE >= '2023-05-02'
-{% endif %}
+        and {{ between_stmts }}
 ),
 pre_final AS (
     SELECT
