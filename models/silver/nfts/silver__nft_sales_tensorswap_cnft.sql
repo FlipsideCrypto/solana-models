@@ -52,12 +52,8 @@ AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
     base_query
 ) %}
 
-{% do run_query(
-    query ~ incr
-) %}
 {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.decoded_instructions_tensorswap__intermediate_tmp","block_timestamp::date") %}
 {% endif %}
-
 
 with decoded_mints AS (
     SELECT
