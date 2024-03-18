@@ -33,8 +33,8 @@ WITH base_transfers_i AS (
         --         '2023-07-20'
         --     )
             -- OR block_timestamp :: DATE between '2023-11-11' and '2024-01-01')
-            block_timestamp :: DATE between '2024-01-02' and '2024-02-22')
-            -- OR block_timestamp :: DATE > '2024-02-22
+            -- block_timestamp :: DATE between '2024-01-02' and '2024-02-22')
+            block_timestamp :: DATE > '2024-02-22')
 
 
     UNION
@@ -86,8 +86,8 @@ where (
             --     '2023-07-20'
             -- )
             -- OR block_timestamp :: DATE between '2023-11-11' and '2024-01-01')
-            block_timestamp :: DATE between '2024-01-02' and '2024-02-22')
-            -- OR block_timestamp :: DATE > '2024-02-22'
+            -- block_timestamp :: DATE between '2024-01-02' and '2024-02-22')
+            block_timestamp :: DATE > '2024-02-22')
 
 ),
 base_pre_token_balances AS (
@@ -111,8 +111,8 @@ where (
             --     '2023-07-20'
             -- )
             -- or block_timestamp :: DATE between '2023-11-11' and '2024-01-01')
-            block_timestamp :: DATE between '2024-01-02' and '2024-02-22')
-            -- OR block_timestamp :: DATE > '2024-02-22'
+            -- block_timestamp :: DATE between '2024-01-02' and '2024-02-22')
+            block_timestamp :: DATE > '2024-02-22')
 ),
 spl_transfers AS (
     SELECT
