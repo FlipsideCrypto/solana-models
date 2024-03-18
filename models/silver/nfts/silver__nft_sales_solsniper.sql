@@ -6,7 +6,6 @@
     merge_exclude_columns = ["inserted_timestamp"],
     tags = ['scheduled_non_core']
 ) }}
-
 -- depends_on: {{ ref('silver__decoded_instructions_combined') }}
 /* run incremental timestamp value first then use it as a static value */
 {% if execute %}
@@ -23,23 +22,36 @@ FROM
     {% set max_inserted_timestamp = run_query(max_inserted_query).columns [0].values() [0] %}
 {% endif %}
 
-{% set query = """ CREATE OR REPLACE TEMPORARY TABLE silver.decoded_instructions_solsniper__intermediate_tmp AS SELECT block_timestamp, block_id, tx_id, index, inner_index, program_id, decoded_instruction, event_type, _inserted_timestamp FROM """ ~ ref('silver__decoded_instructions_combined') ~ """ 
-    WHERE 
-        program_id = 'SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g' 
-    AND 
-        event_type = 'executeSolNftOrder'""" %}     
-{% set incr = "" %}
+{% set base_query %}
+CREATE OR REPLACE temporary TABLE silver.decoded_instructions_solsniper__intermediate_tmp AS
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    INDEX,
+    inner_index,
+    program_id,
+    decoded_instruction,
+    event_type,
+    _inserted_timestamp
+FROM
+    silver.decoded_instructions_combined
+WHERE
+    program_id = 'SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g'
+    AND event_type = 'executeSolNftOrder'
 
 {% if is_incremental() %}
-{% set incr = """ AND _inserted_timestamp >= '""" ~ max_inserted_timestamp ~ """' """ %}
+AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
 {% else %}
-    {% set incr = """ AND block_timestamp :: DATE >= '2023-05-02' """ %}
+    AND block_timestamp :: DATE >= '2023-05-02'
 {% endif %}
 
+{% endset %}
 {% do run_query(
-    query ~ incr
+    base_query
 ) %}
-{% set between_stmts = fsc_utils.dynamic_range_predicate("silver.decoded_instructions_solsniper__intermediate_tmp","block_timestamp::date") %}
+{% set between_stmts = fsc_utils.dynamic_range_predicate("silver.decoded_instructions_solsniper__intermediate_tmp","block_timestamp::date"
+) %}
 {% endif %}
 
 WITH decoded AS (
@@ -75,7 +87,7 @@ transfers AS (
         ON d.tx_id = A.tx_id
     WHERE
         A.succeeded
-        and {{ between_stmts }}
+        AND {{ between_stmts }}
 ),
 pre_final AS (
     SELECT
@@ -89,20 +101,32 @@ pre_final AS (
         C.amount AS fee_amt,
         A.mint,
         A._inserted_timestamp,
-        sum(b.amount) AS sale_amt,
+        SUM(
+            b.amount
+        ) AS sale_amt,
     FROM
         decoded A
-        left JOIN transfers b
+        LEFT JOIN transfers b
         ON A.tx_id = b.tx_id
         AND A.buyer_escrow_vault = b.tx_from
         AND A.seller = b.tx_to
         AND A.index = b.index_1
-        left JOIN transfers C
+        LEFT JOIN transfers C
         ON A.tx_id = C.tx_id
         AND A.buyer_escrow_vault = C.tx_from
         AND A.treasury_fee_account = C.tx_to
         AND A.index = C.index_1
-    group by 1,2,3,4,5,6,7,8,9,10
+    GROUP BY
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
 )
 SELECT
     block_timestamp,
@@ -121,7 +145,7 @@ SELECT
     '{{ invocation_id }}' AS invocation_id
 FROM
     pre_final
-union all
+UNION ALL
 SELECT
     block_timestamp,
     block_id,
