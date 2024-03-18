@@ -23,19 +23,34 @@ FROM
     {% set max_inserted_timestamp = run_query(max_inserted_query).columns [0].values() [0] %}
 {% endif %}
 
-{% set query = """ CREATE OR REPLACE TEMPORARY TABLE silver.decoded_instructions_tensorswap__intermediate_tmp AS SELECT block_timestamp, block_id, tx_id, index, inner_index, program_id, decoded_instruction, event_type, _inserted_timestamp FROM """ ~ ref('silver__decoded_instructions_combined') ~ """ 
-    WHERE
-        program_id = 'TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp'
-        AND event_type IN (
-            'tcompNoop',
-            'buy')""" %}     
-{% set incr = "" %}
+{% set base_query %}
+CREATE OR REPLACE temporary TABLE silver.decoded_instructions_tensorswap__intermediate_tmp AS
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    INDEX,
+    inner_index,
+    program_id,
+    decoded_instruction,
+    event_type,
+    _inserted_timestamp
+FROM
+    silver.decoded_instructions_combined
+WHERE
+    program_id = 'TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp'
+    AND event_type in ('tcompNoop', 'buy')
 
 {% if is_incremental() %}
-{% set incr = """ AND _inserted_timestamp >= '""" ~ max_inserted_timestamp ~ """' """ %}
+AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
 {% else %}
-    {% set incr = """ AND block_timestamp :: DATE >= '2023-05-16' """ %}
+    AND block_timestamp :: DATE >= '2023-05-16'
 {% endif %}
+
+{% endset %}
+{% do run_query(
+    base_query
+) %}
 
 {% do run_query(
     query ~ incr
