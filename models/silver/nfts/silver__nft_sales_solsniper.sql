@@ -35,7 +35,7 @@ SELECT
     event_type,
     _inserted_timestamp
 FROM
-    silver.decoded_instructions_combined
+    {{ ref('silver__decoded_instructions_combined') }}
 WHERE
     program_id = 'SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g'
     AND event_type = 'executeSolNftOrder'
@@ -145,6 +145,7 @@ SELECT
     '{{ invocation_id }}' AS invocation_id
 FROM
     pre_final
+{% if not is_incremental() %}
 UNION ALL
 SELECT
     block_timestamp,
@@ -163,3 +164,4 @@ SELECT
     invocation_id
 FROM
     {{ ref('silver__nft_sales_solsniper_v1_events_view') }}
+{% endif %}  
