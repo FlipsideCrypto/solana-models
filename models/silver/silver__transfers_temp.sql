@@ -22,26 +22,7 @@ WITH base_transfers_i AS (
     event_type IN (
         'transferCheckedWithFee'
     ) -- dates of interest, events appears sporadically until 2023-11-11
-          AND (
-        -- -- 1
-        --     block_timestamp :: DATE IN (
-        --         '2023-01-09',
-        --         '2023-03-07',
-        --         '2023-05-24',
-        --         '2023-05-28',
-        --         '2023-05-31',
-        --         '2023-07-12',
-        --         '2023-07-20'
-        --     )
-        --  OR block_timestamp :: DATE between '2023-11-11' and '2023-12-15')
-        -- -- 2
-        -- block_timestamp :: DATE between '2023-12-16' and '2024-01-30')
-        -- -- 3
-        -- block_timestamp :: DATE between '2024-02-01' and '2024-02-22')
-        -- -- 4
-            block_timestamp :: DATE > '2024-02-22')
-
-
+    AND block_timestamp::date between '{{ var("start_date","2023-01-09") }}' and '{{ var("end_date","2023-01-09") }}'
     UNION
     SELECT
         e.block_id,
@@ -66,9 +47,8 @@ WITH base_transfers_i AS (
         ii.value :parsed :type :: STRING IN (
         'transferCheckedWithFee'
         )
-    and e.block_timestamp::date >= '2024-02-23' -- only appears in inner_inst at this date
-
-
+    AND e.block_timestamp::date >= '2024-02-23' -- only appears in inner_inst at this date
+    AND e.block_timestamp::date between '{{ var("start_date","2023-01-09") }}' and '{{ var("end_date","2023-01-09") }}'
 ),
 base_post_token_balances AS (
     SELECT
@@ -80,24 +60,7 @@ base_post_token_balances AS (
     FROM
         {{ ref('silver___post_token_balances') }}
         
-where (
-        -- -- 1
-        --     block_timestamp :: DATE IN (
-        --         '2023-01-09',
-        --         '2023-03-07',
-        --         '2023-05-24',
-        --         '2023-05-28',
-        --         '2023-05-31',
-        --         '2023-07-12',
-        --         '2023-07-20'
-        --     )
-        --  OR block_timestamp :: DATE between '2023-11-11' and '2023-12-15')
-        -- -- 2
-        -- block_timestamp :: DATE between '2023-12-16' and '2024-01-30')
-        -- -- 3
-        -- block_timestamp :: DATE between '2024-02-01' and '2024-02-22')
-        -- -- 4
-            block_timestamp :: DATE > '2024-02-22')
+where block_timestamp::date between '{{ var("start_date","2023-01-09") }}' and '{{ var("end_date","2023-01-09") }}'
 
 ),
 base_pre_token_balances AS (
@@ -110,24 +73,7 @@ base_pre_token_balances AS (
     FROM
         {{ ref('silver___pre_token_balances') }}
 
-where (
-        -- -- 1
-        --     block_timestamp :: DATE IN (
-        --         '2023-01-09',
-        --         '2023-03-07',
-        --         '2023-05-24',
-        --         '2023-05-28',
-        --         '2023-05-31',
-        --         '2023-07-12',
-        --         '2023-07-20'
-        --     )
-        --  OR block_timestamp :: DATE between '2023-11-11' and '2023-12-15')
-        -- -- 2
-        -- block_timestamp :: DATE between '2023-12-16' and '2024-01-30')
-        -- -- 3
-        -- block_timestamp :: DATE between '2024-02-01' and '2024-02-22')
-        -- -- 4
-            block_timestamp :: DATE > '2024-02-22')
+where block_timestamp::date between '{{ var("start_date","2023-01-09") }}' and '{{ var("end_date","2023-01-09") }}'
 ),
 spl_transfers AS (
     SELECT
