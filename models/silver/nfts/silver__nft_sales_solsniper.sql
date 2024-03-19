@@ -145,23 +145,4 @@ SELECT
     '{{ invocation_id }}' AS invocation_id
 FROM
     pre_final
-{% if not is_incremental() %}
-UNION ALL
-SELECT
-    block_timestamp,
-    block_id,
-    tx_id,
-    succeeded,
-    program_id,
-    purchaser,
-    seller,
-    mint,
-    sales_amount,
-    _inserted_timestamp,
-    nft_sales_solsniper_id,
-    inserted_timestamp,
-    modified_timestamp,
-    invocation_id
-FROM
-    {{ ref('silver__nft_sales_solsniper_v1_events_view') }}
-{% endif %}  
+
