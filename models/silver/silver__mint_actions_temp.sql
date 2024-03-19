@@ -1,11 +1,22 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "CONCAT_WS('-', tx_id, event_type, mint)",
-    incremental_strategy = 'delete+insert',
-    incremental_predicates = ['block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
-    tags = ['scheduled_non_core']
+    full_refresh = false,
 ) }}
+
+-- insert query
+
+-- INSERT INTO solana.silver.mint_actions
+-- SELECT d.*
+-- FROM solana.silver.mint_actions_temp d
+-- where _inserted_timestamp < '2024-03-19'
+-- union all 
+-- SELECT d.*
+-- FROM solana.silver.mint_actions_temp d
+-- LEFT JOIN solana.silver.mint_actions p 
+-- ON CONCAT_WS('-', d.tx_id, d.event_type, d.mint) = CONCAT_WS('-', p.tx_id, p.event_type, p.mint)
+-- WHERE CONCAT_WS('-', p.tx_id, p.event_type, p.mint) IS NULL
+-- and d._inserted_timestamp >= '2024-03-19';
 
 -- select dates of interest - none appear in inner_inst
 WITH dates_filter AS (
@@ -15,15 +26,13 @@ WITH dates_filter AS (
         {{ ref('silver__events') }}
     WHERE
         event_type IN (
-        'mintTo',
-        'initializeMint',
-        'mintToChecked',
-        'initializeMint2',
         'initializeConfidentialTransferMint',
         'initializeNonTransferableMint'
     )
         AND block_timestamp :: DATE >= '2023-01-01'
         AND program_id = 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb'
+        and _inserted_timestamp > (select max(_inserted_timestamp) from {{this}})
+
 ),
 
 base_events AS (
@@ -34,6 +43,7 @@ base_events AS (
         {{ ref('silver__events') }}
     WHERE 
     block_timestamp::date in (select dt from dates_filter)
+    and _inserted_timestamp > (select max(_inserted_timestamp) from {{this}})
 
 ),
 prefinal as (
@@ -63,10 +73,6 @@ FROM
     base_events
 WHERE
     event_type IN (
-        'mintTo',
-        'initializeMint',
-        'mintToChecked',
-        'initializeMint2',
         'initializeConfidentialTransferMint',
         'initializeNonTransferableMint'
     )

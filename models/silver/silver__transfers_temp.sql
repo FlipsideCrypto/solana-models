@@ -4,6 +4,20 @@
     full_refresh = false,
 ) }}
 
+--insert query
+
+-- INSERT INTO solana.silver.transfers
+-- SELECT d.*
+-- FROM solana.silver.transfers_temp d
+-- where _inserted_timestamp < '2024-03-19'
+-- union all 
+-- SELECT d.*
+-- FROM solana.silver.transfers_temp d
+-- LEFT JOIN solana.silver.transfers p 
+-- ON d.transfers_id = p.transfers_id
+-- WHERE p.transfers_id IS NULL
+-- and d._inserted_timestamp >= '2024-03-19';
+
 WITH base_transfers_i AS (
     SELECT
         block_id,
@@ -23,6 +37,7 @@ WITH base_transfers_i AS (
         'transferCheckedWithFee'
     ) -- dates of interest, events appears sporadically until 2023-11-11
     AND block_timestamp::date between '{{ var("start_date","2023-01-09") }}' and '{{ var("end_date","2023-01-09") }}'
+    and _inserted_timestamp > (select max(_inserted_timestamp) from {{this}})
     UNION
     SELECT
         e.block_id,
@@ -49,6 +64,7 @@ WITH base_transfers_i AS (
         )
     AND e.block_timestamp::date >= '2024-02-23' -- only appears in inner_inst at this date
     AND e.block_timestamp::date between '{{ var("start_date","2023-01-09") }}' and '{{ var("end_date","2023-01-09") }}'
+    and _inserted_timestamp > (select max(_inserted_timestamp) from {{this}})
 ),
 base_post_token_balances AS (
     SELECT
@@ -61,6 +77,7 @@ base_post_token_balances AS (
         {{ ref('silver___post_token_balances') }}
         
 where block_timestamp::date between '{{ var("start_date","2023-01-09") }}' and '{{ var("end_date","2023-01-09") }}'
+and _inserted_timestamp > (select max(_inserted_timestamp) from {{this}})
 
 ),
 base_pre_token_balances AS (
@@ -74,6 +91,7 @@ base_pre_token_balances AS (
         {{ ref('silver___pre_token_balances') }}
 
 where block_timestamp::date between '{{ var("start_date","2023-01-09") }}' and '{{ var("end_date","2023-01-09") }}'
+and _inserted_timestamp > (select max(_inserted_timestamp) from {{this}})
 ),
 spl_transfers AS (
     SELECT
