@@ -34,3 +34,11 @@ models:
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
           - not_null
+      - name: DECODED_INSTRUCTIONS_ID
+        description: Surrogate key
+        tests:
+          - dbt_utils.relationships_where:
+              to: ref('decoded_instructions_combined')
+              field: decoded_instructions_combined_id
+              from_condition: _inserted_timestamp >= current_date - 7
+              to_condition: _inserted_timestamp >= current_date - 7
