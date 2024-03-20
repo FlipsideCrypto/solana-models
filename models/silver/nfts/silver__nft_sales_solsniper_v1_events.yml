@@ -1,22 +1,24 @@
 version: 2
 models:
-  - name: silver__nft_sales_solsniper
+  - name: silver__nft_sales_solsniper_v1_events
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
             - MINT
       - compare_model_subset:
-          name: silver__nft_sales_solsniper_business_logic_test
-          compare_model: ref('testing__nft_sales_solsniper')
+          name: silver__nft_sales_solsniper_v1_events_business_logic_test
+          compare_model: ref('testing__nft_sales_solsniper_v1_events')
           compare_columns: 
             - tx_id
             - purchaser
             - seller
             - mint
             - round(sales_amount,8)
-          model_condition: "where tx_id in ('4PvnivhKKYjwXmQrTHo2E3xAnaajNkLpFvH4ZpbJvEE7RsmgGZ7pmPwoBoSwbyAFfrkMNHHUDiLbmkzoz3FUPv41',
-            '3r2HhjQJSC2BbGrxR3QvAxWiEz5ypnbGmxtMkEfDvv2ZYs6177uMeCS4DZqKN4VBs4Kn2p2AGBNdtSDw2vXbMYgH')"
+          model_condition: "where tx_id in ('2xBQgZdJ97wtAta6Ru7J2zn65YQJMc36nh8bDqAcuKA9x7EscBm5QDfo6g4DPBbSGGN67gGmFkLQZtTVkSZWHDb',
+            '2Ebi5XwpsUhcoFveoenc9SSkCDibsyAqR2ZqxwUGefZq7cCf6ouhDdBWMWLssj2t69R6hmLJXg8sUjqzT2opXURo',
+            '3Ybf7TeVmSAvfXGJTuTa7oZpd5ohHW7YgZ1AtS1LGjMKAS68rNUmAAJtD4nNYqGy7V5QPpyB2ZGNvALsDpEmS5JR',
+            'R61rsLJ5EXfXW5kkcukjAUKTMeMrr9qZhwtmpcQfx9eXJe5CRPPKoW7wh7HSUnW2r34JQobMKvoPSzKD2JY41D9')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
