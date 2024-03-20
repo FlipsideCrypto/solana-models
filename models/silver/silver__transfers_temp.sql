@@ -1,13 +1,22 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ["block_id","tx_id","index"],
-    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
-    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}'),
     full_refresh = false,
-    merge_exclude_columns = ["inserted_timestamp"],
-    tags = ['scheduled_core']
 ) }}
+
+--insert query
+
+-- INSERT INTO solana.silver.transfers
+-- SELECT d.*
+-- FROM solana.silver.transfers_temp d
+-- where _inserted_timestamp < '2024-03-19'
+-- union all 
+-- SELECT d.*
+-- FROM solana.silver.transfers_temp d
+-- LEFT JOIN solana.silver.transfers p 
+-- ON d.transfers_id = p.transfers_id
+-- WHERE p.transfers_id IS NULL
+-- and d._inserted_timestamp >= '2024-03-19';
 
 WITH base_transfers_i AS (
     SELECT
@@ -25,41 +34,10 @@ WITH base_transfers_i AS (
         {{ ref('silver__events') }}
     WHERE
     event_type IN (
-        'transfer',
-        'transferChecked',
-        'transferWithSeed',
         'transferCheckedWithFee'
-    )
-
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-AND
-    block_id BETWEEN (
-        SELECT
-            LEAST(COALESCE(MAX(block_id), 4260184)+1,151386092)
-        FROM
-            {{ this }}
-        )
-        AND (
-        SELECT
-            LEAST(COALESCE(MAX(block_id), 4260184)+4000000,151386092)
-        FROM
-            {{ this }}
-        ) 
-{% elif is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-    )
-{% else %}
-AND
-    block_id between 4260184 and 5260184
-{% endif %}
-
+    ) -- dates of interest, events appears sporadically until 2023-11-11
+    AND block_timestamp::date between '{{ var("start_date","2023-01-09") }}' and '{{ var("end_date","2023-01-09") }}'
+    and _inserted_timestamp > (select max(_inserted_timestamp) from {{this}})
     UNION
     SELECT
         e.block_id,
@@ -82,40 +60,11 @@ AND
         TABLE(FLATTEN(e.inner_instruction :instructions)) ii
     WHERE
         ii.value :parsed :type :: STRING IN (
-        'transfer',
-        'transferChecked',
-        'transferWithSeed',
         'transferCheckedWithFee'
         )
-
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-AND
-    block_id BETWEEN (
-        SELECT
-            LEAST(COALESCE(MAX(block_id), 4260184)+1,151386092)
-        FROM
-            {{ this }}
-        )
-        AND (
-        SELECT
-            LEAST(COALESCE(MAX(block_id), 4260184)+4000000,151386092)
-        FROM
-            {{ this }}
-        ) 
-{% elif is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-    )
-{% else %}
-AND
-    block_id between 4260184 and 5260184
-{% endif %}
+    AND e.block_timestamp::date >= '2024-02-23' -- only appears in inner_inst at this date
+    AND e.block_timestamp::date between '{{ var("start_date","2023-01-09") }}' and '{{ var("end_date","2023-01-09") }}'
+    and _inserted_timestamp > (select max(_inserted_timestamp) from {{this}})
 ),
 base_post_token_balances AS (
     SELECT
@@ -126,37 +75,10 @@ base_post_token_balances AS (
         DECIMAL
     FROM
         {{ ref('silver___post_token_balances') }}
+        
+where block_timestamp::date between '{{ var("start_date","2023-01-09") }}' and '{{ var("end_date","2023-01-09") }}'
+and _inserted_timestamp > (select max(_inserted_timestamp) from {{this}})
 
-
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-WHERE
-    block_id BETWEEN (
-        SELECT
-            LEAST(COALESCE(MAX(block_id), 4260184)+1,151386092)
-        FROM
-            {{ this }}
-        )
-        AND (
-        SELECT
-            LEAST(COALESCE(MAX(block_id), 4260184)+4000000,151386092)
-        FROM
-            {{ this }}
-        ) 
-{% elif is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
-{% else %}
-WHERE
-    block_id between 4260184 and 5260184
-{% endif %}
 ),
 base_pre_token_balances AS (
     SELECT
@@ -168,35 +90,8 @@ base_pre_token_balances AS (
     FROM
         {{ ref('silver___pre_token_balances') }}
 
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-WHERE
-    block_id BETWEEN (
-        SELECT
-            LEAST(COALESCE(MAX(block_id), 4260184)+1,151386092)
-        FROM
-            {{ this }}
-        )
-        AND (
-        SELECT
-            LEAST(COALESCE(MAX(block_id), 4260184)+4000000,151386092)
-        FROM
-            {{ this }}
-        ) 
-{% elif is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
-{% else %}
-WHERE
-    block_id between 4260184 and 5260184
-{% endif %}
+where block_timestamp::date between '{{ var("start_date","2023-01-09") }}' and '{{ var("end_date","2023-01-09") }}'
+and _inserted_timestamp > (select max(_inserted_timestamp) from {{this}})
 ),
 spl_transfers AS (
     SELECT
