@@ -76,7 +76,7 @@ SELECT
     COALESCE(
         i.value :parsed :info :mintAuthority :: string,
         i.value :parsed :info :multisigMintAuthority :: string,
-        instruction :parsed :info :authority :: string
+        i.value :parsed :info :authority :: string
     ) AS mint_authority,
     i.value :parsed :info :signers :: string AS signers,
     _inserted_timestamp
