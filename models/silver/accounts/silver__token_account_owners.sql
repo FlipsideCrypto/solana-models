@@ -2,16 +2,17 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = ["account_address"],
-    cluster_by = ['_inserted_timestamp::DATE'],
+    cluster_by = ['_inserted_timestamp::DATE','account_address'],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}'),
     full_refresh = false,
-    enabled = false,
+    tags = ['scheduled_non_core'],
 ) }}
 
 /* need to rebucket and regroup the intermediate model due to possibility of change events coming in out of order */
 with last_updated_at as (
     select max(_inserted_timestamp) as _inserted_timestamp
     from {{ ref('silver__token_account_owners_intermediate') }}
+
 )
 , changed_addresses as (
     select distinct account_address
@@ -51,7 +52,14 @@ pre_final as (
     from regroup 
     join last_updated_at
 )
-select *
+select 
+    *,
+    {{ dbt_utils.generate_surrogate_key(
+        ['account_address','start_block_id']
+    ) }} AS token_account_owners_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 from pre_final
 where start_block_id <> end_block_id 
 or end_block_id is null
