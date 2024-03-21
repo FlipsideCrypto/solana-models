@@ -38,7 +38,7 @@ models:
         description: Surrogate key
         tests:
           - dbt_utils.relationships_where:
-              to: ref('decoded_instructions_combined')
+              to: ref('silver__decoded_instructions_combined')
               field: decoded_instructions_combined_id
               from_condition: _inserted_timestamp >= current_date - 7
               to_condition: _inserted_timestamp >= current_date - 7
