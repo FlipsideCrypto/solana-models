@@ -18,7 +18,7 @@
 {% set max_inserted_query %}
 
 SELECT
-    MAX(_inserted_timestamp) AS _inserted_timestamp
+    MAX(_inserted_timestamp) - INTERVAL '1 HOUR' AS _inserted_timestamp
 FROM
     {{ this }}
 
