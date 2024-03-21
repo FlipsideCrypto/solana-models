@@ -55,6 +55,7 @@ WITH base AS (
         base__dbt_tmp
 ), program_requests AS (
     {% for program_id in program_ids %}
+    SELECT * FROM (
         SELECT
             e.program_id,
             OBJECT_CONSTRUCT(
@@ -77,6 +78,7 @@ WITH base AS (
         AND block_timestamp >= CURRENT_DATE - 30 
         AND e.program_id = '{{ program_id }}'
         LIMIT 100
+    )
         {% if not loop.last %}
             UNION ALL
         {% endif %}
