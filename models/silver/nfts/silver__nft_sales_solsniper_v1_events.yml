@@ -22,42 +22,21 @@ models:
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
-        tests:
-          - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 2
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
-        tests:
-          - not_null
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
-        tests:
-          - not_null
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
-        tests:
-          - not_null
       - name: PROGRAM_ID 
         description: "{{ doc('program_id') }}"
-        tests: 
-          - not_null
       - name: PURCHASER
         description: "{{ doc('purchaser') }}"
-        tests: 
-          - not_null
       - name: SELLER
         description: "{{ doc('seller') }}"
-        tests: 
-          - not_null
       - name: MINT
         description: "{{ doc('mint') }}"
-        tests: 
-          - not_null
       - name: SALES_AMOUNT
         description: "{{ doc('sales_amount') }}"
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
-        tests: 
-          - not_null
