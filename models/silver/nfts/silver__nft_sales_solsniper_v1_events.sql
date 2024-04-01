@@ -2,6 +2,7 @@
     materialized = 'table',
     unique_key = ['nft_sales_solsniper_id'],
     cluster_by = ['block_timestamp::DATE'],
+    tags=['test_weekly']
 ) }}
 
 WITH base AS (
