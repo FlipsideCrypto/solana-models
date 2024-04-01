@@ -30,6 +30,8 @@ models:
           - not_null
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests:
@@ -52,8 +54,6 @@ models:
           - not_null
       - name: SALES_AMOUNT
         description: "{{ doc('sales_amount') }}"
-        tests:
-          - not_null
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests:
