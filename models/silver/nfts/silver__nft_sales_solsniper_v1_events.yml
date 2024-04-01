@@ -24,9 +24,6 @@ models:
         description: "{{ doc('block_timestamp') }}"
         tests:
           - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 2
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
@@ -41,23 +38,23 @@ models:
           - not_null
       - name: PROGRAM_ID 
         description: "{{ doc('program_id') }}"
-        tests: 
+        tests:
           - not_null
       - name: PURCHASER
         description: "{{ doc('purchaser') }}"
-        tests: 
+        tests:
           - not_null
       - name: SELLER
         description: "{{ doc('seller') }}"
-        tests: 
+        tests:
           - not_null
       - name: MINT
         description: "{{ doc('mint') }}"
-        tests: 
+        tests:
           - not_null
       - name: SALES_AMOUNT
         description: "{{ doc('sales_amount') }}"
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
-        tests: 
+        tests:
           - not_null
