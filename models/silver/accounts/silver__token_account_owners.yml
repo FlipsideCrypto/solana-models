@@ -22,7 +22,3 @@ models:
           - not_null
       - name: END_BLOCK_ID
         description:   block where this ownership ends, null value represents current ownership 
-      - name: _INSERTED_TIMESTAMP
-        description: "{{ doc('_inserted_timestamp') }}"
-        tests: 
-          - not_null

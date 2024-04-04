@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__fact_token_account_owners
-    description: Contains token account addresses and the range of blocks from which an address had ownership 
+    description: Contains token account addresses and the range of blocks from which an address had ownership. Table updated daily.
     columns:
       - name: ACCOUNT_ADDRESS
         description: Address of token account
