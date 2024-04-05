@@ -27,6 +27,11 @@ models:
           '5YrfH1RDhZkhh98eikYFcuqRxHY8K87A7hBBFAasaJyCeMW1dr1nG5xNDps3e3GaHnt2cp1tssZJQS2eFaUwcPz9',
           'GD7mFaoiFFxRKEi4EfYbRHmCRN1Q7hCwrQaZbiRq998vXU7bwY22ET1SwXcgDYKSbVLVTmkbM7HgE7G1HSJDT4T',
           'JLHisghyiom2v1fY4z2tntjQYz7Fupe679pTJSuWaPvymEwEau9WvFbxGEyvvM1SPZqZPHKroLWqZkrrXtH9WkP')"  
+      - tx_excluded:
+          name: silver__swaps_intermediate_jupiterv6_tx_excluded_test
+          excluded_tx_ids:
+            - 2NAjXWibmqEFGVo4No3KsgSqfz9RXMnNY9DYCRs92ZYUuLPfdUXyw2Fs9L3w5UTJnxLs9pG6MXttBWweNMZ5ZFdk
+            - 51KVhmiUuexhjgZodwgeLModrqx59faQ75dbrKcprtQLRVzQ7HqWSYEB9pk889R5MjfKLo9zQ5vbj1xKer78HKcc
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

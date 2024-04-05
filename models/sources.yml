@@ -85,6 +85,9 @@ sources:
       - name: nft_mint_price_other
       - name: nft_metadata
       - name: proposal_votes_marinade
+      - name: stake_pool_actions_socean
+      - name: _blocks_tx_count
+      - name: nft_sales_solsniper_v1_events
   - name: solana_streamline
     database: solana
     schema: streamline
@@ -109,3 +112,7 @@ sources:
     schema: github_actions
     tables:
       - name: workflows
+  - name: solana_test_silver
+    schema: test_silver 
+    tables: 
+      - name: transactions_and_votes_missing_7_days

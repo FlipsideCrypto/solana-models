@@ -1,1 +1,2 @@
 dbt-snowflake>=1.4,<1.8
+protobuf==4.25.3

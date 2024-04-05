@@ -31,7 +31,7 @@ WITH pre_final AS (
 ),
 max_block AS (
     SELECT
-        max(block_id) as max_block_id
+        MAX(block_id) AS max_block_id
     FROM
         {{ ref('silver__blocks') }}
 ),
@@ -41,7 +41,12 @@ base_blocks AS (
     FROM
         {{ ref('silver__blocks') }}
     WHERE
-        block_id >= (select max_block_id-2000000 from max_block) -- make assumption (since we have intraday alerts) that 2mil blocks prior to latest have been confirmed
+        block_id >= (
+            SELECT
+                max_block_id -2000000
+            FROM
+                max_block
+        ) -- make assumption (since we have intraday alerts) that 2mil blocks prior to latest have been confirmed
         AND _inserted_date < CURRENT_DATE
 ),
 base_txs AS (
@@ -50,14 +55,24 @@ base_txs AS (
     FROM
         {{ ref('silver__transactions') }}
     WHERE
-        block_id >= (select max_block_id-2000000 from max_block)
+        block_id >= (
+            SELECT
+                max_block_id -2000000
+            FROM
+                max_block
+        )
     UNION
     SELECT
         DISTINCT block_id
     FROM
         {{ ref('silver__votes') }}
     WHERE
-        block_id >= (select max_block_id-2000000 from max_block)
+        block_id >= (
+            SELECT
+                max_block_id -2000000
+            FROM
+                max_block
+        )
 ),
 potential_missing_txs AS (
     SELECT
@@ -68,37 +83,22 @@ potential_missing_txs AS (
         ON base_blocks.block_id = base_txs.block_id
     WHERE
         base_txs.block_id IS NULL
+),
+solscan_discrepancy_retries AS (
+    SELECT
+        m.block_id
+    FROM
+        {{ source(
+            'solana_test_silver',
+            'transactions_and_votes_missing_7_days'
+        ) }}
+        m
+        LEFT JOIN {{ ref('streamline__complete_block_txs') }} C
+        ON C.block_id = m.block_id
+    WHERE
+        C._partition_id <= m._partition_id
+    LIMIT 200
 )
--- ,
--- encoded_txs AS(
---     SELECT
---         DISTINCT block_id
---     FROM
---         {{ ref('silver___inner_instructions') }}
---     WHERE
---         VALUE :instructions [0] :programIdIndex :: NUMBER IS NOT NULL
---         AND block_timestamp :: DATE >= CURRENT_DATE - 7
---     GROUP BY
---         1
---     EXCEPT
---     SELECT
---         DISTINCT block_id
---     FROM
---         {{ ref('bronze__transactions2') }}
---     WHERE
---         _partition_id BETWEEN (
---             SELECT
---                 MAX(_partition_id) -3
---             FROM
---                 {{ ref('bronze__transactions2') }}
---         )
---         AND (
---             SELECT
---                 MAX(_partition_id)
---             FROM
---                 {{ ref('bronze__transactions2') }}
---         )
--- )
 SELECT
     block_id,
     (
@@ -111,6 +111,17 @@ FROM
     pre_final
 UNION
 SELECT
+    block_id,
+    (
+        SELECT
+            COALESCE(MAX(_partition_id) + 1, 1)
+        FROM
+            {{ ref('streamline__complete_block_txs') }}
+    ) AS batch_id
+FROM
+    solscan_discrepancy_retries
+UNION
+SELECT
     m.block_id,
     (
         SELECT
@@ -120,19 +131,9 @@ SELECT
     ) AS batch_id
 FROM
     potential_missing_txs m
-    LEFT OUTER JOIN {{ ref('streamline__complete_block_txs') }} cmp
+    LEFT OUTER JOIN {{ ref('streamline__complete_block_txs') }}
+    cmp
     ON m.block_id = cmp.block_id
 WHERE
     cmp.error IS NOT NULL
     OR cmp.block_id IS NULL
--- UNION
--- SELECT
---     block_id,
---     (
---         SELECT
---             COALESCE(MAX(_partition_id) + 1, 1)
---         FROM
---             {{ ref('streamline__complete_block_txs') }}
---     ) AS batch_id
--- FROM
---     encoded_txs

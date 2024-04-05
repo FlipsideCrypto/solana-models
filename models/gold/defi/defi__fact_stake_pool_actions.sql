@@ -4,46 +4,59 @@
     tags = ['scheduled_non_core']
 ) }}
 
-{% for model_suffix in ["socean","lido"] %}
-
-    SELECT
-        '{{ model_suffix }}' AS stake_pool_name,
-        tx_id,
-        block_id,
-        block_timestamp,
-        INDEX,
-        succeeded,
-        action,
-        address,
-        stake_pool,
-        amount,
-        'SOL' AS token,
-        COALESCE (
-         {{ 'stake_pool_actions_' ~ model_suffix ~ '_id' }},
-            {{ dbt_utils.generate_surrogate_key(
-                ['tx_id','index']
-            ) }}
-        ) AS fact_stake_pool_actions_id,
-        COALESCE(
-            inserted_timestamp,
-            '2000-01-01'
-        ) AS inserted_timestamp,
-        COALESCE(
-            modified_timestamp,
-            '2000-01-01'
-        ) AS modified_timestamp
-    FROM
-        {{ ref(
-            'silver__stake_pool_actions_' + model_suffix
+SELECT
+    'lido' AS stake_pool_name,
+    tx_id,
+    block_id,
+    block_timestamp,
+    INDEX,
+    succeeded,
+    action,
+    address,
+    stake_pool,
+    amount,
+    'SOL' AS token,
+    COALESCE (
+        stake_pool_actions_lido_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_id','index']
         ) }}
-
-        {% if not loop.last %}
-        UNION ALL
-        {% endif %}
-    {% endfor %}
+    ) AS fact_stake_pool_actions_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
+FROM
+    {{ ref(
+        'silver__stake_pool_actions_lido'
+    ) }}
 UNION ALL
 SELECT
-    'eversol' as stake_pool_name,
+    'socean' AS stake_pool_name,
+    tx_id,
+    block_id,
+    block_timestamp,
+    INDEX,
+    succeeded,
+    action,
+    address,
+    stake_pool,
+    amount,
+    'SOL' AS token,
+    stake_pool_actions_socean_id AS fact_stake_pool_actions_id,
+    inserted_timestamp,
+    modified_timestamp
+FROM
+    {{ ref(
+        'silver__stake_pool_actions_socean_view'
+    ) }}
+UNION ALL
+SELECT
+    'eversol' AS stake_pool_name,
     tx_id,
     block_id,
     block_timestamp,
@@ -57,7 +70,7 @@ SELECT
     {{ dbt_utils.generate_surrogate_key(
         ['tx_id', 'index']
     ) }} AS fact_stake_pool_actions_id,
-    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS inserted_timestamp,
     '2000-01-01' AS modified_timestamp
 FROM
     {{ ref(
@@ -146,7 +159,7 @@ SELECT
     'SOL' AS token,
     stake_pool_actions_jito_id AS fact_stake_pool_actions_id,
     inserted_timestamp,
-     modified_timestamp
+    modified_timestamp
 FROM
     {{ ref(
         'silver__stake_pool_actions_jito'

@@ -1,0 +1,60 @@
+version: 2
+models:
+  - name: silver__nft_sales_solsniper_v1_events
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - MINT
+      - compare_model_subset:
+          name: silver__nft_sales_solsniper_v1_events_business_logic_test
+          compare_model: ref('testing__nft_sales_solsniper_v1_events')
+          compare_columns: 
+            - tx_id
+            - purchaser
+            - seller
+            - mint
+            - round(sales_amount,8)
+          model_condition: "where tx_id in ('2xBQgZdJ97wtAta6Ru7J2zn65YQJMc36nh8bDqAcuKA9x7EscBm5QDfo6g4DPBbSGGN67gGmFkLQZtTVkSZWHDb',
+            '2Ebi5XwpsUhcoFveoenc9SSkCDibsyAqR2ZqxwUGefZq7cCf6ouhDdBWMWLssj2t69R6hmLJXg8sUjqzT2opXURo',
+            '3Ybf7TeVmSAvfXGJTuTa7oZpd5ohHW7YgZ1AtS1LGjMKAS68rNUmAAJtD4nNYqGy7V5QPpyB2ZGNvALsDpEmS5JR',
+            'R61rsLJ5EXfXW5kkcukjAUKTMeMrr9qZhwtmpcQfx9eXJe5CRPPKoW7wh7HSUnW2r34JQobMKvoPSzKD2JY41D9')"
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - not_null
+      - name: PROGRAM_ID 
+        description: "{{ doc('program_id') }}"
+        tests:
+          - not_null
+      - name: PURCHASER
+        description: "{{ doc('purchaser') }}"
+        tests:
+          - not_null
+      - name: SELLER
+        description: "{{ doc('seller') }}"
+        tests:
+          - not_null
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        tests:
+          - not_null
+      - name: SALES_AMOUNT
+        description: "{{ doc('sales_amount') }}"
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests:
+          - not_null
