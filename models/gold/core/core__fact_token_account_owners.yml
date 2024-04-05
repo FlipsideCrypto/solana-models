@@ -1,0 +1,33 @@
+version: 2
+models:
+  - name: core__fact_token_account_owners
+    description: Contains token account addresses and the range of blocks from which an address had ownership. Table updated daily.
+    columns:
+      - name: ACCOUNT_ADDRESS
+        description: Address of token account
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: OWNER
+        description: Address of owner
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: START_BLOCK_ID
+        description: Block where this ownership begins 
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: END_BLOCK_ID
+        description: Block where this ownership ends, null value represents current ownership 
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: FACT_TOKEN_ACCOUNT_OWNERS_ID
+        description: "{{ doc('id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: MODIFIED_TIMESTAMP
+        description: "{{ doc('modified_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: INSERTED_TIMESTAMP
+        description: "{{ doc('inserted_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
