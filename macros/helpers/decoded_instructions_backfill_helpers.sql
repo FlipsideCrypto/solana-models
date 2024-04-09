@@ -21,55 +21,57 @@
             {% set end_block = i+step %}
         {% endif %}
 
-        {% set query = """create or replace view streamline.decoded_instructions_backfill_""" ~ start_block ~ """_""" ~ end_block ~ """_""" ~ program_id ~ """ AS 
-        with completed_subset AS (
-            SELECT
-                block_id,
-                program_id,
-                complete_decoded_instructions_2_id as id
-            FROM
-                """ ~ ref('streamline__complete_decoded_instructions_2') ~ """
-            WHERE
-                program_id = '""" ~ program_id ~ """'
-            AND
-                block_id between """ ~ start_block ~ """ and """ ~ end_block ~ """
-        ),
-        event_subset as (
+        {% set query %}
+            create or replace view streamline.decoded_instructions_backfill_{{ '%011d' % start_block }}_{{ '%011d' % end_block }}_{{ program_id }} AS 
+            with completed_subset AS (
+                SELECT
+                    block_id,
+                    program_id,
+                    complete_decoded_instructions_2_id as id
+                FROM
+                    {{ ref('streamline__complete_decoded_instructions_2') }}
+                WHERE
+                    program_id = '{{ program_id }}'
+                AND
+                    block_id between {{ start_block }} and {{ end_block }}
+            ),
+            event_subset as (
+                select 
+                    e.block_id,
+                    e.tx_id,
+                    e.index,
+                    NULL as inner_index,
+                    e.instruction,
+                    e.program_id,
+                    e.block_timestamp,
+                    {{ dbt_utils.generate_surrogate_key(['e.block_id','e.tx_id','e.index','inner_index','e.program_id']) }} as id
+                from {{ ref('silver__events') }} e 
+                where program_id = '{{ program_id }}'
+                and block_id between {{ start_block }} and {{ end_block }}
+                and succeeded
+                union all
+                select
+                    e.block_id,
+                    e.tx_id,
+                    e.index,
+                    i.index as inner_index,
+                    i.value as instruction, 
+                    i.value :programId :: STRING AS inner_program_id,
+                    e.block_timestamp,
+                    {{ dbt_utils.generate_surrogate_key(['e.block_id','e.tx_id','e.index','inner_index','inner_program_id']) }} as id
+                from {{ ref('silver__events') }} e ,
+                table(flatten(inner_instruction:instructions)) i
+                where array_contains('{{ program_id }}'::variant, inner_instruction_program_ids)
+                and inner_program_id = '{{ program_id }}'
+                and e.block_id between {{ start_block }} and {{ end_block }}
+                and e.succeeded
+            )
             select 
-                e.block_id,
-                e.tx_id,
-                e.index,
-                NULL as inner_index,
-                e.instruction,
-                e.program_id,
-                e.block_timestamp,
-                """ ~ dbt_utils.generate_surrogate_key(['e.block_id','e.tx_id','e.index','inner_index','e.program_id']) ~ """ as id
-            from """ ~ ref('silver__events') ~ """ e 
-            where program_id = '""" ~ program_id ~ """'
-            and block_id between """ ~ start_block ~ """ and """ ~ end_block ~ """
-            and succeeded
-            union all
-            select
-                e.block_id,
-                e.tx_id,
-                e.index,
-                i.index as inner_index,
-                i.value as instruction, 
-                i.value :programId :: STRING AS inner_program_id,
-                e.block_timestamp,
-                """ ~ dbt_utils.generate_surrogate_key(['e.block_id','e.tx_id','e.index','inner_index','inner_program_id']) ~ """ as id
-            from """ ~ ref('silver__events') ~ """ e ,
-            table(flatten(inner_instruction:instructions)) i
-            where array_contains('""" ~ program_id ~ """'::variant, inner_instruction_program_ids)
-            and inner_program_id = '""" ~ program_id ~ """'
-            and e.block_id between """ ~ start_block ~ """ and """ ~ end_block ~ """
-            and e.succeeded
-        )
-        select 
-            e.*
-        from event_subset e
-        left outer join completed_subset c on c.program_id = e.program_id and c.block_id = e.block_id and c.id = e.id
-        where c.block_id is null""" %}
+                e.*
+            from event_subset e
+            left outer join completed_subset c on c.program_id = e.program_id and c.block_id = e.block_id and c.id = e.id
+            where c.block_id is null
+        {% endset %}
 
         {% do run_query(query) %}
     {% endfor %}
@@ -174,7 +176,7 @@
             {% set end_block = i+step %}
         {% endif %}
         {% set query %}
-            create or replace view streamline.decoded_instructions_backfill_{{ start_block }}_{{ end_block }}_retry_{{ program_id }} AS
+            create or replace view streamline.decoded_instructions_backfill_{{ '%011d' % start_block }}_{{ '%011d' % end_block }}_retry_{{ program_id }} AS
             with retries as (
                 select block_id, tx_id, index, inner_index
                 from {{ ref('silver__decoded_instructions_combined') }}
