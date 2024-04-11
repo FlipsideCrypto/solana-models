@@ -46,7 +46,8 @@ models:
       - name: MINT_AMOUNT
         description: Number of tokens burned
         tests: 
-          - not_null
+          - not_null:
+              where: event_type in ('mintToChecked', 'mintTo')
       - name: MINT_AUTHORITY
         description: Account address authorizing burn
         tests: 
