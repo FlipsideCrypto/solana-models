@@ -1,4 +1,4 @@
-{% macro decoded_instructions_backfill_generate_views(program_id) %}
+{% macro decoded_instructions_backfill_generate_views(program_id, priority=None) %}
     {% set result_cols = run_query("""select 
             first_block_id, 
             default_backfill_start_block_id
@@ -21,8 +21,16 @@
             {% set end_block = i+step %}
         {% endif %}
 
+        {% set suffix %}
+            {%- if priority is none -%}
+                {{ '%011d' % start_block }}_{{ '%011d' % end_block }}_{{ program_id }}
+            {%- else -%}
+                {{ '%02d' % priority }}_{{ '%011d' % start_block }}_{{ '%011d' % end_block }}_{{ program_id }}
+            {%- endif -%}
+        {% endset %}
+
         {% set query %}
-            create or replace view streamline.decoded_instructions_backfill_{{ '%011d' % start_block }}_{{ '%011d' % end_block }}_{{ program_id }} AS 
+            create or replace view streamline.decoded_instructions_backfill_{{ suffix }} AS 
             with completed_subset AS (
                 SELECT
                     block_id,
@@ -148,7 +156,7 @@
 
 -- USE THIS TO BACKFILL PARSER 2.0 ERRORS
 -- THIS ONLY HANDLES ERRORS ie: `decoded_instruction:error::string is not null`
-{% macro decoded_instructions_backfill_retries_generate_views(program_id, start_date, end_date) %}
+{% macro decoded_instructions_backfill_retries_generate_views(program_id, start_date, end_date, priority=None) %}
     {% set get_block_id_range_query %}
         select 
             min(block_id),
@@ -175,8 +183,17 @@
         {% else %}
             {% set end_block = i+step %}
         {% endif %}
+
+        {% set suffix %}
+            {%- if priority is none -%}
+                {{ '%011d' % start_block }}_{{ '%011d' % end_block }}_retry_{{ program_id }}
+            {%- else -%}
+                {{ '%02d' % priority }}_{{ '%011d' % start_block }}_{{ '%011d' % end_block }}_retry_{{ program_id }}
+            {%- endif -%}
+        {% endset %}
+
         {% set query %}
-            create or replace view streamline.decoded_instructions_backfill_{{ '%011d' % start_block }}_{{ '%011d' % end_block }}_retry_{{ program_id }} AS
+            create or replace view streamline.decoded_instructions_backfill_{{ suffix }} AS
             with retries as (
                 select block_id, tx_id, index, inner_index
                 from {{ ref('silver__decoded_instructions_combined') }}
