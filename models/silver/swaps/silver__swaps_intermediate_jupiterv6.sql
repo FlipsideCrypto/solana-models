@@ -50,10 +50,11 @@ WITH base_transfers as (
 base_token_mint_actions as (
     SELECT
         tma.*,
-    FROM {{ ref('silver__token_mint_actions') }} tma
+    FROM {{ ref('silver__token_mint_actions') }} tma -- doublecheck
     WHERE
         {{ between_stmts }}
     AND tma.succeeded
+    AND tma.event_type IN ('mintToChecked', 'mintTo')
 ),
 pre_final as (
     select
