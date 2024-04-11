@@ -72,7 +72,7 @@ base_token_mint_actions as (
         ma.token_account
     FROM
         {{ ref('silver__mint_actions') }} ma
-    join {{ ref('silver__token_mint_actions') }} tma -- doublecheck
+    join {{ ref('silver__token_mint_actions') }} tma
         on ma.block_timestamp::date = tma.block_timestamp::date
         and ma.tx_id = tma.tx_id
         and ma.index = tma.index

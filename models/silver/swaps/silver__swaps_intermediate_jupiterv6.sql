@@ -50,7 +50,7 @@ WITH base_transfers as (
 base_token_mint_actions as (
     SELECT
         tma.*,
-    FROM {{ ref('silver__token_mint_actions') }} tma -- doublecheck
+    FROM {{ ref('silver__token_mint_actions') }} tma
     WHERE
         {{ between_stmts }}
     AND tma.succeeded
