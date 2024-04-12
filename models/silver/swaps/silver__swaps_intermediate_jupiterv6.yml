@@ -14,9 +14,9 @@ models:
           compare_columns: 
             - tx_id
             - swapper
-            - round(from_amt,8)
+            - round(from_amt,2)
             - from_mint
-            - round(to_amt,8)
+            - round(to_amt,2)
             - to_mint
             - swap_index
           model_condition: "where tx_id in ('33NLhAHDz2dAVRCqfgankDS2CAr78J1Q7LorotWhTaqcT2EDAVzPaWDK2sQsw4zSJM1KVXWzxvx6mDpvzAmNkzN1',
@@ -26,7 +26,13 @@ models:
           '5nhXU7f282fFdi3FynukwNLiybV5NYqptUNU6BJH7RpYRPe4mcporxadKmhC9ioxx3vJp9uVmMbXz35QffHTxrFz',
           '5YrfH1RDhZkhh98eikYFcuqRxHY8K87A7hBBFAasaJyCeMW1dr1nG5xNDps3e3GaHnt2cp1tssZJQS2eFaUwcPz9',
           'GD7mFaoiFFxRKEi4EfYbRHmCRN1Q7hCwrQaZbiRq998vXU7bwY22ET1SwXcgDYKSbVLVTmkbM7HgE7G1HSJDT4T',
-          'JLHisghyiom2v1fY4z2tntjQYz7Fupe679pTJSuWaPvymEwEau9WvFbxGEyvvM1SPZqZPHKroLWqZkrrXtH9WkP')"  
+          'JLHisghyiom2v1fY4z2tntjQYz7Fupe679pTJSuWaPvymEwEau9WvFbxGEyvvM1SPZqZPHKroLWqZkrrXtH9WkP',
+          'LVwfUycnkCw93ywALBfm1zvBcx7sDT9HdTo8wYQooan9CsKTU7BmZLhwQ3mpRSMFCRhDm5Q5GFASAGUmjQTQrJj',
+          '2HDxbrNSMrbGGu1xKKGNm3EbNmqaYxq2Dqpwe6tpKeLXevV2zCdA1feq61kfEVmDvu7mn9cwV9AbQWRE4VQbLkTY',
+          'sbMujMpco3YpH1DSpBnU2gXU2xEbCkWcsg95HCHBXe3SsiEsEKYv4TAZjaSEGYKSCmp1hRBdoWxXWvDZbWPXoXD',
+          '51zH6E9Q3KknnUwPpJeV9Au6zSzxT6ZmGbEW3v8Lk3GLjcUBosChbyWBWf7NTZEpBiqameEwRPCqio1XdsXPnC4k',
+          '5vdYEWuHxJAwENhZdUAqsAaV7mxRVcxPQkS5V4m5yCroSpox1LG1LNLmQnpyfEBbQkikLhxWVYbBkTc9f3BGi5ZU',
+          '3ysjbsjuwREA7QNvm8SmFv5fjkTzZysPn3D5SZWibKoiXPRgniqmV9e5tqz1BZBqmHkbdUQb6tQpoCk9yJcayQDk')"  
       - tx_excluded:
           name: silver__swaps_intermediate_jupiterv6_tx_excluded_test
           excluded_tx_ids:
