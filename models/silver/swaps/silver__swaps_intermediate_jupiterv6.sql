@@ -96,7 +96,10 @@ swaps_using_burns as (
             when is_sanctum_burn_route then sanctum_burn_mint
             else '7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj'
         end as mint,
-        args_in_amount * pow(10,iff(is_helium_redeem,-6,-9)) as amount
+        case 
+            when is_helium_redeem or is_perps_remove_liquidity then args_in_amount * pow(10,-6)
+            else args_in_amount * pow(10,-9)
+        end as amount
     from pre_final
     where 
         (is_helium_redeem or is_stake_dex_swap or is_perps_remove_liquidity or is_sanctum_burn_route)
