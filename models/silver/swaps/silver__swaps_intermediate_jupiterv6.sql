@@ -54,6 +54,7 @@ base_token_mint_actions as (
     WHERE
         {{ between_stmts }}
     AND tma.succeeded
+    AND tma.event_type IN ('mintToChecked', 'mintTo')
 ),
 pre_final as (
     select
