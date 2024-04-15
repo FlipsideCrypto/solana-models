@@ -73,14 +73,11 @@ decoded AS (
         A.index,
         A.inner_index,
         A.program_id,
-        silver.udf_get_account_pubkey_by_name(
-            'payer',
-            A.decoded_instruction :accounts
-        ) AS purchaser,
-        silver.udf_get_account_pubkey_by_name(
-            'owner',
-            A.decoded_instruction :accounts
-        ) AS seller,
+        silver.udf_get_account_pubkey_by_name('payer',A.decoded_instruction :accounts) AS purchaser,
+        silver.udf_get_account_pubkey_by_name('owner',A.decoded_instruction :accounts) AS seller,
+        silver.udf_get_account_pubkey_by_name('treeAuthority',a.decoded_instruction :accounts) AS tree_authority,
+        silver.udf_get_account_pubkey_by_name('merkleTree',a.decoded_instruction :accounts) AS merkle_tree,
+        decoded_instruction:args:index::int as leaf_index,
         b.mint,
         _inserted_timestamp
     FROM
@@ -130,6 +127,9 @@ SELECT
     A.purchaser,
     A.seller,
     A.mint,
+    a.tree_authority,
+    a.merkle_tree,
+    a.leaf_index,
     A._inserted_timestamp,
     SUM(
         b.amount
@@ -149,7 +149,10 @@ GROUP BY
     6,
     7,
     8,
-    9)
+    9,
+    10,
+    11,
+    12)
 
 select 
     block_id,
@@ -160,6 +163,9 @@ select
     purchaser,
     seller,
     mint,
+    tree_authority,
+    merkle_tree,
+    leaf_index,
     _inserted_timestamp,
     sales_amount,
   {{ dbt_utils.generate_surrogate_key(['tx_id','mint','purchaser']) }} as nft_sales_tensorswap_cnft_id,

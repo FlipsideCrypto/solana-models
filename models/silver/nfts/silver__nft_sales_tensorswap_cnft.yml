@@ -6,6 +6,18 @@ models:
           combination_of_columns:
             - TX_ID
             - MINT
+      - compare_model_subset:
+          name: silver__nft_sales_tensorswap_cnft_business_logic_test
+          compare_model: ref('testing__nft_sales_tensorswap_cnft')
+          compare_columns: 
+            - tx_id
+            - purchaser
+            - seller
+            - mint
+            - round(sales_amount,8)
+          model_condition: "where tx_id in ('2T4LVBT6wUiW3VbTBoMg6ry8BmT7GzrhQeeaKUKjnn9XRzgGNrEzYviTUv1FQgW4FCoN2r9o7sNxQeyqLb52AjPj',
+            '3km8gnunyq2qTuPongzqwGdWGKGDEXTmbnusYbAAieUSwNpxBprQRM6XkzGhgbWkn6sBj3TLcBZHk8ihRfYgk57N',
+            '3asER9bSgki7Xod7m6d7bsYg3h4h8QaLsCdWdV4eA4QznndjEULtfQDVSebcAgsCsCjJHpmn7e4sPWFdtRD33p9d')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -44,6 +56,18 @@ models:
           - not_null
       - name: SALES_AMOUNT
         description: "{{ doc('sales_amount') }}"
+        tests: 
+          - not_null
+      - name: TREE_AUTHORITY
+        description: "{{ doc('tree_authority') }}"
+        tests: 
+          - not_null
+      - name: MERKLE_TREE
+        description: "{{ doc('merkle_tree') }}"
+        tests: 
+          - not_null
+      - name: LEAF_INDEX
+        description: "{{ doc('leaf_index') }}"
         tests: 
           - not_null
       - name: _INSERTED_TIMESTAMP
