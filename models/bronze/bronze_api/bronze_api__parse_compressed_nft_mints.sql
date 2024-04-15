@@ -8,21 +8,31 @@
 {% if execute %}
     {% set query %}
         CREATE OR REPLACE TEMPORARY TABLE bronze_api.parse_compressed_nft_mints__intermediate_tmp AS 
+        WITH max_time AS (
+            SELECT
+                MAX(end_inserted_timestamp) as max_inserted_timestamp
+            FROM
+                {{ this }}
+        ),
+        base AS (
+            SELECT DISTINCT r.value:tx_id::string AS tx_id
+            FROM {{ this }}
+            JOIN TABLE(flatten(responses)) r
+            WHERE end_inserted_timestamp >= (SELECT max_inserted_timestamp FROM max_time)
+        )
         SELECT
-            block_timestamp,
-            block_id,
-            tx_id,
-            _inserted_timestamp
+            m.block_timestamp,
+            m.block_id,
+            m.tx_id,
+            m._inserted_timestamp
         FROM
-            {{ ref('silver__nft_compressed_mints_onchain') }}
+            {{ ref('silver__nft_compressed_mints_onchain') }} m
+        LEFT OUTER JOIN base b on b.tx_id = m.tx_id
+        WHERE 
+            b.tx_id IS NULL
         {% if is_incremental() %}
-        WHERE
-            _inserted_timestamp >= (
-                SELECT
-                    MAX(end_inserted_timestamp)
-                FROM
-                    {{ this }}
-            )
+        AND
+            _inserted_timestamp >= (SELECT max_inserted_timestamp FROM max_time)
         {% endif %}
         qualify(ROW_NUMBER() over (ORDER BY _inserted_timestamp)) <= 9000
     {% endset %}
@@ -74,7 +84,8 @@ base AS (
     WHERE
         e.program_id IN (
             'BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY',
-            '1atrmQs3eq1N2FEYWu6tyTXbCjP4uQwExpjtnhXtS8h'
+            '1atrmQs3eq1N2FEYWu6tyTXbCjP4uQwExpjtnhXtS8h',
+            'F9SixdqdmEBP5kprp2gZPZNeMmfHJRCTMFjN22dx3akf'
         )
         AND e.block_timestamp :: DATE = C.block_timestamp :: DATE
         AND ii_program_id = 'noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'
