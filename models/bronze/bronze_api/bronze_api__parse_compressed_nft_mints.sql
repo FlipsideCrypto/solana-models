@@ -6,7 +6,7 @@
 ) }}
 
 {% if execute %}
-    {% set query = """
+    {% set query %}
         CREATE OR REPLACE TEMPORARY TABLE bronze_api.parse_compressed_nft_mints__intermediate_tmp AS 
         SELECT
             block_timestamp,
@@ -14,27 +14,23 @@
             tx_id,
             _inserted_timestamp
         FROM
-            """ ~ ref('silver__nft_compressed_mints_onchain')
-    %}
-    {% set incr = "" %}
-    {% if is_incremental() %}
-        {% set incr = """
-            WHERE
-                _inserted_timestamp >= (
-                    SELECT
-                        MAX(end_inserted_timestamp)
-                    FROM
-                        """ ~ this ~ """
-                )
-        """ %}
-    {% endif %}
-    {% set query2 = """
-        qualify(ROW_NUMBER() over (
-        ORDER BY
-            _inserted_timestamp)) <= 1500""" %}
-    {% do run_query(query ~ incr ~ query2) %}
-    {% set min_inserted_timestamp = run_query("""SELECT min(_inserted_timestamp) FROM bronze_api.parse_compressed_nft_mints__intermediate_tmp""").columns[0].values()[0] %}
-    {% set max_inserted_timestamp = run_query("""SELECT max(_inserted_timestamp) FROM bronze_api.parse_compressed_nft_mints__intermediate_tmp""").columns[0].values()[0] %}
+            {{ ref('silver__nft_compressed_mints_onchain') }}
+        {% if is_incremental() %}
+        WHERE
+            _inserted_timestamp >= (
+                SELECT
+                    MAX(end_inserted_timestamp)
+                FROM
+                    {{ this }}
+            )
+        {% endif %}
+        qualify(ROW_NUMBER() over (ORDER BY _inserted_timestamp)) <= 9000
+    {% endset %}
+
+    {% do run_query(query) %}
+    {% set min_max = run_query("""SELECT min(_inserted_timestamp), max(_inserted_timestamp) FROM bronze_api.parse_compressed_nft_mints__intermediate_tmp""").columns %}
+    {% set min_inserted_timestamp = min_max[0][0] %}
+    {% set max_inserted_timestamp = min_max[1][0] %}
 {% endif %}
 
 WITH collection_subset AS (
