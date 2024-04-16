@@ -90,18 +90,23 @@ decoded AS (
 ),
 transfers AS (
     SELECT
-        A.*,
+        A.block_timestamp,
+        A.tx_id,
+        A.tx_from,
+        A.succeeded,
         COALESCE(SPLIT_PART(INDEX :: text, '.', 1) :: INT, INDEX :: INT) AS index_1,
-        NULLIF(SPLIT_PART(INDEX :: text, '.', 2), '') :: INT AS inner_index_1
+        SUM(A.amount) as sales_amount
     FROM
         {{ ref('silver__transfers') }} A
         INNER JOIN (
             SELECT
-                DISTINCT tx_id
+                tx_id,
+                block_timestamp::date as dt
             FROM
                 decoded
         ) d
-        ON d.tx_id = A.tx_id
+        ON d.dt = a.block_timestamp::DATE
+            AND d.tx_id = A.tx_id
     WHERE
         A.succeeded
         and {{ between_stmts }}
@@ -116,6 +121,7 @@ AND _inserted_timestamp >= (
 {% else %}
     AND block_timestamp :: DATE >= '2023-05-16'
 {% endif %}
+group by 1,2,3,4,5
 ),
 pre_final as (
 SELECT
@@ -131,30 +137,16 @@ SELECT
     a.merkle_tree,
     a.leaf_index,
     A._inserted_timestamp,
-    SUM(
-        b.amount
-    ) AS sales_amount
+    b.sales_amount
 FROM
     decoded A
     LEFT JOIN transfers b
     ON A.tx_id = b.tx_id
     AND A.purchaser = b.tx_from
     AND A.index = b.index_1
-GROUP BY
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10,
-    11,
-    12)
+)
 
-select 
+SELECT 
     block_id,
     block_timestamp,
     program_id,
