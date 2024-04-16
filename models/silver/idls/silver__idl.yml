@@ -11,6 +11,7 @@ models:
       - name: IDL
         description: "The complete IDL that defines the program"
       - name: IDL_HASH
+        description: "The deployed hash of the program IDL"
       - name: IS_VALID
         description: "{{ doc('is_valid') }}"
         tests:
