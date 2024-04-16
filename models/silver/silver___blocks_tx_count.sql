@@ -20,3 +20,5 @@ WHERE
             {{ this }}
     )
 {% endif %}
+QUALIFY 
+    row_number() over (partition by block_id order by _inserted_timestamp, transaction_count desc) = 1
