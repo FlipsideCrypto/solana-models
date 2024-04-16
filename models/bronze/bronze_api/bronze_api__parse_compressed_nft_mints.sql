@@ -24,6 +24,7 @@
             m.block_timestamp,
             m.block_id,
             m.tx_id,
+            m.index,
             m._inserted_timestamp
         FROM
             {{ ref('silver__nft_compressed_mints_onchain') }} m
@@ -80,6 +81,7 @@ base AS (
         JOIN {{ ref('silver__events') }}
         e
         ON C.tx_id = e.tx_id
+        AND C.index = e.index
         JOIN TABLE(FLATTEN(e.inner_instruction :instructions)) ii
     WHERE
         e.program_id IN (
