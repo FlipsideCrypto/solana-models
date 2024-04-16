@@ -16,7 +16,23 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: EARLIEST_DECODED_BLOCK
-        description: "The oldest block where program events has been decoded"
+        description: "{{ doc('earliest_decoded_block') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: IS_VALID
+        description: "{{ doc('is_valid') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SUBMITTED_BY
+        description: "{{ doc('submitted_by') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: FIRST_BLOCK_ID
+        description: "{{ doc('first_block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BACKFILL_STATUS
+        description: "{{ doc('backfill_status') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: DIM_IDL_ID

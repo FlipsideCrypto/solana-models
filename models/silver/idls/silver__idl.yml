@@ -7,15 +7,20 @@ models:
         tests:
           - not_null
       - name: EARLIEST_DECODED_BLOCK
-        description: "The oldest block where program events has been decoded"
-        tests:
-          - not_null
+        description: "{{ doc('earliest_decoded_block') }}"
       - name: IDL
         description: "The complete IDL that defines the program"
-        tests:
-          - not_null
       - name: IDL_HASH
-        description: "The deployed hash of the program IDL"
+      - name: IS_VALID
+        description: "{{ doc('is_valid') }}"
         tests:
           - not_null
+      - name: SUBMITTED_BY
+        description: "{{ doc('submitted_by') }}"
+        tests:
+          - not_null
+      - name: FIRST_BLOCK_ID
+        description: "{{ doc('first_block_id') }}"
+      - name: BACKFILL_STATUS
+        description: "{{ doc('backfill_status') }}"
 
