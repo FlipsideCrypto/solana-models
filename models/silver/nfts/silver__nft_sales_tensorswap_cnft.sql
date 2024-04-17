@@ -36,7 +36,7 @@ SELECT
     event_type,
     _inserted_timestamp
 FROM
-    silver.decoded_instructions_combined
+    {{ ref('silver__decoded_instructions_combined') }}
 WHERE
     program_id = 'TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp'
     AND event_type in ('tcompNoop', 'buy')
@@ -59,7 +59,9 @@ with decoded_mints AS (
     SELECT
         tx_id,
         INDEX,
-        decoded_instruction :args :event :taker :tupleData :"0" :assetId :: STRING AS mint
+        COALESCE(
+        decoded_instruction :args :event :taker :tupleData :"0" :assetId :: STRING,
+        decoded_instruction :args :event :taker :tupleData :"0" :targetId :: STRING) AS mint
     FROM
         silver.decoded_instructions_tensorswap__intermediate_tmp
     WHERE
@@ -110,18 +112,7 @@ transfers AS (
     WHERE
         A.succeeded
         and {{ between_stmts }}
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND block_timestamp :: DATE >= '2023-05-16'
-{% endif %}
-group by 1,2,3,4,5
+    group by 1,2,3,4,5
 ),
 pre_final as (
 SELECT
