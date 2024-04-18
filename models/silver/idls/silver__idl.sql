@@ -5,25 +5,8 @@
     tags = ['scheduled_non_core']
 ) }}
 
-WITH submitted_idls AS (
+WITH idls AS (
 
-    SELECT
-        A.program_id,
-        A.idl,
-        A.idl_hash,
-        A.is_valid,
-        A.discord_username,
-        A._inserted_timestamp,
-        b.first_block_id
-    FROM
-        {{ ref('silver__verified_user_idls') }} A
-        LEFT JOIN {{ ref('streamline__idls_history') }}
-        b
-        ON A.program_id = b.program_id qualify(ROW_NUMBER() over(PARTITION BY A.program_id
-    ORDER BY
-        A._inserted_timestamp DESC)) = 1
-),
-idl_decoded_history AS (
     SELECT
         MIN(block_id) AS earliest_decoded_block,
         program_id
@@ -37,68 +20,31 @@ WHERE
 GROUP BY
     program_id
 ),
-idls_in_progress AS (
-    SELECT
-        table_schema,
-        table_name,
-        SPLIT_PART(
-            table_name,
-            '_',
-            ARRAY_SIZE(SPLIT(table_name, '_'))
-        ) AS in_progress_program_id
-    FROM
-        information_schema.views
-    WHERE
-        table_name LIKE 'DECODED_INSTRUCTIONS_BACKFILL_%'
-        AND table_name NOT LIKE '%RETRY%'
-),
 pre_final AS (
     SELECT
+        A.earliest_decoded_block,
         A.program_id,
-        A.idl,
-        A.idl_hash,
-        A.is_valid,
-        A.discord_username,
-        A._inserted_timestamp,
-        A.first_block_id,
-    {% if is_incremental() %}
-        iff(b.earliest_decoded_block < d.earliest_decoded_block, b.earliest_decoded_block, d.earliest_decoded_block) AS earliest_decoded_block,
-    {% else %}
-        b.earliest_decoded_block,
-    {% endif %}
-        C.in_progress_program_id
+        b.idl,
+        b.idl_hash
     FROM
-        submitted_idls A
-        LEFT JOIN idl_decoded_history b
+        idls A
+        INNER JOIN {{ ref('silver__verified_idls') }}
+        b
         ON A.program_id = b.program_id
-        LEFT JOIN idls_in_progress C
-        ON A.program_id = C.in_progress_program_id
 
 {% if is_incremental() %}
-LEFT JOIN {{ this }}
-d
-ON A.program_id = d.program_id
-    {% endif %}
+LEFT JOIN {{ this }} C
+ON A.program_id = C.program_id
+WHERE
+    A.earliest_decoded_block < C.earliest_decoded_block
+    OR C.earliest_decoded_block IS NULL
+{% endif %}
 )
 SELECT
-    program_id,
-    idl,
-    idl_hash,
-    is_valid,
-    discord_username as submitted_by,
-    _inserted_timestamp,
-    first_block_id,
-    earliest_decoded_block,
-    CASE
-        WHEN earliest_decoded_block = first_block_id THEN 'complete' 
-        WHEN in_progress_program_id IS NOT NULL THEN 'in_progress'
-        WHEN NOT is_valid THEN NULL
-        ELSE 'not_started'
-    END AS backfill_status,
+    *,
     {{ dbt_utils.generate_surrogate_key(['program_id']) }} AS idl_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS invocation_id
-
 FROM
     pre_final

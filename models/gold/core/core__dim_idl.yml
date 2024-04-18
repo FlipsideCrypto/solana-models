@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__dim_idl
-    description: The status of Program IDL's submitted for decoding events 
+    description: Deprecating soon! This is a notice that we're replacing this table with `core__dim_idls`. Please migrate queries to the new table by 06/06/24.
     columns:
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
@@ -16,23 +16,7 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: EARLIEST_DECODED_BLOCK
-        description: "{{ doc('earliest_decoded_block') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
-      - name: IS_VALID
-        description: "{{ doc('is_valid') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
-      - name: SUBMITTED_BY
-        description: "{{ doc('submitted_by') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
-      - name: FIRST_BLOCK_ID
-        description: "{{ doc('first_block_id') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
-      - name: BACKFILL_STATUS
-        description: "{{ doc('backfill_status') }}"
+        description: "The oldest block where program events has been decoded"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: DIM_IDL_ID
