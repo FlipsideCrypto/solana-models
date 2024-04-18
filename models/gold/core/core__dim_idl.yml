@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__dim_idl
-    description: The status of Program IDL's submitted for decoding events 
+    description: Deprecating soon! This is a notice that we're replacing this table with `core__dim_idls`. Please migrate queries to the new table by 06/06/24.
     columns:
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"

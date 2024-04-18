@@ -1,0 +1,29 @@
+version: 2
+models:
+  - name: silver__idls
+    columns:
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests:
+          - not_null
+      - name: EARLIEST_DECODED_BLOCK
+        description: "{{ doc('earliest_decoded_block') }}"
+      - name: IDL
+        description: "The complete IDL that defines the program"
+      - name: IDL_HASH
+        description: "The deployed hash of the program IDL"
+      - name: IS_VALID
+        description: "{{ doc('is_valid') }}"
+        tests:
+          - not_null
+      - name: SUBMITTED_BY
+        description: "{{ doc('submitted_by') }}"
+        tests:
+          - not_null
+      - name: FIRST_BLOCK_ID
+        description: "{{ doc('first_block_id') }}"
+      - name: BACKFILL_STATUS
+        description: "{{ doc('backfill_status') }}"
+      - name: DATE_SUBMITTED
+        description: "{{ doc('backfill_status') }}"
+
