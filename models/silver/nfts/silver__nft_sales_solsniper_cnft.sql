@@ -105,7 +105,6 @@ SELECT
     b.succeeded,
     A.purchaser,
     A.seller,
-    -- A.mint,
     a.tree_authority,
     a.merkle_tree,
     a.leaf_index,
@@ -127,13 +126,12 @@ SELECT
     succeeded,
     purchaser,
     seller,
-    -- mint,
     tree_authority,
     merkle_tree,
     leaf_index,
     _inserted_timestamp,
     sales_amount,
-  {{ dbt_utils.generate_surrogate_key(['tx_id','leaf_index','purchaser']) }} as nft_sales_solsniper_cnft_id, -- update the cols to use mint
+  {{ dbt_utils.generate_surrogate_key(['tx_id','leaf_index','purchaser']) }} as nft_sales_solsniper_cnft_id,
     sysdate() as inserted_timestamp,
     sysdate() as modified_timestamp,
     '{{ invocation_id }}' AS invocation_id

@@ -5,16 +5,17 @@
     cluster_by = ['end_inserted_timestamp::date']
 ) }}
 
+-- new
 {% if execute %}
     {% set query %}
-        CREATE OR REPLACE TEMPORARY TABLE bronze_api.parse_compressed_nft_sales__intermediate_tmp AS 
+        CREATE OR REPLACE TEMPORARY TABLE bronze_api.parse_compressed_nft_sales_solsniper__intermediate_tmp AS 
         SELECT
             block_timestamp,
             block_id,
             tx_id,
             _inserted_timestamp
         FROM
-            {{ ref('silver__nft_sales_magic_eden_cnft') }}
+            {{ ref('silver__nft_sales_solsniper_cnft') }}
         {% if is_incremental() %}
         WHERE
             _inserted_timestamp >= (
@@ -28,7 +29,7 @@
     {% endset %}
 
     {% do run_query(query) %}
-    {% set min_max = run_query("""SELECT min(_inserted_timestamp), max(_inserted_timestamp) FROM bronze_api.parse_compressed_nft_sales__intermediate_tmp""").columns %}
+    {% set min_max = run_query("""SELECT min(_inserted_timestamp), max(_inserted_timestamp) FROM bronze_api.parse_compressed_nft_sales_solsniper__intermediate_tmp""").columns %}
     {% set min_inserted_timestamp = min_max[0][0] %}
     {% set max_inserted_timestamp = min_max[1][0] %}
 {% endif %}
@@ -37,7 +38,7 @@ WITH collection_subset AS (
     SELECT
         *
     FROM
-        bronze_api.parse_compressed_nft_sales__intermediate_tmp
+        bronze_api.parse_compressed_nft_sales_solsniper__intermediate_tmp
 ),
 base AS (
     SELECT
