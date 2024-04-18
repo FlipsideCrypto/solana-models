@@ -43,6 +43,22 @@ models:
         description: "{{ doc('marketplace') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: TREE_AUTHORITY
+        description: "{{ doc('tree_authority') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: MERKLE_TREE
+        description: "{{ doc('merkle_tree') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: LEAF_INDEX
+        description: "{{ doc('leaf_index') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: IS_COMPRESSED
+        description: "{{ doc('is_compressed') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: FACT_NFT_SALES_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP

@@ -18,9 +18,16 @@ models:
         tests:
           - not_null
           - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_nft_sales_solsniper_tx_id
               to: ref('silver__nft_sales_solsniper')
               field: tx_id
               from_condition: "program_id = 'SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g' and event_type = 'executeSolNftOrder' and _inserted_timestamp >= current_date - 7"
+              to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_nft_sales_tensorswap_cnft_tx_id
+              to: ref('silver__nft_sales_tensorswap_cnft')
+              field: tx_id
+              from_condition: "program_id = 'TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp' and event_type = 'buy' and _inserted_timestamp >= current_date - 7"
               to_condition: "_inserted_timestamp >= current_date - 7"
       - name: SIGNERS
       - name: SUCCEEDED
