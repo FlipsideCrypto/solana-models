@@ -1,11 +1,11 @@
 version: 2
 models:
-  - name: silver__nft_sales_solsniper_cnft
+  - name: silver__nft_sales_solsniper_cnft_onchain
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
-            - MINT
+            - LEAF_INDEX
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -52,10 +52,6 @@ models:
           - not_null
       - name: LEAF_INDEX
         description: "{{ doc('leaf_index') }}"
-        tests: 
-          - not_null
-      - name: MINT
-        description: "{{ doc('mint') }}"
         tests: 
           - not_null
       - name: _INSERTED_TIMESTAMP
