@@ -57,11 +57,9 @@ FROM
     {{ ref('silver__nft_sales_magic_eden_cnft_onchain') }} A
     LEFT JOIN mint_addresses b
     ON A.tx_id = b.tx_id
-WHERE
-    b.mint IS NOT NULL
 
 {% if is_incremental() %}
-AND A._inserted_timestamp >= (
+WHERE A._inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM
