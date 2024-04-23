@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: silver__swaps_intermediate_phoenix
+    description: This table contains swaps performed on Phoenix Trade. We are currently not capturing swaps where there are separate transactions for placing the order and filling the order. 
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -23,7 +24,8 @@ models:
           '671GWKC1AGyvrAThDzM9tq9UqVW8W2WdULAikkLaaTSZVYEmzLEhXutdDjZTenLp5oAtc4G7f4bztZ978rN1Zz1d',
           '3FgxCNCndXDSx95mrsBwcfsHSM9fDzWSq2bJqN74ym5MTgF2VrLJRn4w5UfdKpeKNA3mzCmm7KJfy7wuDAo4y7Ko',
           '21qdi1d8vYyMp3AcJmPdKBi1VsEoaBn4qhB1WJhzRR9N3qvtXRkENh5caaBGDaeUVD68CUw72bD2neCQA7dmgUuS',
-          '3EweEGRQkdQ4e5sRRcU5V9Jz2E9sMHzDrbmSD13C2wLQJkANJEZkk9EHJqpUSKUSWCAnY5nFnLgXUqJF5ham6ARk')"  
+          '3EweEGRQkdQ4e5sRRcU5V9Jz2E9sMHzDrbmSD13C2wLQJkANJEZkk9EHJqpUSKUSWCAnY5nFnLgXUqJF5ham6ARk',
+          '5jP7nmkNNGnjKeqP82HRr9WNv4fBdU1dHCpNGp5bSMVNeHfs7wf1uCtifPRvvugt6gX4ESUdZHQXnhDbx9fy5sfA')"  
       - tx_excluded:
           name: silver__swaps_intermediate_phoenix_tx_excluded_test
           excluded_tx_ids:
