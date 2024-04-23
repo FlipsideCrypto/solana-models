@@ -57,7 +57,7 @@ jobs:
           ${{ inputs.dbt_command }}
       - name: Run datashare model
         run: |
-          cnt=$(dbt ls -m fsc_utils.datashare._datashare___create_gold | wc -l ); if [ $cnt -eq 1 ]; then dbt run -m fsc_utils.datashare._datashare___create_gold; fi; 
+          cnt=$(dbt -q ls -m fsc_utils.datashare._datashare___create_gold | wc -l ); if [ $cnt -eq 1 ]; then dbt run -m fsc_utils.datashare._datashare___create_gold; fi; 
           dbt run-operation run_query --args "{sql: call admin.datashare.sp_grant_share_permissions('${{ env.DATABASE }}')}"
       - name: Store logs
         uses: actions/upload-artifact@v3
