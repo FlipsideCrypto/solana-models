@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: silver__swaps_intermediate_phoenix
+    description: This table contains swaps performed on Phoenix Trade. We are currently not capturing swaps where there are separate transactions for placing the order and filling the order. 
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
