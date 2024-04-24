@@ -1,0 +1,24 @@
+version: 2
+models:
+  - name: price__fact_prices_provider_hourly
+    description: '{{ doc("prices_fact_prices_provider_hourly_table_doc") }}'
+
+    columns:
+      - name: HOUR
+        description: '{{ doc("prices_hour")}}'
+      - name: ASSET_ID
+        description: '{{ doc("prices_asset_id") }}'
+      - name: OPEN
+        description: '{{ doc("prices_open") }}'
+      - name: HIGH
+        description: '{{ doc("prices_high") }}'
+      - name: LOW
+        description: '{{ doc("prices_low") }}'
+      - name: CLOSE
+        description: '{{ doc("prices_close") }}'
+      - name: FACT_PRICES_PROVIDER_HOURLY_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

@@ -27,7 +27,7 @@ SELECT
 FROM
     {{ ref('silver__core_metrics_hourly') }}
     s
-    LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
+    LEFT JOIN {{ ref('silver__complete_token_prices') }}
     p
     ON s.block_timestamp_hour = p.recorded_hour
     AND p.token_address = 'So11111111111111111111111111111111111111112'

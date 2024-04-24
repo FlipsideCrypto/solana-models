@@ -1,0 +1,28 @@
+version: 2
+models:
+  - name: silver__complete_token_asset_metadata
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TOKEN_ADDRESS
+            - BLOCKCHAIN
+          
+    columns:
+      - name: PROVIDER
+        tests:
+          - not_null
+      - name: TOKEN_ADDRESS
+        tests:
+          - not_null
+      - name: BLOCKCHAIN
+        tests:
+          - not_null
+      - name: BLOCKCHAIN_ID
+        tests:
+          - not_null
+      - name: MODIFIED_TIMESTAMP
+        tests:
+          - not_null
+      - name: COMPLETE_TOKEN_ASSET_METADATA_ID
+        tests:
+          - unique

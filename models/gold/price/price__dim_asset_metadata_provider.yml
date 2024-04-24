@@ -1,0 +1,28 @@
+version: 2
+models:
+  - name: price__dim_asset_metadata_provider
+    description: '{{ doc("prices_dim_asset_metadata_provider_table_doc") }}'
+
+    columns:
+      - name: PROVIDER
+        description: '{{ doc("prices_provider")}}'
+      - name: ASSET_ID
+        description: '{{ doc("prices_asset_id") }}'
+      - name: NAME
+        description: '{{ doc("prices_name") }}'
+      - name: SYMBOL
+        description: '{{ doc("prices_symbol") }}'
+      - name: TOKEN_ADDRESS
+        description: '{{ doc("prices_token_address") }}'
+      - name: BLOCKCHAIN
+        description: '{{ doc("prices_blockchain") }}'
+      - name: BLOCKCHAIN_ID
+        description: '{{ doc("prices_blockchain_id") }}'
+      - name: DECIMALS
+        description: '{{ doc("prices_decimals") }}'
+      - name: DIM_ASSET_METADATA_PROVIDER_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
