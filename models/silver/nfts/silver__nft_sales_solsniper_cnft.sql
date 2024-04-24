@@ -22,10 +22,16 @@ WITH mint_addresses AS (
         TABLE(FLATTEN(responses)) AS r
     WHERE
         mint <> ''
-    {% if is_incremental() %}
-    AND _inserted_timestamp >= (
+    -- {% if is_incremental() %}
+    -- AND _inserted_timestamp >= (
+    --     SELECT
+    --         MAX(_inserted_timestamp)
+    --     FROM
+    --         {{ this }}
+    -- )
+    AND _inserted_timestamp >= ( -- temp during backfill
         SELECT
-            MAX(_inserted_timestamp)
+            MAX(mint_inserted_timestamp)
         FROM
             {{ this }}
     )
@@ -46,6 +52,7 @@ SELECT
     A.merkle_tree,
     A.leaf_index,
     b.mint,
+    b._inserted_timestamp as mint_inserted_timestamp, --temp during backfill
     A.sales_amount,
     A._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
@@ -58,10 +65,16 @@ FROM
     LEFT JOIN mint_addresses b
     ON A.tx_id = b.tx_id
 
-{% if is_incremental() %}
-WHERE A._inserted_timestamp >= (
+-- {% if is_incremental() %}
+-- WHERE A._inserted_timestamp >= (
+--     SELECT
+--         MAX(_inserted_timestamp)
+--     FROM
+--         {{ this }}
+-- )
+WHERE A._inserted_timestamp >= ( --temp during backfill
     SELECT
-        MAX(_inserted_timestamp)
+        MAX(mint_inserted_timestamp)
     FROM
         {{ this }}
 )
