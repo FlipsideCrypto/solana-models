@@ -3,7 +3,7 @@
     unique_key = "tx_id",
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     cluster_by = ['block_timestamp::DATE','block_id','_inserted_timestamp::DATE'],
-    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}'), 
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id)'),
     full_refresh = false,
     merge_exclude_columns = ["inserted_timestamp"],
     tags = ['scheduled_core']
