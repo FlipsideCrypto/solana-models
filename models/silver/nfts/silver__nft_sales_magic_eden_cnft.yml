@@ -1,11 +1,11 @@
 version: 2
 models:
-  - name: silver__nft_sales_solsniper_cnft_onchain
+  - name: silver__nft_sales_magic_eden_cnft_copy
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
-            - LEAF_INDEX
+            - MINT
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -22,12 +22,6 @@ models:
         description: "{{ doc('tx_id') }}"
         tests:
           - not_null
-          - dbt_utils.relationships_where:
-              name: dbt_utils_relationships_where_silver__sales_solsniper_cnft_onchain_sales_solsniper_final.tx_id
-              to: ref('silver__nft_sales_solsniper_cnft')
-              field: tx_id
-              from_condition: "_inserted_timestamp >= current_date - 7"
-              to_condition: "_inserted_timestamp >= current_date - 7"
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests:
@@ -58,6 +52,10 @@ models:
           - not_null
       - name: LEAF_INDEX
         description: "{{ doc('leaf_index') }}"
+        tests: 
+          - not_null
+      - name: MINT
+        description: "{{ doc('mint') }}"
         tests: 
           - not_null
       - name: _INSERTED_TIMESTAMP
