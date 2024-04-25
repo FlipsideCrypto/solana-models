@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: price__ez_token_prices_hourly
-    description: Deprecating soon! This is a notice that we're replacing this table with `price__ez_hourly_token_prices`. Please migrate queries to the new table by xx/xx/xx. The columns being renamed include recorded_hour -> hour, close -> price, and ez_token_prices_hourly_id -> ez_hourly_token_prices_id.
+    description: Deprecating soon! Please use price.ez_prices_hourly or price.fact_prices_provider_hourly instead.
     tests:
      - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

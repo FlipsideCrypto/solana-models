@@ -1,37 +1,4 @@
 version: 2
 models:
   - name: price__fact_token_prices_hourly
-    description: Deprecating soon! This is a notice that we're replacing this table with `price__fact_hourly_token_prices`. Please migrate queries to the new table by xx/xx/xx. Columns that were changed are recorded_hour -> hour, close -> price, and fact_token_prices_id -> fact_hourly_token_prices_id.
-    columns:
-      - name: PROVIDER
-        description: Provider of the data
-        tests:
-          - not_null
-      - name: RECORDED_HOUR
-        description: Hour that the price was recorded at
-        tests:
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 2
-      - name: ID
-        description: ID of the asset from CoinMarketCap
-        tests:
-          - not_null
-      - name: SYMBOL
-        description: Symbol of the token
-        tests:
-          - not_null
-      - name: CLOSE
-        description: Closing price of the recorded hour in USD
-        tests: 
-          - not_null
-      - name: IMPUTED
-        description: Whether the price was imputed from an earlier record (generally used for low trade volume tokens)
-        tests: 
-          - not_null
-      - name: FACT_TOKEN_PRICES_ID
-        description: '{{ doc("pk") }}'   
-      - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
-      - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+    description: Deprecating soon! Please use price.ez_prices_hourly or price.fact_prices_provider_hourly instead.
