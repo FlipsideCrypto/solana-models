@@ -18,4 +18,3 @@ models:
         description: "The deployed hash of the program IDL"
         tests:
           - not_null
-

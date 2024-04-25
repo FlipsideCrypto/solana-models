@@ -5,7 +5,8 @@
     cluster_by = ['program_id','block_timestamp::DATE','_inserted_timestamp::DATE'],
     post_hook = enable_search_optimization(
         '{{this.schema}}',
-        '{{this.identifier}}'
+        '{{this.identifier}}',
+        'ON EQUALITY(tx_id, event_type, decoded_instructions_combined_id)'
     ),
     merge_exclude_columns = ["inserted_timestamp"],
     tags = ['scheduled_non_core']
