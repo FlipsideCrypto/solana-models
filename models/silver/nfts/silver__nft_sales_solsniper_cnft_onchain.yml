@@ -23,7 +23,7 @@ models:
         tests:
           - not_null
           - dbt_utils.relationships_where:
-              name: dbt_utils_relationships_where_silver__sales_solsniper_cnft_onchain_sales_solsniper_final.tx_id
+              name: dbt_utils_relationships_where_silver__sales_solsniper_cnft_onchain_sales_solsniper_final_tx_id
               to: ref('silver__nft_sales_solsniper_cnft')
               field: tx_id
               from_condition: "_inserted_timestamp >= current_date - 7"

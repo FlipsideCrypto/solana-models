@@ -24,7 +24,7 @@
                     {{ this }}
             )
         {% endif %}
-        qualify(ROW_NUMBER() over (ORDER BY _inserted_timestamp)) <= 9000
+        qualify(ROW_NUMBER() over (ORDER BY _inserted_timestamp)) <= 4500
     {% endset %}
 
     {% do run_query(query) %}

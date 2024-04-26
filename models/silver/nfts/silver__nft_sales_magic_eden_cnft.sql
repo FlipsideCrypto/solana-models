@@ -56,7 +56,7 @@ SELECT
     SYSDATE() AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_magic_eden_cnft_onchain') }} A
-    LEFT JOIN mint_addresses b
+    INNER JOIN mint_addresses b
     ON A.tx_id = b.tx_id
 
 {% if is_incremental() %}
