@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: nft__fact_nft_sales
-    description: NFT sales on Solana that occur on Magic Eden, Yawww, Opensea, the SMB marketplace, Solanart, Solport, Coral Cube, Hyperspace, Hadeswap, Exchange Art and Tensorswap.  
+    description: NFT sales on Solana that occur on Magic Eden, Yawww, Opensea, the SMB marketplace, Solanart, Solport, Coral Cube, Hyperspace, Hadeswap, Exchange Art, Tensorswap and Solsniper.  
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -41,6 +41,22 @@ models:
           - dbt_expectations.expect_column_to_exist
       - name: MARKETPLACE
         description: "{{ doc('marketplace') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TREE_AUTHORITY
+        description: "{{ doc('tree_authority') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: MERKLE_TREE
+        description: "{{ doc('merkle_tree') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: LEAF_INDEX
+        description: "{{ doc('leaf_index') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: IS_COMPRESSED
+        description: "{{ doc('is_compressed') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: FACT_NFT_SALES_ID

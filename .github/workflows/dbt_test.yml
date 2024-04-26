@@ -38,8 +38,8 @@ jobs:
 
       - name: install dependencies
         run: |
-          pip3 install dbt-snowflake==${{ vars.DBT_VERSION }} cli_passthrough requests click
+          pip install -r requirements.txt
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt test -s "solana_models,./models"
+          dbt test -s "solana_models,./models" tag:test_daily --exclude tag:test_weekly

@@ -103,6 +103,43 @@ WHERE
     A.block_timestamp :: DATE >= '2021-09-13'
 {% endif %}
 ),
+base_mint_actions AS (
+    SELECT
+        *
+    FROM
+        {{ ref('silver__token_mint_actions') }}
+    WHERE event_type IN ('mintToChecked', 'mintTo')
+{% if is_incremental() %}
+AND
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+{% else %}
+AND
+    block_timestamp :: DATE >= '2021-09-13'
+{% endif %}
+),
+base_burn_actions AS (
+    SELECT
+        *
+    FROM
+        {{ ref('silver__token_burn_actions') }}
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+{% else %}
+WHERE
+    block_timestamp :: DATE >= '2021-09-13'
+{% endif %}
+),
 wormhole_transfers AS (
     SELECT
         A.block_timestamp,
@@ -163,7 +200,7 @@ inbound AS (
             A.decimal
         ) AS amount
     FROM
-        solana.silver.token_mint_actions A
+        base_mint_actions A
         INNER JOIN wormhole_events b USING(tx_id)
     WHERE
         succeeded
@@ -204,7 +241,7 @@ outbound AS (
             A.decimal
         ) AS amount
     FROM
-        solana.silver.token_burn_actions A
+        base_burn_actions A
         INNER JOIN wormhole_events b USING(tx_id)
     WHERE
         succeeded

@@ -1,32 +1,47 @@
+ -- depends_on: {{ ref('silver__decoded_instructions_combined') }}
+
 {{ config(
     materialized = 'incremental',
     unique_key = ['swaps_intermediate_phoenix_id'],
-    incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
     tags = ['scheduled_non_core'],
 ) }}
+
+{% if execute %}
+    {% set base_query %}
+        CREATE OR REPLACE TEMPORARY TABLE silver.swaps_intermediate_phoenix__intermediate_tmp AS 
+        SELECT 
+            *
+        FROM 
+            {{ ref('silver__decoded_instructions_combined') }}
+        WHERE
+            program_id = 'PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY'
+        AND event_type = 'Swap'
+        AND succeeded
+        {% if is_incremental() %}
+        AND _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp) - INTERVAL '1 hour'
+            FROM
+                {{ this }}
+        )
+        {% else %} 
+            AND _inserted_timestamp :: DATE >= '2024-02-14'
+            AND _inserted_timestamp :: DATE < '2024-02-17'
+        {% endif %}
+    {% endset %}
+    {% do run_query(base_query) %}
+    {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.swaps_intermediate_phoenix__intermediate_tmp","block_timestamp::date") %}
+{% endif %}
 
 WITH base AS (
 
     SELECT
         *
     FROM
-        {{ ref('silver__decoded_instructions_combined') }}
-    WHERE
-        program_id = 'PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY'
-        AND event_type = 'Swap'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) - INTERVAL '1 hour'
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND block_timestamp :: DATE >= '2023-02-15'
-{% endif %}
+        silver.swaps_intermediate_phoenix__intermediate_tmp
 ),
 decoded AS (
     SELECT
@@ -35,6 +50,7 @@ decoded AS (
         tx_id,
         INDEX,
         inner_index,
+        COALESCE(inner_index,-1) AS inner_index_start,
         COALESCE(LEAD(inner_index) over (PARTITION BY tx_id, INDEX
     ORDER BY
         inner_index) -1, 999999) AS inner_index_end,
@@ -109,17 +125,7 @@ transfers AS (
         ON d.tx_id = A.tx_id
     WHERE
         A.succeeded
-
-{% if is_incremental() %}
-AND A._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) - INTERVAL '1 day'
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND A.block_timestamp :: DATE >= '2023-02-15'
-{% endif %}
+    and {{ between_stmts }}
 ),
 pre_final AS (
     SELECT
@@ -132,10 +138,10 @@ pre_final AS (
         A.inner_index_end,
         C.succeeded,
         A.swapper,
-        b.amount AS from_amt,
-        b.mint AS from_mint,
-        C.amount AS to_amt,
-        C.mint AS to_mint,
+        c.amount AS from_amt,
+        c.mint AS from_mint,
+        b.amount AS to_amt,
+        b.mint AS to_mint,
         A._inserted_timestamp
     FROM
         decoded A
@@ -144,13 +150,13 @@ pre_final AS (
         AND A.source_token_account = b.source_token_account
         AND A.program_source_token_account = b.dest_token_account
         AND A.index = b.index_1
-        AND b.inner_index_1 BETWEEN A.inner_index AND A.inner_index_end
+        AND b.inner_index_1 BETWEEN A.inner_index_start AND A.inner_index_end
         INNER JOIN transfers C
         ON A.tx_id = C.tx_id
         AND A.destination_token_account = C.dest_token_account
         AND A.program_destination_token_account = C.source_token_account
         AND A.index = C.index_1
-        AND C.inner_index_1 BETWEEN A.inner_index  AND A.inner_index_end
+        AND C.inner_index_1 BETWEEN A.inner_index_start  AND A.inner_index_end
         qualify(ROW_NUMBER() over (PARTITION BY A.tx_id, A.index, A.inner_INDEX
     ORDER BY
         inner_index)) = 1

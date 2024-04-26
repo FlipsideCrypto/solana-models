@@ -1,69 +1,88 @@
+-- depends_on: {{ ref('silver__events') }}
 {{ config (
     materialized = "incremental",
     unique_key = "id",
     tags = ['idls','scheduled_non_core']
 ) }}
 
-WITH base AS (
+{% if execute %}
+    {% set create_base_query %}
+        CREATE OR REPLACE TEMPORARY TABLE base__dbt_tmp AS 
+        SELECT
+            program_id,
+            idl,
+            SHA2(PARSE_JSON(idl)) AS idl_hash,
+            discord_username,
+            _inserted_timestamp
+        FROM
+            {{ source(
+                "crosschain_public",
+                "user_idls"
+            ) }}
+        WHERE
+            blockchain = 'solana'
+            AND NOT is_duplicate
 
-    SELECT
-        program_id,
-        idl,
-        SHA2(PARSE_JSON(idl)) AS idl_hash,
-        discord_username,
-        _inserted_timestamp
-    FROM
-        {{ source(
-            "crosschain_public",
-            "user_idls"
-        ) }}
-    WHERE
-        blockchain = 'solana'
-        AND NOT is_duplicate
-
-{% if is_incremental() %}
-AND _inserted_timestamp > (
-    SELECT
-        COALESCE(
-            MAX(
-                _inserted_timestamp
-            ),
-            '1970-01-01'
+        {% if is_incremental() %}
+        AND _inserted_timestamp > (
+            SELECT
+                COALESCE(
+                    MAX(
+                        _inserted_timestamp
+                    ),
+                    '1970-01-01'
+                )
+            FROM
+                {{ this }}
         )
-    FROM
-        {{ this }}
-)
+        {% endif %}
+        ORDER BY
+            _inserted_timestamp ASC
+        LIMIT
+            10
+    {% endset %}
+    {% do run_query(create_base_query) %}
+    {% set program_ids = run_query("""select program_id from base__dbt_tmp""").columns[0].values() %}
+    {% if program_ids|length == 0 %}
+        {% set program_ids = ["abc"] %}
+    {% endif %}
 {% endif %}
-ORDER BY
-    _inserted_timestamp ASC
-LIMIT
-    10
-), program_requests AS (
+
+WITH base AS (
     SELECT
-        e.program_id,
-        OBJECT_CONSTRUCT(
-            'tx_id',
-            e.tx_id,
-            'block_id',
-            e.block_id,
-            'index',
-            e.index,
-            'program_id',
-            e.program_id,
-            'instruction',
-            e.instruction,
-            'is_verify',
-            TRUE
-        ) AS request
+        *
     FROM
-        {{ ref('silver__events') }}
-        e
-        JOIN base b
-        ON b.program_id = e.program_id
-        AND succeeded
-        AND block_timestamp >= CURRENT_DATE - 30 qualify(ROW_NUMBER() over (PARTITION BY e.program_id
-    ORDER BY
-        block_timestamp)) <= 100
+        base__dbt_tmp
+), program_requests AS (
+    {% for program_id in program_ids %}
+    SELECT * FROM (
+        SELECT
+            e.program_id,
+            OBJECT_CONSTRUCT(
+                'tx_id',
+                e.tx_id,
+                'block_id',
+                e.block_id,
+                'index',
+                e.index,
+                'program_id',
+                e.program_id,
+                'instruction',
+                e.instruction,
+                'is_verify',
+                TRUE
+            ) AS request
+        FROM
+            {{ ref('silver__events') }} e
+        WHERE succeeded
+        AND block_timestamp >= CURRENT_DATE - 30 
+        AND e.program_id = '{{ program_id }}'
+        LIMIT 100
+    )
+        {% if not loop.last %}
+            UNION ALL
+        {% endif %}
+    {% endfor %}
 ),
 groupings AS (
     SELECT

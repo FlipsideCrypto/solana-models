@@ -79,6 +79,7 @@ base_token_mint_actions as (
         and ma.inner_index = tma.inner_index
     WHERE
         ma.succeeded
+    and tma.event_type IN ('mintToChecked', 'mintTo')
 
 {% if is_incremental() %}
 AND ma._inserted_timestamp >= (

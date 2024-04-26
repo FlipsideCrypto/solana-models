@@ -1,11 +1,21 @@
 {{ config (
-    materialized = "view",
+    materialized = "table",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_bulk_instructions_decoder(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'decoded_instructions_2', 'sql_limit', {{var('sql_limit','2500000')}}, 'producer_batch_size', {{var('producer_batch_size','1000000')}}, 'worker_batch_size', {{var('worker_batch_size','50000')}}, 'batch_call_limit', {{var('batch_call_limit','1000')}}, 'call_type', 'RT'))",
+        func = "{{this.schema}}.udf_bulk_instructions_decoder(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'decoded_instructions_2', 'sql_limit', {{var('sql_limit','5000000')}}, 'producer_batch_size', {{var('producer_batch_size','2000000')}}, 'worker_batch_size', {{var('worker_batch_size','100000')}}, 'batch_call_limit', {{var('batch_call_limit','1000')}}, 'call_type', 'RT'))",
         target = "{{this.schema}}.{{this.identifier}}"
     ),
     tags = ['streamline_decoder']
 ) }}
+
+{% if execute %}
+    {% set min_event_block_id_query %}
+        select min(block_id)
+        from {{ ref('silver__events') }}
+        where 
+            block_timestamp >= CURRENT_DATE - 2
+    {% endset %}
+    {% set min_event_block_id = run_query(min_event_block_id_query).columns[0].values()[0] %}
+{% endif %}
 
 WITH idl_in_play AS (
 
@@ -57,7 +67,13 @@ event_subset AS (
         e.succeeded
     AND 
         i.value :programId :: STRING = b.program_id
-    
+    AND (
+            (
+                inner_program_id in ('FLASH6Lo6h3iasJKWDs2F8TkW2UKf3s15C8PMGuVfgBn','SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g','GovaE4iu227srtG2s3tZzB4RmWBzw8sTwrCLZz7kN7rY','JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4','DCA265Vj8a9CEuX1eb1LWRnDT7uK6q1xMipnNyatn23M','PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu','LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo')
+                AND array_size(i.value:accounts) > 1
+            )
+            OR inner_program_id not in ('FLASH6Lo6h3iasJKWDs2F8TkW2UKf3s15C8PMGuVfgBn','SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g','GovaE4iu227srtG2s3tZzB4RmWBzw8sTwrCLZz7kN7rY','JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4','DCA265Vj8a9CEuX1eb1LWRnDT7uK6q1xMipnNyatn23M','PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu','LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo')
+        )
 ),
 completed_subset AS (
     SELECT
@@ -66,7 +82,8 @@ completed_subset AS (
     FROM
         {{ ref('streamline__complete_decoded_instructions_2') }}
     WHERE
-        block_id >= (
+        block_id >= {{ min_event_block_id }} --ensure we at least prune to last 2 days worth of blocks since the dynamic below will scan everything
+    AND block_id >= (
             SELECT
                 MIN(block_id)
             FROM
@@ -88,4 +105,3 @@ FROM
     AND e.id = C.id
 WHERE
     C.block_id IS NULL
-qualify(row_number() over (order by e.block_id, e.tx_id)) <= {{ var('sql_limit','2500000') }}
