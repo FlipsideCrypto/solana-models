@@ -140,7 +140,7 @@ SELECT
     A._inserted_timestamp
 FROM
     pre_final_orca_mints A
-    LEFT JOIN {{ ref('silver__token_metadata') }}
+    LEFT JOIN {{ ref('silver__complete_token_asset_metadata') }}
     m
     ON A.mint = m.token_address
     where liquidity_provider is not null and amount is not null
@@ -161,7 +161,7 @@ SELECT
     A._inserted_timestamp
 FROM
     mints_in_swaps A
-    LEFT JOIN {{ ref('silver__token_metadata') }}
+    LEFT JOIN {{ ref('silver__complete_token_asset_metadata') }}
     m
     ON A.mint = m.token_address
     where liquidity_provider is not null and amount is not null

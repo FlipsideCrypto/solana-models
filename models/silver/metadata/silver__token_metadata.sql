@@ -4,7 +4,7 @@
     incremental_strategy = 'merge',
     tags = ['scheduled_non_core']
 ) }}
-
+-- this can be deprecated now? -- along with removing their sources
 WITH cmc_base AS (
 
     SELECT
