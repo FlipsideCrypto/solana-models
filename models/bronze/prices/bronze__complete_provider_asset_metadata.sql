@@ -18,7 +18,7 @@ SELECT
     _invocation_id
 FROM
     {{ source(
-        'silver_crosschain',
+        'crosschain_silver',
         'complete_provider_asset_metadata'
     ) }}
 WHERE

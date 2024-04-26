@@ -24,7 +24,7 @@ SELECT
     _invocation_id
 FROM
     {{ source(
-        'silver_crosschain',
+        'crosschain_silver',
         'complete_token_prices'
     ) }}
 WHERE
