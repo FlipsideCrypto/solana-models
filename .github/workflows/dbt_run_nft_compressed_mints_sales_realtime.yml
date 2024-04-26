@@ -1,5 +1,5 @@
-name: dbt_run_nft_compressed_mints_realtime
-run-name: dbt_run_nft_compressed_mints_realtime
+name: dbt_run_nft_compressed_mints_sales_realtime
+run-name: dbt_run_nft_compressed_mints_sales_realtime
 
 on:
   workflow_dispatch:
