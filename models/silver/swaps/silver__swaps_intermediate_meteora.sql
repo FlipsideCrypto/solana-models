@@ -11,9 +11,7 @@
 
 {% if execute %}
     {% set base_query %}
-    CREATE
-    OR REPLACE temporary TABLE silver.swaps_intermediate_meteora__intermediate_tmp AS
-
+    CREATE OR REPLACE TEMPORARY TABLE silver.swaps_intermediate_meteora__intermediate_tmp AS
     SELECT
         *
     FROM
@@ -37,8 +35,8 @@
     {% else %}
         AND block_timestamp :: DATE >= '2022-07-14'
     {% endif %}
-
     {% endset %}
+    
     {% do run_query(base_query) %}
     {% set between_stmts = fsc_utils.dynamic_range_predicate(
         "silver.swaps_intermediate_meteora__intermediate_tmp",
@@ -151,7 +149,7 @@ transfers AS (
             SELECT
                 DISTINCT 
                     tx_id,
-                    block_tiomestamp::DATE AS block_date
+                    block_timestamp::DATE AS block_date
             FROM
                 decoded
         ) d
@@ -159,7 +157,7 @@ transfers AS (
         AND d.tx_id = A.tx_id
     WHERE
         A.succeeded
-    AND {{ between_stmts }}
+        AND {{ between_stmts }}
 ),
 pre_final AS (
     SELECT

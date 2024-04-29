@@ -11,27 +11,28 @@
 
 {% if execute %}
     {% set base_query %}
-        CREATE OR REPLACE TEMPORARY TABLE silver.swaps_intermediate_phoenix__intermediate_tmp AS 
-        SELECT 
-            *
-        FROM 
-            {{ ref('silver__decoded_instructions_combined') }}
-        WHERE
-            program_id = 'PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY'
-        AND event_type = 'Swap'
-        AND succeeded
-        {% if is_incremental() %}
-        AND _inserted_timestamp >= (
-            SELECT
-                MAX(_inserted_timestamp) - INTERVAL '1 hour'
-            FROM
-                {{ this }}
-        )
-        {% else %} 
-            AND _inserted_timestamp :: DATE >= '2024-02-14'
-            AND _inserted_timestamp :: DATE < '2024-02-17'
-        {% endif %}
+    CREATE OR REPLACE TEMPORARY TABLE silver.swaps_intermediate_phoenix__intermediate_tmp AS 
+    SELECT 
+        *
+    FROM 
+        {{ ref('silver__decoded_instructions_combined') }}
+    WHERE
+        program_id = 'PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY'
+    AND event_type = 'Swap'
+    AND succeeded
+    {% if is_incremental() %}
+    AND _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '1 hour'
+        FROM
+            {{ this }}
+    )
+    {% else %} 
+        AND _inserted_timestamp :: DATE >= '2024-02-14'
+        AND _inserted_timestamp :: DATE < '2024-02-17'
+    {% endif %}
     {% endset %}
+    
     {% do run_query(base_query) %}
     {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.swaps_intermediate_phoenix__intermediate_tmp","block_timestamp::date") %}
 {% endif %}
@@ -51,9 +52,9 @@ decoded AS (
         INDEX,
         inner_index,
         COALESCE(inner_index,-1) AS inner_index_start,
-        COALESCE(LEAD(inner_index) over (PARTITION BY tx_id, INDEX
-    ORDER BY
-        inner_index) -1, 999999) AS inner_index_end,
+        COALESCE(LEAD(inner_index) OVER (PARTITION BY tx_id, INDEX
+            ORDER BY inner_index) -1, 999999
+        ) AS inner_index_end,
         program_id,
         CASE
             WHEN decoded_instruction :args :orderPacket :immediateOrCancel :side :bid IS NOT NULL THEN 'bid'
@@ -119,7 +120,7 @@ transfers AS (
         INNER JOIN (
             SELECT
                 DISTINCT tx_id,
-                    block_tiomestamp::DATE AS block_date
+                    block_timestamp::DATE AS block_date
             FROM
                 decoded
         ) d
@@ -127,7 +128,7 @@ transfers AS (
         AND d.tx_id = A.tx_id
     WHERE
         A.succeeded
-    AND {{ between_stmts }}
+        AND {{ between_stmts }}
 ),
 pre_final AS (
     SELECT
@@ -159,9 +160,10 @@ pre_final AS (
         AND A.program_destination_token_account = C.source_token_account
         AND A.index = C.index_1
         AND C.inner_index_1 BETWEEN A.inner_index_start  AND A.inner_index_end
-        qualify(ROW_NUMBER() over (PARTITION BY A.tx_id, A.index, A.inner_INDEX
-    ORDER BY
-        inner_index)) = 1
+    QUALIFY
+        ROW_NUMBER() OVER (PARTITION BY A.tx_id, A.index, A.inner_INDEX
+            ORDER BY inner_index
+        ) = 1
 )
 SELECT
     block_id,
