@@ -118,14 +118,16 @@ transfers AS (
         {{ ref('silver__transfers') }} A
         INNER JOIN (
             SELECT
-                DISTINCT tx_id
+                DISTINCT tx_id,
+                    block_tiomestamp::DATE AS block_date
             FROM
                 decoded
         ) d
-        ON d.tx_id = A.tx_id
+        ON d.block_date = A.block_timestamp::DATE
+        AND d.tx_id = A.tx_id
     WHERE
         A.succeeded
-    and {{ between_stmts }}
+    AND {{ between_stmts }}
 ),
 pre_final AS (
     SELECT
