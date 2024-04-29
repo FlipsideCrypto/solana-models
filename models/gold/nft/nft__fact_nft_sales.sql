@@ -29,7 +29,7 @@ FROM
     {{ ref(
         'silver__nft_sales_magic_eden_v1_view'
     ) }}
-UNION
+UNION ALL
 SELECT
     'magic eden v2',
     block_timestamp,
@@ -61,7 +61,7 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_magic_eden_v2') }}
-UNION
+UNION ALL
 SELECT
     'solanart',
     block_timestamp,
@@ -93,7 +93,7 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_solanart') }}
-UNION
+UNION ALL
 SELECT
     'solana monkey business marketplace',
     block_timestamp,
@@ -116,7 +116,7 @@ SELECT
     '2000-01-01' AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_smb_view') }}
-UNION
+UNION ALL
 SELECT
     'solport',
     block_timestamp,
@@ -141,7 +141,7 @@ FROM
     {{ ref(
         'silver__nft_sales_solport_view'
     ) }}
-UNION
+UNION ALL
 SELECT
     'opensea',
     block_timestamp,
@@ -164,7 +164,7 @@ SELECT
     '2000-01-01' AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_opensea_view') }}
-UNION
+UNION ALL
 SELECT
     'yawww',
     block_timestamp,
@@ -187,7 +187,7 @@ SELECT
     '2000-01-01' AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_yawww_view') }}
-UNION
+UNION ALL
 SELECT
     'hadeswap',
     block_timestamp,
@@ -219,7 +219,7 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_hadeswap') }}
-UNION
+UNION ALL
 SELECT
     'hyperspace',
     block_timestamp,
@@ -251,7 +251,7 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_hyperspace') }}
-UNION
+UNION ALL
 SELECT
     'coral cube',
     block_timestamp,
@@ -274,7 +274,7 @@ SELECT
     '2000-01-01' AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_coral_cube_view') }}
-UNION
+UNION ALL
 SELECT
     'exchange art',
     block_timestamp,
@@ -306,7 +306,7 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_exchange_art') }}
-UNION
+UNION ALL
 SELECT
     marketplace,
     block_timestamp,
@@ -338,7 +338,7 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_amm_sell') }}
-UNION
+UNION ALL
 SELECT
     'tensorswap',
     block_timestamp,
@@ -370,7 +370,7 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_tensorswap') }}
-UNION
+UNION ALL
 SELECT
     'solsniper',
     block_timestamp,
@@ -391,7 +391,7 @@ SELECT
      modified_timestamp
 FROM
     {{ ref('silver__nft_sales_solsniper') }}
-UNION
+UNION ALL
 SELECT
     'solsniper',
     block_timestamp,
@@ -412,7 +412,7 @@ SELECT
     modified_timestamp,
 FROM
     {{ ref('silver__nft_sales_solsniper_v1_events_view') }}
-UNION
+UNION ALL
 SELECT
     'tensorswap',
     block_timestamp,
@@ -433,9 +433,9 @@ SELECT
     modified_timestamp,
 FROM
     {{ ref('silver__nft_sales_tensorswap_cnft') }}
-UNION
+UNION ALL
 SELECT
-    'magic eden' AS marketplace,
+    'magic eden v3' AS marketplace,
     block_timestamp,
     block_id,
     tx_id,
@@ -454,7 +454,7 @@ SELECT
     modified_timestamp,
 FROM
     {{ ref('silver__nft_sales_magic_eden_cnft') }}
-UNION
+UNION ALL
 SELECT
     'solsniper' AS marketplace,
     block_timestamp,
