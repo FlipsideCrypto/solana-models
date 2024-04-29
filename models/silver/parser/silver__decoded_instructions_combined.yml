@@ -48,7 +48,7 @@ models:
               from_condition: >
                 program_id IN ('LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo','Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB') 
                 and event_type = 'swap' 
-                and decoded_instruction:args:inAmount::int > 0
+                and coalesce(decoded_instruction:args:inAmount, decoded_instruction:args:amountIn)::int > 0
                 and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
               to_condition: "_inserted_timestamp >= current_date - 7"
       - name: SIGNERS
