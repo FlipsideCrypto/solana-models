@@ -41,6 +41,16 @@ models:
               field: tx_id
               from_condition: "program_id = 'M3mxk5W2tt27WGT7THox7PmgRDp4m6NEhL5xvxrBfS1' and event_type = 'buyNow' and _inserted_timestamp >= current_date - 7"
               to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_meteora_swaps_tx_id
+              to: ref('silver__swaps_intermediate_meteora')
+              field: tx_id
+              from_condition: >
+                program_id IN ('LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo','Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB') 
+                and event_type = 'swap' 
+                and decoded_instruction:args:inAmount::int > 0
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
       - name: SIGNERS
       - name: SUCCEEDED
       - name: INDEX
