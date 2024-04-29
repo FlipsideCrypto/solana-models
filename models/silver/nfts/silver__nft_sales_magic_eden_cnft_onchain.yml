@@ -26,8 +26,8 @@ models:
               name: dbt_utils_relationships_where_silver__sales_magic_eden_cnft_onchain_sales_magic_eden_final_tx_id
               to: ref('silver__nft_sales_magic_eden_cnft')
               field: tx_id
-              from_condition: "_inserted_timestamp >= current_date - 7"
-              to_condition: "_inserted_timestamp >= current_date - 7"
+              from_condition: "_inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '12 HOUR'"
+              to_condition: "_inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '12 HOUR'"
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests:
