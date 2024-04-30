@@ -29,7 +29,7 @@
             {{ this }}
     )
     {% else %}
-        AND block_timestamp :: DATE BETWEEN '2023-04-12' AND '2024-01-01'
+        AND _inserted_timestamp::DATE BETWEEN '2024-01-26' AND '2024-03-01'
     {% endif %}
     {% endset %}
     
