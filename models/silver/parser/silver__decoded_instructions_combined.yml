@@ -48,6 +48,7 @@ models:
               from_condition: >
                 program_id = 'BSwp6bEBihVLdqJRKGgzjcGLHkcTuzmSo1TQkHepzH8p' 
                 and event_type = 'swap' 
+                and decoded_instruction:args:deltaIn:v::int > 200000
                 and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
               to_condition: "_inserted_timestamp >= current_date - 7"
       - name: SIGNERS
