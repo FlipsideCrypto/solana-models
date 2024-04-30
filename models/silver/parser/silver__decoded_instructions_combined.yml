@@ -41,6 +41,15 @@ models:
               field: tx_id
               from_condition: "program_id = 'M3mxk5W2tt27WGT7THox7PmgRDp4m6NEhL5xvxrBfS1' and event_type = 'buyNow' and _inserted_timestamp >= current_date - 7"
               to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_swaps_intermediate_bonkswap_tx_id
+              to: ref('silver__swaps_intermediate_bonkswap')
+              field: tx_id
+              from_condition: >
+                program_id = 'BSwp6bEBihVLdqJRKGgzjcGLHkcTuzmSo1TQkHepzH8p' 
+                and event_type = 'swap' 
+                and _inserted_timestamp >= current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
       - name: SIGNERS
       - name: SUCCEEDED
       - name: INDEX
