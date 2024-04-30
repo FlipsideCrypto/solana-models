@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   schedule:
     # Run at xx:20 UTC hourly (see https://crontab.guru)
-    - cron: '20 */1 * * *'
+    - cron: '14 */1 * * *'
     
 env:
   DBT_PROFILES_DIR: "${{ vars.DBT_PROFILES_DIR }}"
