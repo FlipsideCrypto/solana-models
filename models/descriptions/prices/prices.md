@@ -1,4 +1,4 @@
-{% docs prices_dim_asset_metadata_provider_table_doc %}
+{% docs prices_dim_asset_metadata_table_doc %}
 
 A comprehensive dimensional table holding all provider asset metadata and other relevant details pertaining to each id.
 
