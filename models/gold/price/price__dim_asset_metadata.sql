@@ -19,9 +19,5 @@ SELECT
     A.complete_provider_asset_metadata_id AS dim_asset_metadata_id
 FROM
     {{ ref('silver__complete_provider_asset_metadata') }} A
-LEFT JOIN {{ ref('core__dim_contracts') }} C --remove this join alongside decimal column deprecation
-    ON LOWER(
-        C.address
-    ) = LOWER(
-        A.token_address
-    )
+LEFT JOIN {{ ref('core__dim_tokens') }} C --remove this join alongside decimal column deprecation
+    ON C.token_address = A.token_address
