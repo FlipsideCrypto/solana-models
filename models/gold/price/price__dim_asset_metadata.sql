@@ -6,14 +6,22 @@
 
 SELECT
     token_address,
+    asset_id AS id, -- id column pending deprecation
     asset_id,
-    symbol,
-    NAME,
+    A.symbol,
+    A.name,
+    C.decimals, -- decimals column pending deprecation
     platform AS blockchain,
     platform_id AS blockchain_id,
     provider,
-    inserted_timestamp,
-    modified_timestamp,
-    complete_provider_asset_metadata_id AS dim_asset_metadata_id
+    A.inserted_timestamp,
+    A.modified_timestamp,
+    A.complete_provider_asset_metadata_id AS dim_asset_metadata_id
 FROM
-    {{ ref('silver__complete_provider_asset_metadata') }}
+    {{ ref('silver__complete_provider_asset_metadata') }} A
+LEFT JOIN {{ ref('core__dim_contracts') }} C --remove this join alongside decimal column deprecation
+    ON LOWER(
+        C.address
+    ) = LOWER(
+        A.token_address
+    )
