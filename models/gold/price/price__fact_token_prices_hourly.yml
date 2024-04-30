@@ -1,4 +1,4 @@
 version: 2
 models:
   - name: price__fact_token_prices_hourly
-    description: Deprecating soon! Please use price.ez_prices_hourly or price.fact_prices_provider_hourly instead.
+    description: Deprecating soon! Please use price.ez_prices_hourly or price.fact_prices_ohlc_hourly instead.

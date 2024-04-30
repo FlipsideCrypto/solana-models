@@ -1,7 +1,7 @@
 version: 2
 models:
-  - name: price__fact_prices_provider_hourly
-    description: '{{ doc("prices_fact_prices_provider_hourly_table_doc") }}'
+  - name: price__fact_prices_ohlc_hourly
+    description: '{{ doc("prices_fact_prices_ohlc_hourly_table_doc") }}'
 
     columns:
       - name: HOUR
@@ -16,7 +16,7 @@ models:
         description: '{{ doc("prices_low") }}'
       - name: CLOSE
         description: '{{ doc("prices_close") }}'
-      - name: FACT_PRICES_PROVIDER_HOURLY_ID
+      - name: FACT_PRICES_OHLC_HOURLY_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   

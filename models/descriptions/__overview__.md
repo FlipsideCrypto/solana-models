@@ -59,7 +59,7 @@ There is more information on how to use dbt docs in the last section of this doc
 
 ### Price Tables (`Solana`.`PRICE`.`<table_name>`)
 - [dim_asset_metadata](#!/model/model.solana_models.price__dim_asset_metadata)
-- [fact_prices_provider_hourly](#!/model/model.solana_models.price__fact_prices_provider_hourly)
+- [fact_prices_ohlc_hourly](#!/model/model.solana_models.price__fact_prices_ohlc_hourly)
 - [ez_asset_metadata](#!/model/model.solana_models.price__ez_asset_metadata)
 - [ez_prices_hourly](#!/model/model.solana_models.price__ez_prices_hourly)
 
