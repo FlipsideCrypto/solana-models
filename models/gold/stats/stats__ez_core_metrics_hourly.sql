@@ -18,7 +18,7 @@ SELECT
         (total_fees / pow(
             10,
             9
-        )) * p.close,
+        )) * p.price,
         2
     ) AS total_fees_usd,
     core_metrics_hourly_id AS ez_core_metrics_hourly_id,
