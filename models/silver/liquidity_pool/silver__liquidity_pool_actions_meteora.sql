@@ -1,7 +1,7 @@
 -- depends_on: {{ ref('silver__decoded_instructions_combined') }}
 {{ config(
     materialized = 'incremental',
-    unique_key = [liquidity_pool_actions_meteora_id],
+    unique_key = "liquidity_pool_actions_meteora_id",
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
@@ -47,7 +47,7 @@
             {% endif %}
     {% endset %}
     {% do run_query(base_query) %}
-    {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.swaps_intermediate_jupiterv6__intermediate_tmp","block_timestamp::date") %}
+    {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.liquidity_pool_actions_meteora__intermediate_tmp","block_timestamp::date") %}
 {% endif %}
 
 WITH base AS (
@@ -55,6 +55,50 @@ WITH base AS (
         *
     FROM 
         silver.liquidity_pool_actions_meteora__intermediate_tmp
+),
+base_transfers AS (
+    SELECT 
+        block_timestamp,
+        tx_id,
+        index,
+        mint,
+        amount,
+        dest_token_account,
+        source_token_account
+    FROM
+        {{ ref('silver__transfers') }}
+    WHERE
+        {{ between_stmts }}
+),
+base_mint_actions AS (
+    SELECT 
+        block_timestamp,
+        tx_id,
+        index,
+        inner_index,
+        event_type,
+        mint,
+        mint_amount,
+        decimal
+    FROM
+        {{ ref('silver__token_mint_actions') }}
+    WHERE
+        {{ between_stmts }}
+),
+base_burn_actions AS (
+    SELECT 
+        block_timestamp,
+        tx_id,
+        index,
+        inner_index,
+        event_type,
+        mint,
+        burn_amount,
+        decimal
+    FROM
+        {{ ref('silver__token_burn_actions') }}
+    WHERE
+        {{ between_stmts }}
 ),
 decoded AS (
     SELECT
@@ -129,7 +173,7 @@ deposits AS (
         d.liquidity_pool_address,
         d._inserted_timestamp
     FROM
-        solana.silver.transfers t
+        base_transfers t
         INNER JOIN decoded d
         ON t.block_timestamp :: DATE = d.block_timestamp :: DATE
         AND t.tx_id = d.tx_id
@@ -139,8 +183,7 @@ deposits AS (
             1
         ) = d.index
     WHERE
-        {{ between_stmts }}
-        AND d.action = 'deposit'
+        d.action = 'deposit'
         AND dest_token_account IN (
             liquidity_a_token_vault,
             liquidity_b_token_vault
@@ -166,7 +209,7 @@ withdraws AS (
         d.liquidity_pool_address,
         d._inserted_timestamp
     FROM
-        solana.silver.transfers t
+        base_transfers t
         INNER JOIN decoded d
         ON t.block_timestamp :: DATE = d.block_timestamp :: DATE
         AND t.tx_id = d.tx_id
@@ -176,8 +219,7 @@ withdraws AS (
             1
         ) = d.index
     WHERE
-        {{ between_stmts }}
-        AND d.action = 'withdraw'
+        d.action = 'withdraw'
         AND source_token_account IN (
             liquidity_a_token_vault,
             liquidity_b_token_vault
@@ -201,14 +243,13 @@ mints AS (
         d.liquidity_pool_address,
         d._inserted_timestamp
     FROM
-        solana.silver.token_mint_actions m
+        base_mint_actions m
         INNER JOIN decoded d
         ON m.block_timestamp :: DATE = d.block_timestamp :: DATE
         AND m.tx_id = d.tx_id
         AND m.index = d.index
     WHERE
-        {{ between_stmts }}
-        AND m.mint = d.liquidity_pool_mint
+        m.mint = d.liquidity_pool_mint
 ),
 burns AS (
     SELECT
@@ -228,14 +269,13 @@ burns AS (
         d.liquidity_pool_address,
         d._inserted_timestamp
     FROM
-        solana.silver.token_burn_actions m
+        base_burn_actions m
         INNER JOIN decoded d
         ON m.block_timestamp :: DATE = d.block_timestamp :: DATE
         AND m.tx_id = d.tx_id
         AND m.index = d.index
     WHERE
-        {{ between_stmts }}
-        AND m.mint = d.liquidity_pool_mint
+        m.mint = d.liquidity_pool_mint
 ),
 pre_final AS (
     SELECT
