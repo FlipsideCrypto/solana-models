@@ -21,7 +21,7 @@ WITH date_hours AS (
             FROM
                 {{ source(
                     'crosschain_silver',
-                    'hourly_prices_coin_gecko'
+                    'hourly_prices_coin_market_cap'
                 ) }}
         )
 
@@ -41,14 +41,18 @@ asset_metadata AS (
     FROM
         {{ source(
             'crosschain_silver',
-            'asset_metadata_coin_gecko'
+            'asset_metadata_coin_market_cap'
         ) }}
     WHERE
         id IN (
             SELECT
-                coin_gecko_id
+                coin_market_cap_id :: INT
             FROM
                 {{ ref('silver__token_metadata') }}
+            WHERE
+                TRY_CAST(
+                    coin_market_cap_id AS INT
+                ) IS NOT NULL
         )
     GROUP BY
         1,
@@ -69,21 +73,25 @@ base_legacy_prices AS (
             'hour',
             recorded_at
         ) AS recorded_hour,
-        asset_id AS id,
+        asset_id :: NUMBER AS id,
         symbol,
         price AS CLOSE
     FROM
         {{ source(
-            'shared',
-            'prices_v2'
+            'crosschain_bronze',
+            'legacy_prices'
         ) }}
     WHERE
-        provider = 'coingecko'
+        provider = 'coinmarketcap'
         AND asset_id IN (
             SELECT
-                coin_gecko_id
+                coin_market_cap_id
             FROM
                 {{ ref('silver__token_metadata') }}
+            WHERE
+                TRY_CAST(
+                    coin_market_cap_id AS INT
+                ) IS NOT NULL
         )
         AND MINUTE(recorded_at) = 59
         AND recorded_at :: DATE < '2022-07-20' -- use legacy data before this date
@@ -106,7 +114,7 @@ base_prices AS (
     FROM
         {{ source(
             'crosschain_silver',
-            'hourly_prices_coin_gecko'
+            'hourly_prices_coin_market_cap'
         ) }}
         p
         LEFT OUTER JOIN asset_metadata m
@@ -114,9 +122,13 @@ base_prices AS (
     WHERE
         p.id IN (
             SELECT
-                coin_gecko_id
+                coin_market_cap_id :: INT
             FROM
                 {{ ref('silver__token_metadata') }}
+            WHERE
+                TRY_CAST(
+                    coin_market_cap_id AS INT
+                ) IS NOT NULL
         )
         AND recorded_hour :: DATE >= '2022-07-20'
 
@@ -147,8 +159,7 @@ imputed_prices AS (
         LAST_VALUE(
             p.close ignore nulls
         ) over (
-            PARTITION BY d.symbol,
-            d.id
+            PARTITION BY d.symbol
             ORDER BY
                 d.date_hour rows unbounded preceding
         ) AS imputed_close
@@ -177,7 +188,7 @@ SELECT
     ) AS _unique_key,
     {{ dbt_utils.generate_surrogate_key(
         ['recorded_hour', 'id']
-    ) }} AS token_prices_coin_gecko_hourly_id,
+    ) }} AS token_prices_coin_market_cap_hourly_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id

@@ -1,0 +1,30 @@
+version: 2
+models:
+  - name: price__ez_prices_hourly
+    description: '{{ doc("prices_ez_prices_hourly_table_doc") }}'
+
+    columns:
+      - name: HOUR
+        description: '{{ doc("prices_hour")}}'
+      - name: TOKEN_ADDRESS
+        description: '{{ doc("prices_token_address") }}'
+      - name: SYMBOL
+        description: '{{ doc("prices_symbol") }}'
+      - name: BLOCKCHAIN
+        description: '{{ doc("prices_blockchain") }}'
+      - name: DECIMALS
+        description: '{{ doc("prices_decimals") }}'
+      - name: PRICE
+        description: '{{ doc("prices_price") }}'
+      - name: IS_NATIVE
+        description: '{{ doc("prices_is_native") }}'
+      - name: IS_IMPUTED
+        description: '{{ doc("prices_is_imputed") }}'
+      - name: IS_DEPRECATED
+        description: '{{ doc("prices_is_deprecated") }}'
+      - name: EZ_PRICES_HOURLY_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

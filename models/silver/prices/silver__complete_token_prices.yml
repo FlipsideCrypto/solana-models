@@ -1,0 +1,41 @@
+version: 2
+models:
+  - name: silver__complete_token_prices
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - HOUR
+            - TOKEN_ADDRESS
+            - BLOCKCHAIN
+
+    columns:
+      - name: HOUR
+        tests:
+          - not_null
+      - name: TOKEN_ADDRESS
+        tests:
+          - not_null
+      - name: BLOCKCHAIN
+        tests:
+          - not_null
+      - name: BLOCKCHAIN_ID
+        tests:
+          - not_null
+      - name: PROVIDER
+        tests:
+          - not_null
+      - name: PRICE
+        tests: 
+          - not_null
+      - name: IS_IMPUTED
+        tests: 
+          - not_null
+      - name: _INSERTED_TIMESTAMP
+        tests:
+          - not_null
+      - name: MODIFIED_TIMESTAMP
+        tests:
+          - not_null
+      - name: COMPLETE_TOKEN_PRICES_ID
+        tests:
+          - unique
