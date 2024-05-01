@@ -29,5 +29,5 @@ FROM
     s
     LEFT JOIN {{ ref('silver__complete_token_prices') }}
     p
-    ON s.block_timestamp_hour = p.recorded_hour
+    ON s.block_timestamp_hour = p.hour
     AND p.token_address = 'So11111111111111111111111111111111111111112'
