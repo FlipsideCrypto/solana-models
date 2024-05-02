@@ -42,8 +42,7 @@
                     {{ this }}
             )
             {% else %} 
-            -- AND _inserted_timestamp :: DATE >= '2024-02-15'
-            AND block_timestamp :: DATE >= '2024-02-18'
+            AND _inserted_timestamp :: DATE >= '2024-02-15'
             {% endif %}
     {% endset %}
     {% do run_query(base_query) %}
