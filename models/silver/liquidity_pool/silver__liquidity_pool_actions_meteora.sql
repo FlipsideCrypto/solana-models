@@ -109,17 +109,7 @@ decoded AS (
         INDEX,
         inner_index,
         program_id,
-        CASE
-            WHEN event_type IN (
-                'addBalanceLiquidity',
-                'addImbalanceLiquidity',
-                'bootstrapLiquidity'
-            ) THEN 'deposit'
-            WHEN event_type IN (
-                'removeBalanceLiquidity',
-                'removeLiquiditySingleSide'
-            ) THEN 'withdraw'
-        END AS action,
+        event_type AS action,
         silver.udf_get_account_pubkey_by_name(
             'user',
             decoded_instruction :accounts
@@ -183,7 +173,11 @@ deposits AS (
             1
         ) = d.index
     WHERE
-        d.action = 'deposit'
+        d.action IN (
+            'addBalanceLiquidity',
+            'addImbalanceLiquidity',
+            'bootstrapLiquidity'
+        )
         AND dest_token_account IN (
             liquidity_a_token_vault,
             liquidity_b_token_vault
@@ -219,7 +213,10 @@ withdraws AS (
             1
         ) = d.index
     WHERE
-        d.action = 'withdraw'
+        d.action IN (
+            'removeBalanceLiquidity',
+            'removeLiquiditySingleSide'
+        )
         AND source_token_account IN (
             liquidity_a_token_vault,
             liquidity_b_token_vault
