@@ -25,7 +25,7 @@
         FROM 
             {{ ref('silver__decoded_instructions_combined') }}
         WHERE
-            program_id IN ('Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB')
+            program_id = 'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB'
             AND event_type IN (
                 'addBalanceLiquidity',
                 'addImbalanceLiquidity',
