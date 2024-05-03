@@ -1,14 +1,16 @@
+-- depends_on: {{ ref('silver__decoded_instructions_combined') }}
+
 {{ config(
     materialized = 'incremental',
     unique_key = ['swaps_intermediate_bonkswap_id'],
-    incremental_predicates = ['DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
-    tags = ['scheduled_non_core'],
 ) }}
 
-WITH base AS (
-
+{% if execute %}
+    {% set base_query %}
+    CREATE OR REPLACE TEMPORARY TABLE silver.swaps_intermediate_bonkswap__intermediate_tmp AS
     SELECT
         *
     FROM
@@ -16,17 +18,32 @@ WITH base AS (
     WHERE
         program_id = 'BSwp6bEBihVLdqJRKGgzjcGLHkcTuzmSo1TQkHepzH8p'
         AND event_type = 'swap'
+        AND succeeded
 
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) - INTERVAL '1 hour'
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND block_timestamp :: DATE >= '2023-04-12'
+    {% if is_incremental() %}
+    AND _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '1 hour'
+        FROM
+            {{ this }}
+    )
+    {% else %}
+        AND _inserted_timestamp::DATE BETWEEN '2024-01-26' AND '2024-03-01'
+    {% endif %}
+    {% endset %}
+    
+    {% do run_query(base_query) %}
+    {% set between_stmts = fsc_utils.dynamic_range_predicate(
+        "silver.swaps_intermediate_bonkswap__intermediate_tmp",
+        "block_timestamp::date"
+    ) %}
 {% endif %}
+
+WITH base AS (
+    SELECT
+        *
+    FROM
+        silver.swaps_intermediate_bonkswap__intermediate_tmp
 ),
 decoded AS (
     SELECT
@@ -36,9 +53,9 @@ decoded AS (
         INDEX,
         inner_index,
         decoded_instruction :args :xToY :: BOOLEAN AS xToY,
-        COALESCE(LEAD(inner_index) over (PARTITION BY tx_id, INDEX
-    ORDER BY
-        inner_index) -1, 999999) AS inner_index_end,
+        COALESCE(LEAD(inner_index) OVER (PARTITION BY tx_id, index
+            ORDER BY inner_index) -1, 999999
+        ) AS inner_index_end,
         program_id,
         silver.udf_get_account_pubkey_by_name(
             'swapper',
@@ -105,24 +122,16 @@ transfers AS (
         {{ ref('silver__transfers') }} A
         INNER JOIN (
             SELECT
-                DISTINCT tx_id
+                DISTINCT tx_id,
+                    block_timestamp::DATE AS block_date
             FROM
                 decoded
         ) d
-        ON d.tx_id = A.tx_id
+        ON d.block_date = A.block_timestamp::DATE
+        AND d.tx_id = A.tx_id
     WHERE
         A.succeeded
-
-{% if is_incremental() %}
-AND A._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) - INTERVAL '1 day'
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND A.block_timestamp :: DATE >= '2023-04-12'
-{% endif %}
+        AND {{ between_stmts }}
 ),
 pre_final AS (
     SELECT
@@ -155,9 +164,10 @@ pre_final AS (
         AND A.index = C.index_1
         AND ((C.inner_index_1 BETWEEN A.inner_index AND A.inner_index_end) or a.inner_index is null)
         AND C.amount <> 0
-        qualify(ROW_NUMBER() over (PARTITION BY A.tx_id, A.index, A.inner_INDEX
-    ORDER BY
-        inner_index)) = 1
+    QUALIFY
+        ROW_NUMBER() over (PARTITION BY A.tx_id, A.index, A.inner_INDEX
+            ORDER BY inner_index
+        ) = 1
 )
 SELECT
     block_id,
