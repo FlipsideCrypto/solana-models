@@ -1,194 +1,285 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "CONCAT_WS('-', tx_id, mint, purchaser)",
-    incremental_strategy = 'delete+insert',
-    cluster_by = ['block_timestamp::DATE'],
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
+    merge_exclude_columns = ["inserted_timestamp"],
+    unique_key = "nft_sales_tensorswap_id",
+    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
     tags = ['scheduled_non_core']
 ) }}
-with pre_final as (
-SELECT
-    block_id, 
-    block_timestamp, 
-    tx_id, 
-    succeeded,
-    i.value:programId :: STRING AS program_id, 
-    i.value:accounts[4] :: STRING AS mint, 
-    i.value:accounts[8] :: STRING AS purchaser, 
-    i.value:accounts[7] :: STRING AS seller,
-    MAX(ABS(post_balances[keys.index] - pre_balances[keys.index]) / POWER(10,9)) AS sales_amount, 
-    _inserted_timestamp
-FROM 
-    {{ ref('silver__transactions') }}
-INNER JOIN lateral flatten (input => instructions) i
-INNER JOIN lateral flatten (input => account_keys) keys
-WHERE 
-    array_contains('Program log: Instruction: BuySingleListing'::VARIANT, log_messages)
-    AND i.value:programId = 'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN'
-    AND i.value:accounts[8] = signers[0]
+
+{% if execute %}
+    {% set base_query %}
+    CREATE OR REPLACE temporary TABLE silver.nft_sales_tensorswap__intermediate_tmp AS
+    SELECT
+        block_timestamp,
+        block_id,
+        tx_id,
+        succeeded,
+        INDEX,
+        inner_index,
+        program_id,
+        event_type,
+        decoded_instruction,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver__decoded_instructions_combined') }}
+    WHERE
+        program_id = 'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN'
+        AND event_type IN (
+            'wnsBuySingleListing',
+            'buyNftT22',
+            'buySingleListing',
+            'buyNft',
+            'buySingleListingT22',
+            'wnsBuyNft',
+            'sellNftTokenPool',
+            'sellNftTokenPoolT22',
+            'sellNftTradePoolT22',
+            'wnsSellNftTradePool',
+            'wnsSellNftTokenPool',
+            'sellNftTradePool'
+        )
+        AND succeeded
+
     {% if is_incremental() %}
-    AND _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
+        AND _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp) - INTERVAL '1 hour'
+            FROM
+                {{ this }}
         )
     {% else %}
-    AND block_timestamp :: date >= '2022-09-22'
+        AND _inserted_timestamp :: DATE >= '2023-11-15'
     {% endif %}
-GROUP BY
-    block_id, 
-    block_timestamp,
-    tx_id,
-    succeeded,
-    i.value, 
-    i.value:accounts[8], 
-    i.value:accounts[7],
-    i.value:accounts[4], 
-    _inserted_timestamp
+{% endset %}
 
-UNION 
+{% do run_query(base_query) %}
+{% set between_stmts = fsc_utils.dynamic_range_predicate(
+    "silver.nft_sales_tensorswap__intermediate_tmp",
+    "block_timestamp::date"
+) %}
+{% endif %}
 
-SELECT
-    block_id, 
-    block_timestamp, 
-    tx_id, 
-    succeeded,
-    i.value:programId :: STRING AS program_id, 
-    i.value:accounts[5] :: STRING AS mint,
-    i.value:accounts[11] :: STRING AS purchaser, 
-    i.value:accounts[10] :: STRING AS seller,
-    MAX(ABS(post_balances[keys.index] - pre_balances[keys.index]) / POWER(10,9)) AS sales_amount, 
-    _inserted_timestamp
-FROM 
-    {{ ref('silver__transactions') }}
-INNER JOIN lateral flatten (input => instructions) i
-INNER JOIN lateral flatten (input => account_keys) keys
-WHERE 
-    array_contains('Program log: Instruction: BuyNft'::VARIANT, log_messages)
-    AND i.value:programId = 'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN'
-    AND i.value:accounts[11] = signers[0]
-    {% if is_incremental() %}
-    AND _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
-    {% else %}
-    AND block_timestamp :: date >= '2022-09-22'
-    {% endif %}
-GROUP BY
-    block_id, 
-    block_timestamp,
-    tx_id,
-    succeeded,
-    i.value, 
-    i.value:accounts[11], 
-    i.value:accounts[10],
-    i.value:accounts[5], 
-    _inserted_timestamp
-
-UNION 
-
-SELECT 
-    block_id, 
-    block_timestamp, 
-    tx_id, 
-    succeeded,
-    i.value:programId :: STRING AS program_id, 
-    i.value:accounts[6] :: STRING AS mint, 
-    i.value:accounts[9] :: STRING AS purchaser, 
-    i.value:accounts[10] :: STRING AS seller,
-    MAX(ABS(post_balances[keys.index] - pre_balances[keys.index]) / POWER(10,9)) AS sales_amount, 
-    _inserted_timestamp
-FROM 
-    {{ ref('silver__transactions') }}
-INNER JOIN lateral flatten (input => instructions) i
-INNER JOIN lateral flatten (input => account_keys) keys
-WHERE 
-    array_contains('Program log: Instruction: SellNftTokenPool'::VARIANT, log_messages)
-    AND i.value:programId = 'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN'
-    AND i.value:accounts[10] = signers[0]
-    {% if is_incremental() %}
-    AND _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
-    {% else %}
-    AND block_timestamp :: date >= '2022-09-22'
-    {% endif %}
-GROUP BY
-    block_id, 
-    block_timestamp,
-    tx_id,
-    succeeded,
-    i.value,
-    i.value:accounts[9], 
-    i.value:accounts[10],
-    i.value:accounts[6], 
-    _inserted_timestamp
-
-UNION 
-
-SELECT 
-    block_id, 
-    block_timestamp, 
-    tx_id, 
-    succeeded,
-    i.value:programId :: STRING AS program_id, 
-    i.value:accounts[6] :: STRING AS mint,
-    i.value:accounts[9] :: STRING AS purchaser, 
-    i.value:accounts[10] :: STRING AS seller,
-    MAX(ABS(post_balances[keys.index] - pre_balances[keys.index]) / POWER(10,9)) AS sales_amount, 
-    _inserted_timestamp
-FROM 
-    {{ ref('silver__transactions') }}
-INNER JOIN lateral flatten (input => instructions) i
-INNER JOIN lateral flatten (input => account_keys) keys
-WHERE 
-    array_contains('Program log: Instruction: SellNftTradePool'::VARIANT, log_messages)
-    AND i.value:programId = 'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN'
-    AND i.value:accounts[10] = signers[0]
-    {% if is_incremental() %}
-    AND _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
-    {% else %}
-    AND block_timestamp :: date >= '2022-09-22'
-    {% endif %}
-GROUP BY
-    block_id, 
-    block_timestamp,
-    tx_id,
-    succeeded,
-    i.value,
-    i.value:accounts[9], 
-    i.value:accounts[10],
-    i.value:accounts[6], 
-    _inserted_timestamp
+WITH decoded AS (
+    SELECT
+        block_timestamp,
+        block_id,
+        tx_id,
+        succeeded,
+        INDEX,
+        inner_index,
+        program_id,
+        event_type,
+        CASE
+            WHEN event_type IN (
+                'wnsBuySingleListing',
+                'buyNftT22',
+                'buySingleListing',
+                'buyNft',
+                'buySingleListingT22',
+                'wnsBuyNft'
+            ) THEN silver.udf_get_account_pubkey_by_name(
+                'buyer',
+                decoded_instruction :accounts
+            )
+            WHEN event_type IN (
+                'sellNftTokenPool',
+                'sellNftTokenPoolT22',
+                'sellNftTradePoolT22',
+                'wnsSellNftTradePool',
+                'wnsSellNftTokenPool',
+                'sellNftTradePool'
+            ) THEN silver.udf_get_account_pubkey_by_name(
+                'shared > owner',
+                decoded_instruction :accounts
+            )
+        END AS purchaser,
+        CASE
+            WHEN event_type IN (
+                'wnsBuySingleListing',
+                'buyNftT22',
+                'buySingleListing',
+                'buyNft',
+                'buySingleListingT22',
+                'wnsBuyNft'
+            ) THEN silver.udf_get_account_pubkey_by_name(
+                'owner',
+                decoded_instruction :accounts
+            )
+            WHEN event_type IN (
+                'sellNftTokenPool',
+                'sellNftTokenPoolT22',
+                'sellNftTradePoolT22',
+                'wnsSellNftTradePool',
+                'wnsSellNftTokenPool',
+                'sellNftTradePool'
+            ) THEN silver.udf_get_account_pubkey_by_name(
+                'shared > seller',
+                decoded_instruction :accounts
+            )
+        END AS seller,
+        CASE
+            WHEN event_type IN (
+                'wnsBuySingleListing',
+                'buyNftT22',
+                'buySingleListing',
+                'buyNft',
+                'buySingleListingT22',
+                'wnsBuyNft'
+            ) THEN silver.udf_get_account_pubkey_by_name(
+                'nftMint',
+                decoded_instruction :accounts
+            )
+            WHEN event_type IN (
+                'sellNftTokenPool',
+                'sellNftTokenPoolT22',
+                'sellNftTradePoolT22',
+                'wnsSellNftTradePool',
+                'wnsSellNftTokenPool',
+                'sellNftTradePool'
+            ) THEN silver.udf_get_account_pubkey_by_name(
+                'shared > nftMint',
+                decoded_instruction :accounts
+            )
+        END AS mint,
+        CASE
+            WHEN event_type IN (
+                'sellNftTokenPool',
+                'sellNftTokenPoolT22',
+                'wnsSellNftTradePool',
+                'wnsSellNftTokenPool',
+                'sellNftTradePool'
+            ) THEN silver.udf_get_account_pubkey_by_name(
+                'shared > solEscrow',
+                decoded_instruction :accounts
+            )
+            WHEN event_type IN ('sellNftTradePoolT22') THEN silver.udf_get_account_pubkey_by_name(
+                'marginAccount',
+                decoded_instruction :accounts
+            )
+        END AS sol_escrow,
+        _inserted_timestamp
+    FROM
+        silver.nft_sales_tensorswap__intermediate_tmp
+),
+base_balances AS (
+    SELECT
+        t.block_timestamp,
+        t.tx_id,
+        t.signers,
+        t.pre_balances,
+        t.post_balances,
+        t.account_keys
+    FROM
+        {{ ref('silver__transactions') }} t
+        JOIN decoded d USING(tx_id)
+    WHERE
+        {{ between_stmts }}
+),
+buys AS (
+    SELECT
+        d.block_timestamp,
+        d.tx_id,
+        d.index,
+        SUM(
+            t.amount
+        ) AS sales_amount
+    FROM
+        {{ ref('silver__transfers') }} t
+        JOIN decoded d
+        ON d.block_timestamp :: DATE = t.block_timestamp :: DATE
+        AND d.tx_id = t.tx_id
+        AND d.index = SPLIT_PART(
+            t.index,
+            '.',
+            1
+        )
+        AND d.purchaser = t.tx_from
+    WHERE
+        d.event_type IN (
+            'wnsBuySingleListing',
+            'buyNftT22',
+            'buySingleListing',
+            'buyNft',
+            'buySingleListingT22',
+            'wnsBuyNft'
+        )
+        AND t.block_timestamp :: DATE = '2024-04-20'
+        AND t.mint = 'So11111111111111111111111111111111111111112'
+    GROUP BY
+        1,2,3
+),
+sells AS (
+    SELECT
+        d.block_timestamp,
+        d.tx_id,
+        d.index,
+        t.pre_balances,
+        t.post_balances,
+        t.account_keys,
+        silver.udf_get_account_balances_index(
+            d.sol_escrow,
+            t.account_keys
+        ) AS escrow_balance_index,
+        (t.pre_balances [escrow_balance_index] - t.post_balances [escrow_balance_index]) * pow(10,-9) AS sales_amount /* sale always in sol, assuming 9 decimals */
+    FROM
+        base_balances t
+        JOIN decoded d
+        ON d.block_timestamp :: DATE = t.block_timestamp :: DATE
+        AND d.tx_id = t.tx_id
+    WHERE
+        d.event_type IN (
+            'sellNftTokenPool',
+            'sellNftTokenPoolT22',
+            'sellNftTradePoolT22',
+            'wnsSellNftTradePool',
+            'wnsSellNftTokenPool',
+            'sellNftTradePool'
+        )
+        AND t.block_timestamp :: DATE = '2024-04-20'
+),
+pre_final AS (
+    SELECT
+        d.block_timestamp,
+        d.block_id,
+        d.tx_id,
+        d.succeeded,
+        d.index,
+        d.inner_index,
+        d.program_id,
+        d.purchaser,
+        d.seller,
+        d.mint,
+        s.sales_amount,
+        d._inserted_timestamp,
+    FROM
+        decoded d
+        JOIN sells s 
+        USING(block_timestamp, tx_id)
+    UNION ALL
+    SELECT
+        d.block_timestamp,
+        d.block_id,
+        d.tx_id,
+        d.succeeded,
+        d.index,
+        d.inner_index,
+        d.program_id,
+        d.purchaser,
+        d.seller,
+        d.mint,
+        b.sales_amount,
+        d._inserted_timestamp,
+    FROM
+        decoded d
+        JOIN buys b 
+        USING(block_timestamp, tx_id, index)
 )
-
 SELECT
-    block_id, 
-    block_timestamp, 
-    tx_id, 
-    succeeded,
-    program_id, 
-    mint,
-    purchaser, 
-    seller,
-    sales_amount, 
-    _inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(
-        ['tx_id','mint','purchaser']
-    ) }} AS nft_sales_tensorswap_id,
+    *,
+    {{ dbt_utils.generate_surrogate_key(['tx_id','mint']) }} AS nft_sales_tensorswap_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
-    '{{ invocation_id }}' AS _invocation_id
-FROM    
+    '{{ invocation_id }}' AS invocation_id
+FROM 
     pre_final
