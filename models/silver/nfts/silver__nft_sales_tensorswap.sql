@@ -1,3 +1,5 @@
+-- depends_on: {{ ref('silver__decoded_instructions_combined') }}
+
 {{ config(
     materialized = 'incremental',
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
@@ -204,7 +206,6 @@ buys AS (
             'buySingleListingT22',
             'wnsBuyNft'
         )
-        AND t.block_timestamp :: DATE = '2024-04-20'
         AND t.mint = 'So11111111111111111111111111111111111111112'
     GROUP BY
         1,2,3
@@ -236,7 +237,6 @@ sells AS (
             'wnsSellNftTokenPool',
             'sellNftTradePool'
         )
-        AND t.block_timestamp :: DATE = '2024-04-20'
 ),
 pre_final AS (
     SELECT
