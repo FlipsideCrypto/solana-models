@@ -59,6 +59,16 @@ models:
                 and coalesce(decoded_instruction:args:inAmount, decoded_instruction:args:amountIn)::int > 0
                 and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
               to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_swaps_intermedia_dooar_tx_id
+              to: ref('silver__swaps_intermediate_dooar')
+              field: tx_id
+              from_condition: >
+                program_id = 'Dooar9JkhdZ7J3LHN3A7YCuoGRUggXhQaG4kijfLGU2j'
+                and event_type = 'swap' 
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+                and block_timestamp::date <> '2022-07-04' /* upstream issue with missing inner instructions in events for some blocks in this date, remove this when it gets resolved */
+              to_condition: "_inserted_timestamp >= current_date - 7"
       - name: SIGNERS
       - name: SUCCEEDED
       - name: INDEX
