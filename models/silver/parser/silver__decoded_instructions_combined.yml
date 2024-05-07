@@ -71,6 +71,29 @@ models:
                 and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
                 and block_timestamp::date <> '2022-07-04' /* upstream issue with missing inner instructions in events for some blocks in this date, remove this when it gets resolved */
               to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_nft_sales_tensorswap_tx_id
+              to: ref('silver__nft_sales_tensorswap')
+              field: tx_id
+              from_condition: >
+                program_id = 'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN'
+                AND event_type IN (
+                    'wnsBuySingleListing',
+                    'buyNftT22',
+                    'buySingleListing',
+                    'buyNft',
+                    'buySingleListingT22',
+                    'wnsBuyNft',
+                    'sellNftTokenPool',
+                    'sellNftTokenPoolT22',
+                    'sellNftTradePoolT22',
+                    'wnsSellNftTradePool',
+                    'wnsSellNftTokenPool',
+                    'sellNftTradePool'
+                )
+                AND succeeded
+                AND _inserted_timestamp between current_date - 7 AND current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
       - name: SIGNERS
       - name: SUCCEEDED
       - name: INDEX
