@@ -144,51 +144,10 @@ WITH decoded AS (
                 decoded_instruction :accounts
             )
         END AS mint,
-        CASE
-            WHEN event_type IN (
-                'sellNftTokenPool',
-                'sellNftTokenPoolT22',
-                'wnsSellNftTradePool',
-                'wnsSellNftTokenPool',
-                'sellNftTradePool',
-                'sellNftTradePoolT22'
-            ) THEN silver.udf_get_account_pubkey_by_name(
-                'shared > solEscrow',
-                decoded_instruction :accounts
-            )
-        END AS sol_escrow,
-        CASE 
-            WHEN event_type IN ('sellNftTradePoolT22') THEN silver.udf_get_account_pubkey_by_name(
-                'marginAccount',
-                decoded_instruction :accounts
-            )
-        END AS margin_account,
         decoded_instruction:args:minPrice::int * pow(10,-9) AS min_price,
         _inserted_timestamp
     FROM
         silver.nft_sales_tensorswap__intermediate_tmp
-),
-base_balances AS (
-    SELECT
-        t.block_timestamp,
-        t.tx_id,
-        t.signers,
-        t.pre_balances,
-        t.post_balances,
-        t.account_keys
-    FROM
-        {{ ref('silver__transactions') }} t
-        JOIN decoded d USING(tx_id)
-    WHERE
-        {{ between_stmts }}
-        AND d.event_type IN (
-            'sellNftTokenPool',
-            'sellNftTokenPoolT22',
-            'sellNftTradePoolT22',
-            'wnsSellNftTradePool',
-            'wnsSellNftTokenPool',
-            'sellNftTradePool'
-        )
 ),
 base_transfers AS (
     SELECT 
@@ -238,30 +197,22 @@ buys AS (
 ),
 sells AS (
     SELECT
-        d.block_timestamp,
-        d.tx_id,
-        d.index,
-        t.pre_balances,
-        t.post_balances,
-        t.account_keys,
-        silver.udf_get_account_balances_index(
-            d.sol_escrow,
-            t.account_keys
-        ) AS escrow_balance_index,
-        silver.udf_get_account_balances_index(
-            d.margin_account,
-            t.account_keys
-        ) AS margin_balance_index,
-        (t.pre_balances [escrow_balance_index] - t.post_balances [escrow_balance_index]) * pow(10,-9) AS sales_amount, /* sale always in sol, assuming 9 decimals */
-        (t.pre_balances [margin_balance_index] - t.post_balances [margin_balance_index]) * pow(10,-9) AS sales_amount2,
-        min_price,
-    FROM
-        base_balances t
-        JOIN decoded d
-        ON d.block_timestamp :: DATE = t.block_timestamp :: DATE
-        AND d.tx_id = t.tx_id
+        block_timestamp,
+        block_id,
+        tx_id,
+        succeeded,
+        index,
+        inner_index,
+        program_id,
+        purchaser,
+        seller,
+        mint,
+        min_price AS sales_amount,
+        _inserted_timestamp
+    FROM 
+        decoded
     WHERE
-        d.event_type IN (
+        event_type IN (
             'sellNftTokenPool',
             'sellNftTokenPoolT22',
             'sellNftTradePoolT22',
@@ -272,29 +223,20 @@ sells AS (
 ),
 pre_final AS (
     SELECT
-        d.block_timestamp,
-        d.block_id,
-        d.tx_id,
-        d.succeeded,
-        d.index,
-        d.inner_index,
-        d.program_id,
-        d.purchaser,
-        d.seller,
-        d.mint,
-        case 
-            when coalesce(s.sales_amount,0) <> 0 then 
-                s.sales_amount
-            when coalesce(s.sales_amount2,0) <> 0 then 
-                s.sales_amount2
-            when coalesce(s.min_price,0) <> 0 then
-                s.min_price
-        end as sales_amount,
-        d._inserted_timestamp,
+        block_timestamp,
+        block_id,
+        tx_id,
+        succeeded,
+        index,
+        inner_index,
+        program_id,
+        purchaser,
+        seller,
+        mint,
+        sales_amount,
+        _inserted_timestamp,
     FROM
-        decoded d
-        JOIN sells s 
-        USING(block_timestamp, tx_id, index)
+        sells
     UNION ALL
     SELECT
         d.block_timestamp,
