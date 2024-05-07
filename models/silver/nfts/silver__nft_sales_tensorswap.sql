@@ -160,6 +160,7 @@ WITH decoded AS (
                 decoded_instruction :accounts
             )
         END AS sol_escrow,
+        decoded_instruction:args:minPrice::int * pow(10,-9) AS min_price,
         _inserted_timestamp
     FROM
         silver.nft_sales_tensorswap__intermediate_tmp
@@ -177,6 +178,27 @@ base_balances AS (
         JOIN decoded d USING(tx_id)
     WHERE
         {{ between_stmts }}
+        AND d.event_type IN (
+            'sellNftTokenPool',
+            'sellNftTokenPoolT22',
+            'sellNftTradePoolT22',
+            'wnsSellNftTradePool',
+            'wnsSellNftTokenPool',
+            'sellNftTradePool'
+        )
+),
+base_transfers AS (
+    SELECT 
+        block_timestamp,
+        tx_id,
+        index,
+        tx_from,
+        mint,
+        amount
+    FROM
+        {{ ref('silver__transfers') }} t
+    WHERE
+        {{ between_stmts }}
 ),
 buys AS (
     SELECT
@@ -187,7 +209,7 @@ buys AS (
             t.amount
         ) AS sales_amount
     FROM
-        {{ ref('silver__transfers') }} t
+        base_transfers t
         JOIN decoded d
         ON d.block_timestamp :: DATE = t.block_timestamp :: DATE
         AND d.tx_id = t.tx_id
@@ -207,6 +229,7 @@ buys AS (
             'wnsBuyNft'
         )
         AND t.mint = 'So11111111111111111111111111111111111111112'
+
     GROUP BY
         1,2,3
 ),
@@ -222,7 +245,8 @@ sells AS (
             d.sol_escrow,
             t.account_keys
         ) AS escrow_balance_index,
-        (t.pre_balances [escrow_balance_index] - t.post_balances [escrow_balance_index]) * pow(10,-9) AS sales_amount /* sale always in sol, assuming 9 decimals */
+        (t.pre_balances [escrow_balance_index] - t.post_balances [escrow_balance_index]) * pow(10,-9) AS sales_amount, /* sale always in sol, assuming 9 decimals */
+        min_price,
     FROM
         base_balances t
         JOIN decoded d
@@ -250,12 +274,12 @@ pre_final AS (
         d.purchaser,
         d.seller,
         d.mint,
-        s.sales_amount,
+        iff(s.sales_amount=0,coalesce(s.min_price,0),s.sales_amount) AS sales_amount,
         d._inserted_timestamp,
     FROM
         decoded d
         JOIN sells s 
-        USING(block_timestamp, tx_id)
+        USING(block_timestamp, tx_id, index)
     UNION ALL
     SELECT
         d.block_timestamp,
@@ -277,7 +301,7 @@ pre_final AS (
 )
 SELECT
     *,
-    {{ dbt_utils.generate_surrogate_key(['tx_id','mint']) }} AS nft_sales_tensorswap_id,
+    {{ dbt_utils.generate_surrogate_key(['tx_id','index','inner_index','mint']) }} AS nft_sales_tensorswap_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS invocation_id
