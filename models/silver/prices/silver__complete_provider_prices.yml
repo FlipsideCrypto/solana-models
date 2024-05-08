@@ -1,0 +1,25 @@
+version: 2
+models:
+  - name: silver__complete_provider_prices
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - ASSET_ID
+            - RECORDED_HOUR
+            - PROVIDER
+    columns:
+      - name: PROVIDER
+        tests:
+          - not_null
+      - name: ASSET_ID
+        tests:
+          - not_null
+      - name: RECORDED_HOUR
+        tests:
+          - not_null
+      - name: MODIFIED_TIMESTAMP
+        tests:
+          - not_null
+      - name: COMPLETE_PROVIDER_PRICES_ID
+        tests:
+          - unique

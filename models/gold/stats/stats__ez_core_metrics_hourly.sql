@@ -18,7 +18,7 @@ SELECT
         (total_fees / pow(
             10,
             9
-        )) * p.close,
+        )) * p.price,
         2
     ) AS total_fees_usd,
     core_metrics_hourly_id AS ez_core_metrics_hourly_id,
@@ -27,7 +27,7 @@ SELECT
 FROM
     {{ ref('silver__core_metrics_hourly') }}
     s
-    LEFT JOIN {{ ref('price__ez_token_prices_hourly') }}
+    LEFT JOIN {{ ref('silver__complete_token_prices') }}
     p
-    ON s.block_timestamp_hour = p.recorded_hour
+    ON s.block_timestamp_hour = p.hour
     AND p.token_address = 'So11111111111111111111111111111111111111112'

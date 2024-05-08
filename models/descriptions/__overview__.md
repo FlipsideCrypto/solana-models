@@ -21,7 +21,6 @@ There is more information on how to use dbt docs in the last section of this doc
 
 **Core Dimension Tables:**
 - [dim_labels](#!/model/model.solana_models.core__dim_labels)
-- [dim_tokens](#!/model/model.solana_models.core__dim_tokens)
 
 **Core Fact Tables:**
 - [fact_blocks](#!/model/model.solana_models.core__fact_blocks)
@@ -59,8 +58,10 @@ There is more information on how to use dbt docs in the last section of this doc
 - [fact_nft_sales](#!/model/model.solana_models.nft__fact_nft_sales)
 
 ### Price Tables (`Solana`.`PRICE`.`<table_name>`)
-- [fact_token_prices_hourly](#!/model/model.solana_models.price__fact_token_prices_hourly)
-- [ez_token_prices_hourly](#!/model/model.solana_models.price__ez_token_prices_hourly)
+- [dim_asset_metadata](#!/model/model.solana_models.price__dim_asset_metadata)
+- [fact_prices_ohlc_hourly](#!/model/model.solana_models.price__fact_prices_ohlc_hourly)
+- [ez_asset_metadata](#!/model/model.solana_models.price__ez_asset_metadata)
+- [ez_prices_hourly](#!/model/model.solana_models.price__ez_prices_hourly)
 
 ## **Data Model Overview**
 
