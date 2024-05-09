@@ -87,4 +87,23 @@ models:
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
           - not_null: *recent_date_filter
+      - name: LIQUIDITY_POOL_ACTIONS_METEORA_ID
+        description: '{{ doc("pk") }}'   
+        tests: 
+          - unique: *recent_date_filter
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        tests: 
+          - not_null: *recent_date_filter
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        tests: 
+          - not_null: 
+              name: test_silver__not_null_liquidity_pool_actions_meteora__invocation_id
+              <<: *recent_date_filter
+              
 
