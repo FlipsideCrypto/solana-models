@@ -102,7 +102,7 @@ models:
                 program_id = 'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB'
                 AND event_type IN ('addBalanceLiquidity','addImbalanceLiquidity','bootstrapLiquidity','removeBalanceLiquidity','removeLiquiditySingleSide')
                 AND succeeded
-                AND decoded_instruction:args:poolTokenAmount::int <> 0
+                AND coalesce(decoded_instruction:args:poolTokenAmount::int,-1) <> 0
                 and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
       - name: SIGNERS
       - name: SUCCEEDED
