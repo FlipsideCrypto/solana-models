@@ -132,15 +132,6 @@ decoded AS (
         _inserted_timestamp,
     FROM
         base
-    WHERE
-        program_id IN ('Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB')
-        AND event_type IN (
-            'addBalanceLiquidity',
-            'addImbalanceLiquidity',
-            'bootstrapLiquidity',
-            'removeBalanceLiquidity',
-            'removeLiquiditySingleSide'
-        )
 ),
 deposits AS (
     SELECT
