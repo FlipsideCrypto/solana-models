@@ -106,6 +106,6 @@ models:
         description: '{{ doc("_invocation_id") }}' 
         tests: 
           - not_null: 
-              name: test_silver__not_null_liquidity_pool_actions_meteora__invocation_id
+              name: test_silver__not_null_liquidity_pool_actions_meteora_dlmm__invocation_id
               <<: *recent_date_filter
 
