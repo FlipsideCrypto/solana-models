@@ -1,0 +1,110 @@
+version: 2
+models:
+  - name: silver__liquidity_pool_actions_meteora_multi
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+            - TX_ID
+            - INDEX
+            - INNER_INDEX
+          where: block_timestamp::date > current_date - 30
+      - compare_model_subset:
+          name: silver__liquidity_pool_actions_meteora_multi_business_logic_test
+          compare_model: ref('testing__liquidity_pool_actions_meteora_multi')
+          compare_columns: 
+            - tx_id
+            - index
+            - inner_index
+            - program_id
+            - action
+            - mint
+            - round(amount,8)
+            - liquidity_provider
+            - liquidity_pool_address
+          model_condition: "where tx_id in ('5bsfFQeBuKRZQaVYJxfthpAqPatfuQp93Rvg3oKQNhvnDzgWAbVCkqYJ4NRDcdZrdfrcp53wyPGPm472daspYzth',
+          'DZc6866Suk9bbSqTCjGTBFxPca8TKjw9EUZb7dvqjKzj92TjFHsA9rfzPPnYfoqsK4LjSfFzgmMuKT74Qg5jL9T',
+          '2gDNDPqySphMU9fGKhcKo46oumZwjQ6su3rjHLXDh18uaQUmPHEkgFk5A4yVrFFtVYPYruDgLiUMGpM8kb4gqQXx',
+          '5JQ58BY13e6z1pMA63P1SMeAvmfyiXKFKaMzosRXJqxZAJEZwd8mB79ujZVVjkPqKoben7EPGSbCweix3HWqkCRw',
+          '3VD3za8UEnjdXxRbwTWJmSnL6apfV7WiE2LSDJNoCoBVmdqijB7mqWQg1StvJsKeLp8i8EsrruBKX7TFf67THKLC',
+          '3UW8mkDqrqvkcPc5igueBag1MVxbJWywyGuZgxwQ5JV93sBjnnApHXZ4htVkf2Np7xvLyDv3yQoTq5vtwX6PkHmP',
+          '5RKrDGTmGNWKUSuqxyZkYVSz4C6fdp1uuLRMwmN6s8f3v6UEXh7vAowj2GUk42DD61Sx8cgF4EHEusNkg7McBnR2',
+          'Q3fZ4uL6XPhvvM3CMaaDnQ7PS5iYwxA72CkjaHTf8puHvxdbPWSm2Lne8sxCx6wcLxxeFTJs3KuveNPBzNCPzsk')"
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+          - not_null: *recent_date_filter
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('index') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "Position of event within inner instructions"
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: ACTION
+        description: "{{ doc('action') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        tests: 
+          - not_null:
+              where: block_id > 69393037 AND _inserted_timestamp >= current_date - 7
+      - name: AMOUNT
+        description: "{{ doc('amount') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: LIQUIDITY_PROVIDER
+        description: "{{ doc('liquidity_provider') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: LIQUIDITY_POOL_ADDRESS
+        description: "{{ doc('liquidity_pool_address') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: LIQUIDITY_POOL_ACTIONS_METEORA_MULTI_ID
+        description: '{{ doc("pk") }}'   
+        tests: 
+          - unique: *recent_date_filter
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        tests: 
+          - not_null: *recent_date_filter
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        tests: 
+          - not_null: 
+              name: test_silver__not_null_liquidity_pool_actions_meteora_multi__invocation_id
+              <<: *recent_date_filter
+              
+
