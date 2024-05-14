@@ -1,3 +1,9 @@
+{{
+    config(
+        tags=["test_hourly"]
+    )
+}}
+
 WITH max_loaded_part as (
     SELECT 
         LEAST(

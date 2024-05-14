@@ -42,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt test -s "solana_models,./models" tag:test_daily --exclude tag:test_weekly
+          dbt test -s "solana_models,./models" tag:test_daily --exclude tag:test_weekly tag:test_hourly
