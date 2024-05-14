@@ -90,3 +90,58 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__liquidity_pool_actions_saber') }}
+UNION
+SELECT
+    block_id,
+    block_timestamp,
+    tx_id,
+    succeeded,
+    program_id,
+    action,
+    liquidity_provider,
+    liquidity_pool_address,
+    amount,
+    mint,
+    _inserted_timestamp,
+    liquidity_pool_actions_meteora_id AS fact_liquidity_pool_actions_id,
+    inserted_timestamp,
+    modified_timestamp
+FROM
+    {{ ref('silver__liquidity_pool_actions_meteora') }}
+UNION
+SELECT
+    block_id,
+    block_timestamp,
+    tx_id,
+    succeeded,
+    program_id,
+    action,
+    liquidity_provider,
+    liquidity_pool_address,
+    amount,
+    mint,
+    _inserted_timestamp,
+    liquidity_pool_actions_meteora_dlmm_id AS fact_liquidity_pool_actions_id,
+    inserted_timestamp,
+    modified_timestamp
+FROM
+    {{ ref('silver__liquidity_pool_actions_meteora_dlmm') }}
+UNION
+SELECT
+    block_id,
+    block_timestamp,
+    tx_id,
+    succeeded,
+    program_id,
+    action,
+    liquidity_provider,
+    liquidity_pool_address,
+    amount,
+    mint,
+    _inserted_timestamp,
+    liquidity_pool_actions_meteora_multi_id AS fact_liquidity_pool_actions_id,
+    inserted_timestamp,
+    modified_timestamp
+FROM
+    {{ ref('silver__liquidity_pool_actions_meteora_multi') }}
+
