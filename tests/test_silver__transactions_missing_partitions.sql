@@ -58,7 +58,7 @@ FROM
 WHERE
   t._partition_id IS NULL
   AND b._partition_id <> 1877 -- seems like this whole partition is skipped slots
-  AND b._partition_id > 65441 /* some old partitions never got loaded into silver, 
+  AND b._partition_id > 81886 /* some old partitions never got loaded into silver, 
                                 the data has made it into silver through other partitions 
                                 and confirmed via other checks.
                                 We can start checking for new instances after this partition
