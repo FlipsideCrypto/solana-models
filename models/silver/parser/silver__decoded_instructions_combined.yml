@@ -21,25 +21,37 @@ models:
               name: dbt_utils_relationships_where_silver__decoded_instructions_combined_nft_sales_solsniper_tx_id
               to: ref('silver__nft_sales_solsniper')
               field: tx_id
-              from_condition: "program_id = 'SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g' and event_type = 'executeSolNftOrder' and _inserted_timestamp >= current_date - 7"
+              from_condition: >
+                program_id = 'SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g' 
+                and event_type = 'executeSolNftOrder' 
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
               to_condition: "_inserted_timestamp >= current_date - 7"
           - dbt_utils.relationships_where:
               name: dbt_utils_relationships_where_silver__decoded_instructions_combined_nft_sales_tensorswap_cnft_tx_id
               to: ref('silver__nft_sales_tensorswap_cnft')
               field: tx_id
-              from_condition: "program_id = 'TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp' and event_type = 'buy' and _inserted_timestamp >= current_date - 7"
+              from_condition: >
+                program_id = 'TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp' 
+                and event_type = 'buy' 
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
               to_condition: "_inserted_timestamp >= current_date - 7"
           - dbt_utils.relationships_where:
               name: dbt_utils_relationships_where_silver__decoded_instructions_combined_nft_sales_solsniper_cnft_onchain_tx_id
               to: ref('silver__nft_sales_solsniper_cnft_onchain')
               field: tx_id
-              from_condition: "program_id = 'SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g' and event_type = 'executeSolCnftOrder' and _inserted_timestamp >= current_date - 7"
+              from_condition: >
+                program_id = 'SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g' 
+                and event_type = 'executeSolCnftOrder' 
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
               to_condition: "_inserted_timestamp >= current_date - 7"
           - dbt_utils.relationships_where:
               name: dbt_utils_relationships_where_silver__decoded_instructions_combined_nft_sales_magic_eden_cnft_onchain_tx_id
               to: ref('silver__nft_sales_magic_eden_cnft_onchain')
               field: tx_id
-              from_condition: "program_id = 'M3mxk5W2tt27WGT7THox7PmgRDp4m6NEhL5xvxrBfS1' and event_type = 'buyNow' and _inserted_timestamp >= current_date - 7"
+              from_condition: 
+                program_id = 'M3mxk5W2tt27WGT7THox7PmgRDp4m6NEhL5xvxrBfS1' 
+                and event_type = 'buyNow' 
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
               to_condition: "_inserted_timestamp >= current_date - 7"
           - dbt_utils.relationships_where:
               name: dbt_utils_relationships_where_silver__decoded_instructions_combined_swaps_intermediate_bonkswap_tx_id
