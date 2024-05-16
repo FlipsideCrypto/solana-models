@@ -26,7 +26,12 @@
         AND event_type IN ('exactOutRoute','sharedAccountsExactOutRoute','sharedAccountsRoute','routeWithTokenLedger','route','sharedAccountsRouteWithTokenLedger')
         AND succeeded
         {% if is_incremental() %}
-        AND _inserted_timestamp::DATE >= '2024-05-16 04:00:00'
+        AND _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp) - INTERVAL '1 hour'
+            FROM
+                {{ this }}
+        )
         {% else %} 
             AND _inserted_timestamp :: DATE >= '2023-09-14'
             AND _inserted_timestamp :: DATE < '2023-09-30'
