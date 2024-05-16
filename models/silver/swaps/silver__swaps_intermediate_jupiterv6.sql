@@ -26,12 +26,7 @@
         AND event_type IN ('exactOutRoute','sharedAccountsExactOutRoute','sharedAccountsRoute','routeWithTokenLedger','route','sharedAccountsRouteWithTokenLedger')
         AND succeeded
         {% if is_incremental() %}
-        AND _inserted_timestamp >= (
-            SELECT
-                MAX(_inserted_timestamp) - INTERVAL '1 hour'
-            FROM
-                {{ this }}
-        )
+        AND _inserted_timestamp::DATE >= '2024-05-16 04:00:00'
         {% else %} 
             AND _inserted_timestamp :: DATE >= '2023-09-14'
             AND _inserted_timestamp :: DATE < '2023-09-30'
@@ -128,7 +123,14 @@ source_transfers as (
         and pf.tx_id = tr.tx_id
         and pf.index = split(tr.index,'.')[0]::number
         and coalesce(pf.user_source_token_account,pf.source_token_account) = tr.source_token_account 
-        and tr.mint is not null
+        and (
+                tr.mint is not null 
+                or 
+                (
+                    tr.mint is NULL 
+                    and tr.source_token_account <> tr.dest_token_account
+                )
+            )
     group by 1,2,3,4,5,6
     qualify(row_number() over (partition by pf.tx_id, pf.index order by tr_index)) = 1
 ),
@@ -159,7 +161,14 @@ dest_transfers as (
         and pf.tx_id = tr.tx_id
         and pf.index = split(tr.index,'.')[0]::number
         and coalesce(pf.user_destination_token_account,pf.destination_token_account) = coalesce(tr.dest_token_account,tr.tx_to)
-        and tr.mint is not null
+        and (
+                tr.mint is not null 
+                or 
+                (
+                    tr.mint is NULL 
+                    and tr.source_token_account <> tr.dest_token_account
+                )
+            )
     group by 1,2,3,4,5,6,7
 ),
 last_transfers as (
