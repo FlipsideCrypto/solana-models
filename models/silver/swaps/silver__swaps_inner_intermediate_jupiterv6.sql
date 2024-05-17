@@ -123,6 +123,7 @@ transfers_modified_owners AS (
         t.tx_id,
         t.index,
         t.inner_index,
+        b.swapper,
         silver.udf_get_account_pubkey_by_name('programAuthority', decoded_instruction:accounts) AS acting_authority,
         case 
             when acting_authority is not null and tx_from = acting_authority then 
@@ -163,14 +164,15 @@ transfers_modified_owners AS (
             and t.dest_token_account = t.tx_to
     where 
         new_tx_from <> new_tx_to
-)
-, swaps_inner as (
+),
+swaps_inner_tmp as (
     select 
         t.block_timestamp,
         t.block_id,
         t.tx_id,
         t.index,
         t.inner_index,
+        t.swapper,
         t.new_tx_from as tx_from,
         t.new_tx_to as tx_to,
         t.direction,
@@ -180,14 +182,37 @@ transfers_modified_owners AS (
         row_number() over (partition by t.tx_id, t.index, direction order by t.inner_index) as rn,
         t._inserted_timestamp
     from transfers_modified_owners t
-)
-, lazy_matching as (
+),
+swaps_inner as (
+    select 
+        s1.block_timestamp,
+        s1.block_id,
+        s1.tx_id,
+        s1.index,
+        s1.inner_index,
+        s1.swapper,
+        s1.tx_from,
+        s1.tx_to,
+        s1.direction,
+        s1.amount,
+        coalesce(s1.mint, s2.mint) as mint,
+        s1.program_id,
+        s1.rn,
+        s1._inserted_timestamp,
+    from swaps_inner_tmp s1
+        left outer join swaps_inner_tmp s2 
+        on s1.tx_id = s2.tx_id 
+        and s1.tx_to = s2.tx_from
+        and s1.rn = s2.rn
+),
+lazy_matching as (
     select 
         i.block_timestamp,
         i.block_id,
         i.tx_id, 
         i.index, 
         i.inner_index,
+        i.swapper,
         i.amount as from_amount, 
         i.mint as from_mint, 
         o.amount as to_amount, 
@@ -216,6 +241,7 @@ select
     tx_id, 
     index, 
     inner_index,
+    swapper,
     from_amount, 
     from_mint, 
     to_amount, 
