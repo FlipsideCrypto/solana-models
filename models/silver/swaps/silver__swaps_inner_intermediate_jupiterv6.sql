@@ -1,4 +1,4 @@
- -- depends_on: {{ ref('silver__decoded_instructions_combined') }}
+-- depends_on: {{ ref('silver__swaps_intermediate_jupiterv6') }}
 
 {{ config(
     materialized = 'incremental',
@@ -18,6 +18,7 @@
             swapper, 
             swap_index,
             program_id,
+            _inserted_timestamp,
         FROM
             {{ ref('silver__swaps_intermediate_jupiterv6') }}
         WHERE
@@ -25,6 +26,13 @@
             _inserted_timestamp >= (
                 SELECT
                     MAX(_inserted_timestamp) - INTERVAL '1 hour'
+                FROM
+                    {{ this }}
+            )
+            AND
+            _inserted_timestamp < (
+                SELECT
+                    MAX(_inserted_timestamp) + INTERVAL '10 hour'
                 FROM
                     {{ this }}
             )
@@ -59,6 +67,7 @@ base_decoded AS (
         block_timestamp,
         tx_id,
         index,
+        program_id,
         decoded_instruction
     FROM
         {{ ref('silver__decoded_instructions_combined') }}
@@ -69,9 +78,16 @@ base_decoded AS (
 base_transfers AS (
     SELECT 
         block_timestamp,
+        block_id,
         tx_id,
-        index,
-        decoded_instruction
+        split_part(index,'.',1)::int AS index,
+        split_part(index,'.',2)::int AS inner_index,
+        tx_from,
+        tx_to,
+        mint, 
+        amount,
+        source_token_account,
+        dest_token_account
     FROM
         {{ ref('silver__transfers') }}
     WHERE
@@ -84,32 +100,30 @@ base AS (
         j.swapper, 
         j.swap_index, 
         d.decoded_instruction, 
-        e.inner_instruction_program_ids
+        e.inner_instruction_program_ids,
+        j._inserted_timestamp
     from 
-        {{ ref('silver__swaps_intermediate_jupiterv6') }} j
+        base_swaps j
         join 
-            {{ ref('silver__decoded_instructions_combined') }} d 
+            base_decoded d 
             on d.block_timestamp::date = j.block_timestamp::date
             and d.tx_id = j.tx_id 
             and d.index = j.swap_index 
             and d.program_id = j.program_id
         join 
-            {{ ref('silver__events') }} e
+            base_events e
             on d.block_timestamp::date = e.block_timestamp::date
             and d.tx_id = e.tx_id
             and d.index = e.index
-    where 
-        j.block_timestamp::date >= '2024-05-01'
-        and e.block_timestamp::date >= '2024-05-01'
-        and e.program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
 ),
 transfers_modified_owners AS (
     select 
+        t.block_timestamp,
+        t.block_id,
         t.tx_id,
         t.index,
-        split_part(index,'.',1)::int as _index,
-        split_part(index,'.',2)::int as _inner_index,
-        solana.silver.udf_get_account_pubkey_by_name('programAuthority', decoded_instruction:accounts) AS acting_authority,
+        t.inner_index,
+        silver.udf_get_account_pubkey_by_name('programAuthority', decoded_instruction:accounts) AS acting_authority,
         case 
             when acting_authority is not null and tx_from = acting_authority then 
                 b.swapper
@@ -128,58 +142,96 @@ transfers_modified_owners AS (
         end as direction,
         t.amount,
         t.mint,
-        iff(_inner_index IS NULL, NULL, get(inner_instruction_program_ids, _inner_index-1)::string) as program_id
+        iff(t.inner_index IS NULL, NULL, get(inner_instruction_program_ids, t.inner_index-1)::string) as program_id,
+        b._inserted_timestamp
     from 
-        {{ ref('silver__transfers') }} t 
-        join base b 
+        base_transfers t 
+        join 
+            base b 
             on b.block_timestamp::date = t.block_timestamp::date 
             and b.tx_id = t.tx_id 
-            and b.swap_index = split_part(t.index,'.',1)::int
-        left outer join solana.silver.token_account_owners ao_from
+            and b.swap_index = t.index
+        left outer join 
+            {{ ref('silver__token_account_owners') }} ao_from
             on ao_from.account_address = t.tx_from
             and ao_from.start_block_id <= t.block_id
             and t.source_token_account = t.tx_from
-        left outer join solana.silver.token_account_owners ao_to
+        left outer join 
+            {{ ref('silver__token_account_owners') }} ao_to
             on ao_to.account_address = t.tx_to
             and ao_to.start_block_id <= t.block_id
             and t.dest_token_account = t.tx_to
     where 
-        t.block_timestamp::date >= '2024-04-22'
-        and new_tx_from <> new_tx_to
+        new_tx_from <> new_tx_to
 )
 , swaps_inner as (
     select 
+        t.block_timestamp,
+        t.block_id,
         t.tx_id,
-        t._index as index,
-        t._inner_index as inner_index,
+        t.index,
+        t.inner_index,
         t.new_tx_from as tx_from,
         t.new_tx_to as tx_to,
         t.direction,
         t.amount,
         t.mint,
         t.program_id,
-        t._index,
-        t._inner_index,
-        row_number() over (partition by t.tx_id, t._index, direction order by t._inner_index) as rn
+        row_number() over (partition by t.tx_id, t.index, direction order by t.inner_index) as rn,
+        t._inserted_timestamp
     from transfers_modified_owners t
 )
 , lazy_matching as (
     select 
-        i.tx_id, i.index, i.amount as from_amount, i.mint as from_mint, o.amount as to_amount, o.mint as to_mint, i.rn as swap_index, 
-        case when i._inner_index < o._inner_index then 
-            i.program_id
-        else o.program_id 
+        i.block_timestamp,
+        i.block_id,
+        i.tx_id, 
+        i.index, 
+        i.inner_index,
+        i.amount as from_amount, 
+        i.mint as from_mint, 
+        o.amount as to_amount, 
+        o.mint as to_mint, 
+        i.rn as swap_index, 
+        max(i.rn) over (partition by i.tx_id, i.index) as max_swap_index,
+        case 
+            when i.inner_index < o.inner_index then 
+                i.program_id
+            else 
+                o.program_id 
         end as swap_program_id,
-        'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4' as aggregator_program_id
+        'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4' as aggregator_program_id,
+        i._inserted_timestamp
     from swaps_inner i
-    left outer join swaps_inner o
+        left outer join swaps_inner o
         on i.tx_id = o.tx_id
-        and i._index = o._index
+        and i.index = o.index
         and i.rn = o.rn 
         and i.direction <> o.direction
     where i.direction = 'in'
 )
-select *
+select 
+    block_timestamp,
+    block_id,
+    tx_id, 
+    index, 
+    inner_index,
+    from_amount, 
+    from_mint, 
+    to_amount, 
+    to_mint, 
+    swap_index, 
+    swap_program_id,
+    aggregator_program_id,
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(['tx_id','index','inner_index']) }} as swaps_inner_intermediate_jupiterv6_id,
+    sysdate() as inserted_timestamp,
+    sysdate() as modified_timestamp,
+    '{{ invocation_id }}' AS invocation_id
 from lazy_matching
-order by swap_index
-;
+WHERE 
+    (
+        to_mint is not null 
+        OR
+        (to_mint is null and swap_index = 1 and swap_index = max_swap_index)
+    )
