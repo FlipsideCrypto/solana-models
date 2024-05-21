@@ -128,6 +128,14 @@ source_transfers as (
         and pf.tx_id = tr.tx_id
         and pf.index = split(tr.index,'.')[0]::number
         and coalesce(pf.user_source_token_account,pf.source_token_account) = tr.source_token_account 
+        and (
+                tr.mint is not null 
+                or 
+                (
+                    tr.mint is NULL 
+                    and tr.source_token_account <> tr.dest_token_account
+                )
+            )
     group by 1,2,3,4,5,6
     qualify(row_number() over (partition by pf.tx_id, pf.index order by tr_index)) = 1
 ),
@@ -158,7 +166,14 @@ dest_transfers as (
         and pf.tx_id = tr.tx_id
         and pf.index = split(tr.index,'.')[0]::number
         and coalesce(pf.user_destination_token_account,pf.destination_token_account) = coalesce(tr.dest_token_account,tr.tx_to)
-        -- and pf.dest_token_account = coalesce(tr.dest_token_account,tr.tx_to)
+        and (
+                tr.mint is not null 
+                or 
+                (
+                    tr.mint is NULL 
+                    and tr.source_token_account <> tr.dest_token_account
+                )
+            )
     group by 1,2,3,4,5,6,7
 ),
 last_transfers as (
