@@ -1,7 +1,7 @@
 -- depends_on: {{ ref('silver__decoded_instructions_combined') }}
 {{ config(
     materialized = 'incremental',
-    unique_key = ['swaps_intermediate_raydium_amm_id'],
+    unique_key = ['swaps_intermediate_raydium_stable_id'],
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
@@ -11,7 +11,7 @@
 {% if execute %}
     {% set base_query %}
     CREATE
-    OR REPLACE temporary TABLE silver.swaps_intermediate_raydium_amm__intermediate_tmp AS
+    OR REPLACE temporary TABLE silver.swaps_intermediate_raydium_stable__intermediate_tmp AS
 
     SELECT
         block_timestamp,
@@ -28,7 +28,7 @@
     FROM
         {{ ref('silver__decoded_instructions_combined') }}
     WHERE
-        program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
+        program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
         AND event_type IN (
             'swapBaseIn',
             'swapBaseOut'
@@ -49,7 +49,7 @@ AND _inserted_timestamp >= (
 {% endset %}
 {% do run_query(base_query) %}
 {% set between_stmts = fsc_utils.dynamic_range_predicate(
-    "silver.swaps_intermediate_raydium_amm__intermediate_tmp",
+    "silver.swaps_intermediate_raydium_stable__intermediate_tmp",
     "block_timestamp::date"
 ) %}
 {% endif %}
@@ -58,7 +58,7 @@ WITH base AS (
     SELECT
         *
     FROM
-        silver.swaps_intermediate_raydium_amm__intermediate_tmp
+        silver.swaps_intermediate_raydium_stable__intermediate_tmp
 ),
 decoded AS (
     SELECT
@@ -67,33 +67,17 @@ decoded AS (
         tx_id,
         INDEX,
         inner_index,
-        COALESCE(LEAD(inner_index) over (PARTITION BY tx_id, INDEX
-    ORDER BY
-        inner_index) -1, 999999) AS inner_index_end,
+        COALESCE(LEAD(inner_index) OVER (PARTITION BY tx_id, index
+            ORDER BY inner_index) -1, 999999
+        ) AS inner_index_end,
         program_id,
-                silver.udf_get_account_pubkey_by_name('userSourceOwner', decoded_instruction:accounts) as temp_user_source_owner,
-        CASE
-            WHEN temp_user_source_owner IS NOT NULL then silver.udf_get_account_pubkey_by_name('userSourceOwner', decoded_instruction:accounts)
-            else signers[0]
-        END AS swapper,
-        CASE
-            WHEN  temp_user_source_owner IS NOT NULL then silver.udf_get_account_pubkey_by_name('uerSourceTokenAccount', decoded_instruction:accounts)
-            else silver.udf_get_account_pubkey_by_name('serumVaultSigner', decoded_instruction:accounts)
-        END AS source_token_account,
-        NULL AS source_mint,
-        NULL AS destination_mint,
-        CASE
-            WHEN temp_user_source_owner IS NOT NULL then silver.udf_get_account_pubkey_by_name('uerDestinationTokenAccount', decoded_instruction:accounts)
-            else silver.udf_get_account_pubkey_by_name('uerSourceTokenAccount', decoded_instruction:accounts)
-        END AS destination_token_account,
-        case WHEN temp_user_source_owner IS NOT NULL and event_type = 'swapBaseOut' then silver.udf_get_account_pubkey_by_name('poolPcTokenAccount', decoded_instruction:accounts)
-            else silver.udf_get_account_pubkey_by_name('poolCoinTokenAccount', decoded_instruction:accounts) 
-            end as program_destination_token_account,
-        CASE
-            WHEN  temp_user_source_owner IS NOT NULL and event_type = 'swapBaseOut' then silver.udf_get_account_pubkey_by_name('poolCoinTokenAccount', decoded_instruction:accounts)
-            WHEN temp_user_source_owner IS NOT NULL and event_type = 'swapBaseIn' then silver.udf_get_account_pubkey_by_name('poolPcTokenAccount', decoded_instruction:accounts)
-            else silver.udf_get_account_pubkey_by_name('ammTargetOrders', decoded_instruction:accounts)
-        END AS program_source_token_account,
+        silver.udf_get_account_pubkey_by_name('userOwner', decoded_instruction:accounts) as swapper,
+        silver.udf_get_account_pubkey_by_name('userSourceToken', decoded_instruction:accounts) as source_token_account,
+        null as source_mint,
+        null as destination_mint,
+        silver.udf_get_account_pubkey_by_name('userDestinationToken', decoded_instruction:accounts) as destination_token_account,
+        silver.udf_get_account_pubkey_by_name('ammTargetOrders', decoded_instruction:accounts) as program_destination_token_account,
+        silver.udf_get_account_pubkey_by_name('poolTokenCoin', decoded_instruction:accounts) as program_source_token_account,
         _inserted_timestamp
     FROM
         base
@@ -211,7 +195,7 @@ SELECT
     to_amt,
     to_mint,
     _inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(['tx_id','swap_index','program_id']) }} AS swaps_intermediate_raydium_amm_id,
+    {{ dbt_utils.generate_surrogate_key(['tx_id','swap_index','program_id']) }} AS swaps_intermediate_raydium_stable_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
