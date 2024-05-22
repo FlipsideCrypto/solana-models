@@ -30,13 +30,17 @@ sources:
       - name: apis_keys
       - name: number_sequence
       - name: labels_combined
-    
-
-  - name: shared
-    database: flipside_prod_db
-    schema: silver
+      - name: complete_token_asset_metadata
+      - name: complete_token_prices
+      - name: complete_provider_asset_metadata
+      - name: complete_provider_prices
+      - name: complete_native_asset_metadata
+      - name: complete_native_prices
+  - name: crosschain_bronze
+    database: "{{ 'crosschain' if target.database == 'SOLANA' else 'crosschain_dev' }}"
+    schema: bronze
     tables:
-      - name: prices_v2
+      - name: legacy_prices
   - name: legacy_bronze
     database: flipside_prod_db
     schema: bronze

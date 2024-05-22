@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   schedule:
     # Run at xx:20 UTC hourly (see https://crontab.guru)
-    - cron: '20 */1 * * *'
+    - cron: '14 */1 * * *'
     
 env:
   DBT_PROFILES_DIR: "${{ vars.DBT_PROFILES_DIR }}"
@@ -42,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt test --select tests/test_silver__blocks_tx_count_missing_7_days.sql tests/test_silver__transactions_and_votes_missing_7_days.sql tests/test_silver__transactions_partial_partitions.sql tests/test_streamline__complete_decoded_instructions_2__missing.sql
+          dbt test -s tag:test_hourly

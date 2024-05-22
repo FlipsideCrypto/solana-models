@@ -489,7 +489,7 @@ temp_final AS (
         l._inserted_timestamp
     FROM
         lp_actions_w_unwrapped_tokens l
-        LEFT OUTER JOIN {{ ref('silver__token_metadata') }}
+        LEFT OUTER JOIN {{ ref('silver__complete_token_asset_metadata') }}
         m
         ON l.lp_mint_address = m.token_address
 )

@@ -1,3 +1,9 @@
+{{
+    config(
+        tags=["test_hourly"]
+    )
+}}
+
 WITH solscan_counts AS (
     SELECT
         s.*

@@ -289,8 +289,8 @@
 {% endmacro %}
 
 {% macro decoded_instructions_backfill_calls() %}
-    {% set sql_limit = 100000000 %}
-    {% set producer_batch_size = 20000000 %}
+    {% set sql_limit = 20000000 %}
+    {% set producer_batch_size = 5000000 %}
     {% set worker_batch_size = 500000 %}
     {% set batch_call_limit = 1000 %}
 

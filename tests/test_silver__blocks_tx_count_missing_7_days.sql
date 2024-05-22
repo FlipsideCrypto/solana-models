@@ -1,3 +1,9 @@
+{{
+    config(
+        tags=["test_hourly"]
+    )
+}}
+
 SELECT
     b.block_id
 FROM

@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: defi__fact_liquidity_pool_actions
-    description: Table containing actions involving liquidity pools on Orca, Raydium, and Saber Dexes. 
+    description: Table containing liquidity pools actions on Orca, Raydium, Saber and Meteora. 
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
