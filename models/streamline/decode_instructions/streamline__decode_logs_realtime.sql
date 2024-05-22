@@ -50,6 +50,8 @@ event_subset AS (
         e.program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
     AND 
         inner_program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+    AND 
+        array_size(i.value:accounts::array) = 1
 ),
 completed_subset AS (
     SELECT
