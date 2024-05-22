@@ -1,5 +1,5 @@
-name: dbt_run_dev_token_account_owners_2
-run-name: dbt_run_dev_token_account_owners_2
+name: dbt_run_dev
+run-name: dbt_run_dev
 
 on:
   workflow_dispatch:
