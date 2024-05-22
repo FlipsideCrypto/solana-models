@@ -30,8 +30,7 @@
     WHERE
         program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
         AND event_type IN (
-            'swapBaseIn',
-            'swapBaseOut'
+            'swapBaseIn'
         )
 
 {% if is_incremental() %}
