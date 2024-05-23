@@ -109,6 +109,14 @@ all_states AS (
         *
     FROM
         new_events
+),
+changed_states AS (
+    SELECT 
+        *
+    FROM 
+        all_states 
+    QUALIFY 
+        coalesce(lag(owner) over (partition by account_address order by start_block_id),'abc') <> owner
 )
 SELECT
     block_timestamp,
@@ -123,4 +131,4 @@ SELECT
     ) AS end_block_id,
     _inserted_timestamp,
 FROM
-    all_states
+    changed_states
