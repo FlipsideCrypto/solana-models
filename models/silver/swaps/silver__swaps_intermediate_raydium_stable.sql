@@ -41,8 +41,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND _inserted_timestamp :: DATE >= '2024-03-01'
-    -- update this after backfill
+    AND _inserted_timestamp :: DATE >= '2024-05-20'
 {% endif %}
 
 {% endset %}
