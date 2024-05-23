@@ -1,0 +1,12 @@
+version: 2
+models:
+  - name: silver__token_balances
+    description: table holding token burn events
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - INDEX
+            - INNER_INDEX
+            - EVENT_TYPE
+            - MINT
