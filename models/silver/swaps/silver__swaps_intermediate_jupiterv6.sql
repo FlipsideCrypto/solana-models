@@ -36,6 +36,8 @@
             AND _inserted_timestamp :: DATE >= '2023-09-14'
             AND _inserted_timestamp :: DATE < '2023-09-30'
         {% endif %}
+        QUALIFY
+            row_number() OVER (PARTITION BY tx_id, index ORDER BY coalesce(inner_index,-1)) = 1
     {% endset %}
     {% do run_query(base_query) %}
     {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.swaps_intermediate_jupiterv6__intermediate_tmp","block_timestamp::date") %}
