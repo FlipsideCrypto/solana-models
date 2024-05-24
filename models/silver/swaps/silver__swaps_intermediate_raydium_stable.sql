@@ -133,6 +133,7 @@ pre_final AS (
         A._inserted_timestamp
     FROM
         decoded A
+        -- join with transfers table to get details for source and destination tokens
         LEFT JOIN transfers b
         ON A.tx_id = b.tx_id
         AND A.source_token_account = b.source_token_account
@@ -150,6 +151,7 @@ pre_final AS (
         AND (
             (C.inner_index_1 BETWEEN A.inner_index AND A.inner_index_end)
             OR A.inner_index IS NULL) 
+        -- do a separate set of joins mirroring above because destination/source accounts are occasionaly flipped in a swap tx
         LEFT JOIN transfers d
         ON A.tx_id = d.tx_id
         AND A.source_token_account = d.source_token_account

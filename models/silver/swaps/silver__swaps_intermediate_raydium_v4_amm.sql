@@ -1,7 +1,7 @@
 -- depends_on: {{ ref('silver__decoded_instructions_combined') }}
 {{ config(
     materialized = 'incremental',
-    unique_key = ['swaps_intermediate_raydium_amm_id'],
+    unique_key = ['swaps_intermediate_raydium_v4_amm_id'],
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
@@ -11,7 +11,7 @@
 {% if execute %}
     {% set base_query %}
     CREATE
-    OR REPLACE temporary TABLE silver.swaps_intermediate_raydium_amm__intermediate_tmp AS
+    OR REPLACE temporary TABLE silver.swaps_intermediate_raydium_v4_amm__intermediate_tmp AS
 
     SELECT
         block_timestamp,
@@ -48,7 +48,7 @@ AND _inserted_timestamp >= (
 {% endset %}
 {% do run_query(base_query) %}
 {% set between_stmts = fsc_utils.dynamic_range_predicate(
-    "silver.swaps_intermediate_raydium_amm__intermediate_tmp",
+    "silver.swaps_intermediate_raydium_v4_amm__intermediate_tmp",
     "block_timestamp::date"
 ) %}
 {% endif %}
@@ -57,7 +57,7 @@ WITH base AS (
     SELECT
         *
     FROM
-        silver.swaps_intermediate_raydium_amm__intermediate_tmp
+        silver.swaps_intermediate_raydium_v4_amm__intermediate_tmp
 ),
 decoded AS (
     SELECT
@@ -70,28 +70,36 @@ decoded AS (
     ORDER BY
         inner_index) -1, 999999) AS inner_index_end,
         program_id,
-                silver.udf_get_account_pubkey_by_name('userSourceOwner', decoded_instruction:accounts) as temp_user_source_owner,
+        silver.udf_get_account_pubkey_by_name('userSourceOwner', decoded_instruction:accounts) as temp_user_source_owner,
         CASE
-            WHEN temp_user_source_owner IS NOT NULL then silver.udf_get_account_pubkey_by_name('userSourceOwner', decoded_instruction:accounts)
-            else signers[0]
+            WHEN temp_user_source_owner IS NULL THEN 
+                signers[0]
+            ELSE temp_user_source_owner
         END AS swapper,
         CASE
-            WHEN  temp_user_source_owner IS NOT NULL then silver.udf_get_account_pubkey_by_name('uerSourceTokenAccount', decoded_instruction:accounts)
-            else silver.udf_get_account_pubkey_by_name('serumVaultSigner', decoded_instruction:accounts)
+            WHEN  temp_user_source_owner IS NOT NULL THEN 
+                silver.udf_get_account_pubkey_by_name('uerSourceTokenAccount', decoded_instruction:accounts)
+            ELSE
+                 silver.udf_get_account_pubkey_by_name('serumVaultSigner', decoded_instruction:accounts)
         END AS source_token_account,
         NULL AS source_mint,
         NULL AS destination_mint,
         CASE
-            WHEN temp_user_source_owner IS NOT NULL then silver.udf_get_account_pubkey_by_name('uerDestinationTokenAccount', decoded_instruction:accounts)
-            else silver.udf_get_account_pubkey_by_name('uerSourceTokenAccount', decoded_instruction:accounts)
+            WHEN temp_user_source_owner IS NOT NULL THEN 
+                silver.udf_get_account_pubkey_by_name('uerDestinationTokenAccount', decoded_instruction:accounts)
+            ELSE silver.udf_get_account_pubkey_by_name('uerSourceTokenAccount', decoded_instruction:accounts)
         END AS destination_token_account,
-        case WHEN temp_user_source_owner IS NOT NULL and event_type = 'swapBaseOut' then silver.udf_get_account_pubkey_by_name('poolPcTokenAccount', decoded_instruction:accounts)
-            else silver.udf_get_account_pubkey_by_name('poolCoinTokenAccount', decoded_instruction:accounts) 
-            end as program_destination_token_account,
+        CASE 
+            WHEN temp_user_source_owner IS NOT NULL AND event_type = 'swapBaseOut' THEN 
+                silver.udf_get_account_pubkey_by_name('poolPcTokenAccount', decoded_instruction:accounts)
+            ELSE silver.udf_get_account_pubkey_by_name('poolCoinTokenAccount', decoded_instruction:accounts) 
+        END AS program_destination_token_account,
         CASE
-            WHEN  temp_user_source_owner IS NOT NULL and event_type = 'swapBaseOut' then silver.udf_get_account_pubkey_by_name('poolCoinTokenAccount', decoded_instruction:accounts)
-            WHEN temp_user_source_owner IS NOT NULL and event_type = 'swapBaseIn' then silver.udf_get_account_pubkey_by_name('poolPcTokenAccount', decoded_instruction:accounts)
-            else silver.udf_get_account_pubkey_by_name('ammTargetOrders', decoded_instruction:accounts)
+            WHEN  temp_user_source_owner IS NOT NULL AND event_type = 'swapBaseOut' THEN 
+                silver.udf_get_account_pubkey_by_name('poolCoinTokenAccount', decoded_instruction:accounts)
+            WHEN temp_user_source_owner IS NOT NULL AND event_type = 'swapBaseIn' THEN 
+                silver.udf_get_account_pubkey_by_name('poolPcTokenAccount', decoded_instruction:accounts)
+            ELSE silver.udf_get_account_pubkey_by_name('ammTargetOrders', decoded_instruction:accounts)
         END AS program_source_token_account,
         _inserted_timestamp
     FROM
@@ -150,6 +158,7 @@ pre_final AS (
         A._inserted_timestamp
     FROM
         decoded A
+        -- join with transfers table to get details for source and destination tokens
         LEFT JOIN transfers b
         ON A.tx_id = b.tx_id
         AND A.source_token_account = b.source_token_account
@@ -167,6 +176,7 @@ pre_final AS (
         AND (
             (C.inner_index_1 BETWEEN A.inner_index AND A.inner_index_end)
             OR A.inner_index IS NULL) 
+        -- do a separate set of joins mirroring above because destination/source accounts are occasionaly flipped in a swap tx
         LEFT JOIN transfers d
         ON A.tx_id = d.tx_id
         AND A.source_token_account = d.source_token_account
@@ -210,7 +220,7 @@ SELECT
     to_amt,
     to_mint,
     _inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(['tx_id','swap_index','program_id']) }} AS swaps_intermediate_raydium_amm_id,
+    {{ dbt_utils.generate_surrogate_key(['tx_id','swap_index','program_id']) }} AS swaps_intermediate_raydium_v4_amm_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id

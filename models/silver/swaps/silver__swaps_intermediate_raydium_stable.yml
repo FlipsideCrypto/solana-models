@@ -45,6 +45,12 @@ models:
         description: "{{ doc('tx_succeeded') }}"
         tests: 
           - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('index') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
         tests: 

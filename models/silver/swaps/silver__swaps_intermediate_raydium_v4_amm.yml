@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__swaps_intermediate_raydium_amm
+  - name: silver__swaps_intermediate_raydium_v4_amm
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -9,8 +9,8 @@ models:
             - PROGRAM_ID
           where: block_timestamp::date > current_date - 30
       - compare_model_subset:
-          name: silver__swaps_intermediate_raydium_amm_business_logic_test
-          compare_model: ref('testing__swaps_intermediate_raydium_amm')
+          name: silver__swaps_intermediate_raydium_v4_amm_business_logic_test
+          compare_model: ref('testing__swaps_intermediate_raydium_v4_amm')
           compare_columns: 
             - tx_id
             - swapper
@@ -46,6 +46,12 @@ models:
         description: "{{ doc('tx_succeeded') }}"
         tests: 
           - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('index') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
         tests: 
@@ -79,7 +85,7 @@ models:
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
           - not_null: *recent_date_filter
-      - name: SWAPS_INTERMEDIATE_RAYDIUM_amm_ID
+      - name: SWAPS_INTERMEDIATE_RAYDIUM_V4_AMM_ID
         description: '{{ doc("pk") }}'   
         tests: 
           - unique: *recent_date_filter
@@ -95,5 +101,5 @@ models:
         description: '{{ doc("_invocation_id") }}' 
         tests: 
           - not_null: 
-              name: test_silver__not_null_swaps_intermediate_raydium_amm__invocation_id
+              name: test_silver__not_null_swaps_intermediate_raydium_v4_amm__invocation_id
               <<: *recent_date_filter
