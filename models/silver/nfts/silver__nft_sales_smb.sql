@@ -83,4 +83,4 @@ INNER JOIN price p
 ON b.tx_id = p.tx_id
 
 WHERE p.amount <> 0 -- To ignore internal wallet transfers on the marketplace
-AND b.mint <> 'So11111111111111111111111111111111111111112'
+AND b.mint not in ('So11111111111111111111111111111111111111112','So11111111111111111111111111111111111111111')
