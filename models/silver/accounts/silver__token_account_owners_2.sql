@@ -1,11 +1,12 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = "delete+insert",
-    incremental_predicates = [generate_view_name(this) ~ ".start_block_id >= " ~ generate_tmp_view_name(this) ~ ".start_block_id"],
+    incremental_predicates = [generate_view_name(this) ~ ".start_block_id >= (select min(start_block_id) from " ~ generate_tmp_view_name(this) ~ ")", generate_view_name(this) ~ ".start_block_id >= " ~ generate_tmp_view_name(this) ~ ".start_block_id"],
     unique_key = ["account_address"],
     cluster_by = ["account_address", "start_block_id", "end_block_id"],
     tags = ['scheduled_non_core']
 ) }}
+
 
 WITH new_events AS (
     SELECT
