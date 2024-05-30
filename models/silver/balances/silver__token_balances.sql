@@ -6,6 +6,7 @@
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
     tags = ['scheduled_non_core']
 ) }}
+-- add FR is false above
 
 WITH pre AS (
 
@@ -26,7 +27,8 @@ WITH pre AS (
         _inserted_timestamp
     FROM
         {{ ref('silver___pre_token_balances') }}
-
+    -- WHERE
+    --     succeeded
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
     "false"
@@ -76,6 +78,8 @@ post AS (
         _inserted_timestamp
     FROM
         {{ ref('silver___post_token_balances') }}
+    -- WHERE
+    --     succeeded
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
@@ -113,6 +117,7 @@ SELECT
     coalesce(a.block_timestamp,b.block_timestamp) block_timestamp,
     coalesce(a.block_id,b.block_id) block_id,
     coalesce(a.tx_id,b.tx_id) tx_id,
+    -- TRUE as succeeded,
     coalesce(a.index,b.index) index,
     coalesce(a.account_index,b.account_index) account_index,
     coalesce(a.account,b.account) account,
@@ -133,12 +138,13 @@ SELECT
     block_timestamp,
     block_id,
     tx_id,
+    -- succeeded,
     index,
     account_index,
     account,
     mint,
-     pre_owner,
-     post_owner,
+    pre_owner,
+    post_owner,
     pre_token_amount,
     post_token_amount,
     _inserted_timestamp,

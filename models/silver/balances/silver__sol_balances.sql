@@ -4,9 +4,9 @@
     incremental_strategy = 'delete+insert',
     merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
-    full_refresh = false,
     tags = ['scheduled_non_core']
 ) }}
+--add FR is false above
 
 with balances as (SELECT
     block_timestamp,
