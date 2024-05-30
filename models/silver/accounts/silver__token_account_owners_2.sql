@@ -14,7 +14,8 @@ WITH new_events AS (
         start_block_id,
         _inserted_timestamp,
     FROM
-        {{ ref('silver__token_account_owners_intermediate') }}
+        solana.silver.token_account_owners_intermediate
+        /*{{ ref('silver__token_account_owners_intermediate') }}*/
     WHERE
     {% if is_incremental() %}
         _inserted_timestamp > (
@@ -59,7 +60,8 @@ events_to_reprocess AS (
         C.start_block_id,
         C._inserted_timestamp,
     FROM
-        {{ ref('silver__token_account_owners_intermediate') }} C
+        solana.silver.token_account_owners_intermediate C
+        /*{{ ref('silver__token_account_owners_intermediate') }}*/
     JOIN 
         distinct_states d
         USING(account_address)
