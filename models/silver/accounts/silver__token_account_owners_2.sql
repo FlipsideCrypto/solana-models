@@ -3,7 +3,7 @@
     incremental_strategy = "delete+insert",
     incremental_predicates = [generate_view_name(this) ~ ".start_block_id >= " ~ generate_tmp_view_name(this) ~ ".start_block_id"],
     unique_key = ["account_address"],
-    cluster_by = ["account_address", "start_block_id"],
+    cluster_by = ["account_address", "start_block_id", "end_block_id"],
     tags = ['scheduled_non_core']
 ) }}
 
@@ -24,6 +24,7 @@ WITH new_events AS (
             FROM
                 {{ this }}
         )
+        /* TODO remove upper bound after backfill is done */
         AND _inserted_timestamp < (
             SELECT
                 MAX(_inserted_timestamp) + INTERVAL '120 day'
