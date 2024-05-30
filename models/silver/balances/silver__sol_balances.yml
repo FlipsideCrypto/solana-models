@@ -31,11 +31,11 @@ models:
         tests: 
           - not_null: *recent_date_filter
       - name: INDEX
-        description: Location of the sol balance entry within the array for a transaction
+        description: "{{ doc('balances_index') }}"
         tests: 
           - not_null: *recent_date_filter
       - name: ACCOUNT
-        description: Address of token account
+        description:  "{{ doc('balances_account') }}"
         tests: 
           - not_null: *recent_date_filter
       - name: MINT
@@ -43,11 +43,11 @@ models:
         tests: 
           - not_null: *recent_date_filter
       - name: PRE_AMOUNT
-        description: "Amount at the start of the transaction"
+        description: "{{ doc('balances_pre_amount') }}"
         tests: 
           - not_null: *recent_date_filter
       - name: POST_AMOUNT
-        description: "Amount at the end of the transaction"
+        description: "{{ doc('balances_post_amount') }}"
         tests: 
           - not_null: *recent_date_filter
       - name: _INSERTED_TIMESTAMP

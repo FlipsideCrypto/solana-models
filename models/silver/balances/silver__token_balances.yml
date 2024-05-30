@@ -31,11 +31,11 @@ models:
         tests: 
           - not_null: *recent_date_filter
       - name: INDEX
-        description: Location of the token balance entry within the array for a transaction
+        description: "{{ doc('balances_index') }}"
         tests: 
           - not_null: *recent_date_filter
       - name: ACCOUNT_INDEX
-        description: Location corresponding to the index in the account_keys array
+        description: "{{ doc('balances_account_index') }}"
         tests: 
           - not_null: *recent_date_filter
       - name: ACCOUNT
@@ -47,26 +47,26 @@ models:
         tests: 
           - not_null: *recent_date_filter
       - name: PRE_OWNER
-        description: Owner of the token account at the start of the transaction
+        description:  "{{ doc('token_balances_pre_owner') }}"
         tests: 
           - not_null: *recent_date_filter
       - name: POST_OWNER
-        description:  Owner of the token account at the end of the transaction
+        description:  "{{ doc('token_balances_post_owner') }}"
         tests: 
           - not_null: *recent_date_filter
       - name: PRE_TOKEN_AMOUNT
-        description: "Amount at the start of the transaction"
+        description: "{{ doc('balances_pre_amount') }}"
         tests: 
           - not_null: *recent_date_filter
       - name: POST_TOKEN_AMOUNT
-        description: "Amount at the end of the transaction"
+        description: "{{ doc('balances_post_amount') }}"
         tests: 
           - not_null: *recent_date_filter
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
           - not_null: *recent_date_filter
-      - name: SOL_BALANCES_ID
+      - name: TOKEN_BALANCES_ID
         description: '{{ doc("pk") }}'   
         tests: 
           - unique: *recent_date_filter
