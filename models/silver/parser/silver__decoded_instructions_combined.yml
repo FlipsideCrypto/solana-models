@@ -126,6 +126,36 @@ models:
                 AND succeeded
                 and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
               to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_swaps_intermediate_raydium_clmm_tx_id
+              to: ref('silver__swaps_intermediate_raydium_clmm')
+              field: tx_id
+              from_condition: >
+                program_id = 'CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK'
+                AND event_type IN ('swapV2','swap')
+                AND succeeded
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_swaps_intermediate_raydium_v4_amm_tx_id
+              to: ref('silver__swaps_intermediate_raydium_v4_amm')
+              field: tx_id
+              from_condition: >
+                program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
+                AND event_type IN ('swapBaseIn','swapBaseOut')
+                AND succeeded
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_swaps_intermediate_raydium_stable_tx_id
+              to: ref('silver__swaps_intermediate_raydium_stable')
+              field: tx_id
+              from_condition: >
+                program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+                AND event_type IN ('swapBaseIn')
+                AND succeeded
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
       - name: SIGNERS
       - name: SUCCEEDED
       - name: INDEX
