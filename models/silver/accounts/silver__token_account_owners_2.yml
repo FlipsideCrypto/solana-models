@@ -1,0 +1,50 @@
+version: 2
+models:
+  - name: silver__token_account_owners_2
+    recent_date_filter: &recent_date_filter
+      config:
+        where: inserted_timestamp >= current_date - 7
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - ACCOUNT_ADDRESS
+            - OWNER
+            - START_BLOCK_ID
+          <<: *recent_date_filter
+    columns:
+      - name: ACCOUNT_ADDRESS
+        description: address of token account
+        tests:
+          - not_null: *recent_date_filter
+      - name: OWNER
+        description: address of owner
+        tests:
+          - not_null: *recent_date_filter
+      - name: START_BLOCK_ID
+        description: block where this ownership begins 
+        tests:
+          - not_null: *recent_date_filter
+      - name: END_BLOCK_ID
+        description:   block where this ownership ends, null value represents current ownership
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: TOKEN_ACCOUNT_OWNERS_ID
+        description: '{{ doc("pk") }}'   
+        tests: 
+          - unique: *recent_date_filter
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        tests: 
+          - not_null: *recent_date_filter
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        tests: 
+          - not_null: 
+              name: test_silver__not_null_token_account_owners__invocation_id
+              <<: *recent_date_filter
