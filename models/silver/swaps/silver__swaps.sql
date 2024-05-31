@@ -47,17 +47,73 @@ SELECT
     tx_id,
     succeeded,
     program_id,
-    'raydium' as program_name,
+    'raydium v4 amm' as program_name,
     swapper,
     from_mint,
     from_amt,
     to_mint,
     to_amt,
     swap_index,
-    _log_id,
+    concat(tx_id,'-',index) AS _log_id,
     _inserted_timestamp
 FROM
-    {{ ref('silver__swaps_intermediate_raydium') }}
+    {{ ref('silver__swaps_intermediate_raydium_v4_amm') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+{% endif %}
+UNION
+SELECT
+    block_id,
+    block_timestamp,
+    tx_id,
+    succeeded,
+    program_id,
+    'raydium stable swap' as program_name,
+    swapper,
+    from_mint,
+    from_amt,
+    to_mint,
+    to_amt,
+    swap_index,
+    concat(tx_id,'-',index) AS _log_id,
+    _inserted_timestamp
+FROM
+    {{ ref('silver__swaps_intermediate_raydium_stable') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
+    )
+{% endif %}
+UNION
+SELECT
+    block_id,
+    block_timestamp,
+    tx_id,
+    succeeded,
+    program_id,
+    'raydium clmm' as program_name,
+    swapper,
+    from_mint,
+    from_amt,
+    to_mint,
+    to_amt,
+    swap_index,
+    concat(tx_id,'-',index) AS _log_id,
+    _inserted_timestamp
+FROM
+    {{ ref('silver__swaps_intermediate_raydium_clmm') }}
 
 {% if is_incremental() %}
 WHERE
