@@ -7,14 +7,21 @@
 -- incremental_strategy="delete+insert"
 {% macro get_delete_insert_merge_sql(target, source, unique_key, dest_columns, incremental_predicates) -%}
     {% set predicate_override = "" %}
-    {% if incremental_predicates[0] == "dynamic_range_predicate" %}
+    -- get the min value of column
+    {% if incremental_predicates[0] == "min_value_predicate" %}
+        {% set min_column_name = incremental_predicates[1] %}
         {% set query %}
-            select min(start_block_id) from {{ source }}
+            select min({{ min_column_name }}) from {{ source }}
         {% endset %}
         {% set min_block = run_query(query).columns[0][0] %}
-        {% set predicate_override %}
-            round({{ target }}.start_block_id,-5) >= round({{ min_block }},-5)
-        {% endset %}
+
+        {% if min_block is not none %}
+            {% set predicate_override %}
+                round({{ target }}.{{ min_column_name }},-5) >= round({{ min_block }},-5)
+            {% endset %}
+        {% else %}
+            {% set predicate_override = "1=1" %}
+        {% endif %}
     {% endif %}
     {% set predicates = [predicate_override] + incremental_predicates[2:] if predicate_override else incremental_predicates %}
     -- standard delete+insert from here
