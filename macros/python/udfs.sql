@@ -295,3 +295,41 @@ def get_account_pubkey_by_name(name, accounts) -> str:
     return None
 $$;
 {% endmacro %}
+
+{% macro create_udf_get_logs_program_data(schema) %}
+create or replace function {{ schema }}.udf_get_logs_program_data(logs array)
+returns array
+language python
+runtime_version = '3.8'
+handler = 'get_logs_program_data'
+as
+$$
+def get_logs_program_data(logs) -> list:
+    log_program_structure = []
+    program_data = []
+    current_index = -1
+
+    for log in logs:
+        if log.endswith(" invoke [1]"):
+            current_program_id = log.replace("Program ","").replace(" invoke [1]","")
+            current_index += 1
+            log_program_structure.append(current_program_id)
+        
+        if log.endswith(" invoke [2]"):
+            inner_program_id = log.replace("Program ","").replace(" invoke [2]","")
+            log_program_structure.append(f"{current_program_id},{inner_program_id}")
+            current_program_id = inner_program_id
+
+        
+        if log.endswith(" success"):
+            current_program_id = log_program_structure[len(log_program_structure)-1]
+            if log_program_structure[len(log_program_structure)-1]:
+                current_program_id = current_program_id.split(",")[0]
+
+        if log.startswith("Program data: "):
+            data = log.replace("Program data: ","")
+            program_data.append({"data": data, "program_id": current_program_id, "index": current_index})
+    
+    return program_data if len(program_data) > 0 else None
+$$;
+{% endmacro %}
