@@ -22,9 +22,9 @@ WITH base AS (
         succeeded
         {% if is_incremental() %}
         AND _inserted_timestamp >= (SELECT max(_inserted_timestamp) FROM {{ this }})
-        AND _inserted_timestamp < (SELECT max(_inserted_timestamp) + INTERVAL '1 DAY' FROM {{ this }})
+        AND _inserted_timestamp < (SELECT max(_inserted_timestamp) + INTERVAL '1 DAY' FROM {{ this }}) /* TODO remove when backfilled */
         {% else %}
-        AND _inserted_timestamp::date = '2024-05-20'
+        AND _inserted_timestamp::date = '2024-05-20' /* TODO change when ready to put on schedule */
         {% endif %}
 )
 select 
