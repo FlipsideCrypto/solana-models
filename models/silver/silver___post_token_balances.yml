@@ -24,6 +24,10 @@ models:
         description: "{{ doc('tx_id') }}"
         tests:
           - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
       - name: INDEX
         description: Location of the post token balance entry within the array for a transaction
         tests: 
