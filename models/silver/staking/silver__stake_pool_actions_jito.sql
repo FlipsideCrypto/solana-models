@@ -125,8 +125,7 @@ inner_deposit_transfers AS (
         ) e
         ON e.b_date = t.block_timestamp :: DATE
         AND e.tx_id = t.tx_id
-        AND t.program_id = '11111111111111111111111111111111'
-        AND mint = 'So11111111111111111111111111111111111111112'
+        AND mint = 'So11111111111111111111111111111111111111111'
 
 {% if is_incremental() %}
 WHERE

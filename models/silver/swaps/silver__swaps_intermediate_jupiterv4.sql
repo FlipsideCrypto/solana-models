@@ -193,7 +193,7 @@ account_mappings AS (
         swaps_temp
     WHERE
         amount = 0.00203928
-        AND mint = 'So11111111111111111111111111111111111111112'
+        AND mint = 'So11111111111111111111111111111111111111111'
     UNION
     SELECT
         tx_id,
