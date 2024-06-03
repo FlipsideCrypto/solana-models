@@ -5,7 +5,7 @@
     unique_key = "complete_decoded_logs_id",
     cluster_by = ["ROUND(block_id, -3)","program_id"],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(complete_decoded_logs_id)'),
-    tags = ['streamline_decoder'],
+    tags = ['streamline_decoder_logs'],
 ) }}
 
 /* run incremental timestamp value first then use it as a static value */
