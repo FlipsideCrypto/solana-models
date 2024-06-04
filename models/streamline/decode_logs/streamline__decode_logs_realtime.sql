@@ -18,7 +18,7 @@
             TODO REPLACE WITH 
             block_timestamp >= CURRENT_DATE - 2
             */
-            block_timestamp::date = '2024-05-20' /* tmp hardcoded date */
+            block_timestamp::date = '2024-05-21' /* tmp hardcoded date */
     {% endset %}
     {% set min_event_block_id = run_query(min_event_block_id_query).columns[0].values()[0] %}
 {% endif %}
@@ -53,7 +53,7 @@ event_subset AS (
         TODO REPLACE WITH 
         e.block_timestamp >= CURRENT_DATE - 2
         */
-        e.block_timestamp::date = '2024-05-20' /* tmp hardcoded date */    
+        e.block_timestamp::date = '2024-05-21' /* tmp hardcoded date */    
         AND e.succeeded
         AND e.program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
         AND inner_program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
@@ -76,7 +76,7 @@ event_subset AS (
         TODO REPLACE WITH 
         block_timestamp >= CURRENT_DATE - 2
         */
-        block_timestamp::date = '2024-05-20' /* tmp hardcoded date */
+        block_timestamp::date = '2024-05-21' /* tmp hardcoded date */
         AND program_id = 'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN'
 ),
 completed_subset AS (
@@ -111,3 +111,4 @@ LEFT OUTER JOIN
     AND e.id = C.id
 WHERE
     C.block_id IS NULL
+    AND e.inner_program_id = 'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN'
