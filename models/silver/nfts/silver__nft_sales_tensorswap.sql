@@ -51,7 +51,7 @@
                 {{ this }}
         )
     {% else %}
-        AND _inserted_timestamp :: DATE >= '2023-11-15'
+        AND _inserted_timestamp :: DATE = '2024-05-23'
     {% endif %}
 {% endset %}
 
@@ -162,6 +162,18 @@ base_transfers AS (
     WHERE
         {{ between_stmts }}
 ),
+base_logs AS (
+    SELECT 
+        block_timestamp,
+        tx_id,
+        index,
+        log_index,
+        sales_amount,
+    FROM
+        {{ ref('silver__nft_sales_tensorswap_buysellevent') }}
+    WHERE
+        {{ between_stmts }}
+),
 buys AS (
     SELECT
         d.block_timestamp,
@@ -197,22 +209,27 @@ buys AS (
 ),
 sells AS (
     SELECT
-        block_timestamp,
-        block_id,
-        tx_id,
-        succeeded,
-        index,
-        inner_index,
-        program_id,
-        purchaser,
-        seller,
-        mint,
-        min_price AS sales_amount,
-        _inserted_timestamp
+        d.block_timestamp,
+        d.block_id,
+        d.tx_id,
+        d.succeeded,
+        d.index,
+        d.inner_index,
+        d.program_id,
+        d.purchaser,
+        d.seller,
+        d.mint,
+        coalesce(b.sales_amount * pow(10,-9),d.min_price) AS sales_amount,
+        d._inserted_timestamp
     FROM 
-        decoded
+        decoded d
+    LEFT JOIN
+        base_logs b
+        ON d.block_timestamp::date = b.block_timestamp::date 
+        AND d.tx_id = b.tx_id
+        AND d.index = b.index 
     WHERE
-        event_type IN (
+        d.event_type IN (
             'sellNftTokenPool',
             'sellNftTokenPoolT22',
             'sellNftTradePoolT22',
