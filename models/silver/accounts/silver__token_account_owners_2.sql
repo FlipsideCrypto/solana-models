@@ -25,13 +25,6 @@ WITH new_events AS (
             FROM
                 {{ this }}
         )
-        /* TODO remove upper bound after backfill is done */
-        AND _inserted_timestamp < (
-            SELECT
-                MAX(_inserted_timestamp) + INTERVAL '120 day'
-            FROM
-                {{ this }}
-        )
     {% else %}
         _inserted_timestamp :: DATE = '2022-09-01'
     {% endif %}
