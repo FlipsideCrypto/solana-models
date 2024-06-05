@@ -305,30 +305,56 @@ handler = 'get_logs_program_data'
 as
 $$
 def get_logs_program_data(logs) -> list:
-    log_program_structure = []
-    program_data = []
-    current_index = -1
+    parent_program = ""
+    child_program = ""
+    parent_event_type = ""
+    child_event_type = ""
+    parent_index = -1
+    child_index = None
 
-    for log in logs:
+    for i, log in enumerate(logs):
         if log.endswith(" invoke [1]"):
-            current_program_id = log.replace("Program ","").replace(" invoke [1]","")
-            current_index += 1
-            log_program_structure.append(current_program_id)
-        
-        if log.endswith(" invoke [2]"):
-            inner_program_id = log.replace("Program ","").replace(" invoke [2]","")
-            log_program_structure.append(f"{current_program_id},{inner_program_id}")
-            current_program_id = inner_program_id
+            parent_program = log.replace("Program ","").replace(" invoke [1]","")
+            parent_index += 1
+            child_index = None
 
+            if logs[i+1].startswith("Program log: Instruction: "):
+                parent_event_type = logs[i+1].replace("Program log: Instruction: ","")
+            else:
+                parent_event_type = "UNKNOWN"
+        elif log.endswith(" invoke [2]"):
+            child_program = log.replace("Program ","").replace(" invoke [2]","")
+            child_index = child_index+1 if child_index is not None else 0
+
+            if logs[i+1].startswith("Program log: Instruction: "):
+                child_event_type = logs[i+1].replace("Program log: Instruction: ","")
+            else:
+                child_event_type = "UNKNOWN"
         
         if log.endswith(" success"):
-            current_program_id = log_program_structure[len(log_program_structure)-1]
-            if log_program_structure[len(log_program_structure)-1]:
-                current_program_id = current_program_id.split(",")[0]
-
+            current_program_id = child_program if child_program else parent_program
+            current_event_type = child_event_type if child_event_type else parent_event_type
+            current_index = parent_index
+            current_inner_index = child_index
+            if child_program:
+                child_program = ""
+            if child_event_type:
+                child_event_type = ""
+            if i+1 < len(logs) and not logs[i+1].endswith(" invoke [2]"):
+                child_index = None
+        else:
+            current_program_id = child_program if child_program else parent_program
+            current_event_type = child_event_type if child_event_type else parent_event_type
+            current_index = parent_index
+            current_inner_index = child_index
+        
         if log.startswith("Program data: "):
             data = log.replace("Program data: ","")
-            program_data.append({"data": data, "program_id": current_program_id, "index": current_index})
+            program_data.append({"data": data, 
+                                "program_id": current_program_id, 
+                                "index": current_index, 
+                                "inner_index": current_inner_index, 
+                                "event_type": current_event_type})
     
     return program_data if len(program_data) > 0 else None
 $$;
