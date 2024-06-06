@@ -20,11 +20,16 @@ WITH base AS (
         {{ ref('silver__transactions') }}
     WHERE 
         succeeded
+        
+
         {% if is_incremental() %}
-        AND _inserted_timestamp >= (SELECT max(_inserted_timestamp) FROM {{ this }})
-        AND _inserted_timestamp < (SELECT max(_inserted_timestamp) + INTERVAL '1 DAY' FROM {{ this }}) /* TODO remove when backfilled */
+            {% if execute %}
+            {{ get_batch_load_logic(this, 30, '2024-06-07') }}
+            {% endif %}
+        /* UNCOMMENT WHEN BACKFILLED 
+        AND _inserted_timestamp >= (SELECT max(_inserted_timestamp) FROM {{ this }}) */
         {% else %}
-        AND _inserted_timestamp::date = '2024-05-20' /* TODO change when ready to put on schedule */
+        AND _inserted_timestamp::date between '2022-08-12' and '2022-09-01'
         {% endif %}
 )
 SELECT 
