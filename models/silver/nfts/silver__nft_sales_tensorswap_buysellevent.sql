@@ -28,7 +28,7 @@
         {{ ref('silver__decoded_logs') }}
     WHERE
         program_id = 'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN'
-
+        AND event_type = 'BuySellEvent'
     {% if is_incremental() %}
         AND _inserted_timestamp >= (
             SELECT
@@ -66,8 +66,6 @@ WITH decoded AS (
         _inserted_timestamp
     FROM
         silver.nft_sales_tensorswap_buysellevent__intermediate_tmp
-    WHERE
-        tx_id = '2L9QnyDuLf3xHmt7WQ992qX5y7GhriKsEmcAWKF7b6dakRgPftgnRP1J73HcNYq7DX8L472vHMrnGo7KyZzVuwNf'
 )
 SELECT
     block_timestamp,

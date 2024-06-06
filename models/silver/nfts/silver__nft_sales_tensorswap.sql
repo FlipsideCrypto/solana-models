@@ -51,7 +51,7 @@
                 {{ this }}
         )
     {% else %}
-        AND _inserted_timestamp :: DATE = '2024-05-23'
+        AND _inserted_timestamp :: DATE = '2024-05-20'
     {% endif %}
 {% endset %}
 
@@ -167,7 +167,7 @@ base_logs AS (
         block_timestamp,
         tx_id,
         index,
-        log_index,
+        inner_index,
         sales_amount,
     FROM
         {{ ref('silver__nft_sales_tensorswap_buysellevent') }}
@@ -216,10 +216,11 @@ sells AS (
         d.index,
         d.inner_index,
         d.program_id,
+        d.event_type,
         d.purchaser,
         d.seller,
         d.mint,
-        coalesce(b.sales_amount * pow(10,-9),d.min_price) AS sales_amount,
+        b.sales_amount * pow(10,-9) AS sales_amount,
         d._inserted_timestamp
     FROM 
         decoded d
@@ -228,6 +229,7 @@ sells AS (
         ON d.block_timestamp::date = b.block_timestamp::date 
         AND d.tx_id = b.tx_id
         AND d.index = b.index 
+        AND coalesce(d.inner_index,-1) = coalesce(b.inner_index,-1)
     WHERE
         d.event_type IN (
             'sellNftTokenPool',
@@ -247,6 +249,7 @@ pre_final AS (
         index,
         inner_index,
         program_id,
+        event_type,
         purchaser,
         seller,
         mint,
@@ -263,6 +266,7 @@ pre_final AS (
         d.index,
         d.inner_index,
         d.program_id,
+        d.event_type,
         d.purchaser,
         d.seller,
         d.mint,
