@@ -4,7 +4,7 @@
     incremental_predicates = ['min_value_predicate', 'start_block_id', generate_view_name(this) ~ ".start_block_id >= " ~ generate_tmp_view_name(this) ~ ".start_block_id"],
     unique_key = ["account_address"],
     cluster_by = ["round(start_block_id,-5)"],
-    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(account_address)'),
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(account_address, owner)'),
     tags = ['scheduled_non_core']
 ) }}
 
