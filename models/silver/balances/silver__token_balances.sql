@@ -57,7 +57,7 @@ WHERE
 {% else %}
 WHERE
     -- block_id between 31319460 and 32319460
-    block_id = 240134635
+    block_id = 249731184
 {% endif %}
 ),
 post AS (
@@ -109,7 +109,7 @@ WHERE
 {% else %}
 WHERE
     -- block_id between 31319460 and 32319460
-    block_id = 240134635
+    block_id = 249731184
 {% endif %}
 ),
 pre_final as (
