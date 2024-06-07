@@ -50,6 +50,7 @@
             FROM
                 {{ this }}
         )
+        AND _inserted_timestamp < '2024-05-25'
     {% else %}
         AND _inserted_timestamp :: DATE = '2024-05-20'
     {% endif %}
