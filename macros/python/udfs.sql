@@ -295,3 +295,81 @@ def get_account_pubkey_by_name(name, accounts) -> str:
     return None
 $$;
 {% endmacro %}
+
+{% macro create_udf_get_logs_program_data(schema) %}
+create or replace function {{ schema }}.udf_get_logs_program_data(logs array)
+returns array
+language python
+runtime_version = '3.8'
+handler = 'get_logs_program_data'
+AS
+$$
+import re
+
+def get_logs_program_data(logs) -> list:
+    program_data = []
+    parent_event_type = ""
+    child_event_type = ""
+    parent_index = -1
+    child_index = None
+    current_ancestry = []
+
+    pattern = re.compile(r'invoke \[(?!1\])\d+\]')
+
+    try:
+        for i, log in enumerate(logs):
+            if log.endswith(" invoke [1]"):
+                program = log.replace("Program ","").replace(" invoke [1]","")
+                parent_index += 1
+
+                if i+1 < len(logs) and logs[i+1].startswith("Program log: Instruction: "):
+                    parent_event_type = logs[i+1].replace("Program log: Instruction: ","")
+                elif i+1 < len(logs) and logs[i+1].startswith("Program log: IX: "):
+                    parent_event_type = logs[i+1].replace("Program log: IX: ","")
+                else:
+                    parent_event_type = "UNKNOWN"
+
+                current_ancestry = [(program,None,parent_event_type)]
+            elif bool(pattern.search(log)):
+                child_index = child_index+1 if child_index is not None else 0
+                current_program = pattern.sub('', log.replace("Program ","")).strip()
+                current_node = int(pattern.search(log)[0].replace("invoke [","").replace("]",""))
+
+                if i+1 < len(logs) and logs[i+1].startswith("Program log: Instruction: "):
+                    child_event_type = logs[i+1].replace("Program log: Instruction: ","")
+                elif i+1 < len(logs) and logs[i+1].startswith("Program log: IX: "):
+                    child_event_type = logs[i+1].replace("Program log: IX: ","")
+                else:
+                    child_event_type = "UNKNOWN"
+
+                if len(current_ancestry) >= current_node:
+                    current_ancestry[current_node-1] = (current_program, child_index, child_event_type)
+                else:
+                    current_ancestry.append((current_program, child_index, child_event_type))
+            
+            if log.endswith(" success"):
+                current_program_id = current_ancestry[-1][0]
+                current_event_type = current_ancestry[-1][2]
+                current_index = parent_index
+                current_inner_index = current_ancestry[-1][1]
+                current_ancestry.pop()
+            else:
+                current_program_id = current_ancestry[-1][0]
+                current_event_type = current_ancestry[-1][2]
+                current_index = parent_index
+                current_inner_index = current_ancestry[-1][1]
+            
+            if log.startswith("Program data: "):
+                data = log.replace("Program data: ","")
+                program_data.append({"data": data, 
+                                    "program_id": current_program_id, 
+                                    "index": current_index, 
+                                    "inner_index": current_inner_index, 
+                                    "event_type": current_event_type})
+    except Exception as e:
+        message = f"error trying to parse logs {e}"
+        return [{"error": message}]
+    
+    return program_data if len(program_data) > 0 else None
+$$;
+{% endmacro %}
