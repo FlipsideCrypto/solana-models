@@ -27,13 +27,13 @@ WITH pre AS (
         _inserted_timestamp
     FROM
         {{ ref('silver___pre_token_balances') }}
-    -- WHERE
-    --     succeeded
+    WHERE
+        succeeded
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
     "false"
 ) == "true" %}
-WHERE
+and 
     block_id BETWEEN (
         SELECT
             LEAST(COALESCE(MAX(block_id), 31319460)+1,175418104)
@@ -47,7 +47,7 @@ WHERE
             {{ this }}
         ) 
 {% elif is_incremental() %}
-WHERE
+and
     _inserted_timestamp >= (
         SELECT
             MAX(_inserted_timestamp)
@@ -55,7 +55,7 @@ WHERE
             {{ this }}
     )
 {% else %}
-WHERE
+and
     -- block_id between 31319460 and 32319460
     block_id = 249731184
 {% endif %}
@@ -78,14 +78,13 @@ post AS (
         _inserted_timestamp
     FROM
         {{ ref('silver___post_token_balances') }}
-    -- WHERE
-    --     succeeded
-
+    WHERE
+        succeeded
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
     "false"
 ) == "true" %}
-WHERE
+and
     block_id BETWEEN (
         SELECT
             LEAST(COALESCE(MAX(block_id), 31319460)+1,175418104)
@@ -99,7 +98,7 @@ WHERE
             {{ this }}
         ) 
 {% elif is_incremental() %}
-WHERE
+and
     _inserted_timestamp >= (
         SELECT
             MAX(_inserted_timestamp)
@@ -107,8 +106,7 @@ WHERE
             {{ this }}
     )
 {% else %}
-WHERE
-    -- block_id between 31319460 and 32319460
+and
     block_id = 249731184
 {% endif %}
 ),
@@ -117,7 +115,7 @@ SELECT
     coalesce(a.block_timestamp,b.block_timestamp) block_timestamp,
     coalesce(a.block_id,b.block_id) block_id,
     coalesce(a.tx_id,b.tx_id) tx_id,
-    -- TRUE as succeeded,
+    TRUE as succeeded,
     coalesce(a.index,b.index) index,
     coalesce(a.account_index,b.account_index) account_index,
     coalesce(a.account,b.account) account,
@@ -138,7 +136,7 @@ SELECT
     block_timestamp,
     block_id,
     tx_id,
-    -- succeeded,
+    succeeded,
     index,
     account_index,
     account,

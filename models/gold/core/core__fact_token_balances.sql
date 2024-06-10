@@ -1,5 +1,11 @@
 {{ config(
-    materialized = 'view',
+    materialized = 'incremental',
+    unique_key = ['fact_token_balances_id'],
+    incremental_strategy = 'merge',
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::DATE"],
+    merge_exclude_columns = ["inserted_timestamp"],
+    cluster_by = ['block_timestamp::DATE'],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_id, account_address);",
     tags = ['scheduled_non_core']
 ) }}
 
@@ -7,7 +13,7 @@ SELECT
     a.block_timestamp,
     a.block_id,
     a.tx_id,
-    -- succeeded,
+    a.succeeded,
     a.account as account_address,
     a.mint,
     b.owner as owner,
@@ -18,6 +24,16 @@ SELECT
     sysdate() as modified_timestamp
 FROM
     {{ ref('silver__token_balances') }} a
-left join {{ ref('core__fact_token_account_owners') }} b
+left join {{ ref('silver__token_account_owners') }} b
 on a.account = b.account_address
--- i dont think this is efficient to do every 30 mins
+    and a.block_id >= b.start_block_id
+    and (a.block_id < b.end_block_id or b.end_block_id is null)
+
+{% if is_incremental() %}
+AND a.modified_timestamp >= (
+    SELECT
+        MAX(modified_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
