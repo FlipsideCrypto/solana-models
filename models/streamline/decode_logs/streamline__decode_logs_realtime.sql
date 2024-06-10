@@ -12,7 +12,7 @@
         SELECT
             min(block_id)
         FROM 
-            {{ ref('silver__events') }}
+            {{ ref('silver__blocks') }}
         WHERE 
             block_timestamp >= CURRENT_DATE - 2
     {% endset %}
