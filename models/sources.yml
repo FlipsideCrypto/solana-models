@@ -64,6 +64,7 @@ sources:
       - name: validator_vote_program_accounts
       - name: program_parser
       - name: decoded_instructions_2
+      - name: decoded_logs
   - name: bronze_api
     schema: bronze_api
     tables:
