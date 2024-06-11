@@ -307,6 +307,30 @@ $$
 import re
 
 def get_logs_program_data(logs) -> list:
+    def base58_decode(s):
+        base58_chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+        base58_base = len(base58_chars)
+        num = 0
+        for char in s:
+            num *= base58_base
+            if char not in base58_chars:
+                return b""
+            num += base58_chars.index(char)
+        result = bytearray()
+        while num > 0:
+            num, mod = divmod(num, 256)
+            result.insert(0, mod)
+        # Handle leading zeros in Base58 string
+        for char in s:
+            if char == '1':
+                result.insert(0, 0)
+            else:
+                break
+        return bytes(result)
+
+    def is_solana_program_id(s):
+        return len(base58_decode(s)) == 32
+
     program_data = []
     parent_event_type = ""
     child_event_type = ""
@@ -314,6 +338,7 @@ def get_logs_program_data(logs) -> list:
     child_index = None
     current_ancestry = []
 
+    program_end_pattern = re.compile(r"Program ([a-zA-Z0-9]+) success")
     pattern = re.compile(r'invoke \[(?!1\])\d+\]')
 
     try:
@@ -347,7 +372,13 @@ def get_logs_program_data(logs) -> list:
                 else:
                     current_ancestry.append((current_program, child_index, child_event_type))
             
-            if log.endswith(" success"):
+            maybe_program_end = program_end_pattern.search(log)
+            if maybe_program_end:
+                maybe_program_id = maybe_program_end.group(1)
+            else:
+                maybe_program_id = ""
+
+            if is_solana_program_id(maybe_program_id):
                 current_program_id = current_ancestry[-1][0]
                 current_event_type = current_ancestry[-1][2]
                 current_index = parent_index
