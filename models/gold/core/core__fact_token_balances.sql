@@ -4,10 +4,10 @@
     incremental_strategy = 'merge',
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::DATE"],
     merge_exclude_columns = ["inserted_timestamp"],
-    cluster_by = ['block_timestamp::DATE'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_id, account_address);",
     tags = ['scheduled_non_core']
 ) }}
+-- what should i cluster by?
 
 SELECT
     a.block_timestamp,

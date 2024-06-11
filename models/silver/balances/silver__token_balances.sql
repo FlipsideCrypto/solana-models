@@ -1,9 +1,10 @@
 {{ config(
     materialized = 'incremental',
     unique_key = ['token_balances_id'],
-    incremental_strategy = 'delete+insert',
-    merge_exclude_columns = ["inserted_timestamp"],
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, account)'),
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['scheduled_non_core']
 ) }}
 -- add FR is false above
@@ -22,42 +23,19 @@ WITH pre AS (
         DECIMAL,
         CASE
             WHEN amount = 0 THEN 0
-            ELSE uiamount :: INT
+            ELSE uiamount :: FLOAT
         END AS pre_token_amount,
         _inserted_timestamp
     FROM
         {{ ref('silver___pre_token_balances') }}
     WHERE
         succeeded
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-and 
-    block_id BETWEEN (
-        SELECT
-            LEAST(COALESCE(MAX(block_id), 31319460)+1,175418104)
-        FROM
-            {{ this }}
-        )
-        AND (
-        SELECT
-            LEAST(COALESCE(MAX(block_id), 31319460)+8000000,175418104)
-        FROM
-            {{ this }}
-        ) 
-{% elif is_incremental() %}
-and
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
+{% if is_incremental() %}
+    {% if execute %}
+    {{ get_batch_load_logic(this,15,'2024-06-09') }}
+    {% endif %}
 {% else %}
-and
-    -- block_id between 31319460 and 32319460
-    block_id = 249731184
+    and _inserted_timestamp::date between '2022-08-12' and '2022-09-01'
 {% endif %}
 ),
 post AS (
@@ -73,41 +51,19 @@ post AS (
         DECIMAL,
         CASE
             WHEN amount = 0 THEN 0
-            ELSE uiamount :: INT
+            ELSE uiamount :: FLOAT
         END AS post_token_amount,
         _inserted_timestamp
     FROM
         {{ ref('silver___post_token_balances') }}
     WHERE
         succeeded
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-and
-    block_id BETWEEN (
-        SELECT
-            LEAST(COALESCE(MAX(block_id), 31319460)+1,175418104)
-        FROM
-            {{ this }}
-        )
-        AND (
-        SELECT
-            LEAST(COALESCE(MAX(block_id), 31319460)+8000000,175418104)
-        FROM
-            {{ this }}
-        ) 
-{% elif is_incremental() %}
-and
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
+{% if is_incremental() %}
+    {% if execute %}
+    {{ get_batch_load_logic(this,15,'2024-06-09') }}
+    {% endif %}
 {% else %}
-and
-    block_id = 249731184
+    and _inserted_timestamp::date between '2022-08-12' and '2022-09-01'
 {% endif %}
 ),
 pre_final as (
