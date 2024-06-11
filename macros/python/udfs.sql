@@ -341,6 +341,9 @@ def get_logs_program_data(logs) -> list:
     program_end_pattern = re.compile(r"Program ([a-zA-Z0-9]+) success")
     pattern = re.compile(r'invoke \[(?!1\])\d+\]')
 
+    if len(logs) == 1:
+        return None
+
     try:
         for i, log in enumerate(logs):
             if log == "Log truncated":
