@@ -343,6 +343,9 @@ def get_logs_program_data(logs) -> list:
 
     try:
         for i, log in enumerate(logs):
+            if log == "Log truncated":
+                break
+
             if log.endswith(" invoke [1]"):
                 program = log.replace("Program ","").replace(" invoke [1]","")
                 parent_index += 1
