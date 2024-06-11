@@ -1,3 +1,4 @@
+-- depends_on: {{ ref('silver__blocks') }}
 {{ config (
     materialized = "table",
     post_hook = if_data_call_function(
