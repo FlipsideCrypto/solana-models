@@ -44,6 +44,9 @@ models:
         description: "{{ doc('program_id') }}"
         tests: 
           - not_null: *recent_date_filter
+      - name: _UDF_ERROR
+        description: >
+          Error from `udf_get_logs_program_data` if unsuccessful
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
