@@ -362,17 +362,8 @@ def get_logs_program_data(logs) -> list:
 
                 current_ancestry = [(program,None,parent_event_type)]
             elif log.startswith("Call BPF program ") or log.startswith("Upgraded program "): # handle legacy BPF log format
-                program = log.replace("Call BPF program ","").replace("Upgraded program ","")
-                parent_index += 1
-
-                if i+1 < len(logs) and logs[i+1].startswith("Program log: Instruction: "):
-                    parent_event_type = logs[i+1].replace("Program log: Instruction: ","")
-                elif i+1 < len(logs) and logs[i+1].startswith("Program log: IX: "):
-                    parent_event_type = logs[i+1].replace("Program log: IX: ","")
-                else:
-                    parent_event_type = "UNKNOWN"
-
-                current_ancestry = [(program,None,parent_event_type)]
+                # remove legacy log parsing code it is not compatible w/ new
+                continue
             elif bool(pattern.search(log)):
                 child_index = child_index+1 if child_index is not None else 0
                 current_program = pattern.sub('', log.replace("Program ","")).strip()
