@@ -59,3 +59,8 @@ jobs:
         run: |
           dbt run-operation dispatch_github_workflow --args "{'workflow_name': 'dbt_run_decode_logs'}"
         if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["00", "30"]'), steps.capture_minute.outputs.formatted_minute) }}
+
+      - name: Run Backfill on minutes 45 every hour
+        run: |
+          dbt run-operation dispatch_github_workflow --args "{'workflow_name': 'dbt_run_decode_logs_backfill'}"
+        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJSON('["45"]'), steps.capture_minute.outputs.formatted_minute) }}
