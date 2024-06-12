@@ -5,6 +5,7 @@
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, program_id)'),
     merge_exclude_columns = ["inserted_timestamp"],
+    tags = ['scheduled_core'],
 ) }}
 
 
@@ -20,8 +21,8 @@ WITH base AS (
         {{ ref('silver__transactions') }}
     WHERE 
         succeeded
+        AND log_messages IS NOT NULL
         
-
         {% if is_incremental() %}
             {% if execute %}
             {{ get_batch_load_logic(this, 30, '2024-06-07') }}
@@ -29,7 +30,7 @@ WITH base AS (
         /* UNCOMMENT WHEN BACKFILLED 
         AND _inserted_timestamp >= (SELECT max(_inserted_timestamp) FROM {{ this }}) */
         {% else %}
-        AND _inserted_timestamp::date between '2022-08-12' and '2022-09-01'
+        AND _inserted_timestamp::date BETWEEN '2022-08-12' AND '2022-09-01'
         {% endif %}
 )
 SELECT 

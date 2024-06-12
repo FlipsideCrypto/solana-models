@@ -1,25 +1,21 @@
+-- depends_on: {{ ref('silver__blocks') }}
 {{ config (
     materialized = "table",
     post_hook = if_data_call_function(
         func = "{{this.schema}}.udf_bulk_instructions_decoder(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'decoded_logs', 'sql_limit', {{var('sql_limit','5000000')}}, 'producer_batch_size', {{var('producer_batch_size','2000000')}}, 'worker_batch_size', {{var('worker_batch_size','100000')}}, 'batch_call_limit', {{var('batch_call_limit','1000')}}, 'call_type', 'logs'))",
         target = "{{this.schema}}.{{this.identifier}}"
     ),
-    tags = ['streamline_decoder']
+    tags = ['streamline_decoder_logs']
 ) }}
 
 {% if execute %}
-    {% set block_date = '2024-05-21' %}
     {% set min_event_block_id_query %}
         SELECT
             min(block_id)
         FROM 
-            {{ ref('silver__events') }}
+            {{ ref('silver__blocks') }}
         WHERE 
-            /* 
-            TODO REPLACE WITH 
             block_timestamp >= CURRENT_DATE - 2
-            */
-            block_timestamp::date = '{{ block_date }}' /* tmp hardcoded date */
     {% endset %}
     {% set min_event_block_id = run_query(min_event_block_id_query).columns[0].values()[0] %}
 {% endif %}
@@ -51,11 +47,7 @@ event_subset AS (
         idl_in_play b
         ON b.program_id = i.value :programId :: STRING
     WHERE
-        /* 
-        TODO REPLACE WITH 
-        e.block_timestamp >= CURRENT_DATE - 2
-        */
-        e.block_timestamp::date = '{{ block_date }}' /* tmp hardcoded date */    
+        e.block_timestamp >= CURRENT_DATE - 2   
         AND e.succeeded
         AND e.program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
         AND inner_program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
@@ -65,7 +57,7 @@ event_subset AS (
         program_id,
         tx_id,
         index,
-        NULL AS inner_index,
+        inner_index,
         log_index,
         object_construct('accounts',[],'data',data,'programId',program_id) as instruction,
         block_id,
@@ -74,11 +66,7 @@ event_subset AS (
     FROM
         {{ ref('silver__transaction_logs_program_data') }} 
     WHERE 
-        /* 
-        TODO REPLACE WITH 
         block_timestamp >= CURRENT_DATE - 2
-        */
-        block_timestamp::date = '{{ block_date }}' /* tmp hardcoded date */
         AND program_id = 'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN'
 ),
 completed_subset AS (
@@ -113,4 +101,3 @@ LEFT OUTER JOIN
     AND e.id = C.id
 WHERE
     C.block_id IS NULL
-    AND e.inner_program_id = 'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN'
