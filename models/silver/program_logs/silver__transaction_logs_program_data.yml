@@ -30,9 +30,7 @@ models:
         tests: 
           - not_null: *recent_date_filter
       - name: LOG_INDEX
-        description: >
-          Position of program data log for a specific transaction.
-          Used to differentiate logs with the same index.
+        description: "{{ doc('log_index') }}"
         tests: 
           - not_null: *recent_date_filter
       - name: DATA
