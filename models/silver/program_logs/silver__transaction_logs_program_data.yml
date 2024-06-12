@@ -47,6 +47,9 @@ models:
       - name: _UDF_ERROR
         description: >
           Error from `udf_get_logs_program_data` if unsuccessful
+        tests:
+          - dbt_expectations.expect_column_values_to_be_null:
+              row_condition: _inserted_timestamp >= current_date - 7
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
