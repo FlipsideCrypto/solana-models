@@ -1,13 +1,12 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ['fact_token_balances_id'],
-    incremental_strategy = 'merge',
-    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::DATE"],
+    unique_key = ['token_balances_id'],
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
+    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
     merge_exclude_columns = ["inserted_timestamp"],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_id, account_address);",
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, account)'),
     tags = ['scheduled_non_core']
 ) }}
--- what should i cluster by?
 
 SELECT
     a.block_timestamp,
