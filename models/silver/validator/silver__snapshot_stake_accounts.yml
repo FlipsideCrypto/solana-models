@@ -39,6 +39,9 @@ models:
       - name: stake_pubkey
         description: "Address of stake account"
       - name: _inserted_timestamp
-        description: "The inserted timestamp"
+        description: "{{ doc('_inserted_timestamp') }}"
         tests:
           - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: hour
+              interval: 12
