@@ -25,6 +25,15 @@ WITH swaps AS (
         {{ ref('defi__fact_swaps') }}
     WHERE
         succeeded
+),
+prices AS (
+    SELECT
+        HOUR,
+        token_address,
+        symbol,
+        price
+    FROM
+        {{ ref('price__ez_prices_hourly') }}
 )
 SELECT
     d.swap_program,
@@ -53,13 +62,13 @@ SELECT
     d.ez_swaps_id,
 FROM
     swaps d
-    LEFT JOIN {{ ref('price__ez_prices_hourly') }} p_in
+    LEFT JOIN prices p_in
     ON d.swap_from_mint = p_in.token_address
     AND DATE_TRUNC(
         'hour',
         d.block_timestamp
     ) = p_in.hour
-    LEFT JOIN solana.price.ez_prices_hourly p_out
+    LEFT JOIN prices p_out
     ON d.swap_to_mint = p_out.token_address
     AND DATE_TRUNC(
         'hour',
