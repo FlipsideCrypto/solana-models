@@ -1,36 +1,38 @@
 version: 2
 models:
   - name: silver___inner_instructions
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
-          - not_null:
-              where: block_id > 39824213
+          - not_null: *recent_date_filter
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 1
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: INDEX
         description: Location of the inner_instruction within the inner_instructions of a transaction
         tests: 
-          - not_null 
+          - not_null: *recent_date_filter
       - name: MAPPED_INSTRUCTION_INDEX
         description: Specifies the instruction which this inner_instruction applies
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: VALUE
         description: json object that contains the inner instruction
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter

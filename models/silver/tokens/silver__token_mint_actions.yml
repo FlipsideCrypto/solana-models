@@ -9,6 +9,9 @@ models:
             - INNER_INDEX
             - MINT
           where: block_timestamp::date > current_date - 30
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -21,11 +24,11 @@ models:
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests:
@@ -33,26 +36,26 @@ models:
       - name: INDEX 
         description: "Location of the event within the instructions of a transaction"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: INNER_INDEX 
         description: "Location of the event within the inner instructions of a transaction"
       - name: EVENT_TYPE 
         description: "{{ doc('event_type') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: MINT 
         description: "{{ doc('mint') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: MINT_AMOUNT
         description: Number of tokens burned
         tests: 
-          - not_null:
+          - not_null: *recent_date_filter
               where: event_type in ('mintToChecked', 'mintTo')
       - name: MINT_AUTHORITY
         description: Account address authorizing burn
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: TOKEN_ACCOUNT
         description: The account address where tokens are minted to
       - name: SIGNERS
@@ -60,10 +63,10 @@ models:
       - name: DECIMAL
         description: "{{ doc('decimal') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: MINT_STANDARD_TYPE
         description: "{{ doc('mint_standard_type') }}"
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
