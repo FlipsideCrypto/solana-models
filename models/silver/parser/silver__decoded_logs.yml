@@ -1,0 +1,65 @@
+version: 2
+models:
+  - name: silver__decoded_logs
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null: *recent_date_filter
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('event_index') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
+      - name: LOG_INDEX
+        description: "{{ doc('log_index') }}"
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: DECODED_LOG
+        description: A log that describes a program's event metadata
+        tests: 
+          - not_null: *recent_date_filter
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
+      - name: DECODED_LOGS_ID
+        description: '{{ doc("pk") }}'
+        tests: 
+          - not_null: *recent_date_filter
+          # - dbt_utils.relationships_where:
+          #     to: ref('silver__decoded_instructions_combined')
+          #     field: decoded_instructions_combined_id
+          #     from_condition: _inserted_timestamp >= current_date - 7
+          #     to_condition: _inserted_timestamp >= current_date - 7
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        tests: 
+          - not_null: *recent_date_filter
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        tests: 
+          - not_null:
+              name: test_silver__not_null_decoded_logs__invocation_id
+              <<: *recent_date_filter
