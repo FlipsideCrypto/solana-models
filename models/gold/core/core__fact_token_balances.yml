@@ -1,0 +1,48 @@
+version: 2
+models:
+  - name: core__fact_token_balances
+    description: "{{ doc('token_balance_table_doc') }}"
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: ACCOUNT_ADDRESS
+        description: "{{ doc('balances_account') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: OWNER
+        description: "{{ doc('token_balances_post_owner') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: PRE_BALANCE
+        description: "{{ doc('balances_pre_amount') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BALANCE
+        description: "{{ doc('balances_post_amount') }}" 
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: FACT_TOKEN_BALANCES_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+          
