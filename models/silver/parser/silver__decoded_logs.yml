@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__transaction_logs_program_data
+  - name: silver__decoded_logs
     recent_date_filter: &recent_date_filter
       config:
         where: _inserted_timestamp >= current_date - 7
@@ -8,54 +8,52 @@ models:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
-          - not_null:
-              where: _inserted_timestamp >= current_date - 7  AND block_id > 39824213
+          - not_null: *recent_date_filter
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 1
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
-        tests:
+        tests: 
           - not_null: *recent_date_filter
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
-        tests:
-          - not_null: *recent_date_filter
-      - name: SUCCEEDED
-        description: "{{ doc('tx_succeeded') }}"
         tests: 
           - not_null: *recent_date_filter
       - name: INDEX
         description: "{{ doc('event_index') }}"
         tests: 
           - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
       - name: LOG_INDEX
         description: "{{ doc('log_index') }}"
+      - name: SIGNERS
+        description: "{{ doc('signers') }}"
         tests: 
           - not_null: *recent_date_filter
-      - name: DATA
-        description: >
-          The encoded program data
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
         tests: 
           - not_null: *recent_date_filter
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
         tests: 
           - not_null: *recent_date_filter
-      - name: _UDF_ERROR
-        description: >
-          Error from `udf_get_logs_program_data` if unsuccessful
-        tests:
-          - dbt_expectations.expect_column_values_to_be_null:
-              row_condition: _inserted_timestamp >= current_date - 7
+      - name: DECODED_LOG
+        description: A log that describes a program's event metadata
+        tests: 
+          - not_null: *recent_date_filter
+      - name: EVENT_TYPE
+        description: "{{ doc('event_type') }}"
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
           - not_null
-      - name: TRANSACTION_LOGS_PROGRAM_DATA_ID
-        description: '{{ doc("pk") }}'   
+      - name: DECODED_LOGS_ID
+        description: '{{ doc("pk") }}'
         tests: 
-          - unique: *recent_date_filter
+          - not_null: *recent_date_filter
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   
         tests: 
@@ -68,5 +66,5 @@ models:
         description: '{{ doc("_invocation_id") }}' 
         tests: 
           - not_null:
-              name: test_silver__not_null_transaction_logs_program_data__invocation_id
+              name: test_silver__not_null_decoded_logs__invocation_id
               <<: *recent_date_filter

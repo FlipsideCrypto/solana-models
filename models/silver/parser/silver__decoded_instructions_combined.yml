@@ -157,7 +157,9 @@ models:
                 and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
               to_condition: "_inserted_timestamp >= current_date - 7"
       - name: SIGNERS
+        description: "{{ doc('signers') }}"
       - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
       - name: INDEX
         description: "{{ doc('event_index') }}"
         tests:  
