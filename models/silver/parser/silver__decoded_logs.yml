@@ -28,6 +28,14 @@ models:
         description: "{{ doc('inner_index') }}"
       - name: LOG_INDEX
         description: "{{ doc('log_index') }}"
+      - name: SIGNERS
+        description: "{{ doc('signers') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null: *recent_date_filter
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
         tests: 
@@ -36,6 +44,8 @@ models:
         description: A log that describes a program's event metadata
         tests: 
           - not_null: *recent_date_filter
+      - name: EVENT_TYPE
+        description: "{{ doc('event_type') }}"
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
