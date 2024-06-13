@@ -12,6 +12,7 @@
         '{{this.identifier}}',
         'ON EQUALITY(tx_id, event_type, decoded_logs_id)'
     ),
+    tags = ['scheduled_non_core']
 ) }}
 
 /* run incremental timestamp value first then use it as a static value */
