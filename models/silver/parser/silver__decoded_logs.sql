@@ -1,3 +1,4 @@
+-- depends_on: {{ ref('silver__blocks') }}
 -- depends_on: {{ ref('bronze__streamline_decoded_logs') }}
 -- depends_on: {{ ref('bronze__streamline_FR_decoded_logs') }}
 {{ config(
@@ -6,62 +7,95 @@
     unique_key = "decoded_logs_id",
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE','program_id'],
     merge_exclude_columns = ["inserted_timestamp"],
+    post_hook = enable_search_optimization(
+        '{{this.schema}}',
+        '{{this.identifier}}',
+        'ON EQUALITY(tx_id, event_type, decoded_logs_id)'
+    ),
 ) }}
 
 /* run incremental timestamp value first then use it as a static value */
 {% if execute %}
     {% if is_incremental() %}
-        {% set query %}
+        {% set max_inserted_query %}
             SELECT
-                MAX(_inserted_timestamp) as _inserted_timestamp
+                MAX(_inserted_timestamp) - INTERVAL '1 HOUR' AS _inserted_timestamp
             FROM
                 {{ this }}
         {% endset %}
 
-        {% set max_inserted_timestamp = run_query(query).columns[0].values()[0] %}
+        {% set max_inserted_timestamp = run_query(max_inserted_query).columns[0].values()[0] %}
     {% endif %}
+
+    {% set create_tmp_query %}
+        CREATE OR REPLACE TEMPORARY TABLE silver.decoded_logs__intermediate_tmp AS
+        SELECT
+            block_timestamp,
+            block_id,
+            tx_id,
+            index,
+            inner_index,
+            log_index,
+            program_id,
+            data,
+            _inserted_timestamp,
+        FROM
+            {% if is_incremental() %}
+            {{ ref('bronze__streamline_decoded_logs') }} A
+            {% else %}
+            {{ ref('bronze__streamline_FR_decoded_logs') }} A
+            {% endif %}
+        JOIN
+            {{ ref('silver__blocks') }}
+            USING(block_id)
+        {% if is_incremental() %}
+        WHERE
+            A._inserted_timestamp >= dateadd('minute', -5, '{{ max_inserted_timestamp }}')
+            AND A._partition_by_created_date_hour >= dateadd('hour', -2, date_trunc('hour','{{ max_inserted_timestamp }}'::timestamp_ntz))
+        {% endif %}
+    {% endset %}
+    {% do run_query(create_tmp_query) %}
+
+    {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.decoded_logs__intermediate_tmp","block_timestamp::date") %}
 {% endif %}
 
+WITH txs AS (
+    SELECT
+        block_timestamp,
+        block_id,
+        tx_id,
+        signers,
+        succeeded
+    FROM
+        {{ ref('silver__transactions') }}
+    WHERE
+        {{ between_stmts }}
+)
 SELECT
-    b.block_timestamp,
-    A.block_id,
-    A.tx_id,
-    COALESCE(
-        A.index,
-        VALUE :data :data [0] [0],
-        VALUE :data [0] [0]
-    ) :: INT AS INDEX,
-    A.inner_index,
-    A.log_index,
-    A.program_id,
-    COALESCE(
-        A.value :data :data [0] [1],
-        A.value :data [1],
-        A.value :data
-    ) AS decoded_instruction,
-    A._inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(
-        ['A.tx_id', 'A.index', 'A.inner_index','A.log_index']
-    ) }} AS decoded_logs_id,
+    t.block_timestamp,
+    d.block_id,
+    d.tx_id,
+    d.index,
+    d.inner_index,
+    d.log_index,
+    t.signers,
+    t.succeeded,
+    d.program_id,
+    d.data AS decoded_log,
+    decoded_log :name :: STRING AS event_type,
+    d._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(['d.tx_id', 'd.index', 'd.inner_index','d.log_index']) }} AS decoded_logs_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-{% if is_incremental() %}
-    {{ ref('bronze__streamline_decoded_logs') }} A
-{% else %}
-    {{ ref('bronze__streamline_FR_decoded_logs') }} A
-{% endif %}
+    silver.decoded_logs__intermediate_tmp d
 JOIN 
-    {{ ref('silver__blocks') }} b
-    ON A.block_id = b.block_id
-{% if is_incremental() %}
-WHERE
-    A._inserted_timestamp >= dateadd('minute', -5, '{{ max_inserted_timestamp }}')
-    AND A._partition_by_created_date_hour >= dateadd('hour', -2, date_trunc('hour','{{ max_inserted_timestamp }}'::timestamp_ntz))
-{% endif %}
+    txs t
+    ON d.block_id = t.block_id
+    AND d.tx_id = t.tx_id
 QUALIFY
     ROW_NUMBER() over (
-        PARTITION BY tx_id, INDEX, coalesce(inner_index,-1), coalesce(log_index,-1) 
-        ORDER BY A._inserted_timestamp DESC
+        PARTITION BY decoded_logs_id
+        ORDER BY d._inserted_timestamp DESC
     ) = 1
