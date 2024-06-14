@@ -18,6 +18,8 @@
     {% set base_query %}
         CREATE OR REPLACE TEMPORARY TABLE silver.swaps_inner_intermediate_jupiterv6__intermediate_tmp AS 
         SELECT 
+            block_timestamp,
+            block_id,
             tx_id,
             index,
             inner_index,
@@ -28,6 +30,7 @@
             decoded_log:args:inputAmount::string AS from_amt,
             decoded_log:args:outputMint::string AS to_mint,
             decoded_log:args:outputAmount::string AS to_amt,
+            _inserted_timestamp,
         FROM 
             {{ ref('silver__decoded_logs') }}
         WHERE
@@ -42,13 +45,16 @@
                     {{ this }}
             )
             {% else %} 
-                AND _inserted_timestamp :: DATE >= '2024-06-12'
+                AND _inserted_timestamp::date >= '2024-06-12'
+                AND _inserted_timestamp::date < '2024-06-14'
             {% endif %}
         QUALIFY
             row_number() OVER (PARTITION BY tx_id, index, coalesce(inner_index,-1) ORDER BY _inserted_timestamp DESC) = 1
         {% if is_incremental() %}
         UNION ALL
         SELECT 
+            l.block_timestamp,
+            l.block_id,
             l.tx_id,
             l.index,
             l.inner_index,
@@ -59,6 +65,7 @@
             l.decoded_log:args:inputAmount::string AS from_amt,
             l.decoded_log:args:outputMint::string AS to_mint,
             l.decoded_log:args:outputAmount::string AS to_amt,
+            l._inserted_timestamp,
         FROM
             {{ this }} s 
         INNER JOIN
@@ -126,6 +133,8 @@ token_decimals AS (
     GROUP BY 1,2
 )
 SELECT 
+    b.block_timestamp,
+    b.block_id,
     b.tx_id,
     b.index,
     b.inner_index,
