@@ -109,28 +109,33 @@ swappers AS (
         AND swapper IS NOT NULL
 ),
 token_decimals AS (
-    SELECT
+    SELECT DISTINCT
         mint,
         decimal
     FROM
-        (
-            SELECT
-                mint,
-                decimal
-            FROM 
-                {{ ref('silver___pre_token_balances') }}
-            WHERE
-                {{ between_stmts }}
-            UNION ALL
-            SELECT
-                mint,
-                decimal
-            FROM 
-                {{ ref('silver___post_token_balances') }}
-            WHERE
-                {{ between_stmts }}
-        )
-    GROUP BY 1,2
+        {{ ref('silver__token_mint_actions') }}
+    UNION ALL 
+    SELECT 
+        'So11111111111111111111111111111111111111112',
+        9
+        -- (
+        --     SELECT
+        --         mint,
+        --         decimal
+        --     FROM 
+        --         {{ ref('silver___pre_token_balances') }}
+        --     WHERE
+        --         {{ between_stmts }}
+        --     UNION ALL
+        --     SELECT
+        --         mint,
+        --         decimal
+        --     FROM 
+        --         {{ ref('silver___post_token_balances') }}
+        --     WHERE
+        --         {{ between_stmts }}
+        -- )
+    -- GROUP BY 1,2
 )
 SELECT 
     b.block_timestamp,
