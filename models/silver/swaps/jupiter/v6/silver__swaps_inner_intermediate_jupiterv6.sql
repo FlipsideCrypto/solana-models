@@ -2,7 +2,7 @@
 
 {{ config(
     materialized = 'incremental',
-    unique_key = ['tx_id','swap_index','program_id'],
+    unique_key = "swaps_inner_intermediate_jupiterv6_id",
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
@@ -44,9 +44,15 @@
                 FROM
                     {{ this }}
             )
+            AND _inserted_timestamp < (
+                SELECT
+                    MAX(_inserted_timestamp) + INTERVAL '1 day'
+                FROM
+                    {{ this }}
+            )
             {% else %} 
-                AND _inserted_timestamp::date >= '2024-06-12'
-                AND _inserted_timestamp::date < '2024-06-14'
+            AND _inserted_timestamp::date >= '2024-06-12'
+            AND _inserted_timestamp::date < '2024-06-14'
             {% endif %}
         QUALIFY
             row_number() OVER (PARTITION BY tx_id, index, coalesce(inner_index,-1) ORDER BY _inserted_timestamp DESC) = 1
@@ -113,10 +119,17 @@ token_decimals AS (
         mint,
         decimal
     FROM
-        {{ ref('silver__token_mint_actions') }}
+        {{ ref('silver__mint_actions') }}
+    WHERE
+        succeeded
+        AND decimal IS NOT NULL
     UNION ALL 
     SELECT 
         'So11111111111111111111111111111111111111112',
+        9
+    UNION ALL 
+    SELECT 
+        'GyD5AvrcZAhSP5rrhXXGPUHri6sbkRpq67xfG3x8ourT',
         9
         -- (
         --     SELECT
