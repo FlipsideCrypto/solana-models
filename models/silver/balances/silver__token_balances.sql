@@ -100,8 +100,14 @@ pre_final AS (
         ) mint,
         A.owner pre_owner,
         b.owner post_owner,
-        A.pre_token_amount,
-        b.post_token_amount,
+        COALESCE(
+            A.pre_token_amount,
+            0
+        ) AS pre_token_amount,
+        COALESCE(
+            b.post_token_amount,
+            0
+        ) AS post_token_amount,
         COALESCE(
             A._inserted_timestamp,
             b._inserted_timestamp
@@ -132,3 +138,5 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM
     pre_final
+WHERE 
+    pre_token_amount <> post_token_amount
