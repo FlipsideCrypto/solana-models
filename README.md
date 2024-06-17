@@ -23,7 +23,7 @@ solana:
 ```
 
 ### Notes
-- `block_id` column in our data models matches what [Solcan](https://solscan.io/) classifies as `Block`.  This value is same as what is referred to as `Slot`.
+- `block_id` column in our data models matches what [Solscan](https://solscan.io/) classifies as `Block`.  This value is same as what is referred to as `Slot`.
 
 ### Resources:
 - Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
