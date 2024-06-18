@@ -107,6 +107,7 @@ swappers AS (
         index,
         inner_index,
         silver.udf_get_account_pubkey_by_name('userTransferAuthority', decoded_instruction:accounts) AS swapper,
+        _inserted_timestamp
     FROM
         {{ ref('silver__decoded_instructions_combined') }}
     WHERE
@@ -168,7 +169,7 @@ SELECT
     b.from_amount * pow(10,-d.decimal) AS from_amount,
     b.to_mint,
     b.to_amount * pow(10,-d2.decimal) AS to_amount,
-    b._inserted_timestamp,
+    greatest(b._inserted_timestamp, coalesce(s._inserted_timestamp,'2000-01-01')) AS _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['b.tx_id','b.index','b.inner_index']) }} as swaps_inner_intermediate_jupiterv6_id,
     sysdate() as inserted_timestamp,
     sysdate() as modified_timestamp,
