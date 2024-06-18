@@ -55,8 +55,6 @@
             AND _inserted_timestamp::date >= '2024-06-12'
             AND _inserted_timestamp::date < '2024-06-14'
             {% endif %}
-        -- QUALIFY
-        --     row_number() OVER (PARTITION BY tx_id, index, coalesce(inner_index,-1) ORDER BY _inserted_timestamp DESC) = 1
         {% if is_incremental() %}
         UNION ALL
         SELECT 
@@ -87,8 +85,6 @@
             AND l.succeeded
             AND s.swapper IS NULL
             AND s._inserted_timestamp >= current_date - 7 /* only look back 7 days */
-        -- QUALIFY
-        --     row_number() OVER (PARTITION BY l.tx_id, l.index, coalesce(l.inner_index,-1) ORDER BY l._inserted_timestamp DESC) = 1
         {% endif %}
     {% endset %}
     {% do run_query(base_query) %}
@@ -154,24 +150,6 @@ token_decimals AS (
     SELECT 
         'GyD5AvrcZAhSP5rrhXXGPUHri6sbkRpq67xfG3x8ourT',
         9
-        -- (
-        --     SELECT
-        --         mint,
-        --         decimal
-        --     FROM 
-        --         {{ ref('silver___pre_token_balances') }}
-        --     WHERE
-        --         {{ between_stmts }}
-        --     UNION ALL
-        --     SELECT
-        --         mint,
-        --         decimal
-        --     FROM 
-        --         {{ ref('silver___post_token_balances') }}
-        --     WHERE
-        --         {{ between_stmts }}
-        -- )
-    -- GROUP BY 1,2
 )
 SELECT 
     b.block_timestamp,
