@@ -24,12 +24,13 @@
             index,
             inner_index,
             coalesce(lag(inner_index) OVER (PARTITION BY tx_id, index ORDER BY inner_index),0) AS previous_swap_event_inner_index,
+            succeeded,
             event_type,
             decoded_log:args:amm::string AS program_id,
             decoded_log:args:inputMint::string AS from_mint,
-            decoded_log:args:inputAmount::string AS from_amt,
+            decoded_log:args:inputAmount::string AS from_amount,
             decoded_log:args:outputMint::string AS to_mint,
-            decoded_log:args:outputAmount::string AS to_amt,
+            decoded_log:args:outputAmount::string AS to_amount,
             _inserted_timestamp,
         FROM 
             {{ ref('silver__decoded_logs') }}
@@ -64,12 +65,13 @@
             l.index,
             l.inner_index,
             coalesce(lag(l.inner_index) OVER (PARTITION BY l.tx_id, l.index ORDER BY l.inner_index),0) AS previous_swap_event_inner_index,
+            l.succeeded,
             l.event_type,
             l.decoded_log:args:amm::string AS program_id,
             l.decoded_log:args:inputMint::string AS from_mint,
-            l.decoded_log:args:inputAmount::string AS from_amt,
+            l.decoded_log:args:inputAmount::string AS from_amount,
             l.decoded_log:args:outputMint::string AS to_mint,
-            l.decoded_log:args:outputAmount::string AS to_amt,
+            l.decoded_log:args:outputAmount::string AS to_amount,
             l._inserted_timestamp,
         FROM
             {{ this }} s 
@@ -84,7 +86,7 @@
             AND l.event_type = 'SwapEvent'
             AND l.succeeded
             AND s.swapper IS NULL
-            AND s._inserted_timestamp >= current_date - 7 /* only look back 7 days */
+            AND s._inserted_timestamp >= current_date - 2 /* only look back 2 days */
         {% endif %}
     {% endset %}
     {% do run_query(base_query) %}
@@ -158,18 +160,19 @@ SELECT
     b.index,
     b.inner_index,
     row_number() OVER (PARTITION BY b.tx_id, b.index ORDER BY b.inner_index)-1 AS swap_index,
-    b.event_type,
-    b.program_id,
+    b.succeeded,
+    b.program_id AS swap_program_id,
+    'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4' AS aggregator_program_id,
     s.swapper,
     b.from_mint,
-    b.from_amt * pow(10,-d.decimal) AS from_amt,
+    b.from_amount * pow(10,-d.decimal) AS from_amount,
     b.to_mint,
-    b.to_amt * pow(10,-d2.decimal) AS to_amt,
+    b.to_amount * pow(10,-d2.decimal) AS to_amount,
     b._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['b.tx_id','b.index','b.inner_index']) }} as swaps_inner_intermediate_jupiterv6_id,
     sysdate() as inserted_timestamp,
     sysdate() as modified_timestamp,
-    '{{ invocation_id }}' AS invocation_id
+    '{{ invocation_id }}' AS _invocation_id
 FROM 
     base b
 LEFT OUTER JOIN
