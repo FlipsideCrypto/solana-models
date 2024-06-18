@@ -44,6 +44,7 @@
                 FROM
                     {{ this }}
             )
+            /* TODO: Remove after backfill */
             AND _inserted_timestamp < (
                 SELECT
                     MAX(_inserted_timestamp) + INTERVAL '1 day'
@@ -54,8 +55,8 @@
             AND _inserted_timestamp::date >= '2024-06-12'
             AND _inserted_timestamp::date < '2024-06-14'
             {% endif %}
-        QUALIFY
-            row_number() OVER (PARTITION BY tx_id, index, coalesce(inner_index,-1) ORDER BY _inserted_timestamp DESC) = 1
+        -- QUALIFY
+        --     row_number() OVER (PARTITION BY tx_id, index, coalesce(inner_index,-1) ORDER BY _inserted_timestamp DESC) = 1
         {% if is_incremental() %}
         UNION ALL
         SELECT 
@@ -86,8 +87,8 @@
             AND l.succeeded
             AND s.swapper IS NULL
             AND s._inserted_timestamp >= current_date - 7 /* only look back 7 days */
-        QUALIFY
-            row_number() OVER (PARTITION BY l.tx_id, l.index, coalesce(l.inner_index,-1) ORDER BY l._inserted_timestamp DESC) = 1
+        -- QUALIFY
+        --     row_number() OVER (PARTITION BY l.tx_id, l.index, coalesce(l.inner_index,-1) ORDER BY l._inserted_timestamp DESC) = 1
         {% endif %}
     {% endset %}
     {% do run_query(base_query) %}
@@ -99,6 +100,8 @@ WITH base AS (
         *
     FROM
         silver.swaps_inner_intermediate_jupiterv6__intermediate_tmp
+    QUALIFY
+        row_number() OVER (PARTITION BY tx_id, index, coalesce(inner_index,-1) ORDER BY _inserted_timestamp DESC) = 1
 ),
 swappers AS (
     SELECT
@@ -113,6 +116,23 @@ swappers AS (
         AND program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
         AND event_type IN ('exactOutRoute','sharedAccountsExactOutRoute','sharedAccountsRoute','routeWithTokenLedger','route','sharedAccountsRouteWithTokenLedger')
         AND swapper IS NOT NULL
+    QUALIFY
+        row_number() OVER (PARTITION BY tx_id, index, coalesce(inner_index, -1) ORDER BY _inserted_timestamp DESC) = 1
+),
+distinct_mints AS (
+    SELECT DISTINCT
+        mint
+    FROM (
+        SELECT DISTINCT
+            from_mint AS mint
+        FROM
+            base
+        UNION ALL 
+        SELECT DISTINCT
+            to_mint
+        FROM
+            base
+    )
 ),
 token_decimals AS (
     SELECT DISTINCT
@@ -120,6 +140,9 @@ token_decimals AS (
         decimal
     FROM
         {{ ref('silver__mint_actions') }}
+    INNER JOIN
+        distinct_mints
+        USING(mint)
     WHERE
         succeeded
         AND decimal IS NOT NULL
