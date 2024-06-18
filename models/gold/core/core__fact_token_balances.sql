@@ -39,4 +39,5 @@ AND A.modified_timestamp >= (
     FROM
         {{ this }}
 )
+and a.modified_timestamp < '2023-10-02'
 {% endif %}
