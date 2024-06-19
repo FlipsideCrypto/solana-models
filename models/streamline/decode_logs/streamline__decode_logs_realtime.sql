@@ -49,7 +49,7 @@ event_subset AS (
     WHERE
         e.block_timestamp >= CURRENT_DATE - 2   
         AND e.succeeded
-        AND ARRAY_CONTAINS('JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'::variant, e.inner_instruction_program_ids)
+        AND array_contains('JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'::variant, e.inner_instruction_program_ids)
         AND inner_program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
         AND array_size(i.value:accounts::array) = 1
     UNION ALL
