@@ -33,7 +33,7 @@ FROM
     )
 
 {% if is_incremental() %}
-AND A.modified_timestamp >= (
+WHERE A.modified_timestamp >= (
     SELECT
         MAX(modified_timestamp)
     FROM
