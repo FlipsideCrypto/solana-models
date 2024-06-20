@@ -12,7 +12,7 @@
     
     {% set min_block_id = range_results[0] %}
     {% set max_block_id = range_results[1] %}
-    {% set step = 10000000 %}
+    {% set step = 2000000 %}
 
     {% for i in range(min_block_id, max_block_id, step) %}
         {% if i == min_block_id %}
@@ -67,7 +67,7 @@
                 WHERE
                     e.block_id between {{ start_block }} and {{ end_block }}
                     AND e.succeeded
-                    AND e.program_id = '{{ program_id }}'
+                    AND array_contains('{{ program_id }}'::variant, e.inner_instruction_program_ids)
                     AND inner_program_id = '{{ program_id }}'
                     AND array_size(i.value:accounts::array) = 1
                 UNION ALL

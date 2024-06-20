@@ -78,7 +78,10 @@ models:
         description: "validator.app score for Vote distance"
       - name: www_url
         description: "url for the validator"
-      - name: _INSERTED_TIMESTAMP
+      - name: _inserted_timestamp
         description: "{{ doc('_inserted_timestamp') }}"
-        tests: 
+        tests:
           - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: hour
+              interval: 12
