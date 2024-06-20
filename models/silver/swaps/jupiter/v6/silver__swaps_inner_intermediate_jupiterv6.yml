@@ -24,7 +24,10 @@ models:
             - swap_program_id
           model_condition: "where tx_id in ('4UkpYVPGr5uQnr1Zb7AuUrryF8qFYJvHJqGBVkjgQkJEbxTuR4tgx8NG7t329TbHkSUSUnj7E13c18ZQ6XbDf34T',
             'Cn7LBvp6iRdg3SMPbRsZx88kVzhDsRXt6EXxpqhH8DpwziLBbDuKh9Ay8cpiHiSRoXX7bVj5ueYtAU4wtWeGmFa',
-            '4ExHEmvVXiXgGCHVWrfD8cshnQA3GvV84dTGbSsoXBr9NZHAoEDMHKiT8jY44AreyAkorc34UyNamJjKWbPgQQv9')"  
+            '4ExHEmvVXiXgGCHVWrfD8cshnQA3GvV84dTGbSsoXBr9NZHAoEDMHKiT8jY44AreyAkorc34UyNamJjKWbPgQQv9',
+            '5UMtTnzJRZDnKYjM1nnVzU46gnys98EZySiUUkWEaWj2G82D7EhzxQHdPJ6nYDDd5T9dB7KanGQHKwWdXN5KXjGh',
+            '5bnJuU5wkckz82WZLDPcA9v6uFwX1QJg7t9pL56cRbLc9VPNYaNKTo2ddRB1AECkSEmoHBYQsjtSLr7dguSGscUc',
+            '3ho3m3EYmWy5T3GPvL83HQw2ntezXYXYiwqhJyV6izFGPUEkRMgtzT9Hp67ftvaXxCpbZH2W4LWTDR55G7DMEAcF')"  
     recent_date_filter: &recent_date_filter
       config:
         where: _inserted_timestamp >= current_date - 7
