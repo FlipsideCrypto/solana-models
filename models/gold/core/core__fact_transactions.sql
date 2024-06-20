@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'view',
-    post_hook = 'ALTER VIEW {{this}} SET CHANGE_TRACKING = TRUE ;',
+    post_hook = 'ALTER VIEW {{this}} SET CHANGE_TRACKING = TRUE;',
     tags = ['scheduled_core']
 ) }}
 
