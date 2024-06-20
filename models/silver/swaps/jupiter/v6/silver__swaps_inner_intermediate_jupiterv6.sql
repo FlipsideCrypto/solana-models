@@ -160,7 +160,7 @@ SELECT
     b.tx_id,
     b.index,
     b.inner_index,
-    row_number() OVER (PARTITION BY b.tx_id, b.index ORDER BY b.inner_index)-1 AS swap_index,
+    row_number() OVER (PARTITION BY b.tx_id, b.index, s.inner_index ORDER BY b.inner_index)-1 AS swap_index, /* we want the swap index as it relates to the top level swap instruction */
     b.succeeded,
     b.program_id AS swap_program_id,
     'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4' AS aggregator_program_id,

@@ -53,7 +53,7 @@ models:
         tests: 
           - not_null: *recent_date_filter
       - name: SWAP_INDEX
-        description: "{{ doc('swaps_swap_index') }}"
+        description: "{{ doc('swaps_swap_index') }} as it relates to the top level Jupiter V6 swap instruction"
         tests: 
           - not_null: *recent_date_filter
       - name: SUCCEEDED
