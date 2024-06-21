@@ -23,7 +23,6 @@
             tx_id,
             index,
             inner_index,
-            coalesce(lag(inner_index) OVER (PARTITION BY tx_id, index ORDER BY inner_index),0) AS previous_swap_event_inner_index,
             succeeded,
             event_type,
             decoded_log:args:amm::string AS program_id,
@@ -64,7 +63,6 @@
             l.tx_id,
             l.index,
             l.inner_index,
-            coalesce(lag(l.inner_index) OVER (PARTITION BY l.tx_id, l.index ORDER BY l.inner_index),0) AS previous_swap_event_inner_index,
             l.succeeded,
             l.event_type,
             l.decoded_log:args:amm::string AS program_id,
@@ -107,6 +105,7 @@ swappers AS (
         index,
         inner_index,
         silver.udf_get_account_pubkey_by_name('userTransferAuthority', decoded_instruction:accounts) AS swapper,
+        lead(inner_index) OVER (PARTITION BY tx_id, index ORDER BY inner_index) AS next_summary_swap_index,
         _inserted_timestamp
     FROM
         {{ ref('silver__decoded_instructions_combined') }}
@@ -184,8 +183,9 @@ LEFT OUTER JOIN
             s.inner_index IS NULL 
             OR
             (
-                s.inner_index >= b.previous_swap_event_inner_index 
-                AND s.inner_index < b.inner_index
+                b.inner_index > s.inner_index
+                AND (b.inner_index < s.next_summary_swap_index 
+                    OR s.next_summary_swap_index IS NULL)
             )
         )
 LEFT OUTER JOIN
