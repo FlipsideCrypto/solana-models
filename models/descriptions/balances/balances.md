@@ -52,6 +52,12 @@ The final owner of the token account in the transaction.
 
 {% enddocs %}
 
+{% docs token_balances_block_owner %}
+
+The final owner of the token account within the block.
+
+{% enddocs %}
+
 {% docs sol_balances_owner %}
 
 The wallet holding the native SOL. This is represented as the same value as the 'account_address'.

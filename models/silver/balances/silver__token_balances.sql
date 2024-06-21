@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = ['token_balances_id'],
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
-    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
+    cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
     full_refresh = false,
     merge_exclude_columns = ["inserted_timestamp"],
     tags = ['scheduled_non_core']
@@ -113,8 +113,9 @@ pre_final AS (
             b._inserted_timestamp
         ) AS _inserted_timestamp
     FROM
-        pre A full
-        OUTER JOIN post b
+        pre A 
+        FULL OUTER JOIN 
+        post b
         ON A.account_index = b.account_index
         AND A.tx_id = b.tx_id
 )

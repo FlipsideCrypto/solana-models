@@ -52,12 +52,14 @@ models:
           - not_null: *recent_date_filter
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
-        tests: 
-          - not_null: *recent_date_filter
       - name: SOL_BALANCES_ID
         description: '{{ doc("pk") }}'   
         tests: 
           - unique: *recent_date_filter
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        tests: 
+          - not_null: *recent_date_filter
       - name: MODIFIED_TIMESTAMP
         description: '{{ doc("modified_timestamp") }}' 
         tests: 

@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = ['sol_balances_id'],
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
-    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
+    cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
     full_refresh = false,
     merge_exclude_columns = ["inserted_timestamp"],
     tags = ['scheduled_non_core']

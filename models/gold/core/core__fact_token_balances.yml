@@ -28,7 +28,7 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: OWNER
-        description: "{{ doc('token_balances_post_owner') }}"
+        description: "{{ doc('token_balances_block_owner') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: PRE_BALANCE
