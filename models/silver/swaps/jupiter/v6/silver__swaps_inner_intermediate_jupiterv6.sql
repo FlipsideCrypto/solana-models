@@ -44,13 +44,6 @@
                 FROM
                     {{ this }}
             )
-            /* TODO: Remove after backfill */
-            AND _inserted_timestamp < (
-                SELECT
-                    MAX(_inserted_timestamp) + INTERVAL '1 day'
-                FROM
-                    {{ this }}
-            )
             {% else %} 
             AND _inserted_timestamp::date >= '2024-06-12'
             AND _inserted_timestamp::date < '2024-06-14'
