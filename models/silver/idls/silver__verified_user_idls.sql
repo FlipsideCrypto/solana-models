@@ -75,7 +75,7 @@ WITH base AS (
         FROM
             {{ ref('silver__events') }} e
         WHERE succeeded
-        AND block_timestamp >= CURRENT_DATE - 30
+        AND block_timestamp >= CURRENT_DATE - 30 
         AND e.program_id = '{{ program_id }}'
         LIMIT 100
     )
