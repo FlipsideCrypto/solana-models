@@ -5,7 +5,7 @@
     unique_key = "swaps_inner_intermediate_jupiterv6_id",
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     merge_exclude_columns = ["inserted_timestamp"],
-    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
+    cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
     post_hook = enable_search_optimization(
         '{{this.schema}}',
         '{{this.identifier}}',
@@ -169,7 +169,7 @@ SELECT
     b.from_amount * pow(10,-d.decimal) AS from_amount,
     b.to_mint,
     b.to_amount * pow(10,-d2.decimal) AS to_amount,
-    greatest(b._inserted_timestamp, coalesce(s._inserted_timestamp,'2000-01-01')) AS _inserted_timestamp,
+    b._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['b.tx_id','b.index','b.inner_index']) }} as swaps_inner_intermediate_jupiterv6_id,
     sysdate() as inserted_timestamp,
     sysdate() as modified_timestamp,
