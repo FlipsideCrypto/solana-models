@@ -42,6 +42,9 @@ models:
         description: "{{ doc('_inserted_timestamp') }}"
         tests:
           - not_null
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        tests: 
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: hour
               interval: 12
