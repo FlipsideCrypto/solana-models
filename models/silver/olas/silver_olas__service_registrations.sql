@@ -51,7 +51,7 @@ create_events AS (
         block_id,
         tx_id,
         INDEX,
-        signers[0] as signers,
+        signers[0]::string as signers,
         succeeded,
         program_id,
         event_type,
