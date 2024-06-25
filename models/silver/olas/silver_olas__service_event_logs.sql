@@ -107,6 +107,7 @@ SELECT
     A.program_id,
     A.multisig_address,
     A.event_type,
+    c.service_id,
     -- b.instruction,
     -- b.inner_instruction,
     b.instruction :data :: STRING AS DATA,
@@ -120,3 +121,5 @@ FROM
     LEFT JOIN base_events b
     ON A.tx_id = b.tx_id
     AND A.index = b.index
+    LEFT JOIN {{ ref('silver_olas__service_registrations') }} c
+    ON a.multisig_address = c.multisig_address
