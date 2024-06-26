@@ -27,6 +27,8 @@
             d.program_id,
             p.key::int AS swap_index,
             d.event_type,
+            lead(d.inner_index) OVER (PARTITION BY d.tx_id, d.index ORDER BY d.inner_index) AS next_summary_swap_index_tmp,
+            iff(next_summary_swap_index_tmp = d.inner_index, NULL, next_summary_swap_index_tmp) AS next_summary_swap_index,
             max(p.key) OVER (PARTITION BY d.tx_id, d.index, d.inner_index) AS last_swap_index,
             p.value:inputIndex::int AS route_input_index,
             p.value:outputIndex::int AS route_output_index,
@@ -105,6 +107,7 @@ inner_swaps AS (
         block_timestamp,
         tx_id,
         index,
+        inner_index,
         swap_index,
         swapper,
         from_mint,
@@ -132,6 +135,9 @@ input_swaps AS (
         AND i.tx_id = s.tx_id
         AND i.index = s.index 
         AND i.swap_index = s.swap_index
+        AND i.inner_index > coalesce(s.inner_index,-1)
+        AND (i.inner_index < s.next_summary_swap_index 
+             OR s.next_summary_swap_index IS NULL)
     WHERE
         s.is_input_swap
     GROUP BY 1,2,3,4,5
@@ -151,6 +157,9 @@ output_swaps AS (
         AND i.tx_id = s.tx_id
         AND i.index = s.index 
         AND i.swap_index = s.swap_index
+        AND i.inner_index > coalesce(s.inner_index,-1)
+        AND (i.inner_index < s.next_summary_swap_index 
+             OR s.next_summary_swap_index IS NULL)
     WHERE
         s.is_output_swap
     GROUP BY 1,2,3,4
