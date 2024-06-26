@@ -67,7 +67,7 @@ agent_ids AS (
     SELECT
         tx_id,
         ARRAY_AGG(
-            VALUE :: STRING
+            VALUE :: INT
         ) AS agent_ids
     FROM
         create_events,
