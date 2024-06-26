@@ -11,14 +11,14 @@ models:
           where: block_timestamp::date > current_date - 30
       - compare_model_subset:
           name: silver__swaps_intermediate_jupiterv6_2_business_logic_test
-          compare_model: ref('testing__swaps_intermediate_jupiterv6')
+          compare_model: ref('testing__swaps_intermediate_jupiterv6_2')
           compare_columns: 
             - tx_id
             - swapper
-            - round(from_amt,2)
             - from_mint
-            - round(to_amt,2)
+            - round(from_amount,2)
             - to_mint
+            - round(to_amount,2)
             - swap_index
           model_condition: "where tx_id in ('33NLhAHDz2dAVRCqfgankDS2CAr78J1Q7LorotWhTaqcT2EDAVzPaWDK2sQsw4zSJM1KVXWzxvx6mDpvzAmNkzN1',
           '3DqnEWswNa8qD7GrqxUi7yyD2fgAk8GYdykHX6aZRQpxbVrdkj3rcFHPF13WuS7oMRs2gqtJGDcjCkDXzD5geprS',
@@ -33,7 +33,13 @@ models:
           'sbMujMpco3YpH1DSpBnU2gXU2xEbCkWcsg95HCHBXe3SsiEsEKYv4TAZjaSEGYKSCmp1hRBdoWxXWvDZbWPXoXD',
           '51zH6E9Q3KknnUwPpJeV9Au6zSzxT6ZmGbEW3v8Lk3GLjcUBosChbyWBWf7NTZEpBiqameEwRPCqio1XdsXPnC4k',
           '5vdYEWuHxJAwENhZdUAqsAaV7mxRVcxPQkS5V4m5yCroSpox1LG1LNLmQnpyfEBbQkikLhxWVYbBkTc9f3BGi5ZU',
-          '3ysjbsjuwREA7QNvm8SmFv5fjkTzZysPn3D5SZWibKoiXPRgniqmV9e5tqz1BZBqmHkbdUQb6tQpoCk9yJcayQDk')"  
+          '3ysjbsjuwREA7QNvm8SmFv5fjkTzZysPn3D5SZWibKoiXPRgniqmV9e5tqz1BZBqmHkbdUQb6tQpoCk9yJcayQDk',
+          '2G8raofwNadUPTAUWuuFbYtw18DGpqshRMkoVFU1LbyccfDKX1vFgv8QiPFmTq36UAjKaA12crGP3tcpMP94YAnD',
+          '3B6UatG5gvCrGY5bMQUJaHUpbNXzn8iR92Ze7rsB1pmAmzdUtY1GZd7QSc2C1KgsR5g61skB5LqrM5j6QJoHXY35',
+          '5UMtTnzJRZDnKYjM1nnVzU46gnys98EZySiUUkWEaWj2G82D7EhzxQHdPJ6nYDDd5T9dB7KanGQHKwWdXN5KXjGh',
+          '3ho3m3EYmWy5T3GPvL83HQw2ntezXYXYiwqhJyV6izFGPUEkRMgtzT9Hp67ftvaXxCpbZH2W4LWTDR55G7DMEAcF',
+          '3BBroFipCBy5oh8tktjJrJnDaAsfXVhKixhSTbBNyfKAt5Pa6Httav2dJjgqeU62k82cHoEEKf2wZoahz9bA7mRg',
+          'P7hjHyhT9RJwJ2n8jd3srwKVyb9TR6UZwExT3T2VyGdYbQ5HLTb6iN4nR3NZdx39vKz1mZ7PkM5rxTScdZ79D1s')"  
       - tx_excluded:
           name: silver__swaps_intermediate_jupiterv6_2_tx_excluded_test
           excluded_tx_ids:
