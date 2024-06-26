@@ -5,13 +5,13 @@
     unique_key = "swaps_inner_intermediate_jupiterv6_id",
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     merge_exclude_columns = ["inserted_timestamp"],
-    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
-    tags = ['scheduled_non_core'],
+    cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
     post_hook = enable_search_optimization(
         '{{this.schema}}',
         '{{this.identifier}}',
         'ON EQUALITY(tx_id, swapper, from_mint, to_mint)'
     ),
+    tags = ['scheduled_non_core'],
 ) }}
 
 {% if execute %}
@@ -23,7 +23,6 @@
             tx_id,
             index,
             inner_index,
-            coalesce(lag(inner_index) OVER (PARTITION BY tx_id, index ORDER BY inner_index),0) AS previous_swap_event_inner_index,
             succeeded,
             event_type,
             decoded_log:args:amm::string AS program_id,
@@ -45,13 +44,6 @@
                 FROM
                     {{ this }}
             )
-            /* TODO: Remove after backfill */
-            AND _inserted_timestamp < (
-                SELECT
-                    MAX(_inserted_timestamp) + INTERVAL '1 day'
-                FROM
-                    {{ this }}
-            )
             {% else %} 
             AND _inserted_timestamp::date >= '2024-06-12'
             AND _inserted_timestamp::date < '2024-06-14'
@@ -64,7 +56,6 @@
             l.tx_id,
             l.index,
             l.inner_index,
-            coalesce(lag(l.inner_index) OVER (PARTITION BY l.tx_id, l.index ORDER BY l.inner_index),0) AS previous_swap_event_inner_index,
             l.succeeded,
             l.event_type,
             l.decoded_log:args:amm::string AS program_id,
@@ -107,6 +98,7 @@ swappers AS (
         index,
         inner_index,
         silver.udf_get_account_pubkey_by_name('userTransferAuthority', decoded_instruction:accounts) AS swapper,
+        lead(inner_index) OVER (PARTITION BY tx_id, index ORDER BY inner_index) AS next_summary_swap_index,
         _inserted_timestamp
     FROM
         {{ ref('silver__decoded_instructions_combined') }}
@@ -160,7 +152,7 @@ SELECT
     b.tx_id,
     b.index,
     b.inner_index,
-    row_number() OVER (PARTITION BY b.tx_id, b.index ORDER BY b.inner_index)-1 AS swap_index,
+    row_number() OVER (PARTITION BY b.tx_id, b.index, s.inner_index ORDER BY b.inner_index)-1 AS swap_index, /* we want the swap index as it relates to the top level swap instruction */
     b.succeeded,
     b.program_id AS swap_program_id,
     'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4' AS aggregator_program_id,
@@ -169,7 +161,7 @@ SELECT
     b.from_amount * pow(10,-d.decimal) AS from_amount,
     b.to_mint,
     b.to_amount * pow(10,-d2.decimal) AS to_amount,
-    greatest(b._inserted_timestamp, coalesce(s._inserted_timestamp,'2000-01-01')) AS _inserted_timestamp,
+    b._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['b.tx_id','b.index','b.inner_index']) }} as swaps_inner_intermediate_jupiterv6_id,
     sysdate() as inserted_timestamp,
     sysdate() as modified_timestamp,
@@ -184,8 +176,9 @@ LEFT OUTER JOIN
             s.inner_index IS NULL 
             OR
             (
-                s.inner_index >= b.previous_swap_event_inner_index 
-                AND s.inner_index < b.inner_index
+                b.inner_index > s.inner_index
+                AND (b.inner_index < s.next_summary_swap_index 
+                    OR s.next_summary_swap_index IS NULL)
             )
         )
 LEFT OUTER JOIN

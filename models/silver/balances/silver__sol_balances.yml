@@ -1,13 +1,11 @@
 version: 2
 models:
-  - name: silver__token_mint_actions
+  - name: silver__sol_balances
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
-            - INDEX
-            - INNER_INDEX
-            - MINT
+            - ACCOUNT
           where: block_timestamp::date > current_date - 30
     recent_date_filter: &recent_date_filter
       config:
@@ -16,11 +14,10 @@ models:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
-          - not_null:
-              where: block_id > 39824213
+          - not_null: *recent_date_filter
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
-              interval: 3
+              interval: 2
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
@@ -31,42 +28,45 @@ models:
           - not_null: *recent_date_filter
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
-      - name: INDEX 
-        description: "Location of the event within the instructions of a transaction"
         tests: 
           - not_null: *recent_date_filter
-      - name: INNER_INDEX 
-        description: "Location of the event within the inner instructions of a transaction"
-      - name: EVENT_TYPE 
-        description: "{{ doc('event_type') }}"
+      - name: INDEX
+        description: "{{ doc('balances_index') }}"
         tests: 
           - not_null: *recent_date_filter
-      - name: MINT 
-        description: "{{ doc('mint') }}"
+      - name: ACCOUNT
+        description:  "{{ doc('balances_account') }}"
         tests: 
           - not_null: *recent_date_filter
-      - name: MINT_AMOUNT
-        description: Number of tokens burned
-        tests: 
-          - not_null:
-              where: event_type in ('mintToChecked', 'mintTo')
-      - name: MINT_AUTHORITY
-        description: Account address authorizing burn
+      - name: MINT
+        description:  "{{ doc('mint') }}"
         tests: 
           - not_null: *recent_date_filter
-      - name: TOKEN_ACCOUNT
-        description: The account address where tokens are minted to
-      - name: SIGNERS
-        description: Account address authorizing burn
-      - name: DECIMAL
-        description: "{{ doc('decimal') }}"
-        tests:
+      - name: PRE_AMOUNT
+        description: "{{ doc('balances_pre_amount') }}"
+        tests: 
           - not_null: *recent_date_filter
-      - name: MINT_STANDARD_TYPE
-        description: "{{ doc('mint_standard_type') }}"
+      - name: POST_AMOUNT
+        description: "{{ doc('balances_post_amount') }}"
+        tests: 
+          - not_null: *recent_date_filter
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
+      - name: SOL_BALANCES_ID
+        description: '{{ doc("pk") }}'   
         tests: 
-          - not_null
+          - unique: *recent_date_filter
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        tests: 
+          - not_null: *recent_date_filter
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        tests: 
+          - not_null: 
+              name: test_silver__not_null_sol_balances__invocation_id
+              <<: *recent_date_filter
