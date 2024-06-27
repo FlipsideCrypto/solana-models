@@ -17,6 +17,26 @@
 {% if execute %}
     {% set base_query %}
         CREATE OR REPLACE TEMPORARY TABLE silver.swaps_intermediate_jupiterv6__intermediate_tmp AS 
+        WITH distinct_entities AS (
+            SELECT DISTINCT
+                tx_id
+            FROM 
+                {{ ref('silver__decoded_instructions_combined') }} d
+            WHERE
+                program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+                AND event_type IN ('exactOutRoute','sharedAccountsExactOutRoute','sharedAccountsRoute','routeWithTokenLedger','route','sharedAccountsRouteWithTokenLedger')
+                AND succeeded
+                {% if is_incremental() %}
+                AND _inserted_timestamp >= (
+                    SELECT
+                        MAX(_inserted_timestamp) - INTERVAL '1 hour'
+                    FROM
+                        {{ this }}
+                )
+                {% endif %}
+        )
+        /* need to re-select all decoded instructions from all tx_ids in incremental subset 
+        in order for the window function to output accurate values */
         SELECT 
             d.block_timestamp,
             d.block_id,
@@ -36,19 +56,14 @@
         FROM 
             {{ ref('silver__decoded_instructions_combined') }} d
         JOIN
+            distinct_entities
+            USING(tx_id)
+        JOIN
             table(flatten(decoded_instruction:args:routePlan)) p
         WHERE
             program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
             AND event_type IN ('exactOutRoute','sharedAccountsExactOutRoute','sharedAccountsRoute','routeWithTokenLedger','route','sharedAccountsRouteWithTokenLedger')
             AND succeeded
-            {% if is_incremental() %}
-            AND _inserted_timestamp >= (
-                SELECT
-                    MAX(_inserted_timestamp) - INTERVAL '1 hour'
-                FROM
-                    {{ this }}
-            )
-            {% endif %}
     {% endset %}
     {% do run_query(base_query) %}
     {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.swaps_intermediate_jupiterv6__intermediate_tmp","block_timestamp::date") %}
