@@ -11,13 +11,63 @@
         '{{this.identifier}}',
         'ON EQUALITY(tx_id, swapper, from_mint, to_mint)'
     ),
-    tags = ['scheduled_non_core'],
 ) }}
 
 {% if execute %}
     {% set base_query %}
         CREATE OR REPLACE TEMPORARY TABLE silver.swaps_inner_intermediate_jupiterv6__intermediate_tmp AS 
-        SELECT 
+        WITH base AS (
+            SELECT 
+                tx_id
+            FROM 
+                {{ ref('silver__decoded_logs') }}
+            WHERE
+                program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+                AND event_type = 'SwapEvent'
+                AND succeeded
+                {% if is_incremental() %}
+                AND _inserted_timestamp >= (
+                    SELECT
+                        MAX(_inserted_timestamp) - INTERVAL '1 hour'
+                    FROM
+                        {{ this }}
+                )
+                AND _inserted_timestamp < (
+                    SELECT
+                        MAX(_inserted_timestamp) + INTERVAL '1 day'
+                    FROM
+                        {{ this }}
+                )
+                {% else %} 
+                AND _inserted_timestamp::date >= '2024-06-12'
+                AND _inserted_timestamp::date < '2024-06-14'
+                {% endif %}
+            {% if is_incremental() %}
+            UNION ALL
+            SELECT 
+                l.tx_id
+            FROM
+                {{ this }} s 
+            INNER JOIN 
+                {{ ref('silver__decoded_logs') }} l
+                ON s.block_timestamp::date = l.block_timestamp::date
+                AND s.tx_id = l.tx_id
+            WHERE
+                l.program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+                AND l.event_type = 'SwapEvent'
+                AND l.succeeded
+                AND s.swapper IS NULL
+                AND s._inserted_timestamp >= current_date - 2 /* only look back 2 days */
+            {% endif %}
+        ),
+        /* we need to grab all inner_swaps for any tx that is in the incremental subset because it is required to do the window function later on */
+        distinct_entities AS (
+            SELECT
+                DISTINCT tx_id
+            FROM
+                base
+        )
+        SELECT
             block_timestamp,
             block_id,
             tx_id,
@@ -31,54 +81,25 @@
             decoded_log:args:outputMint::string AS to_mint,
             decoded_log:args:outputAmount::string AS to_amount,
             _inserted_timestamp,
-        FROM 
+        FROM
             {{ ref('silver__decoded_logs') }}
-        WHERE
+        JOIN
+            distinct_entities
+            USING(tx_id)
+        WHERE 
             program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
             AND event_type = 'SwapEvent'
             AND succeeded
-            {% if is_incremental() %}
-            AND _inserted_timestamp >= (
+            {% if is_incremental() %} /* need to always keep the upper bound (if there is one) to prevent time gaps in incremental loading */
+            AND _inserted_timestamp < (
                 SELECT
-                    MAX(_inserted_timestamp) - INTERVAL '1 hour'
+                    MAX(_inserted_timestamp) + INTERVAL '1 day'
                 FROM
                     {{ this }}
             )
             {% else %} 
-            AND _inserted_timestamp::date >= '2024-06-12'
             AND _inserted_timestamp::date < '2024-06-14'
             {% endif %}
-        {% if is_incremental() %}
-        UNION ALL
-        SELECT 
-            l.block_timestamp,
-            l.block_id,
-            l.tx_id,
-            l.index,
-            l.inner_index,
-            l.succeeded,
-            l.event_type,
-            l.decoded_log:args:amm::string AS program_id,
-            l.decoded_log:args:inputMint::string AS from_mint,
-            l.decoded_log:args:inputAmount::string AS from_amount,
-            l.decoded_log:args:outputMint::string AS to_mint,
-            l.decoded_log:args:outputAmount::string AS to_amount,
-            l._inserted_timestamp,
-        FROM
-            {{ this }} s 
-        INNER JOIN
-            {{ ref('silver__decoded_logs') }} l
-            ON s.block_timestamp::date = l.block_timestamp::date
-            AND s.tx_id = l.tx_id
-            AND s.index = l.index 
-            AND coalesce(s.inner_index,-1) = coalesce(l.inner_index,-1)
-        WHERE
-            l.program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
-            AND l.event_type = 'SwapEvent'
-            AND l.succeeded
-            AND s.swapper IS NULL
-            AND s._inserted_timestamp >= current_date - 2 /* only look back 2 days */
-        {% endif %}
     {% endset %}
     {% do run_query(base_query) %}
     {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.swaps_inner_intermediate_jupiterv6__intermediate_tmp","block_timestamp::date") %}
