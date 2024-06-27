@@ -22,8 +22,6 @@ models:
             - swap_index
           model_condition: "where tx_id in ('33NLhAHDz2dAVRCqfgankDS2CAr78J1Q7LorotWhTaqcT2EDAVzPaWDK2sQsw4zSJM1KVXWzxvx6mDpvzAmNkzN1',
           '3DqnEWswNa8qD7GrqxUi7yyD2fgAk8GYdykHX6aZRQpxbVrdkj3rcFHPF13WuS7oMRs2gqtJGDcjCkDXzD5geprS',
-          '4ckGB7iEDkxgtZszKRn1xLvYFSGBanuF2PwhTyqwWAdgqZLPezvtLwrDHUGQoZVYQHyruXjVjLLmNf6wEiyVnuhf',
-          '5dnKpNshPu6F7JnhHRjGNodUrigVYmUq2ffVdyxPFn8ABWNcNg9p9v3GBZd4N9R3qk2nnHKk1PcnVSxu7HYfYeUX',
           '5nhXU7f282fFdi3FynukwNLiybV5NYqptUNU6BJH7RpYRPe4mcporxadKmhC9ioxx3vJp9uVmMbXz35QffHTxrFz',
           '5YrfH1RDhZkhh98eikYFcuqRxHY8K87A7hBBFAasaJyCeMW1dr1nG5xNDps3e3GaHnt2cp1tssZJQS2eFaUwcPz9',
           'GD7mFaoiFFxRKEi4EfYbRHmCRN1Q7hCwrQaZbiRq998vXU7bwY22ET1SwXcgDYKSbVLVTmkbM7HgE7G1HSJDT4T',
@@ -40,14 +38,12 @@ models:
           '3ho3m3EYmWy5T3GPvL83HQw2ntezXYXYiwqhJyV6izFGPUEkRMgtzT9Hp67ftvaXxCpbZH2W4LWTDR55G7DMEAcF',
           '3BBroFipCBy5oh8tktjJrJnDaAsfXVhKixhSTbBNyfKAt5Pa6Httav2dJjgqeU62k82cHoEEKf2wZoahz9bA7mRg',
           'P7hjHyhT9RJwJ2n8jd3srwKVyb9TR6UZwExT3T2VyGdYbQ5HLTb6iN4nR3NZdx39vKz1mZ7PkM5rxTScdZ79D1s')"  
-      - tx_excluded:
-          name: silver__swaps_intermediate_jupiterv6_2_tx_excluded_test
-          excluded_tx_ids:
-            - 2NAjXWibmqEFGVo4No3KsgSqfz9RXMnNY9DYCRs92ZYUuLPfdUXyw2Fs9L3w5UTJnxLs9pG6MXttBWweNMZ5ZFdk
-            - 51KVhmiUuexhjgZodwgeLModrqx59faQ75dbrKcprtQLRVzQ7HqWSYEB9pk889R5MjfKLo9zQ5vbj1xKer78HKcc
     recent_date_filter: &recent_date_filter
       config:
-        where: _inserted_timestamp >= current_date - 7
+        where: >
+          /* this model does not work before this date as inner_swaps encoded data was not working. Use v1 model instead */
+          block_timestamp::date >= '2023-08-03' 
+          AND _inserted_timestamp >= current_date - 7
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
