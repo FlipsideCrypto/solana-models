@@ -11,6 +11,7 @@
         '{{this.identifier}}',
         'ON EQUALITY(tx_id, swapper, from_mint, to_mint)'
     ),
+    tags = ['scheduled_non_core'],
 ) }}
 
 {% if execute %}
@@ -29,12 +30,6 @@
                 AND _inserted_timestamp >= (
                     SELECT
                         MAX(_inserted_timestamp) - INTERVAL '1 hour'
-                    FROM
-                        {{ this }}
-                )
-                AND _inserted_timestamp < (
-                    SELECT
-                        MAX(_inserted_timestamp) + INTERVAL '1 day'
                     FROM
                         {{ this }}
                 )
@@ -90,10 +85,11 @@
             program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
             AND event_type = 'SwapEvent'
             AND succeeded
-            {% if is_incremental() %} /* need to always keep the upper bound (if there is one) to prevent time gaps in incremental loading */
+            /* need to always keep the upper bound (if there is one) to prevent time gaps in incremental loading */
+            {% if is_incremental() %} 
             AND _inserted_timestamp < (
                 SELECT
-                    MAX(_inserted_timestamp) + INTERVAL '1 day'
+                    MAX(_inserted_timestamp) + INTERVAL '100 day'
                 FROM
                     {{ this }}
             )
