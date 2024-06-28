@@ -21,8 +21,8 @@
         inner_index,
         log_index,
         program_id,
-        decoded_instruction:name::string AS event_type,
-        decoded_instruction,
+        event_type,
+        decoded_log,
         _inserted_timestamp
     FROM
         {{ ref('silver__decoded_logs') }}
@@ -59,10 +59,10 @@ WITH decoded AS (
         log_index,
         program_id,
         event_type,
-        decoded_instruction:args:creatorsFee AS creator_fee,
-        decoded_instruction:args:currentPrice AS current_price,
-        decoded_instruction:args:mmFee AS mm_fee,
-        decoded_instruction:args:tswapFee AS tswap_fee,
+        decoded_log:args:creatorsFee AS creator_fee,
+        decoded_log:args:currentPrice AS current_price,
+        decoded_log:args:mmFee AS mm_fee,
+        decoded_log:args:tswapFee AS tswap_fee,
         _inserted_timestamp
     FROM
         silver.nft_sales_tensorswap_buysellevent__intermediate_tmp
