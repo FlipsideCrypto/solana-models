@@ -65,3 +65,10 @@ models:
         description: "Public key for the vote account"
         tests:
           - not_null
+      - name: _inserted_timestamp
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: hour
+              interval: 12

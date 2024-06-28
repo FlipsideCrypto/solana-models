@@ -1,10 +1,10 @@
-name: dbt_run_dev
-run-name: dbt_run_dev
+name: dbt_run_decode_logs_backfill
+run-name: dbt_run_decode_logs_backfill
 
 on:
   workflow_dispatch:
     branches:
-      - "token-account-owners-v2"
+      - "main"
     
 env:
   DBT_PROFILES_DIR: "${{ vars.DBT_PROFILES_DIR }}"
@@ -25,7 +25,7 @@ jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
     environment: 
-      name: workflow_dev
+      name: workflow_prod
 
     steps:
       - uses: actions/checkout@v3
@@ -41,4 +41,5 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -s silver__token_account_owners_2
+          dbt run-operation decoded_logs_backill_cleanup_views 
+          dbt run-operation decoded_logs_backfill_calls --vars '{"STREAMLINE_INVOKE_STREAMS": True}' 

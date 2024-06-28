@@ -1,0 +1,41 @@
+version: 2
+models:
+  - name: defi__ez_dex_swaps
+    description: A convenience table containing swaps performed on Jupiter, Orca, Raydium, Saber, Bonkswap, Dooar, Phoenix and Meteora swap programs. Intermediate swaps are aggregated over the DEX programs, so the values showcase the final mint/amount swap values. Ie. a swap on Jupiter that swaps SOL->USDC->mSOL->ETH would show the initial amount in and the final amount out of SOL->ETH. For Phoenix, we are not capturing swaps where there are separate transactions for placing the order and filling the order. 
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+      - name: SWAPPER
+        description: Address that initiated the swap 
+      - name: SWAP_FROM_AMOUNT
+        description: Total amount of the token sent in to initiate the swap 
+      - name: SWAP_FROM_AMOUNT_USD
+        description: The amount of tokens put into the swap converted to USD using the price of the token 
+      - name: SWAP_FROM_MINT
+        description: Token being sent or swapped from
+      - name: SWAP_FROM_SYMBOL
+        description: The symbol of the token being swapped from
+      - name: SWAP_TO_AMOUNT
+        description: Total amount of the token received in the swap
+      - name: SWAP_TO_AMOUNT_USD
+        description: The amount of tokens taken out of or received from the swap converted to USD using the price of the token
+      - name: SWAP_TO_MINT
+        description: Token being received or swapped for 
+      - name: SWAP_TO_SYMBOL
+        description: The symbol of the token being swapped to
+      - name: PROGRAM_ID
+        description: Token being received or swapped for 
+      - name: SWAP_PROGRAM
+        description: name of decentralized exchange used to perform the swap
+      - name: _LOG_ID
+        description: "Combination of TX_ID and event index"
+      - name: EZ_SWAPS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
