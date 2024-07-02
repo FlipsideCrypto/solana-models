@@ -1,0 +1,66 @@
+version: 2
+models:
+  - name: defi__fact_swaps_jupiter_summary
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: INDEX
+        description: "{{ doc('event_index') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}. This is the inner index of the log event listing the inner swap"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SWAP_INDEX
+        description: "{{ doc('swaps_swap_index') }} as it relates to the top level Jupiter V6 swap instruction"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: SWAPPER
+        description: "{{ doc('swaps_swapper') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: FROM_AMOUNT
+        description:  "{{ doc('swaps_from_amt') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: FROM_MINT
+        description:  "{{ doc('swaps_from_mint') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TO_AMOUNT
+        description:  "{{ doc('swaps_to_amt') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TO_MINT
+        description:  "{{ doc('swaps_to_mint') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: FACT_SWAPS_JUPITER_SUMMARY_ID
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: INSERTED_TIMESTAMP
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        tests:
+          - dbt_expectations.expect_column_to_exist
