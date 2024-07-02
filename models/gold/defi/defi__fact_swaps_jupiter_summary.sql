@@ -22,7 +22,7 @@ SELECT
     inserted_timestamp,
     modified_timestamp,
 FROM
-    {{ ref('silver__swaps_intermediate_jupiterv6') }}
+    {{ ref('silver__swaps_intermediate_jupiterv6_view') }}
 WHERE
     block_timestamp::date < '2023-08-03'
 UNION ALL
