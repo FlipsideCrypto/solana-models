@@ -88,6 +88,7 @@ sources:
       - name: stake_pool_actions_socean
       - name: _blocks_tx_count
       - name: nft_sales_solsniper_v1_events
+      - name: swaps_intermediate_jupiterv6
   - name: solana_streamline
     database: solana
     schema: streamline
