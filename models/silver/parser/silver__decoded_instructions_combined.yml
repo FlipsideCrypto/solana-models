@@ -156,6 +156,16 @@ models:
                 AND succeeded
                 and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
               to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_swaps_intermediate_jupiterv6_2_tx_id
+              to: ref('silver__swaps_intermediate_jupiterv6_2')
+              field: tx_id
+              from_condition: >
+                program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+                AND event_type IN ('exactOutRoute','sharedAccountsExactOutRoute','sharedAccountsRoute','routeWithTokenLedger','route','sharedAccountsRouteWithTokenLedger')
+                AND succeeded
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
       - name: SIGNERS
         description: "{{ doc('signers') }}"
       - name: SUCCEEDED
