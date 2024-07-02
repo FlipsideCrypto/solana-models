@@ -42,19 +42,19 @@ models:
         description: "{{ doc('swaps_swapper') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: FROM_AMOUNT
+      - name: SWAP_FROM_AMOUNT
         description:  "{{ doc('swaps_from_amt') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: FROM_MINT
+      - name: SWAP_FROM_MINT
         description:  "{{ doc('swaps_from_mint') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: TO_AMOUNT
+      - name: SWAP_TO_AMOUNT
         description:  "{{ doc('swaps_to_amt') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: TO_MINT
+      - name: SWAP_TO_MINT
         description:  "{{ doc('swaps_to_mint') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
