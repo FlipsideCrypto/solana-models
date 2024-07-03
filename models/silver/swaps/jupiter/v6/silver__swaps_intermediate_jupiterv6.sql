@@ -12,6 +12,7 @@
         '{{this.identifier}}',
         'ON EQUALITY(tx_id, swapper, from_mint, to_mint)'
     ),
+    enabled=false,
 ) }}
 
 {% if execute %}
