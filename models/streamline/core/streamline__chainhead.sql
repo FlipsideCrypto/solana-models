@@ -24,4 +24,4 @@ SELECT
             []
         ),
         'Vault/prod/solana/quicknode/mainnet'
-    ) :data :result :: INT AS block_number
+    ) :data :result :: INT AS block_id

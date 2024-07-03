@@ -14,21 +14,22 @@
 WITH blocks AS (
 
     SELECT
-        block_number
+        block_id
     FROM
         {{ ref("streamline__blocks") }}
-    EXCEPT
-    SELECT
-        block_number
-    FROM
-        {{ ref("streamline__complete_blocks") }}
-    ORDER BY
-        1
+    LIMIT 1
+    -- EXCEPT
+    -- SELECT
+    --     block_id
+    -- FROM
+    --     {{ ref("streamline__complete_block_rewards_2") }}
+    -- ORDER BY
+    --     1
 )
 SELECT
     ROUND(
         block_number,
-        -3
+        -6
     ) :: INT AS partition_key,
     {{ target.database }}.live.udf_api(
         'POST',
@@ -64,4 +65,4 @@ SELECT
 FROM
     blocks
 ORDER BY
-    block_number
+    block_id
