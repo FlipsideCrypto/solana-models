@@ -6,7 +6,7 @@
 SELECT
     {{ target.database }}.live.udf_api(
         'POST',
-        '{Service}/{Authentication}',
+        'https://icy-solitary-silence.solana-mainnet.quiknode.pro/{Authentication}',
         OBJECT_CONSTRUCT(
             'Content-Type',
             'application/json',

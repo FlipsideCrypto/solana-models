@@ -18,36 +18,29 @@ WITH blocks AS (
     FROM
         {{ ref("streamline__blocks") }}
     LIMIT 1
-    -- EXCEPT
-    -- SELECT
-    --     block_id
-    -- FROM
-    --     {{ ref("streamline__complete_block_rewards_2") }}
-    -- ORDER BY
-    --     1
 )
 SELECT
     ROUND(
-        block_number,
+        block_id,
         -6
     ) :: INT AS partition_key,
     {{ target.database }}.live.udf_api(
         'POST',
-        '{Service}/{Authentication}',
+        'https://icy-solitary-silence.solana-mainnet.quiknode.pro/{Authentication}',
         OBJECT_CONSTRUCT(
             'Content-Type',
             'application/json'
         ),
         OBJECT_CONSTRUCT(
             'id',
-            block_number,
+            block_id,
             'jsonrpc',
             '2.0',
             'method',
             'getBlock',
             'params',
             ARRAY_CONSTRUCT(
-                block_number :: STRING,
+                block_id,
                 OBJECT_CONSTRUCT(
                     'encoding',
                     'jsonParsed',
