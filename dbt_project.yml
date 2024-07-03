@@ -66,6 +66,10 @@ models:
     relation: true
     columns: true
   +on_schema_change: "append_new_columns"
+  livequery_models:
+    deploy:
+      core:
+        materialized: ephemeral
 
 vars:
   "dbt_date:time_zone": GMT
