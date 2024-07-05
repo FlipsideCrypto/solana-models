@@ -1,3 +1,4 @@
+/* TODO add exploded key */
 {{ config (
     materialized = "view",
     post_hook = fsc_utils.if_data_call_function_v2(
@@ -5,28 +6,27 @@
         target = "{{this.schema}}.{{this.identifier}}",
         params ={ "external_table" :"block_rewards",
         "sql_limit" :"100000",
-        "producer_batch_size" :"2000",
-        "worker_batch_size" :"500",
+        "producer_batch_size" :"100000",
+        "worker_batch_size" :"12500",
         "sql_source" :"{{this.identifier}}" }
     )
 ) }}
 
 WITH blocks AS (
-
     SELECT
         block_id
     FROM
         {{ ref("streamline__blocks") }}
-    LIMIT 1
+    /* TODO diff with completed */
+    WHERE
+        block_id >= 275322345
 )
 SELECT
-    ROUND(
-        block_id,
-        -6
-    ) :: INT AS partition_key,
+    /* TODO use completed to get next batch num */
+    'batch=1' AS partition_key,
     {{ target.database }}.live.udf_api(
         'POST',
-        'https://icy-solitary-silence.solana-mainnet.quiknode.pro/{Authentication}',
+        '{service}/{Authentication}',
         OBJECT_CONSTRUCT(
             'Content-Type',
             'application/json'
