@@ -350,6 +350,7 @@ def get_logs_program_data(logs) -> list:
                 break
 
             if log.endswith(" invoke [1]"):
+                child_index = None
                 program = log.replace("Program ","").replace(" invoke [1]","")
                 parent_index += 1
 
