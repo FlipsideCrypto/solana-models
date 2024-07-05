@@ -8,7 +8,8 @@
         "sql_limit" :"100000",
         "producer_batch_size" :"100000",
         "worker_batch_size" :"12500",
-        "sql_source" :"{{this.identifier}}" }
+        "sql_source" :"{{this.identifier}}",
+        "exploded_key": tojson(["result.data"]) }
     )
 ) }}
 
@@ -20,6 +21,7 @@ WITH blocks AS (
     /* TODO diff with completed */
     WHERE
         block_id >= 275322345
+    LIMIT 1
 )
 SELECT
     /* TODO use completed to get next batch num */
