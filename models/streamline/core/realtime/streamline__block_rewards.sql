@@ -1,4 +1,3 @@
-/* TODO add exploded key */
 {{ config (
     materialized = "view",
     post_hook = fsc_utils.if_data_call_function_v2(
@@ -8,10 +7,21 @@
         "sql_limit" :"100000",
         "producer_batch_size" :"100000",
         "worker_batch_size" :"12500",
-        "sql_source" :"{{this.identifier}}",
-        "exploded_key": tojson(["result.data"]) }
+        "exploded_key": tojson(["result.rewards"]),
+        "sql_source" :"{{this.identifier}}" }
     )
 ) }}
+
+{% if execute %}
+    {% set next_batch_num_query %}
+    SELECT
+        greatest(
+            (SELECT coalesce(max(_partition_id),0) FROM {{ ref('streamline__complete_block_rewards') }}),
+            (SELECT coalesce(max(_partition_id),0) FROM {{ ref('streamline__complete_block_rewards_2') }})
+        )+1
+    {% endset %}
+    {% set next_batch_num = run_query(next_batch_num_query)[0][0] %}
+{% endif %}
 
 WITH blocks AS (
     SELECT
@@ -20,12 +30,21 @@ WITH blocks AS (
         {{ ref("streamline__blocks") }}
     /* TODO diff with completed */
     WHERE
-        block_id >= 275322345
-    LIMIT 1
+        block_id >= 275846017
+    EXCEPT
+    SELECT
+        block_id
+    FROM
+        {{ ref('streamline__complete_block_rewards') }}
+    EXCEPT
+    SELECT 
+        block_id
+    FROM
+        {{ ref('streamline__complete_block_rewards_2') }}
 )
 SELECT
-    /* TODO use completed to get next batch num */
-    'batch=1' AS partition_key,
+    block_id,
+    'batch={{next_batch_num}}' AS partition_key,
     {{ target.database }}.live.udf_api(
         'POST',
         '{service}/{Authentication}',
