@@ -226,7 +226,7 @@ sells AS (
         d.purchaser,
         d.seller,
         d.mint,
-        b.sales_amount * pow(10,-9) AS sales_amount,
+        coalesce(b.sales_amount * pow(10,-9),min_price) AS sales_amount, -- some logs are truncated so we have to use min_price
         d._inserted_timestamp
     FROM 
         decoded d
