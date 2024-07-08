@@ -30,8 +30,8 @@ WITH blocks AS (
         {{ ref("streamline__blocks") }}
     /* TODO diff with completed */
     WHERE
-        block_id >= 275846017
-    EXCEPT
+        block_id >= 268272000
+    /*EXCEPT
     SELECT
         block_id
     FROM
@@ -40,7 +40,7 @@ WITH blocks AS (
     SELECT 
         block_id
     FROM
-        {{ ref('streamline__complete_block_rewards_2') }}
+        {{ ref('streamline__complete_block_rewards_2') }}*/
 )
 SELECT
     block_id,
