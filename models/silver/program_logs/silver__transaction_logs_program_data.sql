@@ -47,11 +47,10 @@ WITH base AS (
         succeeded
         AND log_messages IS NOT NULL
         {% if is_incremental() %}
-            {% if execute %}
-            {{ get_batch_load_logic(this, 30, '2024-07-02') }}
-            {% endif %}
-        /* UNCOMMENT WHEN BACKFILLED 
-        AND _inserted_timestamp >= (SELECT max(_inserted_timestamp) FROM {{ this }}) */
+            /*{% if execute %}
+            {{ get_batch_load_logic(this, 30, '2024-07-04') }}
+            {% endif %}*/
+            AND _inserted_timestamp >= (SELECT max(_inserted_timestamp) FROM {{ this }}) 
         {% else %}
         AND _inserted_timestamp::date BETWEEN '2022-08-12' AND '2022-09-01'
         {% endif %}
