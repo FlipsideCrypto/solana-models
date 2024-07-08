@@ -50,15 +50,8 @@
             FROM
                 {{ this }}
         )
-        /* TODO remove once backfilled */
-        AND _inserted_timestamp < (
-            SELECT
-                MAX(_inserted_timestamp) + INTERVAL '10 day'
-            FROM
-                {{ this }}
-        )
     {% else %}
-        AND _inserted_timestamp :: DATE = '2024-01-16'
+        AND _inserted_timestamp :: DATE >= '2023-11-15'
     {% endif %}
 {% endset %}
 
