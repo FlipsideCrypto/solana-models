@@ -59,10 +59,10 @@ WITH decoded AS (
         log_index,
         program_id,
         event_type,
-        decoded_log:args:creatorsFee AS creator_fee,
-        decoded_log:args:currentPrice AS current_price,
-        decoded_log:args:mmFee AS mm_fee,
-        decoded_log:args:tswapFee AS tswap_fee,
+        decoded_log:args:creatorsFee::int AS creator_fee,
+        decoded_log:args:currentPrice::int AS current_price,
+        decoded_log:args:mmFee::int AS mm_fee,
+        decoded_log:args:tswapFee::int AS tswap_fee,
         _inserted_timestamp
     FROM
         silver.nft_sales_tensorswap_buysellevent__intermediate_tmp
@@ -77,7 +77,10 @@ SELECT
     log_index,
     program_id,
     event_type,
-    current_price + creator_fee + mm_fee + tswap_fee AS sales_amount,
+    creator_fee,
+    mm_fee,
+    tswap_fee,
+    current_price AS sales_amount,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['tx_id','index','inner_index','log_index']) }} AS nft_sales_tensorswap_id,
     SYSDATE() AS inserted_timestamp,
