@@ -1,7 +1,12 @@
 {{ config(
-    materialized = 'view',
+    materialized = 'incremental',
     meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }}},
-    tags = ["scheduled_non_core"],
+    unique_key = ['fact_liquidity_pool_actions_id'],
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
+    cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
+    merge_exclude_columns = ["inserted_timestamp"],
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, fact_token_balances_id)'),
+    tags = ['scheduled_non_core']
 ) }}
 
 SELECT
@@ -32,6 +37,14 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__liquidity_pool_actions_raydium') }}
+{% if is_incremental() %}
+WHERE modified_timestamp >= (
+    SELECT
+        MAX(modified_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
 UNION
 SELECT
     block_id,
@@ -61,6 +74,14 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__liquidity_pool_actions_orca') }}
+{% if is_incremental() %}
+WHERE modified_timestamp >= (
+    SELECT
+        MAX(modified_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
 UNION
 SELECT
     block_id,
@@ -90,6 +111,14 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__liquidity_pool_actions_saber') }}
+{% if is_incremental() %}
+WHERE modified_timestamp >= (
+    SELECT
+        MAX(modified_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
 UNION
 SELECT
     block_id,
@@ -108,6 +137,14 @@ SELECT
     modified_timestamp
 FROM
     {{ ref('silver__liquidity_pool_actions_meteora') }}
+{% if is_incremental() %}
+WHERE modified_timestamp >= (
+    SELECT
+        MAX(modified_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
 UNION
 SELECT
     block_id,
@@ -126,6 +163,14 @@ SELECT
     modified_timestamp
 FROM
     {{ ref('silver__liquidity_pool_actions_meteora_dlmm') }}
+{% if is_incremental() %}
+WHERE modified_timestamp >= (
+    SELECT
+        MAX(modified_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
 UNION
 SELECT
     block_id,
@@ -144,4 +189,12 @@ SELECT
     modified_timestamp
 FROM
     {{ ref('silver__liquidity_pool_actions_meteora_multi') }}
+{% if is_incremental() %}
+WHERE modified_timestamp >= (
+    SELECT
+        MAX(modified_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
 
