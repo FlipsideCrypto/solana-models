@@ -162,6 +162,18 @@ base_transfers AS (
     WHERE
         {{ between_stmts }}
 ),
+base_logs AS (
+    SELECT 
+        block_timestamp,
+        tx_id,
+        index,
+        inner_index,
+        sales_amount,
+    FROM
+        {{ ref('silver__nft_sales_tensorswap_buysellevent') }}
+    WHERE
+        {{ between_stmts }}
+),
 buys AS (
     SELECT
         d.block_timestamp,
@@ -197,22 +209,29 @@ buys AS (
 ),
 sells AS (
     SELECT
-        block_timestamp,
-        block_id,
-        tx_id,
-        succeeded,
-        index,
-        inner_index,
-        program_id,
-        purchaser,
-        seller,
-        mint,
-        min_price AS sales_amount,
-        _inserted_timestamp
+        d.block_timestamp,
+        d.block_id,
+        d.tx_id,
+        d.succeeded,
+        d.index,
+        d.inner_index,
+        d.program_id,
+        d.event_type,
+        d.purchaser,
+        d.seller,
+        d.mint,
+        coalesce(b.sales_amount * pow(10,-9),min_price) AS sales_amount, -- some logs are truncated so we have to use min_price
+        d._inserted_timestamp
     FROM 
-        decoded
+        decoded d
+    LEFT JOIN
+        base_logs b
+        ON d.block_timestamp::date = b.block_timestamp::date 
+        AND d.tx_id = b.tx_id
+        AND d.index = b.index 
+        AND coalesce(d.inner_index,-1) = coalesce(b.inner_index,-1)
     WHERE
-        event_type IN (
+        d.event_type IN (
             'sellNftTokenPool',
             'sellNftTokenPoolT22',
             'sellNftTradePoolT22',
@@ -230,6 +249,7 @@ pre_final AS (
         index,
         inner_index,
         program_id,
+        event_type,
         purchaser,
         seller,
         mint,
@@ -246,6 +266,7 @@ pre_final AS (
         d.index,
         d.inner_index,
         d.program_id,
+        d.event_type,
         d.purchaser,
         d.seller,
         d.mint,
