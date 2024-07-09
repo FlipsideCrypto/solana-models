@@ -85,7 +85,7 @@ models:
           - not_null:
               where: succeeded = TRUE
       - name: SALES_AMOUNT
-        description: "{{ doc('sales_amount') }}. For bid side sales the amount is an estimation using `min_price`"
+        description: "{{ doc('sales_amount') }}. For bid side sales the amount is an estimation using `min_price` when logs are unavailable (ex: truncated logs)"
         tests: 
           - not_null
           - dbt_utils.expression_is_true:
