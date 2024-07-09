@@ -82,7 +82,7 @@ SELECT
     tswap_fee,
     current_price AS sales_amount,
     _inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(['tx_id','index','inner_index','log_index']) }} AS nft_sales_tensorswap_id,
+    {{ dbt_utils.generate_surrogate_key(['tx_id','index','inner_index','log_index']) }} AS nft_sales_tensorswap_buysellevent_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
