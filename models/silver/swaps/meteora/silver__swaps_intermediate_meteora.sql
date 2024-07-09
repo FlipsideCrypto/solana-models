@@ -57,9 +57,6 @@ decoded AS (
         tx_id,
         INDEX,
         inner_index,
-        COALESCE(LEAD(inner_index) OVER (PARTITION BY tx_id, index 
-            ORDER BY inner_index) -1, 999999
-        ) AS inner_index_end,
         program_id,
         silver.udf_get_account_pubkey_by_name(
             'user',
@@ -101,10 +98,6 @@ decoded AS (
         tx_id,
         INDEX,
         inner_index,
-        COALESCE(LEAD(inner_index) OVER (PARTITION BY tx_id, index 
-            ORDER BY
-            inner_index) -1, 999999
-        ) AS inner_index_end,
         program_id,
         silver.udf_get_account_pubkey_by_name(
             'user',
@@ -137,6 +130,14 @@ decoded AS (
             decoded_instruction :args :amountIn :: INT <> 0
             OR decoded_instruction :args :inAmount :: INT <> 0
         )
+),
+decoded_w_index_range as (
+select *,
+        COALESCE(LEAD(inner_index) OVER (PARTITION BY tx_id, index 
+            ORDER BY
+            inner_index) -1, 999999
+        ) AS inner_index_end
+from decoded
 ),
 transfers AS (
     SELECT
@@ -191,7 +192,7 @@ pre_final AS (
         ) AS to_mint,
         A._inserted_timestamp
     FROM
-        decoded A
+        decoded_w_index_range A
         LEFT JOIN transfers b
         ON A.tx_id = b.tx_id
         AND A.source_token_account = b.source_token_account
