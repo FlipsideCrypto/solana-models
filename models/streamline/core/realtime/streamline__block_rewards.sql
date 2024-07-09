@@ -30,7 +30,7 @@ WITH blocks AS (
         {{ ref("streamline__blocks") }}
     /* TODO diff with completed */
     WHERE
-        block_id >= 268272000
+        block_id = 267408004
     /*EXCEPT
     SELECT
         block_id
@@ -44,7 +44,7 @@ WITH blocks AS (
 )
 SELECT
     block_id,
-    'batch={{next_batch_num}}' AS partition_key,
+    'batch=2' AS partition_key,
     {{ target.database }}.live.udf_api(
         'POST',
         '{service}/{Authentication}',
