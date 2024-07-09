@@ -127,33 +127,12 @@ swappers AS (
     QUALIFY
         row_number() OVER (PARTITION BY tx_id, index, coalesce(inner_index, -1) ORDER BY _inserted_timestamp DESC) = 1
 ),
-distinct_mints AS (
-    SELECT DISTINCT
-        mint
-    FROM (
-        SELECT DISTINCT
-            from_mint AS mint
-        FROM
-            base
-        UNION ALL 
-        SELECT DISTINCT
-            to_mint
-        FROM
-            base
-    )
-),
 token_decimals AS (
-    SELECT DISTINCT
+    SELECT 
         mint,
         decimal
     FROM
-        {{ ref('silver__mint_actions') }}
-    INNER JOIN
-        distinct_mints
-        USING(mint)
-    WHERE
-        succeeded
-        AND decimal IS NOT NULL
+        {{ ref('silver__decoded_metadata') }}
     UNION ALL 
     SELECT 
         'So11111111111111111111111111111111111111112',
