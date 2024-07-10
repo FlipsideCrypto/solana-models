@@ -20,8 +20,8 @@
     {% endif %}
 {% endif %}
 
+    -- Separate cte since the silver.swaps model has an existing _log_id
 with swaps_general as (
-    -- Separate cte since this silver model has an existing _log_id
 SELECT
     block_timestamp,
     block_id,
@@ -75,12 +75,12 @@ SELECT
     modified_timestamp
 FROM
     {{ ref('silver__swaps_intermediate_jupiterv6_view') }}
-WHERE block_timestamp::date < '2023-08-03'
+WHERE 
+    block_timestamp::date < '2023-08-03'
 -- todo - do i need this blocktimestamp on this?
 {% if is_incremental() %}
-AND 
+AND
     modified_timestamp >= '{{ max_timestamp }}'
-
 {% endif %}
 UNION ALL
 SELECT
@@ -104,7 +104,8 @@ WHERE
     block_timestamp::date >= '2023-08-03'
     -- todo - do i need this blocktimestamp on this?
 {% if is_incremental() %}
-AND modified_timestamp >= '{{ max_timestamp }}'
+AND
+    modified_timestamp >= '{{ max_timestamp }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -125,7 +126,8 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_jupiterv5_1_view') }}
 {% if is_incremental() %}
-WHERE modified_timestamp >= '{{ max_timestamp }}'
+WHERE
+    modified_timestamp >= '{{ max_timestamp }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -309,12 +311,35 @@ select
     swap_to_mint,
     program_id,
     l.address_name AS swap_program,
+    _log_id,
+    fact_swaps_id,
+    s.inserted_timestamp,
+    s.modified_timestamp
+FROM
+    swaps_general
+    s
+    LEFT OUTER JOIN {{ ref('core__dim_labels') }}
+    l
+    ON s.program_id = l.address
+union all
+select 
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    swapper,
+    swap_from_amount,
+    swap_from_mint,
+    swap_to_amount,
+    swap_to_mint,
+    program_id,
+    l.address_name AS swap_program,
     concat_ws('-',tx_id,swap_index,swap_program) as _log_id,
     fact_swaps_id,
     s.inserted_timestamp,
     s.modified_timestamp
 FROM
-    swaps
+    swaps_individual
     s
     LEFT OUTER JOIN {{ ref('core__dim_labels') }}
     l
