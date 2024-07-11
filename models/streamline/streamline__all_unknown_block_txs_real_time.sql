@@ -132,7 +132,7 @@ solscan_discrepancy_retries AS (
 , completed_retries as (
     select block_id
     from {{ ref('streamline__complete_block_txs') }}
-    where _partition_id > 66266
+    where _partition_id > 97845
 )
 , stuff_to_retry as (
     select *
@@ -144,7 +144,7 @@ solscan_discrepancy_retries AS (
                 FROM
                     {{ ref('streamline__complete_block_txs') }}
             ) AS batch_id
-        from solana.streamline.blocks_backfill_20240301
+        from solana.streamline.blocks_backfill_20240711_test
         except 
         select block_id,
             (
