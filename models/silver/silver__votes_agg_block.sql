@@ -6,9 +6,10 @@
     tags = ['scheduled_non_core']
 ) }}
 
-WITH v AS (
+WITH pre_final AS (
   SELECT 
     block_id, 
+    max(block_timestamp) as block_timestamp,
     count(block_id) AS num_votes
   FROM {{ ref('silver__votes') }}
   
@@ -20,17 +21,13 @@ WITH v AS (
 )
 
 SELECT 
-  t.block_timestamp,
-  v.block_id, 
+  block_timestamp,
+  block_id, 
   num_votes,
   {{ dbt_utils.generate_surrogate_key(
-        ['v.block_id']
+        ['block_id']
   ) }} AS votes_agg_block_id,
   SYSDATE() AS inserted_timestamp,
   SYSDATE() AS modified_timestamp,
   '{{ invocation_id }}' AS _invocation_id
-
-FROM v
-
-INNER JOIN (SELECT DISTINCT block_id, block_timestamp FROM {{ ref('silver__transactions') }}) t 
-ON v.block_id = t.block_id
+FROM pre_final

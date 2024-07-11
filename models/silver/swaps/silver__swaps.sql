@@ -47,34 +47,6 @@ SELECT
     tx_id,
     succeeded,
     program_id,
-    'raydium' as program_name,
-    swapper,
-    from_mint,
-    from_amt,
-    to_mint,
-    to_amt,
-    swap_index,
-    _log_id,
-    _inserted_timestamp
-FROM
-    {{ ref('silver__swaps_intermediate_raydium') }}
-
-{% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
-{% endif %}
-UNION
-SELECT
-    block_id,
-    block_timestamp,
-    tx_id,
-    succeeded,
-    program_id,
     'orca' as program_name,
     swapper,
     from_mint,

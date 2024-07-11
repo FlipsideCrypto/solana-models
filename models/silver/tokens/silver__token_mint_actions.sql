@@ -13,11 +13,9 @@ WITH base_mint_actions AS (
         *
     FROM
         {{ ref('silver__mint_actions') }}
-    WHERE
-        event_type IN ('mintToChecked', 'mintTo')
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+WHERE _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
     FROM

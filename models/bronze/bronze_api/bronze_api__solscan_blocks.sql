@@ -6,13 +6,22 @@
 
 {% set producer_limit_size = 1000 %}
 
-with block_ids as (
+with base as (
     select b.block_id
     from {{ ref('silver__blocks') }} b
     left outer join {{ source('solana_silver','_blocks_tx_count') }} b2 on b.block_id = b2.block_id
     where b.block_id >= 226000000
     and b2.block_id is null
     and b.block_timestamp::date <= current_date
+    union all /* TEMPORARY BACKFILL PORTTION */
+    select b.block_id 
+    from solana.bronze_api.solscan_blocks_to_get b
+    left outer join  solana.silver._blocks_tx_count b2 on b.block_id = b2.block_id
+    where b2.block_id is null
+),
+block_ids as (
+    select block_id 
+    from base b
     qualify(row_number() over (order by b.block_id desc)) <= {{ producer_limit_size }}
 )
 , make_requests as (

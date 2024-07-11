@@ -37,6 +37,7 @@ FROM
     LEFT OUTER JOIN {{ ref('core__dim_labels') }}
     l
     ON s.program_id = l.address
+/* TODO: DEPRECATE - remove jupiter swaps from this table, we will only cover individual dexes moving forward. Aggregator(s) get their own model(s) */
 UNION ALL
 SELECT
     block_timestamp,
@@ -50,16 +51,43 @@ SELECT
     to_mint AS swap_to_mint,
     program_id,
     l.address_name AS swap_program,
-    concat_ws('-',tx_id,swap_index) as _log_id,
+    concat_ws('-',tx_id,swap_index,swap_program) as _log_id,
     swaps_intermediate_jupiterv6_id as fact_swaps_id,
     s.inserted_timestamp,
     s.modified_timestamp
 FROM
-    {{ ref('silver__swaps_intermediate_jupiterv6') }}
+    {{ ref('silver__swaps_intermediate_jupiterv6_view') }}
     s
     LEFT OUTER JOIN {{ ref('core__dim_labels') }}
     l
     ON s.program_id = l.address
+WHERE
+    block_timestamp::date < '2023-08-03'
+UNION ALL
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    swapper,
+    from_amount AS swap_from_amount,
+    from_mint AS swap_from_mint,
+    to_amount AS swap_to_amount,
+    to_mint AS swap_to_mint,
+    program_id,
+    l.address_name AS swap_program,
+    concat_ws('-',tx_id,swap_index,swap_program) as _log_id,
+    swaps_intermediate_jupiterv6_id as fact_swaps_id,
+    s.inserted_timestamp,
+    s.modified_timestamp
+FROM
+    {{ ref('silver__swaps_intermediate_jupiterv6_2') }}
+    s
+    LEFT OUTER JOIN {{ ref('core__dim_labels') }}
+    l
+    ON s.program_id = l.address
+WHERE
+    block_timestamp::date >= '2023-08-03'
 UNION ALL
 SELECT
     block_timestamp,
@@ -102,6 +130,167 @@ SELECT
     s.modified_timestamp
 FROM
     {{ ref('silver__swaps_intermediate_jupiterv5_2_view') }}
+    s
+    LEFT OUTER JOIN {{ ref('core__dim_labels') }}
+    l
+    ON s.program_id = l.address
+UNION ALL
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    swapper,
+    from_amt AS swap_from_amount,
+    from_mint AS swap_from_mint,
+    to_amt AS swap_to_amount,
+    to_mint AS swap_to_mint,
+    program_id,
+    l.address_name AS swap_program,
+    concat_ws('-',tx_id,swap_index,swap_program) as _log_id,
+    swaps_intermediate_bonkswap_id as fact_swaps_id,
+    s.inserted_timestamp,
+    s.modified_timestamp
+FROM
+    {{ ref('silver__swaps_intermediate_bonkswap') }}
+    s
+    LEFT OUTER JOIN {{ ref('core__dim_labels') }}
+    l
+    ON s.program_id = l.address
+UNION ALL
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    swapper,
+    from_amt AS swap_from_amount,
+    from_mint AS swap_from_mint,
+    to_amt AS swap_to_amount,
+    to_mint AS swap_to_mint,
+    program_id,
+    l.address_name AS swap_program,
+    concat_ws('-',tx_id,swap_index,swap_program) as _log_id,
+    swaps_intermediate_meteora_id as fact_swaps_id,
+    s.inserted_timestamp,
+    s.modified_timestamp
+FROM
+    {{ ref('silver__swaps_intermediate_meteora') }}
+    s
+    LEFT OUTER JOIN {{ ref('core__dim_labels') }}
+    l
+    ON s.program_id = l.address
+UNION ALL
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    swapper,
+    from_amt AS swap_from_amount,
+    from_mint AS swap_from_mint,
+    to_amt AS swap_to_amount,
+    to_mint AS swap_to_mint,
+    program_id,
+    l.address_name AS swap_program,
+    concat_ws('-',tx_id,swap_index,swap_program) as _log_id,
+    swaps_intermediate_dooar_id as fact_swaps_id,
+    s.inserted_timestamp,
+    s.modified_timestamp
+FROM
+    {{ ref('silver__swaps_intermediate_dooar') }}
+    s
+    LEFT OUTER JOIN {{ ref('core__dim_labels') }}
+    l
+    ON s.program_id = l.address
+UNION ALL
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    swapper,
+    from_amt AS swap_from_amount,
+    from_mint AS swap_from_mint,
+    to_amt AS swap_to_amount,
+    to_mint AS swap_to_mint,
+    program_id,
+    l.address_name AS swap_program,
+    concat_ws('-',tx_id,swap_index,swap_program) as _log_id,
+    swaps_intermediate_phoenix_id as fact_swaps_id,
+    s.inserted_timestamp,
+    s.modified_timestamp
+FROM
+    {{ ref('silver__swaps_intermediate_phoenix') }}
+    s
+    LEFT OUTER JOIN {{ ref('core__dim_labels') }}
+    l
+    ON s.program_id = l.address
+UNION ALL
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    swapper,
+    from_amt AS swap_from_amount,
+    from_mint AS swap_from_mint,
+    to_amt AS swap_to_amount,
+    to_mint AS swap_to_mint,
+    program_id,
+    l.address_name AS swap_program,
+    concat_ws('-',tx_id,swap_index,swap_program) as _log_id,
+    swaps_intermediate_raydium_clmm_id as fact_swaps_id,
+    s.inserted_timestamp,
+    s.modified_timestamp
+FROM
+    {{ ref('silver__swaps_intermediate_raydium_clmm') }}
+    s
+    LEFT OUTER JOIN {{ ref('core__dim_labels') }}
+    l
+    ON s.program_id = l.address
+UNION ALL
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    swapper,
+    from_amt AS swap_from_amount,
+    from_mint AS swap_from_mint,
+    to_amt AS swap_to_amount,
+    to_mint AS swap_to_mint,
+    program_id,
+    l.address_name AS swap_program,
+    concat_ws('-',tx_id,swap_index,swap_program) as _log_id,
+    swaps_intermediate_raydium_stable_id as fact_swaps_id,
+    s.inserted_timestamp,
+    s.modified_timestamp
+FROM
+    {{ ref('silver__swaps_intermediate_raydium_stable') }}
+    s
+    LEFT OUTER JOIN {{ ref('core__dim_labels') }}
+    l
+    ON s.program_id = l.address
+UNION ALL
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    swapper,
+    from_amt AS swap_from_amount,
+    from_mint AS swap_from_mint,
+    to_amt AS swap_to_amount,
+    to_mint AS swap_to_mint,
+    program_id,
+    l.address_name AS swap_program,
+    concat_ws('-',tx_id,swap_index,swap_program) as _log_id,
+    swaps_intermediate_raydium_v4_amm_id as fact_swaps_id,
+    s.inserted_timestamp,
+    s.modified_timestamp
+FROM
+    {{ ref('silver__swaps_intermediate_raydium_v4_amm') }}
     s
     LEFT OUTER JOIN {{ ref('core__dim_labels') }}
     l

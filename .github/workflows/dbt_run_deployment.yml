@@ -37,11 +37,32 @@ concurrency:
   group: ${{ github.workflow }}
 
 jobs:
-  called_workflow_template:
-    uses: FlipsideCrypto/analytics-workflow-templates/.github/workflows/dbt_run_deployment_template.yml@AN-4374/upgrade-dbt-1.7
-    with:
-      dbt_command: |
-         ${{ inputs.dbt_command }}
-      environment: workflow_prod
-      warehouse: ${{ inputs.WAREHOUSE }}
-    secrets: inherit 
+  dbt:
+    runs-on: ubuntu-latest
+    environment:
+      name: workflow_prod
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: install dependencies
+        run: |
+          pip install -r requirements.txt
+          dbt deps
+      - name: Run DBT Jobs
+        run: |
+          ${{ inputs.dbt_command }}
+      - name: Run datashare model
+        run: |
+          cnt=$(dbt -q ls -m fsc_utils.datashare._datashare___create_gold | wc -l ); if [ $cnt -eq 1 ]; then dbt run -m fsc_utils.datashare._datashare___create_gold; fi; 
+          dbt run-operation run_query --args "{sql: call admin.datashare.sp_grant_share_permissions('${{ env.DATABASE }}')}"
+      - name: Store logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: dbt-logs
+          path: |
+            logs
+            target

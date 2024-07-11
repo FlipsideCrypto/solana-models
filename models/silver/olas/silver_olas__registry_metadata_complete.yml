@@ -1,0 +1,14 @@
+version: 2
+models:
+  - name: silver_olas__registry_metadata_complete
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - REGISTRY_METADATA_ID
+    columns:
+      - name: PROGRAM_ID
+        tests:
+          - not_null
+      - name: REGISTRY_ID
+        tests:
+          - not_null

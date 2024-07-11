@@ -3,14 +3,14 @@
     unique_key = ["account_address","owner","start_block_id"],
     cluster_by = ['_inserted_timestamp::DATE'],
     full_refresh = false,
-    enabled = false,
+    tags = ['scheduled_non_core']
 ) }}
-
 /*
 for incrementals also select all null end date accounts and combine
 join to eliminate accounts that are not in the subset
 remove all accounts that have the same owner + start block + end block
 */
+
 with last_updated_at as (
     select max(_inserted_timestamp) as _inserted_timestamp
     from {{ ref('silver__token_account_ownership_events') }}
@@ -28,7 +28,6 @@ base as (
             else 2
         end as same_block_order_index
     from {{ ref('silver__token_account_ownership_events') }}
-    /* incremental condition here */
     {% if is_incremental() %}
         where _inserted_timestamp >= (select max(_inserted_timestamp) from {{ this }})
     {% endif %}

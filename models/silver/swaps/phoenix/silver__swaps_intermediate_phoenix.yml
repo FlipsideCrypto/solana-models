@@ -1,0 +1,87 @@
+version: 2
+models:
+  - name: silver__swaps_intermediate_phoenix
+    description: This table contains swaps performed on Phoenix Trade. We are currently not capturing swaps where there are separate transactions for placing the order and filling the order. 
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - SWAP_INDEX
+            - PROGRAM_ID
+          where: block_timestamp::date > current_date - 30
+      - compare_model_subset:
+          name: silver__swaps_intermediate_phoenix_business_logic_test
+          compare_model: ref('testing__swaps_intermediate_phoenix')
+          compare_columns: 
+            - tx_id
+            - swapper
+            - round(from_amt,8)
+            - from_mint
+            - round(to_amt,8)
+            - to_mint
+            - swap_index
+          model_condition: "where tx_id in ('3fp9QzP6EMn9cUDgCRmHACSxmDhh3zrMebYKSm8Auq3xyBck7X6nRSrrVDThDhM1wRBaVidwh4BCDLn86Bve3thL',
+          '671GWKC1AGyvrAThDzM9tq9UqVW8W2WdULAikkLaaTSZVYEmzLEhXutdDjZTenLp5oAtc4G7f4bztZ978rN1Zz1d',
+          '3FgxCNCndXDSx95mrsBwcfsHSM9fDzWSq2bJqN74ym5MTgF2VrLJRn4w5UfdKpeKNA3mzCmm7KJfy7wuDAo4y7Ko',
+          '21qdi1d8vYyMp3AcJmPdKBi1VsEoaBn4qhB1WJhzRR9N3qvtXRkENh5caaBGDaeUVD68CUw72bD2neCQA7dmgUuS',
+          '3EweEGRQkdQ4e5sRRcU5V9Jz2E9sMHzDrbmSD13C2wLQJkANJEZkk9EHJqpUSKUSWCAnY5nFnLgXUqJF5ham6ARk',
+          '5jP7nmkNNGnjKeqP82HRr9WNv4fBdU1dHCpNGp5bSMVNeHfs7wf1uCtifPRvvugt6gX4ESUdZHQXnhDbx9fy5sfA')"  
+      - tx_excluded:
+          name: silver__swaps_intermediate_phoenix_tx_excluded_test
+          excluded_tx_ids:
+            - 44b7tkzuKHqQsn7Eoh3RnTy12sLijudPFz3ZX2ewJ7vxKqs5LveeNKxBVLUstggr5Jk3LFzoNs9SSZxcMSSgVE7j
+            - 1M48Smd6EQ4phktTsGfdk3HjXf2sEW6J8TpUpPjEaGjLy5viWPC9D4rS9SoutVWTJkLkjbVLQpEG9eboscoybQ6
+            - fLwJbyNV8kF3qZcmUrPrQB7B1keipAB5XNiEsJ8oFtvMroZ4SttabxgP2nhUsTT1jKvN4NfrSf8DMYVoadY57Da
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null
+      - name: SWAPPER
+        description: "{{ doc('swaps_swapper') }}"
+        tests: 
+          - not_null:
+              where: succeeded = TRUE
+      - name: FROM_AMT
+        description:  "{{ doc('swaps_from_amt') }}"
+        tests: 
+          - not_null
+      - name: FROM_MINT
+        description:  "{{ doc('swaps_from_mint') }}"
+        tests: 
+          - not_null
+      - name: TO_AMT
+        description:  "{{ doc('swaps_to_amt') }}"
+        tests: 
+          - not_null
+      - name: TO_MINT
+        description:  "{{ doc('swaps_to_mint') }}"
+        tests: 
+          - not_null
+      - name: SWAP_INDEX
+        description: "{{ doc('swaps_swap_index') }}"
+        tests: 
+          - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null

@@ -1,0 +1,22 @@
+version: 2
+models:
+  - name: silver_olas__service_event_logs
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - INDEX
+            - INNER_INDEX
+    columns:
+      - name: BLOCK_ID
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        tests:
+          - not_null
+      - name: TX_ID
+        tests:
+          - not_null
+      - name: MULTISIG_ADDRESS
+        tests:
+          - not_null

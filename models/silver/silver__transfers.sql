@@ -3,7 +3,7 @@
     unique_key = ["block_id","tx_id","index"],
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
-    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}'),
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, program_id, tx_from, tx_to, mint)'),
     full_refresh = false,
     merge_exclude_columns = ["inserted_timestamp"],
     tags = ['scheduled_core']
@@ -27,7 +27,8 @@ WITH base_transfers_i AS (
     event_type IN (
         'transfer',
         'transferChecked',
-        'transferWithSeed'
+        'transferWithSeed',
+        'transferCheckedWithFee'
     )
 
 {% if is_incremental() and env_var(
@@ -83,7 +84,8 @@ AND
         ii.value :parsed :type :: STRING IN (
         'transfer',
         'transferChecked',
-        'transferWithSeed'
+        'transferWithSeed',
+        'transferCheckedWithFee'
         )
 
 {% if is_incremental() and env_var(

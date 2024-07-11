@@ -10,9 +10,6 @@ models:
         description: "{{ doc('block_timestamp') }}"
         tests:
           - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 7
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:

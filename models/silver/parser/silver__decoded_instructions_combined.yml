@@ -17,8 +17,159 @@ models:
         description: "{{ doc('tx_id') }}"
         tests:
           - not_null
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_nft_sales_solsniper_tx_id
+              to: ref('silver__nft_sales_solsniper')
+              field: tx_id
+              from_condition: >
+                program_id = 'SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g' 
+                and event_type = 'executeSolNftOrder' 
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_nft_sales_tensorswap_cnft_tx_id
+              to: ref('silver__nft_sales_tensorswap_cnft')
+              field: tx_id
+              from_condition: >
+                program_id = 'TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp' 
+                and event_type = 'buy' 
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_nft_sales_solsniper_cnft_onchain_tx_id
+              to: ref('silver__nft_sales_solsniper_cnft_onchain')
+              field: tx_id
+              from_condition: >
+                program_id = 'SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g' 
+                and event_type = 'executeSolCnftOrder' 
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_nft_sales_magic_eden_cnft_onchain_tx_id
+              to: ref('silver__nft_sales_magic_eden_cnft_onchain')
+              field: tx_id
+              from_condition: 
+                program_id = 'M3mxk5W2tt27WGT7THox7PmgRDp4m6NEhL5xvxrBfS1' 
+                and event_type = 'buyNow' 
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_swaps_intermediate_bonkswap_tx_id
+              to: ref('silver__swaps_intermediate_bonkswap')
+              field: tx_id
+              from_condition: >
+                program_id = 'BSwp6bEBihVLdqJRKGgzjcGLHkcTuzmSo1TQkHepzH8p' 
+                and event_type = 'swap' 
+                and decoded_instruction:args:deltaIn:v::int > 200000
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_meteora_swaps_tx_id
+              to: ref('silver__swaps_intermediate_meteora')
+              field: tx_id
+              from_condition: >
+                program_id IN ('LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo','Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB') 
+                and event_type = 'swap' 
+                and coalesce(decoded_instruction:args:inAmount, decoded_instruction:args:amountIn)::int > 0
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_swaps_intermedia_dooar_tx_id
+              to: ref('silver__swaps_intermediate_dooar')
+              field: tx_id
+              from_condition: >
+                program_id = 'Dooar9JkhdZ7J3LHN3A7YCuoGRUggXhQaG4kijfLGU2j'
+                and event_type = 'swap' 
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+                and block_timestamp::date <> '2022-07-04' /* upstream issue with missing inner instructions in events for some blocks in this date, remove this when it gets resolved */
+              to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_nft_sales_tensorswap_tx_id
+              to: ref('silver__nft_sales_tensorswap')
+              field: tx_id
+              from_condition: >
+                program_id = 'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN'
+                AND event_type IN (
+                    'wnsBuySingleListing',
+                    'buyNftT22',
+                    'buySingleListing',
+                    'buyNft',
+                    'buySingleListingT22',
+                    'wnsBuyNft',
+                    'sellNftTokenPool',
+                    'sellNftTokenPoolT22',
+                    'sellNftTradePoolT22',
+                    'wnsSellNftTradePool',
+                    'wnsSellNftTokenPool',
+                    'sellNftTradePool'
+                )
+                AND succeeded
+                AND _inserted_timestamp between current_date - 7 AND current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_meteora_liquidity_pool_actions_tx_id
+              to: ref('silver__liquidity_pool_actions_meteora')
+              field: tx_id
+              from_condition: >
+                program_id = 'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB'
+                AND event_type IN ('addBalanceLiquidity','addImbalanceLiquidity','bootstrapLiquidity','removeBalanceLiquidity','removeLiquiditySingleSide')
+                AND succeeded
+                AND coalesce(decoded_instruction:args:poolTokenAmount::int,-1) <> 0
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_meteora_dlmm_liquidity_pool_actions_tx_id
+              to: ref('silver__liquidity_pool_actions_meteora_dlmm')
+              field: tx_id
+              from_condition: >
+                program_id = 'LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo'
+                AND event_type IN ('removeLiquidityByRange','removeLiquidity','removeAllLiquidity','addLiquidityByStrategyOneSide','addLiquidityOneSide','addLiquidity','addLiquidityByWeight','addLiquidityByStrategy')
+                AND succeeded
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_swaps_intermediate_raydium_clmm_tx_id
+              to: ref('silver__swaps_intermediate_raydium_clmm')
+              field: tx_id
+              from_condition: >
+                program_id = 'CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK'
+                AND event_type IN ('swapV2','swap')
+                AND succeeded
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_swaps_intermediate_raydium_v4_amm_tx_id
+              to: ref('silver__swaps_intermediate_raydium_v4_amm')
+              field: tx_id
+              from_condition: >
+                program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
+                AND event_type IN ('swapBaseIn','swapBaseOut')
+                AND succeeded
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_swaps_intermediate_raydium_stable_tx_id
+              to: ref('silver__swaps_intermediate_raydium_stable')
+              field: tx_id
+              from_condition: >
+                program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
+                AND event_type IN ('swapBaseIn')
+                AND succeeded
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_swaps_intermediate_jupiterv6_2_tx_id
+              to: ref('silver__swaps_intermediate_jupiterv6_2')
+              field: tx_id
+              from_condition: >
+                program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+                AND event_type IN ('exactOutRoute','sharedAccountsExactOutRoute','sharedAccountsRoute','routeWithTokenLedger','route','sharedAccountsRouteWithTokenLedger')
+                AND succeeded
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
       - name: SIGNERS
+        description: "{{ doc('signers') }}"
       - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
       - name: INDEX
         description: "{{ doc('event_index') }}"
         tests:  

@@ -21,7 +21,7 @@ There is more information on how to use dbt docs in the last section of this doc
 
 **Core Dimension Tables:**
 - [dim_labels](#!/model/model.solana_models.core__dim_labels)
-- [dim_tokens](#!/model/model.solana_models.core__dim_tokens)
+- [dim_idls](#!/model/model.solana_models.core__dim_idls)
 
 **Core Fact Tables:**
 - [fact_blocks](#!/model/model.solana_models.core__fact_blocks)
@@ -29,17 +29,23 @@ There is more information on how to use dbt docs in the last section of this doc
 - [fact_transactions](#!/model/model.solana_models.core__fact_transactions)
 - [fact_transfers](#!/model/model.solana_models.core__fact_transfers)
 - [fact_decoded_instructions](#!/model/model.solana_models.core__fact_decoded_instructions)
+- [fact_token_account_owners](#!/model/model.solana_models.core__fact_token_account_owners)
 
 **Core Convenience Tables:**
 - [ez_signers](#!/model/model.solana_models.core__ez_signers)
 - [ez_events_decoded](#!/model/model.solana_models.core__ez_events_decoded)
 
 ### DeFi Tables (`Solana`.`DEFI`.`<table_name>`)
+- [ez_dex_swaps](#!/model/model.solana_models.defi__ez_dex_swaps)
 - [fact_liquidity_pool_actions](#!/model/model.solana_models.defi__fact_liquidity_pool_actions)
 - [fact_stake_pool_actions](#!/model/model.solana_models.defi__fact_stake_pool_actions)
 - [fact_swaps](#!/model/model.solana_models.defi__fact_swaps)
+- [fact_bridge_activity](#!/model/model.solana_models.defi__fact_bridge_activity)
+- [fact_token_burn_actions](#!/model/model.solana_models.defi__fact_token_burn_actions)
+- [fact_token_mint_actions](#!/model/model.solana_models.defi__fact_token_mint_actions)
 
 ### Governance Tables (`Solana`.`GOV`.`<table_name>`)
+- [dim_epoch](#!/model/model.solana_models.gov__dim_epoch)
 - [ez_staking_lp_actions](#!/model/model.solana_models.gov__ez_staking_lp_actions)
 - [fact_gauges_creates](#!/model/model.solana_models.gov__fact_gauges_create)
 - [fact_gauges_votes](#!/model/model.solana_models.gov__fact_gauges_votes)
@@ -52,15 +58,27 @@ There is more information on how to use dbt docs in the last section of this doc
 - [fact_block_production](#!/model/model.solana_models.gov__fact_block_production)
 - [fact_validators](#!/model/model.solana_models.gov__fact_validators)
 - [fact_votes_agg_block](#!/model/model.solana_models.gov__fact_votes_agg_block)
+- [fact_rewards_fees](#!/model/model.solana_models.gov__fact_rewards_fees)
+- [fact_rewards_rent](#!/model/model.solana_models.gov__fact_rewards_rent)
+- [fact_rewards_staking](#!/model/model.solana_models.gov__fact_rewards_staking)
+- [fact_rewards_voting](#!/model/model.solana_models.gov__fact_rewards_voting)
 
 ### NFT Tables (`Solana`.`NFT`.`<table_name>`)
 - [dim_nft_metadata](#!/model/model.solana_models.nft__dim_nft_metadata)
 - [fact_nft_mints](#!/model/model.solana_models.nft__fact_nft_mints)
 - [fact_nft_sales](#!/model/model.solana_models.nft__fact_nft_sales)
+- [fact_nft_burn_actions](#!/model/model.solana_models.nft__fact_nft_burn_actions)
+- [fact_nft_mint_actions](#!/model/model.solana_models.nft__fact_nft_mint_actions)
 
 ### Price Tables (`Solana`.`PRICE`.`<table_name>`)
-- [fact_token_prices_hourly](#!/model/model.solana_models.price__fact_token_prices_hourly)
-- [ez_token_prices_hourly](#!/model/model.solana_models.price__ez_token_prices_hourly)
+- [dim_asset_metadata](#!/model/model.solana_models.price__dim_asset_metadata)
+- [fact_prices_ohlc_hourly](#!/model/model.solana_models.price__fact_prices_ohlc_hourly)
+- [ez_asset_metadata](#!/model/model.solana_models.price__ez_asset_metadata)
+- [ez_prices_hourly](#!/model/model.solana_models.price__ez_prices_hourly)
+
+### Stats Tables (`Solana`.`STATS`.`<table_name>`)
+- [ez_core_metrics](#!/model/model.solana_models.stats__ez_core_metrics)
+
 
 ## **Data Model Overview**
 

@@ -1,7 +1,6 @@
 {{ config(
-      materialized='view'
-    ) 
-}}
+    materialized = 'view'
+) }}
 
 SELECT
     system_created_at,
@@ -14,9 +13,12 @@ SELECT
     address_name,
     project_name,
     _is_deleted,
+    modified_timestamp,
     labels_combined_id
-FROM  {{ source(
+FROM
+    {{ source(
         'crosschain_silver',
         'labels_combined'
     ) }}
-WHERE blockchain = 'solana'
+WHERE
+    blockchain = 'solana'

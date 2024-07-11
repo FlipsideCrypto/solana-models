@@ -2,12 +2,41 @@ version: 2
 models:
   - name: silver__nft_sales_tensorswap
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - TX_ID
-            - MINT
-            - PURCHASER
-            - SELLER
+      - compare_model_subset:
+          name: silver__nft_sales_tensorswap_business_logic_test
+          compare_model: ref('testing__nft_sales_tensorswap')
+          compare_columns: 
+            - tx_id
+            - index
+            - inner_index
+            - purchaser
+            - seller
+            - mint
+            - round(sales_amount,8)
+          model_condition: "where tx_id in ('zzvAhzMxDpJy99zcYms6vsjimT3XhQBf76s9AYA4XcYaEgRS2EmMDHY9uHrfz7372v85726Krz3kaKfYmLgnMFz',
+            '4KnHxNCwtbvdnUP9xP6aUAGpEVVgZqVnGP8FzJAz3ghPhnSgUvm8DPVdwm5tE9d78ScBxFQNqzRotW5mr2bYL9P5',
+            '2nrF2VHpLvYQKjtFWqTxoXtHNDEJEH2zi1xYeaDd2FprFYWY7wajcnbnQbPkhqwrhQkiKfYDgKc9mCDgWUzZwvrb',
+            'p55mzFVcnhtVCi6sawH2pkSxkJa9SKMJkxn8TWUeE8tKjopo5vJkoh5qrQ9Ew8xN4kJ3YJtbt3uPUaF6wpsgGnZ',
+            '3xwnYCxCeZNUu9sA1Rfb6HdDc73JqALfWVNgJq2YSwYrz5bxLTiCjiHTzPbuzLTnddojE3fyiRTq5xGhdMmer9wo',
+            '2TrRP357hzX7Ax1ViTuZFndRRUDMpswKs9dKpFvpu8EcXwH23JQyqXQSvCENX3EqoAcWUV9aFpN3HYHMtvSdEPQG',
+            'c5iWkPRG58nw9RRgoe77ewYFRR99NS3XqsBAFurEZ5CUAYefiGMdvvhWLCoyd7Tv1NcCPDsVu3eQVJS9VyjY1Gh',
+            '2gy21b8QzZ2VXUvd7QCFiELhy7papBqQctHK9XLcvMVeTdJwAZqmmfE6WHQRYQntQmkuzi63b1XYTJf99WnoApDD',
+            'svSAsA7hVRshe1qWPaJGD8SptQgZsb38Hn2iKo5W8wk8kp37brEXRkyKUPS34xmJXxRYQDgQhtxUXNCtsKKEwXv',
+            '4zb3F8A7suKVJc9bi6isX2Y99YemwUSVuALBkjVXAZUaFH6CybycJ6BCqdFe2R4okWo27o3k1h5hJNC9nbCHVQGn',
+            '3Q9fnZTxhXU8hKt21Q9DawgNAMRbXf5zuatNE8x27vpc2WGZhax8f5ALnZhGDswUHjgTbCNkjBFRQwkHPTfKrcA3',
+            '3PwcTmfb1jd2d6ouABkvfpw2p261zYyuMrkH9wozL8nKBVnQCBji1WUSy1LfZe4iegiWYiHA5ae3VK3ASbcUDjjo',
+            '5vsPBQWgtwhqeQQUHVQhuCtWDtAu5sqQak1FkMj7ZkQbMz12m8XrgTQCYtD1paFKh1KqAakpf6hQV4APd94VihLN',
+            '2munG4m9guSktDAp8QNt3WK1uVVD3BKV5zWqYuApjKjeiLDV9br6QwemQ1UeTHnfeF5CB7axL3K2kFbKUJpCAzHr',
+            '5PaqpRyNvDjPkRD8UeBKUC8SiwddLLtxZgPuDTngZXCZ2sZ7tDVHoXtqwDWWf9Jq4DVCytobc4o8h1mxNMD8hXzv',
+            '5Ndp4DwJvVxiF6cEVtHvnzW749hjqKFdwYVYS4Bn2GHtc3qPGsk9AuowBhamqDkJaXNgiC3CaSDMK4k2a2pEchzJ',
+            '5BDJaGeqsfRTHQA8kR99syrFebNWVmpWFpWNne8jRvGpdVxzXNVw9gb3HrbZJEvphTHGsGxeWdv7TDFc4A5g2zhY',
+            '2L9QnyDuLf3xHmt7WQ992qX5y7GhriKsEmcAWKF7b6dakRgPftgnRP1J73HcNYq7DX8L472vHMrnGo7KyZzVuwNf',
+            '3n8gZ42dgEPyhm5Fg67S2YV7DB594wG2kvsqmpnvrDnoFzCvyKV9dmZKJHpZQHnXbk6KGWCdpPLhdP51HpbBiYp2',
+            '69suHP1ToykoujDnp4kD7oBnMzx3ftTqeuR8dASjt2PcAfbKDQrSWvuwAMghy7sWGRtP3YTgsCDK2TyYwGg99bc',
+            'DyLBsEEQfp26yzfZ8ESsgP93zecc9dPCACsBaZ2QYQGDsS4UBg5gR5baHqmrFE6Cp7hVR7jUXX5aWxnrDejzdbb',
+            '2vSRfRA82jhyMwe3GrSnzwbYVbhTsf8E8fdMtYUmZvjDJT2Wp649qtAaoqagP2FLmRjErCfFpL64R4M84tzMJGEv',
+            '2iSFJTzHHAEqZpZFhGWXL9EH82NpQivxmgUFyy6eAb9FKXcM21FxrDUZjsmTakkVs99E3o4qGk31dpLmEeWyJ2Sw',
+            '4yCbMAPrQ29bR33KTgEVuScBwwAuC4Qgbm72yoMDmkiQLqFWGcmz8o1bGoKKS5nLTsBVf7KKX7FbDh61QKjQfe6N')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -28,9 +57,19 @@ models:
         description: "{{ doc('tx_succeeded') }}"
         tests:
           - not_null
+      - name: INDEX
+        description: "{{ doc('event_index') }}"
+        tests:  
+          - not_null
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
       - name: PROGRAM_ID 
         description: "{{ doc('program_id') }}"
         tests: 
+          - not_null
+      - name: EVENT_TYPE
+        description: "{{ doc('event_type') }}"
+        tests:
           - not_null
       - name: PURCHASER
         description: "{{ doc('purchaser') }}"
@@ -46,10 +85,30 @@ models:
           - not_null:
               where: succeeded = TRUE
       - name: SALES_AMOUNT
-        description: "{{ doc('sales_amount') }}"
+        description: "{{ doc('sales_amount') }}. For bid side sales the amount is an estimation using `min_price` when logs are unavailable (ex: truncated logs)"
         tests: 
           - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
           - not_null
+      - name: NFT_SALES_TENSORSWAP_ID
+        description: '{{ doc("pk") }}'   
+        tests: 
+          - unique
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        tests: 
+          - not_null
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        tests: 
+          - not_null
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        tests: 
+          - not_null:
+              name: test_silver__not_null_nft_sales_tensorswap__invocation_id
+      

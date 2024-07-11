@@ -22,21 +22,20 @@ sources:
     database: "{{ 'crosschain' if target.database == 'SOLANA' else 'crosschain_dev' }}"
     schema: silver
     tables:
-      - name: asset_metadata_coin_market_cap
-      - name: asset_metadata_coin_gecko
-      - name: hourly_prices_coin_market_cap
-      - name: hourly_prices_coin_gecko
-      - name: coin_market_cap_cryptocurrency_info
       - name: apis_keys
       - name: number_sequence
       - name: labels_combined
-    
-
-  - name: shared
-    database: flipside_prod_db
-    schema: silver
+      - name: complete_token_asset_metadata
+      - name: complete_token_prices
+      - name: complete_provider_asset_metadata
+      - name: complete_provider_prices
+      - name: complete_native_asset_metadata
+      - name: complete_native_prices
+  - name: crosschain_bronze
+    database: "{{ 'crosschain' if target.database == 'SOLANA' else 'crosschain_dev' }}"
+    schema: bronze
     tables:
-      - name: prices_v2
+      - name: legacy_prices
   - name: legacy_bronze
     database: flipside_prod_db
     schema: bronze
@@ -60,6 +59,7 @@ sources:
       - name: validator_vote_program_accounts
       - name: program_parser
       - name: decoded_instructions_2
+      - name: decoded_logs
   - name: bronze_api
     schema: bronze_api
     tables:
@@ -85,7 +85,10 @@ sources:
       - name: nft_mint_price_other
       - name: nft_metadata
       - name: proposal_votes_marinade
+      - name: stake_pool_actions_socean
       - name: _blocks_tx_count
+      - name: nft_sales_solsniper_v1_events
+      - name: swaps_intermediate_jupiterv6
   - name: solana_streamline
     database: solana
     schema: streamline
@@ -110,3 +113,7 @@ sources:
     schema: github_actions
     tables:
       - name: workflows
+  - name: solana_test_silver
+    schema: test_silver 
+    tables: 
+      - name: transactions_and_votes_missing_7_days
