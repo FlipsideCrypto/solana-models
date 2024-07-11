@@ -26,7 +26,7 @@ WITH idl_in_play AS (
     FROM
         {{ ref('silver__verified_idls') }}
     WHERE   
-        program_id <> 'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH'
+        program_id IN ('JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4','PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY')
 ),
 event_subset AS (
     SELECT
@@ -45,12 +45,11 @@ event_subset AS (
         table(flatten(e.inner_instruction:instructions)) i 
     JOIN
         idl_in_play b
-        ON b.program_id = i.value :programId :: STRING
+        ON array_contains(b.program_id::variant, e.inner_instruction_program_ids)
+        AND b.program_id = inner_program_id
     WHERE
         e.block_timestamp >= CURRENT_DATE - 2   
         AND e.succeeded
-        AND array_contains('JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'::variant, e.inner_instruction_program_ids)
-        AND inner_program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
         AND array_size(i.value:accounts::array) = 1
     UNION ALL
     SELECT 
