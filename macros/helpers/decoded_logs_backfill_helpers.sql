@@ -133,9 +133,9 @@
 {% endmacro %}
 
 {% macro decoded_logs_backfill_calls() %}
-    {% set sql_limit = 20000000 %}
-    {% set producer_batch_size = 5000000 %}
-    {% set worker_batch_size = 500000 %}
+    {% set sql_limit = 18000000 %} /* TODO switch this back to 20000000 after phoenix logs backfill completed */
+    {% set producer_batch_size = 6000000 %} /* TODO switch this back to 5000000 after phoenix logs backfill completed */
+    {% set worker_batch_size = 150000 %} /* TODO switch this back to 500000 after phoenix logs backfill completed */
     {% set batch_call_limit = 1000 %}
 
     {% set results = run_query("""select
