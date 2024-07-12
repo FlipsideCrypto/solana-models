@@ -52,7 +52,7 @@ FROM
     {{ ref('silver__swaps') }}
 {% if is_incremental() %}
 WHERE
-    modified_timestamp >= '{{ max_timestamp }}'
+    modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
 )
 /* TODO: DEPRECATE - remove jupiter swaps from this table, we will only cover individual dexes moving forward. Aggregator(s) get their own model(s) */
@@ -80,7 +80,7 @@ WHERE
 -- todo - do i need this blocktimestamp on this?
 {% if is_incremental() %}
 AND
-    modified_timestamp >= '{{ max_timestamp }}'
+    modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -105,7 +105,7 @@ WHERE
     -- todo - do i need this blocktimestamp on this?
 {% if is_incremental() %}
 AND
-    modified_timestamp >= '{{ max_timestamp }}'
+    modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -127,7 +127,7 @@ FROM
     {{ ref('silver__swaps_intermediate_jupiterv5_1_view') }}
 {% if is_incremental() %}
 WHERE
-    modified_timestamp >= '{{ max_timestamp }}'
+    modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -148,7 +148,7 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_jupiterv5_2_view') }}
 {% if is_incremental() %}
-WHERE modified_timestamp >= '{{ max_timestamp }}'
+WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -169,7 +169,7 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_bonkswap') }}
 {% if is_incremental() %}
-WHERE modified_timestamp >= '{{ max_timestamp }}'
+WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -190,7 +190,7 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_meteora') }}
 {% if is_incremental() %}
-WHERE modified_timestamp >= '{{ max_timestamp }}'
+WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -211,7 +211,7 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_dooar') }}
 {% if is_incremental() %}
-WHERE modified_timestamp >= '{{ max_timestamp }}'
+WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -232,7 +232,7 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_phoenix') }}
 {% if is_incremental() %}
-WHERE modified_timestamp >= '{{ max_timestamp }}'
+WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -253,7 +253,7 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_raydium_clmm') }}
 {% if is_incremental() %}
-WHERE modified_timestamp >= '{{ max_timestamp }}'
+WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -274,7 +274,7 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_raydium_stable') }}
 {% if is_incremental() %}
-WHERE modified_timestamp >= '{{ max_timestamp }}'
+WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -295,7 +295,7 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_raydium_v4_amm') }}
 {% if is_incremental() %}
-WHERE modified_timestamp >= '{{ max_timestamp }}'
+WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
 )
 

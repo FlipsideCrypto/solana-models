@@ -45,3 +45,5 @@ SELECT
     modified_timestamp,
 FROM
     {{ ref('silver__swaps_intermediate_jupiterv6_2') }}
+WHERE
+    block_timestamp::date >= '2023-08-03'
