@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: defi__fact_swaps_jupiter_summary
+    description: This table contains summarized swaps for trades initiated on Jupiter. This showcases the the initial amount/mint that is swapped from and the final amount/mint that is swapped to, without the intermediate swaps that Jupiter routes through.
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

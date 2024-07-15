@@ -40,6 +40,8 @@ There is more information on how to use dbt docs in the last section of this doc
 - [fact_liquidity_pool_actions](#!/model/model.solana_models.defi__fact_liquidity_pool_actions)
 - [fact_stake_pool_actions](#!/model/model.solana_models.defi__fact_stake_pool_actions)
 - [fact_swaps](#!/model/model.solana_models.defi__fact_swaps)
+- [fact_swaps](#!/model/model.solana_models.defi__fact_swaps_jupiter_inner)
+- [fact_swaps](#!/model/model.solana_models.defi__fact_swaps_jupiter_summary)
 - [fact_bridge_activity](#!/model/model.solana_models.defi__fact_bridge_activity)
 - [fact_token_burn_actions](#!/model/model.solana_models.defi__fact_token_burn_actions)
 - [fact_token_mint_actions](#!/model/model.solana_models.defi__fact_token_mint_actions)

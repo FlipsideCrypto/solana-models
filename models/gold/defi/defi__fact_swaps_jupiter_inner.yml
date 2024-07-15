@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: defi__fact_swaps_jupiter_inner
+    description: This table contain each intermediate swap that is a part of a Jupiter route. These are the individual steps that are executed by Jupiter to complete a swap.
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
