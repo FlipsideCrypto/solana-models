@@ -274,7 +274,10 @@ sol_transfers AS (
             10,
             9
         ) AS amount,
-        'So11111111111111111111111111111111111111112' AS mint,
+        CASE
+            WHEN e.program_id = '11111111111111111111111111111111' THEN 'So11111111111111111111111111111111111111111'
+            ELSE 'So11111111111111111111111111111111111111112'
+        END AS mint,
         NULL as source_token_account,
         NULL as dest_token_account,
         e._inserted_timestamp
