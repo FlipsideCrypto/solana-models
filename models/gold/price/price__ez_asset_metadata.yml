@@ -1,11 +1,9 @@
 version: 2
 models:
   - name: price__ez_asset_metadata
-    description: Deprecating soon! Note, only the ID column is changing. The ez_asset_metadata table itself is not being deprecated. '{{ doc("prices_ez_asset_metadata_table_doc") }}'
+    description: '{{ doc("prices_ez_asset_metadata_table_doc") }}'
 
     columns:
-      - name: ID
-        description: '{{ doc("prices_id_deprecation")}}'
       - name: ASSET_ID
         description: '{{ doc("prices_asset_id") }}'
       - name: NAME

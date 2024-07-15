@@ -22,11 +22,6 @@ sources:
     database: "{{ 'crosschain' if target.database == 'SOLANA' else 'crosschain_dev' }}"
     schema: silver
     tables:
-      - name: asset_metadata_coin_market_cap
-      - name: asset_metadata_coin_gecko
-      - name: hourly_prices_coin_market_cap
-      - name: hourly_prices_coin_gecko
-      - name: coin_market_cap_cryptocurrency_info
       - name: apis_keys
       - name: number_sequence
       - name: labels_combined
@@ -64,6 +59,7 @@ sources:
       - name: validator_vote_program_accounts
       - name: program_parser
       - name: decoded_instructions_2
+      - name: decoded_logs
   - name: bronze_api
     schema: bronze_api
     tables:
@@ -92,6 +88,7 @@ sources:
       - name: stake_pool_actions_socean
       - name: _blocks_tx_count
       - name: nft_sales_solsniper_v1_events
+      - name: swaps_intermediate_jupiterv6
   - name: solana_streamline
     database: solana
     schema: streamline

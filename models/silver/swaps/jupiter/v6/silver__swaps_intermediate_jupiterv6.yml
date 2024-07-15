@@ -1,0 +1,96 @@
+version: 2
+models:
+  - name: silver__swaps_intermediate_jupiterv6
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - SWAP_INDEX
+            - PROGRAM_ID
+          where: block_timestamp::date > current_date - 30
+      - compare_model_subset:
+          name: silver__swaps_intermediate_jupiterv6_business_logic_test
+          compare_model: ref('testing__swaps_intermediate_jupiterv6')
+          compare_columns: 
+            - tx_id
+            - swapper
+            - round(from_amt,2)
+            - from_mint
+            - round(to_amt,2)
+            - to_mint
+            - swap_index
+          model_condition: "where tx_id in ('33NLhAHDz2dAVRCqfgankDS2CAr78J1Q7LorotWhTaqcT2EDAVzPaWDK2sQsw4zSJM1KVXWzxvx6mDpvzAmNkzN1',
+          '3DqnEWswNa8qD7GrqxUi7yyD2fgAk8GYdykHX6aZRQpxbVrdkj3rcFHPF13WuS7oMRs2gqtJGDcjCkDXzD5geprS',
+          '4ckGB7iEDkxgtZszKRn1xLvYFSGBanuF2PwhTyqwWAdgqZLPezvtLwrDHUGQoZVYQHyruXjVjLLmNf6wEiyVnuhf',
+          '5dnKpNshPu6F7JnhHRjGNodUrigVYmUq2ffVdyxPFn8ABWNcNg9p9v3GBZd4N9R3qk2nnHKk1PcnVSxu7HYfYeUX',
+          '5nhXU7f282fFdi3FynukwNLiybV5NYqptUNU6BJH7RpYRPe4mcporxadKmhC9ioxx3vJp9uVmMbXz35QffHTxrFz',
+          '5YrfH1RDhZkhh98eikYFcuqRxHY8K87A7hBBFAasaJyCeMW1dr1nG5xNDps3e3GaHnt2cp1tssZJQS2eFaUwcPz9',
+          'GD7mFaoiFFxRKEi4EfYbRHmCRN1Q7hCwrQaZbiRq998vXU7bwY22ET1SwXcgDYKSbVLVTmkbM7HgE7G1HSJDT4T',
+          'JLHisghyiom2v1fY4z2tntjQYz7Fupe679pTJSuWaPvymEwEau9WvFbxGEyvvM1SPZqZPHKroLWqZkrrXtH9WkP',
+          'LVwfUycnkCw93ywALBfm1zvBcx7sDT9HdTo8wYQooan9CsKTU7BmZLhwQ3mpRSMFCRhDm5Q5GFASAGUmjQTQrJj',
+          '2HDxbrNSMrbGGu1xKKGNm3EbNmqaYxq2Dqpwe6tpKeLXevV2zCdA1feq61kfEVmDvu7mn9cwV9AbQWRE4VQbLkTY',
+          'sbMujMpco3YpH1DSpBnU2gXU2xEbCkWcsg95HCHBXe3SsiEsEKYv4TAZjaSEGYKSCmp1hRBdoWxXWvDZbWPXoXD',
+          '51zH6E9Q3KknnUwPpJeV9Au6zSzxT6ZmGbEW3v8Lk3GLjcUBosChbyWBWf7NTZEpBiqameEwRPCqio1XdsXPnC4k',
+          '5vdYEWuHxJAwENhZdUAqsAaV7mxRVcxPQkS5V4m5yCroSpox1LG1LNLmQnpyfEBbQkikLhxWVYbBkTc9f3BGi5ZU',
+          '3ysjbsjuwREA7QNvm8SmFv5fjkTzZysPn3D5SZWibKoiXPRgniqmV9e5tqz1BZBqmHkbdUQb6tQpoCk9yJcayQDk')"  
+      - tx_excluded:
+          name: silver__swaps_intermediate_jupiterv6_tx_excluded_test
+          excluded_tx_ids:
+            - 2NAjXWibmqEFGVo4No3KsgSqfz9RXMnNY9DYCRs92ZYUuLPfdUXyw2Fs9L3w5UTJnxLs9pG6MXttBWweNMZ5ZFdk
+            - 51KVhmiUuexhjgZodwgeLModrqx59faQ75dbrKcprtQLRVzQ7HqWSYEB9pk889R5MjfKLo9zQ5vbj1xKer78HKcc
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null: *recent_date_filter
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: SWAPPER
+        description: "{{ doc('swaps_swapper') }}"
+        tests: 
+          - not_null:
+              where: succeeded = TRUE AND _inserted_timestamp >= current_date - 7
+      - name: FROM_AMT
+        description:  "{{ doc('swaps_from_amt') }}"
+        # tests: 
+        #   - not_null: *recent_date_filter
+      - name: FROM_MINT
+        description:  "{{ doc('swaps_from_mint') }}"
+        # tests: 
+        #   - not_null: *recent_date_filter
+      - name: TO_AMT
+        description:  "{{ doc('swaps_to_amt') }}"
+        # tests: 
+        #   - not_null: *recent_date_filter
+      - name: TO_MINT
+        description:  "{{ doc('swaps_to_mint') }}"
+        # tests: 
+        #   - not_null: *recent_date_filter  # TEMPORARILY DISABLE, turn back on when inner swap events decoding is complete and this model is refactored
+      - name: SWAP_INDEX
+        description: "{{ doc('swaps_swap_index') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null: *recent_date_filter

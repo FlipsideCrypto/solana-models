@@ -28,7 +28,15 @@ models:
             '5vsPBQWgtwhqeQQUHVQhuCtWDtAu5sqQak1FkMj7ZkQbMz12m8XrgTQCYtD1paFKh1KqAakpf6hQV4APd94VihLN',
             '2munG4m9guSktDAp8QNt3WK1uVVD3BKV5zWqYuApjKjeiLDV9br6QwemQ1UeTHnfeF5CB7axL3K2kFbKUJpCAzHr',
             '5PaqpRyNvDjPkRD8UeBKUC8SiwddLLtxZgPuDTngZXCZ2sZ7tDVHoXtqwDWWf9Jq4DVCytobc4o8h1mxNMD8hXzv',
-            '5Ndp4DwJvVxiF6cEVtHvnzW749hjqKFdwYVYS4Bn2GHtc3qPGsk9AuowBhamqDkJaXNgiC3CaSDMK4k2a2pEchzJ')"
+            '5Ndp4DwJvVxiF6cEVtHvnzW749hjqKFdwYVYS4Bn2GHtc3qPGsk9AuowBhamqDkJaXNgiC3CaSDMK4k2a2pEchzJ',
+            '5BDJaGeqsfRTHQA8kR99syrFebNWVmpWFpWNne8jRvGpdVxzXNVw9gb3HrbZJEvphTHGsGxeWdv7TDFc4A5g2zhY',
+            '2L9QnyDuLf3xHmt7WQ992qX5y7GhriKsEmcAWKF7b6dakRgPftgnRP1J73HcNYq7DX8L472vHMrnGo7KyZzVuwNf',
+            '3n8gZ42dgEPyhm5Fg67S2YV7DB594wG2kvsqmpnvrDnoFzCvyKV9dmZKJHpZQHnXbk6KGWCdpPLhdP51HpbBiYp2',
+            '69suHP1ToykoujDnp4kD7oBnMzx3ftTqeuR8dASjt2PcAfbKDQrSWvuwAMghy7sWGRtP3YTgsCDK2TyYwGg99bc',
+            'DyLBsEEQfp26yzfZ8ESsgP93zecc9dPCACsBaZ2QYQGDsS4UBg5gR5baHqmrFE6Cp7hVR7jUXX5aWxnrDejzdbb',
+            '2vSRfRA82jhyMwe3GrSnzwbYVbhTsf8E8fdMtYUmZvjDJT2Wp649qtAaoqagP2FLmRjErCfFpL64R4M84tzMJGEv',
+            '2iSFJTzHHAEqZpZFhGWXL9EH82NpQivxmgUFyy6eAb9FKXcM21FxrDUZjsmTakkVs99E3o4qGk31dpLmEeWyJ2Sw',
+            '4yCbMAPrQ29bR33KTgEVuScBwwAuC4Qgbm72yoMDmkiQLqFWGcmz8o1bGoKKS5nLTsBVf7KKX7FbDh61QKjQfe6N')"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -59,6 +67,10 @@ models:
         description: "{{ doc('program_id') }}"
         tests: 
           - not_null
+      - name: EVENT_TYPE
+        description: "{{ doc('event_type') }}"
+        tests:
+          - not_null
       - name: PURCHASER
         description: "{{ doc('purchaser') }}"
         tests: 
@@ -73,7 +85,7 @@ models:
           - not_null:
               where: succeeded = TRUE
       - name: SALES_AMOUNT
-        description: "{{ doc('sales_amount') }}. For bid side sales the amount is an estimation using `min_price`"
+        description: "{{ doc('sales_amount') }}. For bid side sales the amount is an estimation using `min_price` when logs are unavailable (ex: truncated logs)"
         tests: 
           - not_null
           - dbt_utils.expression_is_true:

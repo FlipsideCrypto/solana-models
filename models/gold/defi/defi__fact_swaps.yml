@@ -2,6 +2,9 @@ version: 2
 models:
   - name: defi__fact_swaps
     description: This table contains swaps performed on Jupiter, Orca, Raydium, Saber, Bonkswap, Dooar, Phoenix and Meteora swap programs. Intermediate swaps are aggregated over the DEX programs, so the values showcase the final mint/amount swap values. Ie. a swap on Jupiter that swaps SOL->USDC->mSOL->ETH would show the initial amount in and the final amount out of SOL->ETH. For Phoenix, we are not capturing swaps where there are separate transactions for placing the order and filling the order. 
+    recent_date_filter: &recent_date_filter
+      config:
+        where: block_timestamp >= current_date - 7
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -46,11 +49,11 @@ models:
       - name: SWAP_PROGRAM
         description: name of decentralized exchange used to perform the swap
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: _LOG_ID
         description: "Combination of TX_ID and event index"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: FACT_SWAPS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP

@@ -57,6 +57,10 @@
             create_udf_get_account_pubkey_by_name(
             schema = "silver"
         ) }}
+        {{
+            create_udf_get_logs_program_data(
+            schema = "silver"
+        ) }}
         {% endset %}
         {% do run_query(sql) %}
     {% endif %}

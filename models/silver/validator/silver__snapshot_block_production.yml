@@ -19,8 +19,11 @@ models:
       - name: end_slot
         description: "Final slot of the epoch"
       - name: _inserted_timestamp
-        description: "The inserted timestamp"
+        description: "{{ doc('_inserted_timestamp') }}"
         tests:
           - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
 
 
