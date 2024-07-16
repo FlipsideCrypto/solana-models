@@ -36,11 +36,6 @@ sources:
     schema: bronze
     tables:
       - name: legacy_prices
-  - name: legacy_bronze
-    database: flipside_prod_db
-    schema: bronze
-    tables: 
-      - name: prod_nft_metadata_uploads_1828572827
   - name: bronze_streamline
     database: streamline
     schema: "{{ 'solana' if target.database == 'SOLANA' else 'solana_dev' }}"
