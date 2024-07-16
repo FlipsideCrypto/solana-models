@@ -3,9 +3,9 @@
     meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'SWAPS' }}},
     unique_key = ['fact_swaps_id'],
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
-    cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE', 'swap_program'],
+    cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE', 'swap_program', 'program_id'],
     merge_exclude_columns = ["inserted_timestamp"],
-    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, swapper, fact_swaps_id)'),
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, swapper, swap_from_mint, swap_to_mint)'),
     tags = ['scheduled_non_core']
 ) }}
 
@@ -77,7 +77,6 @@ FROM
     {{ ref('silver__swaps_intermediate_jupiterv6_view') }}
 WHERE 
     block_timestamp::date < '2023-08-03'
--- todo - do i need this blocktimestamp on this?
 {% if is_incremental() %}
 AND
     modified_timestamp >= '{{ max_modified_timestamp }}'
@@ -102,7 +101,6 @@ FROM
     {{ ref('silver__swaps_intermediate_jupiterv6_2') }}
 WHERE
     block_timestamp::date >= '2023-08-03'
-    -- todo - do i need this blocktimestamp on this?
 {% if is_incremental() %}
 AND
     modified_timestamp >= '{{ max_modified_timestamp }}'
