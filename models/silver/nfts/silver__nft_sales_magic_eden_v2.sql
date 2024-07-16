@@ -6,62 +6,43 @@
     tags = ['scheduled_non_core']
 ) }}
 
-WITH txs AS (
+/* run incremental timestamp value first then use it as a static value */
+{% if execute %}
+    {% set create_tmp_query %}
+        CREATE OR REPLACE TEMPORARY TABLE silver.nft_sales_magic_eden_v2__intermediate_tmp AS
+        SELECT
+            block_timestamp,
+            tx_id,
+            succeeded,
+            signers[0] :: STRING AS signer, 
+            MAX(INDEX) AS max_event_index
+        FROM
+            {{ ref('silver__events') }}
+        WHERE
+            program_id = 'M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K' -- Magic Eden V2 Program ID
+            {% if is_incremental() %}
+            {{ get_batch_load_logic(this, 30, '2024-07-12') }}
+            {% else %}
+            AND _inserted_timestamp::date BETWEEN '2022-08-12' AND '2022-09-01'
+            {% endif %}
+        GROUP BY
+            1,2,3,4
+        HAVING count(tx_id) >= 2
+    {% endset %}
+    {% do run_query(create_tmp_query) %}
 
+    {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.nft_sales_magic_eden_v2__intermediate_tmp","block_timestamp::date","e") %}
+{% endif %}
+
+WITH txs AS (
     SELECT
-        block_timestamp::date as block_date,
+        block_timestamp::date AS block_date,
         tx_id,
         succeeded,
-        signers[0] :: STRING as signer, 
-        MAX(INDEX) AS max_event_index
+        signer, 
+        max_event_index
     FROM
-        {{ ref('silver__events') }}
-    WHERE
-        program_id = 'M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K' -- Magic Eden V2 Program ID
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-AND
-    block_timestamp :: DATE BETWEEN (
-        SELECT
-            LEAST(DATEADD(
-                'day',
-                1,
-                COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
-                FROM
-                    {{ this }}
-        )
-        AND (
-        SELECT
-            LEAST(DATEADD(
-            'day',
-            30,
-            COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
-            FROM
-                {{ this }}
-        ) 
-{% elif is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND 
-        _inserted_timestamp :: DATE BETWEEN '2022-08-01'
-        AND '2022-09-01'
-{% endif %}
-GROUP BY
-    1,
-    2, 
-    3,
-    4
-HAVING
-    COUNT(
-        tx_id
-    ) >= 2
+        silver.nft_sales_magic_eden_v2__intermediate_tmp
 ),
 base_tmp AS (
     SELECT
@@ -113,42 +94,14 @@ base_tmp AS (
             OR inner_instruction_type = 'create'
         )
         AND array_size(e.instruction:accounts) > 12
-
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-AND
-    e.block_timestamp :: DATE BETWEEN (
-        SELECT
-            LEAST(DATEADD(
-                'day',
-                1,
-                COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
-                FROM
-                    {{ this }}
-        )
-        AND (
-        SELECT
-            LEAST(DATEADD(
-            'day',
-            30,
-            COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
-            FROM
-                {{ this }}
-        )
-{% elif is_incremental() %}
-AND e._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND 
-        e._inserted_timestamp :: DATE BETWEEN '2022-08-01'
-        AND '2022-09-01'
-{% endif %}
+        AND {{ between_stmts }}
+        {% if is_incremental() %}
+            {% if execute %}
+            {{ get_batch_load_logic(this, 30, '2024-07-04') }}
+            {% endif %}
+        {% else %}
+        AND _inserted_timestamp::date BETWEEN '2022-08-12' AND '2022-09-01'
+        {% endif %}
 ),
 sellers AS (
      SELECT
@@ -170,51 +123,27 @@ sellers AS (
         ) > 1
         LEFT OUTER JOIN TABLE(FLATTEN(inner_instruction :instructions)) i
     WHERE 
-        (i.value :program :: STRING = 'spl-token'
-    AND i.value :programId :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-    AND i.value :parsed :type :: STRING in ('transfer','closeAccount'))
-    OR (
-    i.value :program :: STRING = 'system'
-    AND i.value :programId :: STRING = '11111111111111111111111111111111'
-    AND i.value :parsed :type :: STRING in ('transfer')
-    )
-
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-AND
-    e.block_timestamp :: DATE BETWEEN (
-        SELECT
-            LEAST(DATEADD(
-                'day',
-                1,
-                COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
-                FROM
-                    {{ this }}
+        (
+            (
+                i.value :program :: STRING = 'spl-token'
+                AND i.value :programId :: STRING = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+                AND i.value :parsed :type :: STRING in ('transfer','closeAccount')
+            )
+            OR 
+            (
+                i.value :program :: STRING = 'system'
+                AND i.value :programId :: STRING = '11111111111111111111111111111111'
+                AND i.value :parsed :type :: STRING in ('transfer')
+            )
         )
-        AND (
-        SELECT
-            LEAST(DATEADD(
-            'day',
-            30,
-            COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
-            FROM
-                {{ this }}
-        )
-{% elif is_incremental() %}
-AND
-    e._inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
-{% else %}
-AND
-    e._inserted_timestamp :: DATE BETWEEN '2022-08-01' 
-        AND '2022-09-01'
-{% endif %}
+        AND {{ between_stmts }}
+        {% if is_incremental() %}
+            {% if execute %}
+            {{ get_batch_load_logic(this, 30, '2024-07-04') }}
+            {% endif %}
+        {% else %}
+        AND _inserted_timestamp::date BETWEEN '2022-08-12' AND '2022-09-01'
+        {% endif %}
     qualify(row_number() over (partition by e.tx_id order by i.index desc)) = 1
 ),
 base AS (
@@ -232,43 +161,15 @@ post_token_balances AS (
         mint
     FROM
         {{ ref('silver___post_token_balances') }}
-
-{% if is_incremental() and env_var(
-    'DBT_IS_BATCH_LOAD',
-    "false"
-) == "true" %}
-WHERE
-    block_timestamp :: DATE BETWEEN (
-        SELECT
-            LEAST(DATEADD(
-                'day',
-                1,
-                COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
-                FROM
-                    {{ this }}
-        )
-        AND (
-        SELECT
-            LEAST(DATEADD(
-            'day',
-            30,
-            COALESCE(MAX(block_timestamp) :: DATE, '2022-01-08')),'2022-10-05')
-            FROM
-                {{ this }}
-        )
-{% elif is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
-{% else %}
-WHERE
-    _inserted_timestamp :: DATE BETWEEN '2022-08-01'
-        AND '2022-09-01'
-{% endif %}
+    WHERE
+        1=1
+        {% if is_incremental() %}
+            {% if execute %}
+            {{ get_batch_load_logic(this, 30, '2024-07-04') }}
+            {% endif %}
+        {% else %}
+        AND _inserted_timestamp::date BETWEEN '2022-08-12' AND '2022-09-01'
+        {% endif %}
 )
 SELECT
     b.block_timestamp,
