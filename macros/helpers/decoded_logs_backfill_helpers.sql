@@ -59,6 +59,8 @@
                     i.value AS instruction,
                     e.block_id,
                     e.block_timestamp,
+                    e.signers,
+                    e.succeeded,
                     {{ dbt_utils.generate_surrogate_key(['e.block_id','e.tx_id','e.index','inner_index','log_index','inner_program_id']) }} as id
                 FROM
                     {{ ref('silver__events') }} e
@@ -72,21 +74,26 @@
                     AND array_size(i.value:accounts::array) = 1
                 UNION ALL
                 SELECT 
-                    program_id,
-                    tx_id,
-                    index,
-                    inner_index,
-                    log_index,
-                    object_construct('accounts',[],'data',data,'programId',program_id) as instruction,
-                    block_id,
-                    block_timestamp,
-                    {{ dbt_utils.generate_surrogate_key(['block_id','tx_id','index','inner_index','log_index','program_id']) }} as id
+                    l.program_id,
+                    l.tx_id,
+                    l.index,
+                    l.inner_index,
+                    l.log_index,
+                    object_construct('accounts',[],'data',l.data,'programId',l.program_id) as instruction,
+                    l.block_id,
+                    l.block_timestamp,
+                    t.signers,
+                    t.succeeded,
+                    {{ dbt_utils.generate_surrogate_key(['l.block_id','l.tx_id','l.index','l.inner_index','l.log_index','l.program_id']) }} as id
                 FROM
-                    {{ ref('silver__transaction_logs_program_data') }} 
+                    {{ ref('silver__transaction_logs_program_data') }} l
+                JOIN
+                    {{ ref('silver__transactions') }} t
+                    USING(block_timestamp, tx_id)
                 WHERE 
-                    block_id between {{ start_block }} and {{ end_block }}
-                    AND program_id = '{{ program_id }}'
-                    AND succeeded
+                    l.block_id between {{ start_block }} and {{ end_block }}
+                    AND l.program_id = '{{ program_id }}'
+                    AND l.succeeded
             )
             SELECT 
                 e.inner_program_id as program_id,
@@ -96,7 +103,9 @@
                 e.log_index,
                 e.instruction,
                 e.block_id,
-                e.block_timestamp
+                e.block_timestamp,
+                e.signers,
+                e.succeeded,
             FROM
                 event_subset e
             LEFT OUTER JOIN

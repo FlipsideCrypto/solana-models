@@ -38,6 +38,8 @@ event_subset AS (
         i.value AS instruction,
         e.block_id,
         e.block_timestamp,
+        e.signers,
+        e.succeeded,
         {{ dbt_utils.generate_surrogate_key(['e.block_id','e.tx_id','e.index','inner_index','log_index','inner_program_id']) }} as id
     FROM
         {{ ref('silver__events') }} e
@@ -54,20 +56,25 @@ event_subset AS (
         AND array_size(i.value:accounts::array) = 1
     UNION ALL
     SELECT 
-        program_id,
-        tx_id,
-        index,
-        inner_index,
-        log_index,
-        object_construct('accounts',[],'data',data,'programId',program_id) as instruction,
-        block_id,
-        block_timestamp,
-        {{ dbt_utils.generate_surrogate_key(['block_id','tx_id','index','inner_index','log_index','program_id']) }} as id
+        l.program_id,
+        l.tx_id,
+        l.index,
+        l.inner_index,
+        l.log_index,
+        object_construct('accounts',[],'data',l.data,'programId',l.program_id) as instruction,
+        l.block_id,
+        l.block_timestamp,
+        t.signers,
+        t.succeeded,
+        {{ dbt_utils.generate_surrogate_key(['l.block_id','l.tx_id','l.index','l.inner_index','l.log_index','l.program_id']) }} as id
     FROM
-        {{ ref('silver__transaction_logs_program_data') }} 
+        {{ ref('silver__transaction_logs_program_data') }} l
+    JOIN
+        {{ ref('silver__transactions') }} t
+        USING(block_timestamp, tx_id)
     WHERE 
-        block_timestamp >= CURRENT_DATE - 2
-        AND program_id = 'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN'
+        l.block_timestamp >= CURRENT_DATE - 2
+        AND l.program_id = 'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN'
 ),
 completed_subset AS (
     SELECT
@@ -92,7 +99,9 @@ SELECT
     e.log_index,
     e.instruction,
     e.block_id,
-    e.block_timestamp
+    e.block_timestamp,
+    e.signers,
+    e.succeeded
 FROM
     event_subset e
 LEFT OUTER JOIN 
