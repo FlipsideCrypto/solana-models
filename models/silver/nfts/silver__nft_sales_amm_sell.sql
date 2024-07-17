@@ -1,153 +1,190 @@
+-- depends_on: {{ ref('silver__decoded_instructions_combined') }}
 {{ config(
     materialized = 'incremental',
-    unique_key = "CONCAT_WS('-', tx_id, mint)",
-    incremental_strategy = 'delete+insert',
-    cluster_by = ['block_timestamp::DATE'],
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
+    merge_exclude_columns = ["inserted_timestamp"],
+    unique_key = "nft_sales_amm_sell_id",
+    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
     tags = ['scheduled_non_core']
 ) }}
 
-WITH base_events AS (
+{% if execute %}
+    {% set base_query %}
+    CREATE OR REPLACE temporary TABLE silver.nft_sales_amm_sell__intermediate_tmp AS
 
     SELECT
-        *
+        block_timestamp,
+        block_id,
+        tx_id,
+        succeeded,
+        signers,
+        INDEX,
+        inner_index,
+        program_id,
+        event_type,
+        decoded_instruction,
+        _inserted_timestamp
     FROM
-        {{ ref('silver__events') }}
+        {{ ref('silver__decoded_instructions_combined') }}
     WHERE
         program_id = 'mmm3XBJg5gk8XJxEKBvdgptZz6SgK4tXvn36sodowMc'
+        AND event_type IN (
+            'solMip1FulfillSell',
+            'solFulfillSell',
+            'solFulfillBuy',
+            'solMip1FulfillBuy',
+            'solOcpFulfillBuy',
+            'solExtFulfillBuy'
+        )
+        AND succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp)
+        MAX(_inserted_timestamp) - INTERVAL '1 hour'
     FROM
         {{ this }}
 )
 {% else %}
-    AND block_timestamp :: DATE >= '2022-10-14'
+    AND _inserted_timestamp :: DATE >= '2022-10-14'
 {% endif %}
-),
-base_token_balance AS (
+{% endset %}
+
+{% do run_query(base_query) %}
+{% set between_stmts = fsc_utils.dynamic_range_predicate(
+    "silver.nft_sales_amm_sell__intermediate_tmp",
+    "block_timestamp::date"
+) %}
+{% endif %}
+
+WITH base_decoded AS (
     SELECT
         *
     FROM
-        {{ ref('silver___post_token_balances') }}
-    WHERE
-        amount = 1
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND block_timestamp :: DATE >= '2022-10-14'
-{% endif %}
+        silver.nft_sales_amm_sell__intermediate_tmp
 ),
 base_transfers AS (
     SELECT
         *
     FROM
-        {{ ref('silver__transfers') }}
+        solana_dev.silver.transfers
     WHERE
-        mint = 'So11111111111111111111111111111111111111112'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND block_timestamp :: DATE >= '2022-10-14'
-{% endif %}
+        mint = 'So11111111111111111111111111111111111111111'
+        AND succeeded
+        AND {{ between_stmts }}
 ),
 coral_cube_sales AS(
     SELECT
-        A.*,
+        block_timestamp,
+        block_id,
+        tx_id,
+        INDEX,
+        inner_index,
+        signers,
+        succeeded,
+        program_id,
+        decoded_instruction,
+        event_type,
         CASE
-            WHEN b1.owner IS NOT NULL THEN b1.owner
-            WHEN b2.owner IS NOT NULL THEN b2.owner
-            ELSE A.instruction :accounts [1] :: STRING
+            WHEN event_type IN (
+                'solFulfillSell',
+                'solMip1FulfillSell'
+            ) THEN silver.udf_get_account_pubkey_by_name(
+                'payer',
+                decoded_instruction :accounts
+            )
+            ELSE silver.udf_get_account_pubkey_by_name(
+                'pool',
+                decoded_instruction :accounts
+            )
         END AS purchaser,
         CASE
-            WHEN b1.owner IS NOT NULL THEN A.instruction :accounts [4] :: STRING
-            ELSE A.instruction :accounts [0] :: STRING
+            WHEN event_type IN (
+                'solFulfillSell',
+                'solMip1FulfillSell'
+            ) THEN silver.udf_get_account_pubkey_by_name(
+                'pool',
+                decoded_instruction :accounts
+            )
+            ELSE silver.udf_get_account_pubkey_by_name(
+                'payer',
+                decoded_instruction :accounts
+            )
         END AS seller,
         CASE
-            WHEN b1.owner IS NOT NULL THEN 'sell'
+            WHEN event_type IN (
+                'solFulfillSell',
+                'solMip1FulfillSell'
+            ) THEN 'sell'
             ELSE 'buy'
         END AS nft_sale_type,
         'Coral Cube' AS marketplace,
-        A.instruction :accounts [8] :: STRING AS mint
+        silver.udf_get_account_pubkey_by_name(
+            'assetMint',
+            decoded_instruction :accounts
+        ) AS mint,
+        _inserted_timestamp
     FROM
-        base_events A
-        LEFT JOIN base_token_balance b1
-        ON A.tx_id = b1.tx_id
-        AND A.instruction :accounts [0] = b1.owner
-        LEFT JOIN base_token_balance b2
-        ON A.tx_id = b2.tx_id
-        AND A.instruction :accounts [4] = b2.owner
+        base_decoded
     WHERE
-        A.signers [1] = '7RpRDUZBdu5hfmqWvobPazbNeVCagRk5E3Rb8Bm8qRmD'
-        AND A.instruction :accounts [14] <> 'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s'
+        signers [1] = '7RpRDUZBdu5hfmqWvobPazbNeVCagRk5E3Rb8Bm8qRmD'
         AND purchaser <> '7RpRDUZBdu5hfmqWvobPazbNeVCagRk5E3Rb8Bm8qRmD'
-        AND ARRAY_SIZE(
-            instruction :accounts
-        ) >= 16
 ),
 mev2_sales AS(
-    -- mev2_buys
     SELECT
-        A.*,
-        instruction :accounts [1] :: STRING AS purchaser,
-        instruction :accounts [0] :: STRING AS seller,
-        'buy' AS nft_sale_type,
-        'Magic Eden' AS marketplace,
-        instruction :accounts [8] :: STRING AS mint
-    FROM
-        base_events A
-    WHERE
-        signers [1] = 'NTYeYJ1wr4bpM5xo6zx5En44SvJFAd35zTxxNoERYqd'
-        AND ARRAY_SIZE(
-            instruction :accounts
-        ) > 16
-        AND (
-            instruction :accounts [12] :: STRING = '11111111111111111111111111111111'
-            OR instruction :accounts [16] :: STRING = 'ocp4vWUzA2z2XMYJ3QhM9vWdyoyoQwAFJhRdVTbvo9E'
-        )
-    UNION ALL
-        -- mev2_sells
-    SELECT
-        A.*,
-        instruction :accounts [0] :: STRING AS purchaser,
-        instruction :accounts [1] :: STRING AS seller,
-        'sell' AS nft_sale_type,
-        'Magic Eden' AS marketplace,
+        block_timestamp,
+        block_id,
+        tx_id,
+        INDEX,
+        inner_index,
+        signers,
+        succeeded,
+        program_id,
+        decoded_instruction,
+        event_type,
         CASE
-            WHEN ARRAY_SIZE(
-                instruction :accounts
-            ) > 19 THEN instruction :accounts [7] :: STRING
-            WHEN ARRAY_SIZE(
-                instruction :accounts
+            WHEN event_type IN (
+                'solMip1FulfillSell',
+                'solFulfillSell'
+            ) THEN silver.udf_get_account_pubkey_by_name(
+                'payer',
+                decoded_instruction :accounts
             )
-            IN (
-                17,
-                18,
-                19
-            ) THEN instruction :accounts [8] :: STRING
-        END AS mint
+            ELSE silver.udf_get_account_pubkey_by_name(
+                'owner',
+                decoded_instruction :accounts
+            )
+        END AS purchaser,
+        CASE
+            WHEN event_type IN (
+                'solMip1FulfillSell',
+                'solFulfillSell'
+            ) THEN silver.udf_get_account_pubkey_by_name(
+                'owner',
+                decoded_instruction :accounts
+            )
+            ELSE silver.udf_get_account_pubkey_by_name(
+                'payer',
+                decoded_instruction :accounts
+            )
+        END AS seller,
+        CASE
+            WHEN event_type IN (
+                'solMip1FulfillSell',
+                'solFulfillSell'
+            ) THEN 'sell'
+            ELSE 'buy'
+        END AS nft_sale_type,
+        'Magic Eden' AS marketplace,
+        silver.udf_get_account_pubkey_by_name(
+            'assetMint',
+            decoded_instruction :accounts
+        ) AS mint,
+        _inserted_timestamp
     FROM
-        base_events A
+        base_decoded
     WHERE
         signers [1] = 'NTYeYJ1wr4bpM5xo6zx5En44SvJFAd35zTxxNoERYqd'
-        AND ARRAY_SIZE(
-            instruction :accounts
-        ) > 16
-        AND instruction :accounts [11] :: STRING = '11111111111111111111111111111111'
-        AND instruction :accounts [16] :: STRING != 'ocp4vWUzA2z2XMYJ3QhM9vWdyoyoQwAFJhRdVTbvo9E'
 ),
 coral_cube_nft_sale_amount AS (
     SELECT
@@ -167,7 +204,10 @@ coral_cube_nft_sale_amount AS (
         )
         OR (
             A.nft_sale_type = 'buy'
-            AND A.instruction :accounts [5] = b.tx_from
+            AND silver.udf_get_account_pubkey_by_name(
+                'buysideSolEscrowAccount',
+                A.decoded_instruction :accounts
+            ) :: STRING = b.tx_from
         )
     GROUP BY
         1,
@@ -187,60 +227,65 @@ mev2_nft_sale_amount AS (
     WHERE
         (
             A.nft_sale_type = 'sell'
-            AND A.instruction :accounts [0] = b.tx_from
+            AND A.purchaser = b.tx_from
         )
         OR (
             A.nft_sale_type = 'buy'
-            AND A.instruction :accounts [5] = b.tx_from
+            AND silver.udf_get_account_pubkey_by_name(
+                'buysideSolEscrowAccount',
+                A.decoded_instruction :accounts
+            ) :: STRING = b.tx_from
         )
     GROUP BY
         1,
         2
+),
+pre_final AS (
+    SELECT
+        A.block_timestamp,
+        A.block_id,
+        A.tx_id,
+        A.succeeded,
+        A.index,
+        A.inner_index,
+        A.program_id,
+        A.mint,
+        A.purchaser,
+        A.seller,
+        b.sales_amount,
+        A.marketplace,
+        A._inserted_timestamp
+    FROM
+        coral_cube_sales A
+        LEFT JOIN coral_cube_nft_sale_amount b
+        ON A.tx_id = b.tx_id
+    WHERE
+        b.sales_amount IS NOT NULL
+    UNION
+    SELECT
+        A.block_timestamp,
+        A.block_id,
+        A.tx_id,
+        A.succeeded,
+        A.index,
+        A.inner_index,
+        A.program_id,
+        A.mint,
+        A.purchaser,
+        A.seller,
+        b.sales_amount,
+        A.marketplace,
+        A._inserted_timestamp
+    FROM
+        mev2_sales A
+        LEFT JOIN mev2_nft_sale_amount b
+        ON A.tx_id = b.tx_id
 )
 SELECT
-    A.block_timestamp,
-    A.block_id,
-    A.tx_id,
-    A.succeeded,
-    A.program_id,
-    A.mint,
-    A.purchaser,
-    A.seller,
-    b.sales_amount,
-    A.marketplace,
-    A._inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(
-        ['A.tx_id','A.mint']
-    ) }} AS nft_sales_amm_sell_id,
+    *,
+    {{ dbt_utils.generate_surrogate_key(['tx_id','mint']) }} AS nft_sales_amm_sell_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    coral_cube_sales A
-    LEFT JOIN coral_cube_nft_sale_amount b
-    ON A.tx_id = b.tx_id
-WHERE
-    b.sales_amount IS NOT NULL
-UNION
-SELECT
-    A.block_timestamp,
-    A.block_id,
-    A.tx_id,
-    A.succeeded,
-    A.program_id,
-    A.mint,
-    A.purchaser,
-    A.seller,
-    b.sales_amount,
-    A.marketplace,
-    A._inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(
-        ['A.tx_id','A.mint']
-    ) }} AS nft_sales_amm_sell_id,
-    SYSDATE() AS inserted_timestamp,
-    SYSDATE() AS modified_timestamp,
-    '{{ invocation_id }}' AS _invocation_id
-FROM
-    mev2_sales A
-    LEFT JOIN mev2_nft_sale_amount b
-    ON A.tx_id = b.tx_id
+    pre_final
