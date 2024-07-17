@@ -2,6 +2,7 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = 'complete_native_prices_id',
+    cluster_by = ['HOUR::DATE'],
     tags = ['scheduled_non_core']
 ) }}
 

@@ -4,6 +4,7 @@
   incremental_strategy = 'delete+insert',
   cluster_by = ['block_timestamp::DATE','_inserted_timestamp::date'],
   tags = ['scheduled_core'],
+  post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(block_id)'),
   full_refresh = false
 ) }}
 
