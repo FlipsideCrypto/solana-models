@@ -1,4 +1,5 @@
 -- depends_on: {{ ref('silver__blocks') }}
+-- depends_on: {{ ref('silver__transactions') }}
 -- depends_on: {{ ref('bronze__streamline_decoded_logs') }}
 -- depends_on: {{ ref('bronze__streamline_FR_decoded_logs') }}
 {{ config(
