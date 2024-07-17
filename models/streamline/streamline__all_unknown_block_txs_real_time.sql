@@ -132,7 +132,7 @@ solscan_discrepancy_retries AS (
 , completed_retries as (
     select block_id
     from {{ ref('streamline__complete_block_txs') }}
-    where _partition_id > 97845
+    where _partition_id > 99271
 )
 , stuff_to_retry as (
     select *
