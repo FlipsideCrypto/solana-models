@@ -155,7 +155,8 @@ solscan_discrepancy_retries AS (
             ) AS batch_id
         from completed_retries
     )
-    limit 200
+    order by 1 desc
+    limit 50
 )
 SELECT
     block_id,
