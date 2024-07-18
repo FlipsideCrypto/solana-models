@@ -49,6 +49,16 @@ models:
         description: List of pre-transaction token balances for different token accounts
       - name: POST_TOKEN_BALANCES
         description: List of post-transaction token balances for different token accounts
+      - name: INSTRUCTIONS
+        description: "{{ doc('instruction') }}"
+        tests: 
+          - not_null:
+              where: block_timestamp::date > current_date - 30
+      - name: INNER_INSTRUCTIONS
+        description: "{{ doc('inner_instruction') }}"
+        tests: 
+          - not_null:
+              where: block_timestamp::date > current_date - 30
       - name: LOG_MESSAGES
         description: Array of log messages written by the program for this transaction
       - name: ADDRESS_TABLE_LOOKUPS
