@@ -67,7 +67,7 @@ base_transfers AS (
     SELECT
         *
     FROM
-        solana_dev.silver.transfers
+        {{ ref('silver__transfers') }}
     WHERE
         mint = 'So11111111111111111111111111111111111111111'
         AND succeeded
