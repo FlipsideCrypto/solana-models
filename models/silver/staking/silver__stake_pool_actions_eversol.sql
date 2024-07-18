@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "_unique_key",
     incremental_strategy = 'merge',
-    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::date'],
+    cluster_by = ['block_timestamp::DATE','modified_timestamp::date'],
     merge_exclude_columns = ["inserted_timestamp"],
     full_refresh = false,
     enabled = false
