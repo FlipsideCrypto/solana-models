@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_timestamp_hour",
     cluster_by = ['block_timestamp_hour::DATE'],
-    tags = ['curated','scheduled_non_core']
+    tags = ['curated','xscheduled_non_core']
 ) }}
 /* run incremental query to get relevant dates */
 {% if execute %}
