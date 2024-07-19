@@ -34,7 +34,8 @@
             'solFulfillBuy',
             'solMip1FulfillBuy',
             'solOcpFulfillBuy',
-            'solExtFulfillBuy'
+            'solExtFulfillBuy',
+            'solOcpFulfillSell'
         )
         AND succeeded
 
@@ -88,7 +89,8 @@ coral_cube_sales AS(
         CASE
             WHEN event_type IN (
                 'solFulfillSell',
-                'solMip1FulfillSell'
+                'solMip1FulfillSell',
+                'solOcpFulfillSell'
             ) THEN silver.udf_get_account_pubkey_by_name(
                 'payer',
                 decoded_instruction :accounts
@@ -101,7 +103,8 @@ coral_cube_sales AS(
         CASE
             WHEN event_type IN (
                 'solFulfillSell',
-                'solMip1FulfillSell'
+                'solMip1FulfillSell',
+                'solOcpFulfillSell'
             ) THEN silver.udf_get_account_pubkey_by_name(
                 'pool',
                 decoded_instruction :accounts
@@ -114,7 +117,8 @@ coral_cube_sales AS(
         CASE
             WHEN event_type IN (
                 'solFulfillSell',
-                'solMip1FulfillSell'
+                'solMip1FulfillSell',
+                'solOcpFulfillSell'
             ) THEN 'sell'
             ELSE 'buy'
         END AS nft_sale_type,
