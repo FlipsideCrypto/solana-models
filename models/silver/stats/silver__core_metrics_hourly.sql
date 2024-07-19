@@ -3,21 +3,42 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_timestamp_hour",
     cluster_by = ['block_timestamp_hour::DATE'],
-    tags = ['curated','xscheduled_non_core']
+    tags = ['curated','scheduled_non_core']
 ) }}
 /* run incremental query to get relevant dates */
 {% if execute %}
 
 {% if is_incremental() %}
-{% set query_1 = """ CREATE OR REPLACE TEMPORARY TABLE silver.core_metrics_hourly__intermediate_tmp AS SELECT distinct(block_timestamp)::date as dist_block_ts FROM """ ~ ref('silver__transactions') ~ """ WHERE _inserted_timestamp >= (SELECT MAX(_INSERTED_TIMESTAMP) FROM """ ~ this ~ """)""" %}
-{% do run_query(
-    query_1
-) %}
+{% set query_its %}
+
+SELECT
+    MAX(_inserted_timestamp) _inserted_timestamp
+FROM
+    {{ this }}
+
+    {% endset %}
+    {% set max_its = run_query(query_its).columns [0].values() [0] %}
+    {% set query %}
+SELECT
+    COALESCE(
+        NULLIF(
+            LISTAGG(
+                DISTINCT block_timestamp :: DATE,
+                ''','''
+            ),
+            ''
+        ),
+        SYSDATE() :: DATE
+    ) block_dates
+FROM
+    {{ ref('silver__transactions') }}
+WHERE
+    _inserted_timestamp >= '{{ max_its }}' {% endset %}
+    {% set block_dates = run_query(query).columns [0].values() [0] %}
 {% endif %}
 {% endif %}
 
 WITH block_stats AS (
-
     SELECT
         DATE_TRUNC(
             'hour',
@@ -38,11 +59,8 @@ WITH block_stats AS (
         )
 
 {% if is_incremental() %}
-AND block_timestamp :: DATE IN (
-    SELECT
-        dist_block_ts
-    FROM
-        silver.core_metrics_hourly__intermediate_tmp
+AND block_timestamp :: DATE IN(
+    '{{ block_dates }}'
 )
 {% else %}
     AND block_id > 39824213
@@ -57,16 +75,18 @@ tx_stats AS (
             block_timestamp
         ) AS block_timestamp_hour,
         COUNT(
-            DISTINCT tx_id
+            1
         ) AS transaction_count,
-        COUNT(
-            DISTINCT CASE
-                WHEN succeeded THEN tx_id
+        SUM(
+            CASE
+                WHEN succeeded THEN 1
+                ELSE 0
             END
         ) AS transaction_count_success,
-        COUNT(
-            DISTINCT CASE
-                WHEN NOT succeeded THEN tx_id
+        SUM(
+            CASE
+                WHEN NOT succeeded THEN 1
+                ELSE 0
             END
         ) AS transaction_count_failed,
         COUNT(
@@ -83,11 +103,8 @@ tx_stats AS (
         )
 
 {% if is_incremental() %}
-AND block_timestamp :: DATE IN (
-    SELECT
-        dist_block_ts
-    FROM
-        silver.core_metrics_hourly__intermediate_tmp
+AND block_timestamp :: DATE IN(
+    '{{ block_dates }}'
 )
 {% else %}
     AND block_id > 39824213
