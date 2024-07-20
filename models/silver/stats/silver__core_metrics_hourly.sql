@@ -28,7 +28,7 @@ SELECT
             ),
             ''
         ),
-        SYSDATE() :: DATE
+        SYSDATE() :: DATE :: STRING
     ) block_dates
 FROM
     {{ ref('silver__transactions') }}
