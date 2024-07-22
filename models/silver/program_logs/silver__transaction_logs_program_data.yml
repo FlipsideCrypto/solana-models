@@ -5,7 +5,7 @@ models:
       config:
         where: >
           _inserted_timestamp >= current_date - 7 
-          AND block_id > 127221709
+          AND block_id > 127221709 /* some legacy logs decoding format not handled, not compatible with new */
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -51,7 +51,7 @@ models:
           - dbt_expectations.expect_column_values_to_be_null:
               row_condition: >
                 _inserted_timestamp >= current_date - 7
-                AND block_id > 127221709
+                AND block_id > 127221709 /* some legacy logs decoding format not handled, not compatible with new */
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
