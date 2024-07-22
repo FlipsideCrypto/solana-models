@@ -132,6 +132,8 @@ as
 $$
 def get_compute_units_consumed(log_messages, instructions):
   import re
+  if log_messages is None:
+    return None
   units_consumed_list = []
   selected_logs = set()
   for instr in instructions:
@@ -159,6 +161,8 @@ as
 $$
 def get_compute_units_total(log_messages, instructions):
   import re
+  if log_messages is None:
+    return None
   match = None
   for instr in instructions:
     program_id = instr['programId']
