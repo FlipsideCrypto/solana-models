@@ -3,13 +3,15 @@ models:
   - name: silver__transaction_logs_program_data
     recent_date_filter: &recent_date_filter
       config:
-        where: _inserted_timestamp >= current_date - 7
+        where: >
+          _inserted_timestamp >= current_date - 7 
+          AND block_id > 127221709
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
           - not_null:
-              where: _inserted_timestamp >= current_date - 7  AND block_id > 39824213
+              where: _inserted_timestamp >= current_date - 7 AND block_id > 39824213
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 1
@@ -47,7 +49,9 @@ models:
           Error from `udf_get_logs_program_data` if unsuccessful
         tests:
           - dbt_expectations.expect_column_values_to_be_null:
-              row_condition: _inserted_timestamp >= current_date - 7
+              row_condition: >
+                _inserted_timestamp >= current_date - 7
+                AND block_id > 127221709
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 

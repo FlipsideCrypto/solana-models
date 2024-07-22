@@ -50,12 +50,18 @@ models:
         description:  "{{ doc('token_balances_pre_owner') }}"
         tests: 
           - not_null:
-              where: pre_token_amount <> 0 and _inserted_timestamp >= current_date - 7
+              where: >
+                pre_token_amount <> 0 
+                AND _inserted_timestamp >= current_date - 7
+                AND block_timestamp::date > '2021-12-14' /* token ownership is not provided in the raw data before this date */
       - name: POST_OWNER
         description:  "{{ doc('token_balances_post_owner') }}"
         tests: 
           - not_null:
-              where: post_token_amount <> 0 and _inserted_timestamp >= current_date - 7
+              where: >
+                post_token_amount <> 0 
+                AND _inserted_timestamp >= current_date - 7
+                AND block_timestamp::date > '2021-12-14' /* token ownership is not provided in the raw data before this date */
       - name: PRE_TOKEN_AMOUNT
         description: "{{ doc('balances_pre_amount') }}"
         tests: 
