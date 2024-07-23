@@ -3,7 +3,7 @@
     meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }}},
     unique_key = ['fact_stake_pool_actions_id'],
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
-    cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE', 'action', 'stake_pool'],
+    cluster_by = ['block_timestamp::DATE','action','stake_pool'],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, address)'),
     tags = ['scheduled_non_core']

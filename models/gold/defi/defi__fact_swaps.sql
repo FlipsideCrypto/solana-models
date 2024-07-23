@@ -3,9 +3,9 @@
     meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'SWAPS' }}},
     unique_key = ['fact_swaps_id'],
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
-    cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE', 'swap_program', 'program_id'],
+    cluster_by = ['block_timestamp::DATE','swap_program'],
     merge_exclude_columns = ["inserted_timestamp"],
-    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, swapper, swap_from_mint, swap_to_mint)'),
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, swapper, swap_from_mint, swap_to_mint, program_id)'),
     tags = ['scheduled_non_core']
 ) }}
 
@@ -34,25 +34,17 @@ SELECT
     to_mint AS swap_to_mint,
     program_id,
     _log_id,
-    COALESCE (
-       swaps_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['block_id','tx_id','program_id']
-        ) }}
-    ) AS fact_swaps_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
+    swaps_id AS fact_swaps_id,
+    inserted_timestamp,
+    modified_timestamp
 FROM
     {{ ref('silver__swaps') }}
 {% if is_incremental() %}
 WHERE
     modified_timestamp >= '{{ max_modified_timestamp }}'
+{% else %}
+WHERE
+    modified_timestamp::date < '2024-06-09'
 {% endif %}
 )
 /* TODO: DEPRECATE - remove jupiter swaps from this table, we will only cover individual dexes moving forward. Aggregator(s) get their own model(s) */
@@ -80,6 +72,9 @@ WHERE
 {% if is_incremental() %}
 AND
     modified_timestamp >= '{{ max_modified_timestamp }}'
+{% else %}
+AND
+    modified_timestamp::date < '2024-06-09'
 {% endif %}
 UNION ALL
 SELECT
@@ -104,6 +99,9 @@ WHERE
 {% if is_incremental() %}
 AND
     modified_timestamp >= '{{ max_modified_timestamp }}'
+{% else %}
+AND 
+    modified_timestamp::date < '2024-06-09'
 {% endif %}
 UNION ALL
 SELECT
@@ -126,6 +124,9 @@ FROM
 {% if is_incremental() %}
 WHERE
     modified_timestamp >= '{{ max_modified_timestamp }}'
+{% else %}
+WHERE
+    modified_timestamp::date < '2024-06-09'
 {% endif %}
 UNION ALL
 SELECT
@@ -147,6 +148,9 @@ FROM
     {{ ref('silver__swaps_intermediate_jupiterv5_2_view') }}
 {% if is_incremental() %}
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
+{% else %}
+WHERE
+    modified_timestamp::date < '2024-06-09'
 {% endif %}
 UNION ALL
 SELECT
@@ -168,6 +172,9 @@ FROM
     {{ ref('silver__swaps_intermediate_bonkswap') }}
 {% if is_incremental() %}
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
+{% else %}
+WHERE
+    modified_timestamp::date < '2024-06-09'
 {% endif %}
 UNION ALL
 SELECT
@@ -189,6 +196,9 @@ FROM
     {{ ref('silver__swaps_intermediate_meteora') }}
 {% if is_incremental() %}
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
+{% else %}
+WHERE
+    modified_timestamp::date < '2024-06-09'
 {% endif %}
 UNION ALL
 SELECT
@@ -210,6 +220,9 @@ FROM
     {{ ref('silver__swaps_intermediate_dooar') }}
 {% if is_incremental() %}
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
+{% else %}
+WHERE 
+    modified_timestamp::date < '2024-06-09'
 {% endif %}
 UNION ALL
 SELECT
@@ -231,6 +244,9 @@ FROM
     {{ ref('silver__swaps_intermediate_phoenix') }}
 {% if is_incremental() %}
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
+{% else %}
+WHERE
+    modified_timestamp::date < '2024-06-09'
 {% endif %}
 UNION ALL
 SELECT
@@ -252,6 +268,9 @@ FROM
     {{ ref('silver__swaps_intermediate_raydium_clmm') }}
 {% if is_incremental() %}
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
+{% else %}
+WHERE
+    modified_timestamp::date < '2024-06-09'
 {% endif %}
 UNION ALL
 SELECT
@@ -273,6 +292,9 @@ FROM
     {{ ref('silver__swaps_intermediate_raydium_stable') }}
 {% if is_incremental() %}
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
+{% else %}
+WHERE
+    modified_timestamp::date < '2024-06-09'
 {% endif %}
 UNION ALL
 SELECT
@@ -294,6 +316,9 @@ FROM
     {{ ref('silver__swaps_intermediate_raydium_v4_amm') }}
 {% if is_incremental() %}
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
+{% else %}
+WHERE
+    modified_timestamp::date < '2024-06-09'
 {% endif %}
 )
 
