@@ -43,10 +43,13 @@ WITH pre_final AS (
         ON b.block_id = t.block_id
     WHERE
         tx_id IS NOT NULL
-        AND COALESCE(
-            t.data :transaction :message :instructions [0] :programId :: STRING,
-            ''
-        ) <> 'Vote111111111111111111111111111111111111111'
+        AND (
+            COALESCE(t.data :transaction :message :instructions [0] :programId :: STRING,'') <> 'Vote111111111111111111111111111111111111111'
+            OR
+            (
+                array_size(t.data :transaction :message :instructions) > 1
+            )
+        )
 
 {% if is_incremental() %}
     AND _partition_id >= (
@@ -73,9 +76,8 @@ WITH pre_final AS (
         2
     )
 {% endif %}
-)
-
-{% if is_incremental() %},
+),
+{% if is_incremental() %}
 prev_null_block_timestamp_txs AS (
     SELECT
         b.block_timestamp,
@@ -112,8 +114,25 @@ prev_null_block_timestamp_txs AS (
     WHERE
         t.block_timestamp :: DATE IS NULL
         AND t.block_id > 39824213
-)
+),
 {% endif %}
+qualifying_transactions AS (
+    SELECT
+        tx_id,
+        array_agg(i.value:programId::string) within group (order by i.index) as program_ids
+    FROM 
+        pre_final
+    JOIN
+        table(flatten(instructions)) i
+    WHERE
+        (
+        coalesce(instructions [0] :programId :: STRING,'') <> 'Vote111111111111111111111111111111111111111'
+        OR
+        i.value:programId::string NOT IN ('Vote111111111111111111111111111111111111111','ComputeBudget111111111111111111111111111111')
+    )
+    GROUP BY 1
+    HAVING array_size(program_ids) > 0
+)
 SELECT
     block_timestamp,
     block_id,
@@ -144,7 +163,11 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    pre_final b qualify(ROW_NUMBER() over(PARTITION BY block_id, tx_id
+    pre_final b 
+JOIN
+    qualifying_transactions
+    USING(tx_id)
+qualify(ROW_NUMBER() over(PARTITION BY block_id, tx_id
 ORDER BY
     _inserted_timestamp DESC)) = 1
 
