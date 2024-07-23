@@ -149,7 +149,8 @@ mev2_sales AS(
         CASE
             WHEN event_type IN (
                 'solMip1FulfillSell',
-                'solFulfillSell'
+                'solFulfillSell',
+                'solOcpFulfillSell'
             ) THEN silver.udf_get_account_pubkey_by_name(
                 'payer',
                 decoded_instruction :accounts
@@ -162,7 +163,8 @@ mev2_sales AS(
         CASE
             WHEN event_type IN (
                 'solMip1FulfillSell',
-                'solFulfillSell'
+                'solFulfillSell',
+                'solOcpFulfillSell'
             ) THEN silver.udf_get_account_pubkey_by_name(
                 'owner',
                 decoded_instruction :accounts
@@ -175,7 +177,8 @@ mev2_sales AS(
         CASE
             WHEN event_type IN (
                 'solMip1FulfillSell',
-                'solFulfillSell'
+                'solFulfillSell',
+                'solOcpFulfillSell'
             ) THEN 'sell'
             ELSE 'buy'
         END AS nft_sale_type,
