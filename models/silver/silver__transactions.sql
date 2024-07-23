@@ -128,10 +128,20 @@ qualifying_transactions AS (
         (
         coalesce(instructions [0] :programId :: STRING,'') <> 'Vote111111111111111111111111111111111111111'
         OR
+        /* small amount of txs have non-compute instructions after the vote */
         i.value:programId::string NOT IN ('Vote111111111111111111111111111111111111111','ComputeBudget111111111111111111111111111111')
     )
     GROUP BY 1
     HAVING array_size(program_ids) > 0
+    UNION ALL
+    /* some txs have no instructions at all, this is being filtered out above so we need to make sure we grab these */
+    SELECT
+        tx_id,
+        null
+    FROM
+        pre_final
+    WHERE
+        array_size(instructions) = 0
 )
 SELECT
     block_timestamp,
