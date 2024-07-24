@@ -17,6 +17,8 @@
         {% endset %}
 
         {% set max_modified_timestamp = run_query(query).columns[0].values()[0] %}
+    {% else %}
+        {% set backfill_to_date = '2024-06-09' %}
     {% endif %}
 {% endif %}
 
@@ -44,7 +46,7 @@ WHERE
     modified_timestamp >= '{{ max_modified_timestamp }}'
 {% else %}
 WHERE
-    modified_timestamp::date < '2024-06-09'
+    modified_timestamp::date < '{{ backfill_to_date }}'
 {% endif %}
 )
 /* TODO: DEPRECATE - remove jupiter swaps from this table, we will only cover individual dexes moving forward. Aggregator(s) get their own model(s) */
@@ -74,7 +76,7 @@ AND
     modified_timestamp >= '{{ max_modified_timestamp }}'
 {% else %}
 AND
-    modified_timestamp::date < '2024-06-09'
+    modified_timestamp::date < '{{ backfill_to_date }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -101,7 +103,7 @@ AND
     modified_timestamp >= '{{ max_modified_timestamp }}'
 {% else %}
 AND 
-    modified_timestamp::date < '2024-06-09'
+    modified_timestamp::date < '{{ backfill_to_date }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -126,7 +128,7 @@ WHERE
     modified_timestamp >= '{{ max_modified_timestamp }}'
 {% else %}
 WHERE
-    modified_timestamp::date < '2024-06-09'
+    modified_timestamp::date < '{{ backfill_to_date }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -150,7 +152,7 @@ FROM
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 {% else %}
 WHERE
-    modified_timestamp::date < '2024-06-09'
+    modified_timestamp::date < '{{ backfill_to_date }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -174,7 +176,7 @@ FROM
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 {% else %}
 WHERE
-    modified_timestamp::date < '2024-06-09'
+    modified_timestamp::date < '{{ backfill_to_date }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -198,7 +200,7 @@ FROM
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 {% else %}
 WHERE
-    modified_timestamp::date < '2024-06-09'
+    modified_timestamp::date < '{{ backfill_to_date }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -222,7 +224,7 @@ FROM
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 {% else %}
 WHERE 
-    modified_timestamp::date < '2024-06-09'
+    modified_timestamp::date < '{{ backfill_to_date }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -246,7 +248,7 @@ FROM
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 {% else %}
 WHERE
-    modified_timestamp::date < '2024-06-09'
+    modified_timestamp::date < '{{ backfill_to_date }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -270,7 +272,7 @@ FROM
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 {% else %}
 WHERE
-    modified_timestamp::date < '2024-06-09'
+    modified_timestamp::date < '{{ backfill_to_date }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -294,7 +296,7 @@ FROM
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 {% else %}
 WHERE
-    modified_timestamp::date < '2024-06-09'
+    modified_timestamp::date < '{{ backfill_to_date }}'
 {% endif %}
 UNION ALL
 SELECT
@@ -318,7 +320,7 @@ FROM
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 {% else %}
 WHERE
-    modified_timestamp::date < '2024-06-09'
+    modified_timestamp::date < '{{ backfill_to_date }}'
 {% endif %}
 )
 
