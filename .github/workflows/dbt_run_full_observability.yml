@@ -42,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"OBSERV_FULL_TEST":True}' -m models/silver/_observability
+          dbt run --vars '{"OBSERV_FULL_TEST":True}' -m "solana_models,models/silver/_observability"
