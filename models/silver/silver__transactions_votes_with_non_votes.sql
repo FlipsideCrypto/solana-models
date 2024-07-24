@@ -10,7 +10,7 @@
     {% if is_incremental() %}
         SELECT max(_partition_id)+1, max(_partition_id)+5 FROM {{ this }}
     {% else %}
-        SELECT 51779
+        SELECT 51779 /* starting with the first partition of 2024 then decide if worth to do the data prior */
     {% endif %}
     {% endset %}
 
