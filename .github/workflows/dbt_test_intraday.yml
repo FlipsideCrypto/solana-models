@@ -42,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m models/silver/_observability
+          dbt run -m "solana_models,models/silver/_observability"

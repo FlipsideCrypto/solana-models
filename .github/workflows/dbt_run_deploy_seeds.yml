@@ -44,5 +44,5 @@ jobs:
 
       - name: Run DBT Jobs
         run: |
-          dbt seed -s ./data --full-refresh
+          dbt seed -s "solana_models,./data" --full-refresh
           
