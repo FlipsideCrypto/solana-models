@@ -166,6 +166,16 @@ models:
                 AND succeeded
                 and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
               to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_nft_sales_amm_sell_decoded_tx_id
+              to: ref('silver__nft_sales_amm_sell_decoded')
+              field: tx_id
+              from_condition: >
+                program_id = 'mmm3XBJg5gk8XJxEKBvdgptZz6SgK4tXvn36sodowMc'
+                AND event_type IN ('solMip1FulfillSell','solFulfillSell','solFulfillBuy','solMip1FulfillBuy','solOcpFulfillBuy','solExtFulfillBuy')
+                AND succeeded
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
       - name: SIGNERS
         description: "{{ doc('signers') }}"
       - name: SUCCEEDED

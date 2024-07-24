@@ -337,7 +337,30 @@ SELECT
         '2000-01-01'
     ) AS modified_timestamp
 FROM
-    {{ ref('silver__nft_sales_amm_sell') }}
+    {{ ref('silver__nft_sales_amm_sell_view') }}
+WHERE
+    block_timestamp::date < '2022-10-30'
+UNION ALL
+SELECT
+    marketplace,
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    purchaser,
+    seller,
+    mint,
+    sales_amount,
+    NULL as tree_authority,
+    NULL as merkle_tree,
+    NULL as leaf_index,
+    FALSE as is_compressed,
+    nft_sales_amm_sell_decoded_id as fact_nft_sales_id,
+    inserted_timestamp,
+    modified_timestamp
+FROM
+    {{ ref('silver__nft_sales_amm_sell_decoded') }}
 UNION ALL
 SELECT
     'tensorswap',
