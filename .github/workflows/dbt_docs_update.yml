@@ -48,7 +48,9 @@ jobs:
         run: |
           git checkout -B docs origin/main
       - name: generate dbt docs
-        run: dbt docs generate -t prod
+        run: |
+          dbt ls -t prod
+          dbt docs generate --no-compile -t prod
 
       - name: move files to docs directory
         run: |
