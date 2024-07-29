@@ -18,31 +18,27 @@ WITH solscan_counts AS (
 silver_counts AS (
     SELECT
         block_id,
-        SUM(transaction_count) AS transaction_count
+        count(tx_id) AS transaction_count
     FROM
         (
             SELECT
                 block_id,
-                COUNT(block_id) AS transaction_count
+                tx_id
             FROM
                 {{ ref('silver__transactions') }}
                 t
             WHERE
                 block_timestamp :: DATE BETWEEN CURRENT_DATE - 8
                 AND CURRENT_DATE - INTERVAL '12 HOUR'
-            GROUP BY
-                1
-            UNION ALL
+            UNION
             SELECT
                 block_id,
-                COUNT(block_id) AS transaction_count
+                tx_id
             FROM
                 solana.silver.votes t
             WHERE
                 block_timestamp :: DATE BETWEEN CURRENT_DATE - 8
                 AND CURRENT_DATE - INTERVAL '12 HOUR'
-            GROUP BY
-                1
         )
     GROUP BY
         1
