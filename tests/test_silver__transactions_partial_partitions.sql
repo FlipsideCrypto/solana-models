@@ -31,8 +31,6 @@ WITH max_loaded_part as (
         {{ ref('silver__transactions') }}
     WHERE
         _partition_id between (select max_partition_id-10 from max_loaded_part) and (select max_partition_id from max_loaded_part)
-    GROUP BY
-        1,2,3
     UNION
     SELECT
         block_id,
@@ -46,8 +44,6 @@ WITH max_loaded_part as (
         {% endif %}
     WHERE
         _partition_id between (select max_partition_id-10 from max_loaded_part) and (select max_partition_id from max_loaded_part)
-    GROUP BY
-        1,2,3
 ),
 C AS (
     SELECT
