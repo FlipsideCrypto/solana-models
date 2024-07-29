@@ -89,7 +89,7 @@ all_states AS (
         0 AS update_rank
     FROM
         new_events
-    
+    {% if is_incremental() %}
     UNION ALL
     SELECT
         *,
@@ -102,7 +102,7 @@ all_states AS (
         2 AS update_rank
     FROM 
         events_to_reprocess
-    
+    {% endif %}
 ),
 /* in case we have new events coming in for a block that has already been processed */
 all_states_deduped AS (
