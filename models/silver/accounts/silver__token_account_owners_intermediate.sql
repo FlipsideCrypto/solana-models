@@ -3,7 +3,8 @@
     unique_key = ["account_address","owner","start_block_id"],
     cluster_by = ['_inserted_timestamp::DATE'],
     full_refresh = false,
-    tags = ['scheduled_non_core']
+    tags = ['scheduled_non_core'],
+    enabled = false,
 ) }}
 /*
 for incrementals also select all null end date accounts and combine
