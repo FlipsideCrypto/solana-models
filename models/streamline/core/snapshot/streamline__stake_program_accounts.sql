@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = fsc_utils.if_data_call_function_v2(
-        func = 'streamline.udf_bulk_rest_api_v2',
+        func = 'streamline.udf_bulk_rest_api_v2_desmond',
         target = "{{this.schema}}.{{this.identifier}}",
         params ={ "external_table" :"stake_program_accounts_2",
         "sql_limit" :"10",
@@ -14,9 +14,9 @@
 
 WITH base AS (
     SELECT *
-    from table(result_scan('01b5ff0a-0507-cd35-3d4f-830245fa1833'))
+    from solana_dev.silver.stake_account_states
     where is_delegated
-    limit 10
+    limit 100
 ),
 agg AS (
     select 
@@ -25,7 +25,7 @@ agg AS (
         base
 )
 SELECT
-    replace(current_date::string,'-','/') AS partition_key,
+    current_date::string AS partition_key,
     {{ target.database }}.live.udf_api(
         'POST',
         '{service}/{Authentication}',
