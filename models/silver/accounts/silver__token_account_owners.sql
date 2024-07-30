@@ -10,27 +10,29 @@
 
 
 WITH new_events AS (
-    SELECT
-        account_address,
-        owner,
-        start_block_id,
+    SELECT 
+        account_address, 
+        owner, 
+        block_id AS start_block_id,
+        CASE 
+            WHEN event_type IN ('create','createIdempotent','createAccount','createAccountWithSeed') THEN 
+                0
+            WHEN event_type IN ('initializeAccount','initializeAccount2','initializeAccount3') THEN 
+                1
+            ELSE 2
+        END AS same_block_order_index,
         _inserted_timestamp,
-    FROM
-        {{ ref('silver__token_account_owners_intermediate') }}
+    FROM 
+        {{ ref('silver__token_account_ownership_events') }}
     WHERE
-    {% if is_incremental() %}
-        _inserted_timestamp > (
-            SELECT
-                MAX(_inserted_timestamp)
-            FROM
-                {{ this }}
-        )
-    {% else %}
+        {% if is_incremental() %}
+        _inserted_timestamp > (SELECT max(_inserted_timestamp) FROM {{ this }})
+        {% else %}
         _inserted_timestamp :: DATE = '2022-09-01'
-    {% endif %}
-        AND start_block_id <> coalesce(end_block_id,-1)
+        {% endif %}
+    QUALIFY
+        row_number() OVER (PARTITION BY account_address, block_id ORDER BY same_block_order_index) = 1
 ),
-
 {% if is_incremental() %}
 distinct_states AS (
     SELECT
@@ -48,7 +50,7 @@ events_to_reprocess AS (
         C.start_block_id,
         C._inserted_timestamp,
     FROM
-        {{ ref('silver__token_account_owners_intermediate') }} C
+        {{ this }} C
     JOIN 
         distinct_states d
         USING(account_address)
@@ -58,12 +60,12 @@ events_to_reprocess AS (
         AND _inserted_timestamp <= (SELECT max(_inserted_timestamp) FROM new_events)
 ),
 current_state AS (
-    select 
+    SELECT 
         C.account_address,
         C.owner,
         C.start_block_id,
         C._inserted_timestamp,
-    from 
+    FROM 
         {{ this }} C
     JOIN 
         distinct_states d
@@ -75,33 +77,47 @@ current_state AS (
             C.end_block_id IS NULL 
         )
     QUALIFY
-        row_number() over (partition by account_address order by start_block_id) = 1
-        
+        row_number() OVER (PARTITION BY account_address ORDER BY start_block_id) = 1
 ),
 {% endif %}
 all_states AS (
+    SELECT 
+        account_address,
+        owner,
+        start_block_id,
+        _inserted_timestamp,
+        0 AS update_rank
+    FROM
+        new_events
     {% if is_incremental() %}
+    UNION ALL
     SELECT
-        *
+        *,
+        1 AS update_rank
     FROM
         current_state
     UNION ALL
     SELECT 
-        *
+        *,
+        2 AS update_rank
     FROM 
         events_to_reprocess
-    {% else %}
+    {% endif %}
+),
+/* in case we have new events coming in for a block that has already been processed */
+all_states_deduped AS (
     SELECT 
         *
-    FROM 
-        new_events
-    {% endif %}
+    FROM
+        all_states
+    QUALIFY
+        row_number() OVER (PARTITION BY account_address, start_block_id ORDER BY update_rank) = 1
 ),
 changed_states AS (
     SELECT 
         *
     FROM 
-        all_states 
+        all_states_deduped 
     QUALIFY 
         coalesce(lag(owner) OVER (PARTITION BY account_address ORDER BY start_block_id),'abc') <> owner
 )
