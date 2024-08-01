@@ -4,25 +4,46 @@
         func = 'streamline.udf_bulk_rest_api_v2_desmond',
         target = "{{this.schema}}.{{this.identifier}}",
         params ={ "external_table" :"stake_program_accounts_2",
-        "sql_limit" :"10",
-        "producer_batch_size" :"10",
-        "worker_batch_size" :"10",
+        "sql_limit" :"100000",
+        "producer_batch_size" :"20000",
+        "worker_batch_size" :"1000",
         "sql_source" :"{{this.identifier}}",
         "exploded_key": tojson(["result.value"])},
     )
 ) }}
 
 WITH base AS (
-    SELECT *
-    from solana_dev.silver.stake_account_states
-    where is_delegated
-    limit 100
+    SELECT 
+        block_timestamp,
+        stake_account,
+    FROM 
+        solana_dev.silver.stake_account_states
+    WHERE 
+        is_active
+        OR (NOT is_active AND block_timestamp >= current_date - 2)
+),
+numbered_rows AS (
+    SELECT 
+        stake_account,
+        row_number() OVER (ORDER BY block_timestamp) AS row_num
+    FROM
+        base
+),
+grouped_rows AS (
+    SELECT
+        stake_account,
+        floor((row_num - 1) / 100) AS group_num
+    FROM
+        numbered_rows
 ),
 agg AS (
-    select 
+    SELECT 
+        group_num,
         array_agg(stake_account) as accounts_requested
-    from
-        base
+    FROM
+        grouped_rows
+    GROUP BY
+        group_num
 )
 SELECT
     current_date::string AS partition_key,
@@ -53,3 +74,5 @@ SELECT
     ) AS request
 FROM
     agg
+ORDER BY
+    group_num
