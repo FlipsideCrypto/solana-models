@@ -2,7 +2,7 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = 'complete_provider_prices_id',
-    cluster_by = ['HOUR::DATE'],
+    cluster_by = ['RECORDED_HOUR::DATE'],
     post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(asset_id)'),
     tags = ['scheduled_non_core']
 ) }}
