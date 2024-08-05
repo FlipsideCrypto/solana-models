@@ -13,6 +13,5 @@ FROM
     ON b.block_id = b2.block_id
 WHERE
     b.block_id >= 226000000
-    AND b.block_timestamp BETWEEN CURRENT_DATE - 8
-    AND CURRENT_TIMESTAMP - INTERVAL '12 HOUR'
+    AND b.block_timestamp BETWEEN CURRENT_DATE - 8 AND CURRENT_TIMESTAMP - INTERVAL '12 HOUR'
     AND b2.block_id IS NULL
