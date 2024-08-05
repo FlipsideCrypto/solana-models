@@ -4,6 +4,7 @@
     incremental_strategy = 'delete+insert',
     incremental_predicates = ['block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
     cluster_by = ['block_timestamp::DATE'],
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id,mint,mint_authority,token_account)'),
     tags = ['scheduled_non_core']
 ) }}
 

@@ -2,6 +2,7 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = 'complete_provider_asset_metadata_id',
+    post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(asset_id,token_address,name,symbol)'),
     tags = ['scheduled_non_core']
 ) }}
 

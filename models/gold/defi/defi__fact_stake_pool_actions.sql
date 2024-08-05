@@ -1,6 +1,11 @@
 {{ config(
-    materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }} },
+    materialized = 'incremental',
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }}},
+    unique_key = ['fact_stake_pool_actions_id'],
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
+    cluster_by = ['block_timestamp::DATE','action','stake_pool'],
+    merge_exclude_columns = ["inserted_timestamp"],
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, address)'),
     tags = ['scheduled_non_core']
 ) }}
 
@@ -34,6 +39,14 @@ FROM
     {{ ref(
         'silver__stake_pool_actions_lido'
     ) }}
+{% if is_incremental() %}
+WHERE modified_timestamp >= (
+    SELECT
+        MAX(modified_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
 UNION ALL
 SELECT
     'socean' AS stake_pool_name,
@@ -54,6 +67,14 @@ FROM
     {{ ref(
         'silver__stake_pool_actions_socean_view'
     ) }}
+{% if is_incremental() %}
+WHERE modified_timestamp >= (
+    SELECT
+        MAX(modified_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
 UNION ALL
 SELECT
     'eversol' AS stake_pool_name,
@@ -76,6 +97,14 @@ FROM
     {{ ref(
         'silver__stake_pool_actions_eversol_view'
     ) }}
+{% if is_incremental() %}
+WHERE modified_timestamp >= (
+    SELECT
+        MAX(modified_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
 UNION ALL
 SELECT
     CASE
@@ -113,6 +142,14 @@ FROM
     {{ ref(
         'silver__stake_pool_actions_generic'
     ) }}
+{% if is_incremental() %}
+WHERE modified_timestamp >= (
+    SELECT
+        MAX(modified_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
 UNION ALL
 SELECT
     'marinade' AS stake_pool_name,
@@ -144,6 +181,14 @@ FROM
     {{ ref(
         'silver__stake_pool_actions_marinade'
     ) }}
+{% if is_incremental() %}
+WHERE modified_timestamp >= (
+    SELECT
+        MAX(modified_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
 UNION ALL
 SELECT
     'jito' AS stake_pool_name,
@@ -164,3 +209,11 @@ FROM
     {{ ref(
         'silver__stake_pool_actions_jito'
     ) }}
+{% if is_incremental() %}
+WHERE modified_timestamp >= (
+    SELECT
+        MAX(modified_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}

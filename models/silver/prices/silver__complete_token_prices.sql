@@ -2,6 +2,8 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = 'complete_token_prices_id',
+    cluster_by = ['HOUR::DATE'],
+    post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(token_address,symbol)'),
     tags = ['scheduled_non_core']
 ) }}
 

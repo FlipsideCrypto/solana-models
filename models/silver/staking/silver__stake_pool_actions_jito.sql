@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "stake_pool_actions_jito_id",
     incremental_strategy = 'merge',
-    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::date'],
+    cluster_by = ['block_timestamp::DATE','modified_timestamp::date'],
     merge_exclude_columns = ["inserted_timestamp"],
     tags = ['scheduled_non_core']
 ) }}

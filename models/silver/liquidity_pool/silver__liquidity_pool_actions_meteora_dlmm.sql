@@ -4,7 +4,7 @@
     unique_key = "liquidity_pool_actions_meteora_dlmm_id",
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     merge_exclude_columns = ["inserted_timestamp"],
-    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
+    cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
     tags = ['scheduled_non_core'],
 ) }}
 
