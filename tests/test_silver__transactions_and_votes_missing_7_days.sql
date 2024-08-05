@@ -12,8 +12,7 @@ WITH solscan_counts AS (
         JOIN solana.silver.blocks b
         ON b.block_id = s.block_id
     WHERE
-        b.block_timestamp :: DATE BETWEEN CURRENT_DATE - 8
-        AND CURRENT_DATE - INTERVAL '12 HOUR'
+        b.block_timestamp :: DATE BETWEEN CURRENT_DATE - 8 AND CURRENT_DATE - INTERVAL '12 HOUR'
 ),
 silver_counts AS (
     SELECT
@@ -28,8 +27,7 @@ silver_counts AS (
                 {{ ref('silver__transactions') }}
                 t
             WHERE
-                block_timestamp :: DATE BETWEEN CURRENT_DATE - 8
-                AND CURRENT_DATE - INTERVAL '12 HOUR'
+                block_timestamp :: DATE BETWEEN CURRENT_DATE - 8 AND CURRENT_DATE - INTERVAL '12 HOUR'
             UNION
             SELECT
                 block_id,
@@ -37,8 +35,7 @@ silver_counts AS (
             FROM
                 solana.silver.votes t
             WHERE
-                block_timestamp :: DATE BETWEEN CURRENT_DATE - 8
-                AND CURRENT_DATE - INTERVAL '12 HOUR'
+                block_timestamp :: DATE BETWEEN CURRENT_DATE - 8 AND CURRENT_DATE - INTERVAL '12 HOUR'
         )
     GROUP BY
         1
