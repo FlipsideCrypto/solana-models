@@ -1,0 +1,27 @@
+version: 2
+models:
+  - name: streamline__stake_account_states
+    description: >
+      The purpose of this model is to feed into a streamline view to request current account data for all "current" accounts owned by the stake program
+      This model is an APPROXIMATION of current stake account states. All stake program owned accounts are included + maybe some that are not owned by the program anymore.
+      There is also a likelihood that a small percentage of accounts listed as `IS_ACTIVE=TRUE` is not actually active. 
+      These caveats should be accounted for downstream after retrieving the data from the node.
+    columns:
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+      - name: ACCOUNT_ADDRESS
+        description: Stake account address we want to retrieve account info for
+        tests:
+          - not_null
+      - name: IS_ACTIVE
+        description: Whether the stake account is currently active
+        tests:
+          - not_null
+      - name: IS_DELEGATED
+        description: Whether the stake account is currently delegated
+        tests:
+          - not_null
