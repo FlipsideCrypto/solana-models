@@ -66,6 +66,16 @@ models:
     relation: true
     columns: true
   +on_schema_change: "append_new_columns"
+  solana_models:
+    gold:
+      +post-hook: >
+        {% if 'exclude_change_tracking' not in config.get('tags') %}
+          {% if config.get('materialized') == 'view' %}
+            ALTER VIEW {{ this }} SET CHANGE_TRACKING = TRUE;
+          {% else %}
+            ALTER TABLE {{ this }} SET CHANGE_TRACKING = TRUE;
+          {% endif %}
+        {% endif %}  
 
 vars:
   "dbt_date:time_zone": GMT

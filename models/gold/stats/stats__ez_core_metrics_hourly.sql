@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STATS, METRICS, CORE, HOURLY', } } },
-    tags = ['scheduled_non_core']
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STATS, METRICS, CORE, HOURLY',
+    }} },
+    tags = ['scheduled_non_core','exclude_change_tracking']
 ) }}
 
 SELECT
@@ -15,10 +16,12 @@ SELECT
     unique_signers_count,
     total_fees AS total_fees_native,
     ROUND(
-        (total_fees / pow(
-            10,
-            9
-        )) * p.price,
+        (
+            total_fees / pow(
+                10,
+                9
+            )
+        ) * p.price,
         2
     ) AS total_fees_usd,
     core_metrics_hourly_id AS ez_core_metrics_hourly_id,

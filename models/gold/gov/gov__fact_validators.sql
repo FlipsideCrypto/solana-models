@@ -1,7 +1,7 @@
 {{ config(
   materialized = 'view',
-  meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'VALIDATOR' }}},
-  tags = ['scheduled_non_core']
+  meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'VALIDATOR' }} },
+  tags = ['scheduled_non_core','exclude_change_tracking']
 ) }}
 
 SELECT
@@ -27,19 +27,19 @@ SELECT
   updated_at,
   www_url,
   COALESCE (
-        snapshot_validators_app_data_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['epoch', 'node_pubkey']
-        ) }}
-    ) AS fact_validators_id,
+    snapshot_validators_app_data_id,
+    {{ dbt_utils.generate_surrogate_key(
+      ['epoch', 'node_pubkey']
+    ) }}
+  ) AS fact_validators_id,
   COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
+    inserted_timestamp,
+    '2000-01-01'
+  ) AS inserted_timestamp,
   COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
+    modified_timestamp,
+    '2000-01-01'
+  ) AS modified_timestamp
 FROM
   {{ ref('silver__snapshot_validators_app_data') }}
 UNION ALL
@@ -66,9 +66,9 @@ SELECT
   updated_at,
   www_url,
   {{ dbt_utils.generate_surrogate_key(
-        ['epoch', 'node_pubkey']
+    ['epoch', 'node_pubkey']
   ) }} AS fact_validators_id,
-  '2000-01-01' as inserted_timestamp,
+  '2000-01-01' AS inserted_timestamp,
   '2000-01-01' AS modified_timestamp
 FROM
   {{ ref('silver__historical_validator_app_data') }}
