@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'GOVERNANCE' }}},
-    tags = ['scheduled_non_core']
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'GOVERNANCE' }} },
+    tags = ['scheduled_non_core','exclude_change_tracking']
 ) }}
 
 SELECT
@@ -46,7 +46,7 @@ SELECT
     {{ dbt_utils.generate_surrogate_key(
         ['tx_id', 'voter', 'voter_nft', 'gauge']
     ) }} AS fact_gauges_votes_id,
-    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS inserted_timestamp,
     '2000-01-01' AS modified_timestamp
 FROM
     {{ ref('silver__gauges_votes_marinade_view') }}
