@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'GOVERNANCE' }}},
+    post_hook = 'ALTER VIEW {{this}} SET CHANGE_TRACKING = TRUE;',
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'GOVERNANCE' }} },
     tags = ['scheduled_non_core']
 ) }}
 
@@ -17,7 +18,7 @@ SELECT
     {{ dbt_utils.generate_surrogate_key(
         ['tx_id']
     ) }} AS fact_gauges_creates_id,
-    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS inserted_timestamp,
     '2000-01-01' AS modified_timestamp
 FROM
     {{ ref('silver__gauges_creates_marinade_view') }}

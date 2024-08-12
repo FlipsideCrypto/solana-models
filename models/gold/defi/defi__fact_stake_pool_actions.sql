@@ -1,11 +1,11 @@
 {{ config(
     materialized = 'incremental',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }}},
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }} },
     unique_key = ['fact_stake_pool_actions_id'],
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     cluster_by = ['block_timestamp::DATE','action','stake_pool'],
     merge_exclude_columns = ["inserted_timestamp"],
-    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, address)'),
+    post_hook = [enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, address)'), 'ALTER TABLE {{this}} SET CHANGE_TRACKING = TRUE;'],
     tags = ['scheduled_non_core']
 ) }}
 
@@ -39,13 +39,15 @@ FROM
     {{ ref(
         'silver__stake_pool_actions_lido'
     ) }}
+
 {% if is_incremental() %}
-WHERE modified_timestamp >= (
-    SELECT
-        MAX(modified_timestamp)
-    FROM
-        {{ this }}
-)
+WHERE
+    modified_timestamp >= (
+        SELECT
+            MAX(modified_timestamp)
+        FROM
+            {{ this }}
+    )
 {% endif %}
 UNION ALL
 SELECT
@@ -67,13 +69,15 @@ FROM
     {{ ref(
         'silver__stake_pool_actions_socean_view'
     ) }}
+
 {% if is_incremental() %}
-WHERE modified_timestamp >= (
-    SELECT
-        MAX(modified_timestamp)
-    FROM
-        {{ this }}
-)
+WHERE
+    modified_timestamp >= (
+        SELECT
+            MAX(modified_timestamp)
+        FROM
+            {{ this }}
+    )
 {% endif %}
 UNION ALL
 SELECT
@@ -97,13 +101,15 @@ FROM
     {{ ref(
         'silver__stake_pool_actions_eversol_view'
     ) }}
+
 {% if is_incremental() %}
-WHERE modified_timestamp >= (
-    SELECT
-        MAX(modified_timestamp)
-    FROM
-        {{ this }}
-)
+WHERE
+    modified_timestamp >= (
+        SELECT
+            MAX(modified_timestamp)
+        FROM
+            {{ this }}
+    )
 {% endif %}
 UNION ALL
 SELECT
@@ -142,13 +148,15 @@ FROM
     {{ ref(
         'silver__stake_pool_actions_generic'
     ) }}
+
 {% if is_incremental() %}
-WHERE modified_timestamp >= (
-    SELECT
-        MAX(modified_timestamp)
-    FROM
-        {{ this }}
-)
+WHERE
+    modified_timestamp >= (
+        SELECT
+            MAX(modified_timestamp)
+        FROM
+            {{ this }}
+    )
 {% endif %}
 UNION ALL
 SELECT
@@ -181,13 +189,15 @@ FROM
     {{ ref(
         'silver__stake_pool_actions_marinade'
     ) }}
+
 {% if is_incremental() %}
-WHERE modified_timestamp >= (
-    SELECT
-        MAX(modified_timestamp)
-    FROM
-        {{ this }}
-)
+WHERE
+    modified_timestamp >= (
+        SELECT
+            MAX(modified_timestamp)
+        FROM
+            {{ this }}
+    )
 {% endif %}
 UNION ALL
 SELECT
@@ -209,11 +219,13 @@ FROM
     {{ ref(
         'silver__stake_pool_actions_jito'
     ) }}
+
 {% if is_incremental() %}
-WHERE modified_timestamp >= (
-    SELECT
-        MAX(modified_timestamp)
-    FROM
-        {{ this }}
-)
+WHERE
+    modified_timestamp >= (
+        SELECT
+            MAX(modified_timestamp)
+        FROM
+            {{ this }}
+    )
 {% endif %}

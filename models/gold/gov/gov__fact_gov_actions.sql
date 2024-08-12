@@ -1,18 +1,19 @@
 {{ config(
     materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'GOVERNANCE' }}},
+    post_hook = 'ALTER VIEW {{this}} SET CHANGE_TRACKING = TRUE;',
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'GOVERNANCE' }} },
     tags = ['scheduled_non_core']
 ) }}
 
-SELECT 
-    'saber' as program_name,
+SELECT
+    'saber' AS program_name,
     block_timestamp,
     block_id,
     tx_id,
     succeeded,
     signer,
     locker_account,
-    null as locker_nft,
+    NULL AS locker_nft,
     mint,
     action,
     amount,
@@ -33,8 +34,8 @@ SELECT
 FROM
     {{ ref('silver__gov_actions_saber') }}
 UNION ALL
-SELECT 
-    'marinade' as program_name,
+SELECT
+    'marinade' AS program_name,
     block_timestamp,
     block_id,
     tx_id,

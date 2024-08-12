@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'Token' }}},
+    post_hook = 'ALTER VIEW {{this}} SET CHANGE_TRACKING = TRUE;',
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'Token' }} },
     tags = ['scheduled_non_core']
 ) }}
 
@@ -9,7 +10,7 @@ SELECT
     block_timestamp,
     tx_id,
     succeeded,
-    index,
+    INDEX,
     inner_index,
     event_type,
     mint,
@@ -33,6 +34,5 @@ SELECT
         modified_timestamp,
         '2000-01-01'
     ) AS modified_timestamp
-
 FROM
     {{ ref('silver__token_burn_actions') }}

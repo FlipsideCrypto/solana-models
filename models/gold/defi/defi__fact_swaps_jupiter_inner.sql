@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'SWAPS' }}},
+    post_hook = 'ALTER VIEW {{this}} SET CHANGE_TRACKING = TRUE;',
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'SWAPS' }} },
     tags = ['scheduled_non_core']
 ) }}
 
@@ -8,7 +9,7 @@ SELECT
     block_timestamp,
     block_id,
     tx_id,
-    index,
+    INDEX,
     inner_index,
     swap_index,
     succeeded,

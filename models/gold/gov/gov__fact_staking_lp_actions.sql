@@ -1,15 +1,16 @@
 {{ config(
-  materialized = 'view',
-  meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }}},
-  tags = ['scheduled_non_core']
+    materialized = 'view',
+    post_hook = 'ALTER VIEW {{this}} SET CHANGE_TRACKING = TRUE;',
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }} },
+    tags = ['scheduled_non_core']
 ) }}
 
-SELECT 
+SELECT
     block_timestamp,
     block_id,
     tx_id,
     succeeded,
-    index,
+    INDEX,
     event_type,
     program_id,
     signers,
@@ -21,7 +22,7 @@ SELECT
     pre_token_balances,
     post_token_balances,
     COALESCE (
-    staking_lp_actions_id,
+        staking_lp_actions_id,
         {{ dbt_utils.generate_surrogate_key(
             ['block_id', 'tx_id', 'index']
         ) }}

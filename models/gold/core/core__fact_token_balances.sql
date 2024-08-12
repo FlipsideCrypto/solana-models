@@ -4,7 +4,7 @@
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
     merge_exclude_columns = ["inserted_timestamp"],
-    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, account_address, fact_token_balances_id)'),
+    post_hook = [enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, account_address, fact_token_balances_id)'), 'ALTER TABLE {{this}} SET CHANGE_TRACKING = TRUE;'],
     tags = ['scheduled_non_core']
 ) }}
 
@@ -33,10 +33,11 @@ FROM
     )
 
 {% if is_incremental() %}
-WHERE A.modified_timestamp >= (
-    SELECT
-        MAX(modified_timestamp)
-    FROM
-        {{ this }}
-)
+WHERE
+    A.modified_timestamp >= (
+        SELECT
+            MAX(modified_timestamp)
+        FROM
+            {{ this }}
+    )
 {% endif %}

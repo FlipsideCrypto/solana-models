@@ -1,5 +1,6 @@
 {{ config(
     materialized = 'view',
+    post_hook = 'ALTER VIEW {{this}} SET CHANGE_TRACKING = TRUE;',
     persist_docs ={ "relation": true,
     "columns": true }
 ) }}
@@ -8,7 +9,7 @@ SELECT
     token_address,
     asset_id,
     symbol,
-    name,
+    NAME,
     platform AS blockchain,
     platform_id AS blockchain_id,
     provider,

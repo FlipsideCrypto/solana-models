@@ -1,5 +1,6 @@
 {{ config(
     materialized = 'view',
+    post_hook = 'ALTER VIEW {{this}} SET CHANGE_TRACKING = TRUE;',
     meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'BRIDGE' }} },
     tags = ["scheduled_non_core"],
 ) }}
@@ -32,7 +33,7 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__bridge_wormhole_transfers') }}
-union all
+UNION ALL
 SELECT
     block_timestamp,
     block_id,
@@ -61,7 +62,7 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__bridge_debridge_transfers') }}
-union all
+UNION ALL
 SELECT
     block_timestamp,
     block_id,

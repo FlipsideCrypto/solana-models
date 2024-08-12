@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'GOVERNANCE' }}},
+    post_hook = 'ALTER VIEW {{this}} SET CHANGE_TRACKING = TRUE;',
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'GOVERNANCE' }} },
     tags = ['scheduled_non_core']
 ) }}
 
@@ -18,7 +19,7 @@ SELECT
     vote_type,
     vote_options,
     COALESCE (
-    proposal_creation_realms_id,
+        proposal_creation_realms_id,
         {{ dbt_utils.generate_surrogate_key(
             ['tx_id']
         ) }}

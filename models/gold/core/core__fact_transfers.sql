@@ -1,13 +1,14 @@
 {{ config(
     materialized = 'view',
+    post_hook = 'ALTER VIEW {{this}} SET CHANGE_TRACKING = TRUE;',
     tags = ['scheduled_core']
 ) }}
 
-SELECT 
+SELECT
     block_timestamp,
     block_id,
     tx_id,
-    index,
+    INDEX,
     tx_from,
     tx_to,
     amount,
@@ -28,5 +29,5 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__transfers') }}
-WHERE 
+WHERE
     succeeded

@@ -4,7 +4,7 @@
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
     merge_exclude_columns = ["inserted_timestamp"],
-    post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(tx_id, account_address)'),
+    post_hook = [enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(tx_id, account_address)'), 'ALTER TABLE {{this}} SET CHANGE_TRACKING = TRUE;'],
     tags = ['scheduled_non_core']
 ) }}
 

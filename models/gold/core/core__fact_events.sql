@@ -1,15 +1,16 @@
 {{ config(
     materialized = 'view',
+    post_hook = 'ALTER VIEW {{this}} SET CHANGE_TRACKING = TRUE;',
     tags = ['scheduled_core']
 ) }}
 
-SELECT 
+SELECT
     block_timestamp,
     block_id,
     tx_id,
     signers,
     succeeded,
-    index,
+    INDEX,
     event_type,
     program_id,
     instruction,

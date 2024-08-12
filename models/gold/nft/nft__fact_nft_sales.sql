@@ -1,5 +1,6 @@
 {{ config(
     materialized = 'view',
+    post_hook = 'ALTER VIEW {{this}} SET CHANGE_TRACKING = TRUE;',
     meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }} },
     tags = ['scheduled_non_core']
 ) }}
@@ -15,16 +16,15 @@ SELECT
     seller,
     mint,
     sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
+    NULL AS tree_authority,
+    NULL AS merkle_tree,
+    NULL AS leaf_index,
+    FALSE AS is_compressed,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_id', 'mint']
     ) }} AS fact_nft_sales_id,
-    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS inserted_timestamp,
     '2000-01-01' AS modified_timestamp
-    
 FROM
     {{ ref(
         'silver__nft_sales_magic_eden_v1_view'
@@ -41,10 +41,10 @@ SELECT
     seller,
     mint,
     sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
+    NULL AS tree_authority,
+    NULL AS merkle_tree,
+    NULL AS leaf_index,
+    FALSE AS is_compressed,
     COALESCE (
         nft_sales_magic_eden_v2_id,
         {{ dbt_utils.generate_surrogate_key(
@@ -73,10 +73,10 @@ SELECT
     seller,
     mint,
     sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
+    NULL AS tree_authority,
+    NULL AS merkle_tree,
+    NULL AS leaf_index,
+    FALSE AS is_compressed,
     COALESCE (
         nft_sales_solanart_id,
         {{ dbt_utils.generate_surrogate_key(
@@ -105,14 +105,14 @@ SELECT
     seller,
     mint,
     sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
+    NULL AS tree_authority,
+    NULL AS merkle_tree,
+    NULL AS leaf_index,
+    FALSE AS is_compressed,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_id']
     ) }} AS fact_nft_sales_id,
-    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS inserted_timestamp,
     '2000-01-01' AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_smb_view') }}
@@ -128,14 +128,14 @@ SELECT
     seller,
     mint,
     sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
+    NULL AS tree_authority,
+    NULL AS merkle_tree,
+    NULL AS leaf_index,
+    FALSE AS is_compressed,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_id', 'mint']
     ) }} AS fact_nft_sales_id,
-    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS inserted_timestamp,
     '2000-01-01' AS modified_timestamp
 FROM
     {{ ref(
@@ -153,14 +153,14 @@ SELECT
     seller,
     mint,
     sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
+    NULL AS tree_authority,
+    NULL AS merkle_tree,
+    NULL AS leaf_index,
+    FALSE AS is_compressed,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_id', 'mint']
     ) }} AS fact_nft_sales_id,
-    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS inserted_timestamp,
     '2000-01-01' AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_opensea_view') }}
@@ -176,14 +176,14 @@ SELECT
     seller,
     mint,
     sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
+    NULL AS tree_authority,
+    NULL AS merkle_tree,
+    NULL AS leaf_index,
+    FALSE AS is_compressed,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_id']
     ) }} AS fact_nft_sales_id,
-    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS inserted_timestamp,
     '2000-01-01' AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_yawww_view') }}
@@ -199,10 +199,10 @@ SELECT
     seller,
     mint,
     sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
+    NULL AS tree_authority,
+    NULL AS merkle_tree,
+    NULL AS leaf_index,
+    FALSE AS is_compressed,
     COALESCE (
         nft_sales_hadeswap_id,
         {{ dbt_utils.generate_surrogate_key(
@@ -231,10 +231,10 @@ SELECT
     seller,
     mint,
     sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
+    NULL AS tree_authority,
+    NULL AS merkle_tree,
+    NULL AS leaf_index,
+    FALSE AS is_compressed,
     COALESCE (
         nft_sales_hyperspace_id,
         {{ dbt_utils.generate_surrogate_key(
@@ -263,14 +263,14 @@ SELECT
     seller,
     mint,
     sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
+    NULL AS tree_authority,
+    NULL AS merkle_tree,
+    NULL AS leaf_index,
+    FALSE AS is_compressed,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_id','mint']
     ) }} AS fact_nft_sales_id,
-    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS inserted_timestamp,
     '2000-01-01' AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_coral_cube_view') }}
@@ -286,10 +286,10 @@ SELECT
     seller,
     mint,
     sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
+    NULL AS tree_authority,
+    NULL AS merkle_tree,
+    NULL AS leaf_index,
+    FALSE AS is_compressed,
     COALESCE (
         nft_sales_exchange_art_id,
         {{ dbt_utils.generate_surrogate_key(
@@ -318,10 +318,10 @@ SELECT
     seller,
     mint,
     sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
+    NULL AS tree_authority,
+    NULL AS merkle_tree,
+    NULL AS leaf_index,
+    FALSE AS is_compressed,
     COALESCE (
         nft_sales_amm_sell_id,
         {{ dbt_utils.generate_surrogate_key(
@@ -339,7 +339,7 @@ SELECT
 FROM
     {{ ref('silver__nft_sales_amm_sell_view') }}
 WHERE
-    block_timestamp::date < '2022-10-30'
+    block_timestamp :: DATE < '2022-10-30'
 UNION ALL
 SELECT
     marketplace,
@@ -352,11 +352,11 @@ SELECT
     seller,
     mint,
     sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
-    nft_sales_amm_sell_decoded_id as fact_nft_sales_id,
+    NULL AS tree_authority,
+    NULL AS merkle_tree,
+    NULL AS leaf_index,
+    FALSE AS is_compressed,
+    nft_sales_amm_sell_decoded_id AS fact_nft_sales_id,
     inserted_timestamp,
     modified_timestamp
 FROM
@@ -373,10 +373,10 @@ SELECT
     seller,
     mint,
     sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
+    NULL AS tree_authority,
+    NULL AS merkle_tree,
+    NULL AS leaf_index,
+    FALSE AS is_compressed,
     COALESCE (
         nft_sales_tensorswap_id,
         {{ dbt_utils.generate_surrogate_key(
@@ -405,13 +405,13 @@ SELECT
     seller,
     mint,
     sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
+    NULL AS tree_authority,
+    NULL AS merkle_tree,
+    NULL AS leaf_index,
+    FALSE AS is_compressed,
     nft_sales_solsniper_id AS fact_nft_sales_id,
     inserted_timestamp,
-     modified_timestamp
+    modified_timestamp
 FROM
     {{ ref('silver__nft_sales_solsniper') }}
 UNION ALL
@@ -426,10 +426,10 @@ SELECT
     seller,
     mint,
     sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
+    NULL AS tree_authority,
+    NULL AS merkle_tree,
+    NULL AS leaf_index,
+    FALSE AS is_compressed,
     nft_sales_solsniper_id AS fact_nft_sales_id,
     inserted_timestamp,
     modified_timestamp,
@@ -450,7 +450,7 @@ SELECT
     tree_authority,
     merkle_tree,
     leaf_index,
-    TRUE as is_compressed,
+    TRUE AS is_compressed,
     nft_sales_tensorswap_cnft_id AS fact_nft_sales_id,
     inserted_timestamp,
     modified_timestamp,
@@ -471,7 +471,7 @@ SELECT
     tree_authority,
     merkle_tree,
     leaf_index,
-    TRUE as is_compressed,
+    TRUE AS is_compressed,
     nft_sales_magic_eden_cnft_id AS fact_nft_sales_id,
     inserted_timestamp,
     modified_timestamp,
@@ -492,7 +492,7 @@ SELECT
     tree_authority,
     merkle_tree,
     leaf_index,
-    TRUE as is_compressed,
+    TRUE AS is_compressed,
     nft_sales_solsniper_cnft_id AS fact_nft_sales_id,
     inserted_timestamp,
     modified_timestamp,

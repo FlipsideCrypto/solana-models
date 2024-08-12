@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'GOVERNANCE' }}},
+    post_hook = 'ALTER VIEW {{this}} SET CHANGE_TRACKING = TRUE;',
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'GOVERNANCE' }} },
     tags = ['scheduled_non_core']
 ) }}
 
@@ -22,7 +23,7 @@ SELECT
     {{ dbt_utils.generate_surrogate_key(
         ['tx_id', 'voter_nft', 'proposal']
     ) }} AS fact_proposal_votes_id,
-    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS inserted_timestamp,
     '2000-01-01' AS modified_timestamp
 FROM
     {{ ref('silver__proposal_votes_marinade_view') }}
@@ -42,8 +43,8 @@ SELECT
     vote_choice,
     vote_rank,
     vote_weight,
-  COALESCE (
-    proposal_votes_realms_id,
+    COALESCE (
+        proposal_votes_realms_id,
         {{ dbt_utils.generate_surrogate_key(
             ['tx_id','index']
         ) }}

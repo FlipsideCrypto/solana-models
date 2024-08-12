@@ -1,10 +1,11 @@
 {{ config(
-  materialized = 'view',
-  meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'GOVERNANCE' }}},
-  tags = ['scheduled_non_core']
+    materialized = 'view',
+    post_hook = 'ALTER VIEW {{this}} SET CHANGE_TRACKING = TRUE;',
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'GOVERNANCE' }} },
+    tags = ['scheduled_non_core']
 ) }}
 
-SELECT 
+SELECT
     block_timestamp,
     block_id,
     num_votes,

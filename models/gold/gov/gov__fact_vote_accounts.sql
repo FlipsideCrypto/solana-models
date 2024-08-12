@@ -1,6 +1,7 @@
 {{ config(
   materialized = 'view',
-  meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'VALIDATOR' }}},
+  post_hook = 'ALTER VIEW {{this}} SET CHANGE_TRACKING = TRUE;',
+  meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'VALIDATOR' }} },
   tags = ['scheduled_non_core']
 ) }}
 
@@ -22,19 +23,19 @@ SELECT
   owner,
   rent_epoch,
   COALESCE (
-        snapshot_vote_accounts_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['epoch', 'vote_pubkey']
-        ) }}
-    ) AS fact_vote_accounts_id,
+    snapshot_vote_accounts_id,
+    {{ dbt_utils.generate_surrogate_key(
+      ['epoch', 'vote_pubkey']
+    ) }}
+  ) AS fact_vote_accounts_id,
   COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
+    inserted_timestamp,
+    '2000-01-01'
+  ) AS inserted_timestamp,
   COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
+    modified_timestamp,
+    '2000-01-01'
+  ) AS modified_timestamp
 FROM
   {{ ref('silver__snapshot_vote_accounts') }}
 UNION ALL
@@ -56,9 +57,9 @@ SELECT
   owner,
   rent_epoch,
   {{ dbt_utils.generate_surrogate_key(
-        ['epoch', 'vote_pubkey']
+    ['epoch', 'vote_pubkey']
   ) }} AS fact_vote_accounts_id,
-  '2000-01-01' as inserted_timestamp,
+  '2000-01-01' AS inserted_timestamp,
   '2000-01-01' AS modified_timestamp
 FROM
   {{ ref('silver__historical_vote_account') }}
