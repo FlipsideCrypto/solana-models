@@ -14,7 +14,8 @@ models:
       - name: authorized_voter
         description: "Account responsible for signing vote transactions"
         tests:
-          - not_null
+          - not_null:
+              where: authorized_withdrawer <> '11111111111111111111111111111111'
       - name: last_epoch_active
         description: "last epoch when vote account was active"
       - name: authorized_withdrawer
