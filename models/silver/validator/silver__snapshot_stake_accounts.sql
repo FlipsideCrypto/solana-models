@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "CONCAT_WS('-', epoch_recorded, stake_pubkey)",
     incremental_strategy = 'delete+insert',
-    cluster_by = ['_inserted_timestamp::DATE'],
+    cluster_by = ['modified_timestamp::DATE'],
     tags = ['validator']
 ) }}
 

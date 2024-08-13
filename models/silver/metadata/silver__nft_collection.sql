@@ -3,6 +3,7 @@
     unique_key = "collection_id",
     incremental_strategy = 'merge',
     merge_exclude_columns = ["inserted_timestamp"],
+    post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(collection_id,nft_collection_name)'),
     tags = ['nft_api']
 ) }}
 

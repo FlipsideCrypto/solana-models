@@ -1,9 +1,27 @@
 {{ config(
-    materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }} },
+    materialized = 'incremental',
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }}},
+    unique_key = ['fact_nft_sales_id'],
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
+    cluster_by = ['block_timestamp::DATE','marketplace','is_compressed','program_id'],
+    merge_exclude_columns = ["inserted_timestamp"],
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, purchaser, seller, mint)'),
     tags = ['scheduled_non_core']
 ) }}
 
+{% if execute %}
+    {% if is_incremental() %}
+        {% set query %}
+            SELECT MAX(modified_timestamp) AS max_modified_timestamp
+            FROM {{ this }}
+        {% endset %}
+
+        {% set max_modified_timestamp = run_query(query).columns[0].values()[0] %}
+    {% endif %}
+{% endif %}
+
+-- Select from the deprecated _view models only during the initial FR
+{% if not is_incremental() %}
 SELECT
     'magic eden v1' AS marketplace,
     block_timestamp,
@@ -24,75 +42,10 @@ SELECT
     ) }} AS fact_nft_sales_id,
     '2000-01-01' as inserted_timestamp,
     '2000-01-01' AS modified_timestamp
-    
 FROM
     {{ ref(
         'silver__nft_sales_magic_eden_v1_view'
     ) }}
-UNION ALL
-SELECT
-    'magic eden v2',
-    block_timestamp,
-    block_id,
-    tx_id,
-    succeeded,
-    program_id,
-    purchaser,
-    seller,
-    mint,
-    sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
-    COALESCE (
-        nft_sales_magic_eden_v2_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_id']
-        ) }}
-    ) AS fact_nft_sales_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
-FROM
-    {{ ref('silver__nft_sales_magic_eden_v2') }}
-UNION ALL
-SELECT
-    'solanart',
-    block_timestamp,
-    block_id,
-    tx_id,
-    succeeded,
-    program_id,
-    purchaser,
-    seller,
-    mint,
-    sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
-    COALESCE (
-        nft_sales_solanart_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_id']
-        ) }}
-    ) AS fact_nft_sales_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
-FROM
-    {{ ref('silver__nft_sales_solanart') }}
 UNION ALL
 SELECT
     'solana monkey business marketplace',
@@ -189,70 +142,6 @@ FROM
     {{ ref('silver__nft_sales_yawww_view') }}
 UNION ALL
 SELECT
-    'hadeswap',
-    block_timestamp,
-    block_id,
-    tx_id,
-    succeeded,
-    program_id,
-    purchaser,
-    seller,
-    mint,
-    sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
-    COALESCE (
-        nft_sales_hadeswap_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_id','mint']
-        ) }}
-    ) AS fact_nft_sales_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
-FROM
-    {{ ref('silver__nft_sales_hadeswap') }}
-UNION ALL
-SELECT
-    'hyperspace',
-    block_timestamp,
-    block_id,
-    tx_id,
-    succeeded,
-    program_id,
-    purchaser,
-    seller,
-    mint,
-    sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
-    COALESCE (
-        nft_sales_hyperspace_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_id','mint']
-        ) }}
-    ) AS fact_nft_sales_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
-FROM
-    {{ ref('silver__nft_sales_hyperspace') }}
-UNION ALL
-SELECT
     'coral cube',
     block_timestamp,
     block_id,
@@ -274,38 +163,6 @@ SELECT
     '2000-01-01' AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_coral_cube_view') }}
-UNION ALL
-SELECT
-    'exchange art',
-    block_timestamp,
-    block_id,
-    tx_id,
-    succeeded,
-    program_id,
-    purchaser,
-    seller,
-    mint,
-    sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
-    COALESCE (
-        nft_sales_exchange_art_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_id','mint']
-        ) }}
-    ) AS fact_nft_sales_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
-FROM
-    {{ ref('silver__nft_sales_exchange_art') }}
 UNION ALL
 SELECT
     marketplace,
@@ -342,6 +199,209 @@ WHERE
     block_timestamp::date < '2022-10-30'
 UNION ALL
 SELECT
+    'solsniper',
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    purchaser,
+    seller,
+    mint,
+    sales_amount,
+    NULL as tree_authority,
+    NULL as merkle_tree,
+    NULL as leaf_index,
+    FALSE as is_compressed,
+    nft_sales_solsniper_id AS fact_nft_sales_id,
+    inserted_timestamp,
+    modified_timestamp,
+FROM
+    {{ ref('silver__nft_sales_solsniper_v1_events_view') }}
+UNION ALL
+{% endif %}
+-- Only select from active models during incremental
+SELECT
+    'magic eden v2',
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    purchaser,
+    seller,
+    mint,
+    sales_amount,
+    NULL as tree_authority,
+    NULL as merkle_tree,
+    NULL as leaf_index,
+    FALSE as is_compressed,
+    COALESCE (
+        nft_sales_magic_eden_v2_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_id']
+        ) }}
+    ) AS fact_nft_sales_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
+FROM
+    {{ ref('silver__nft_sales_magic_eden_v2') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
+UNION ALL
+SELECT
+    'solanart',
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    purchaser,
+    seller,
+    mint,
+    sales_amount,
+    NULL as tree_authority,
+    NULL as merkle_tree,
+    NULL as leaf_index,
+    FALSE as is_compressed,
+    COALESCE (
+        nft_sales_solanart_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_id']
+        ) }}
+    ) AS fact_nft_sales_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
+FROM
+    {{ ref('silver__nft_sales_solanart') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
+UNION ALL
+SELECT
+    'hadeswap',
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    purchaser,
+    seller,
+    mint,
+    sales_amount,
+    NULL as tree_authority,
+    NULL as merkle_tree,
+    NULL as leaf_index,
+    FALSE as is_compressed,
+    COALESCE (
+        nft_sales_hadeswap_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_id','mint']
+        ) }}
+    ) AS fact_nft_sales_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
+FROM
+    {{ ref('silver__nft_sales_hadeswap') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
+UNION ALL
+SELECT
+    'hyperspace',
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    purchaser,
+    seller,
+    mint,
+    sales_amount,
+    NULL as tree_authority,
+    NULL as merkle_tree,
+    NULL as leaf_index,
+    FALSE as is_compressed,
+    COALESCE (
+        nft_sales_hyperspace_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_id','mint']
+        ) }}
+    ) AS fact_nft_sales_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
+FROM
+    {{ ref('silver__nft_sales_hyperspace') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
+UNION ALL
+SELECT
+    'exchange art',
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    purchaser,
+    seller,
+    mint,
+    sales_amount,
+    NULL as tree_authority,
+    NULL as merkle_tree,
+    NULL as leaf_index,
+    FALSE as is_compressed,
+    COALESCE (
+        nft_sales_exchange_art_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_id','mint']
+        ) }}
+    ) AS fact_nft_sales_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
+FROM
+    {{ ref('silver__nft_sales_exchange_art') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
+UNION ALL
+SELECT
     marketplace,
     block_timestamp,
     block_id,
@@ -361,6 +421,10 @@ SELECT
     modified_timestamp
 FROM
     {{ ref('silver__nft_sales_amm_sell_decoded') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
 UNION ALL
 SELECT
     'tensorswap',
@@ -393,6 +457,10 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_tensorswap') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
 UNION ALL
 SELECT
     'solsniper',
@@ -414,27 +482,10 @@ SELECT
      modified_timestamp
 FROM
     {{ ref('silver__nft_sales_solsniper') }}
-UNION ALL
-SELECT
-    'solsniper',
-    block_timestamp,
-    block_id,
-    tx_id,
-    succeeded,
-    program_id,
-    purchaser,
-    seller,
-    mint,
-    sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
-    nft_sales_solsniper_id AS fact_nft_sales_id,
-    inserted_timestamp,
-    modified_timestamp,
-FROM
-    {{ ref('silver__nft_sales_solsniper_v1_events_view') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
 UNION ALL
 SELECT
     'tensorswap',
@@ -456,6 +507,10 @@ SELECT
     modified_timestamp,
 FROM
     {{ ref('silver__nft_sales_tensorswap_cnft') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
 UNION ALL
 SELECT
     'magic eden v3' AS marketplace,
@@ -477,6 +532,10 @@ SELECT
     modified_timestamp,
 FROM
     {{ ref('silver__nft_sales_magic_eden_cnft') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
 UNION ALL
 SELECT
     'solsniper' AS marketplace,
@@ -498,3 +557,7 @@ SELECT
     modified_timestamp,
 FROM
     {{ ref('silver__nft_sales_solsniper_cnft') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}

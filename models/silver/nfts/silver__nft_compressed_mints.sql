@@ -2,6 +2,8 @@
     materialized = 'incremental',
     unique_key = "tx_id",
     incremental_strategy = 'delete+insert',
+    cluster_by = ['block_timestamp::DATE'],
+    post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(tx_id,purchaser,mint)'),
     tags = ['compressed_nft']
 ) }}
 
