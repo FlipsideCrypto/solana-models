@@ -82,3 +82,4 @@ SELECT
   '2000-01-01' AS modified_timestamp
 FROM
   {{ ref('silver__historical_vote_account') }}
+{% endif %}

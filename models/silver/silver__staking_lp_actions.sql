@@ -2,8 +2,9 @@
     materialized = 'incremental',
     unique_key = "CONCAT_WS('-', block_id, tx_id, index)",
     incremental_strategy = 'delete+insert',
-    cluster_by = ['block_timestamp::DATE'],
+    cluster_by = ['block_timestamp::DATE','event_type'],
     full_refresh = false,
+    post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(tx_id)'),
     tags = ['scheduled_non_core']
 ) }}
 
