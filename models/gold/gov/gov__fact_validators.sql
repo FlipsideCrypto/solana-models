@@ -5,7 +5,7 @@
     cluster_by = ['epoch','epoch_active'],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(node_pubkey, vote_pubkey)'),
-    tags = ['scheduled_non_core','exclude_change_tracking']
+    tags = ['scheduled_non_core']
 ) }}
 
 {% if execute %}
