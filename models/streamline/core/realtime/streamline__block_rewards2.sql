@@ -30,7 +30,7 @@ WITH blocks AS (
         {{ ref("streamline__blocks") }}
     /* TODO diff with completed */
     WHERE
-        block_id = 267408004
+        block_id = 274320000
     /*EXCEPT
     SELECT
         block_id
