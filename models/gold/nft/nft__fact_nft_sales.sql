@@ -222,7 +222,7 @@ UNION ALL
 {% endif %}
 -- Only select from active models during incremental
 SELECT
-    'magic eden v2',
+    'magic eden v2' as marketplace,
     block_timestamp,
     block_id,
     tx_id,
