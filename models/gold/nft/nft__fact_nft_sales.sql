@@ -3,7 +3,7 @@
     meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }}},
     unique_key = ['fact_nft_sales_id'],
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
-    cluster_by = ['block_timestamp::DATE',,'is_compressed','program_id'],
+    cluster_by = ['block_timestamp::DATE','is_compressed','program_id'],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, purchaser, seller, mint, marketplace)'),
     tags = ['scheduled_non_core']
