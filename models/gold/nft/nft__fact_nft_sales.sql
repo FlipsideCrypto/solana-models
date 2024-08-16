@@ -275,7 +275,7 @@ SELECT
     COALESCE (
         nft_sales_solanart_id,
         {{ dbt_utils.generate_surrogate_key(
-            ['tx_id']
+            ['tx_id','mint']
         ) }}
     ) AS fact_nft_sales_id,
     COALESCE(
@@ -444,7 +444,7 @@ SELECT
     COALESCE (
         nft_sales_tensorswap_id,
         {{ dbt_utils.generate_surrogate_key(
-            ['tx_id','mint','purchaser']
+            ['tx_id','index','inner_index','mint']
         ) }}
     ) AS fact_nft_sales_id,
     COALESCE(
