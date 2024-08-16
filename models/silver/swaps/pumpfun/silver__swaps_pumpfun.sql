@@ -123,7 +123,7 @@ select
     a.to_amount as to_amount_int,
     a.to_amount * pow(10,-d2.decimal) AS to_amount,
     a._inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(['a.tx_id','a.index','a.inner_index']) }} as swaps_inner_intermediate_jupiterv6_id,
+    {{ dbt_utils.generate_surrogate_key(['a.tx_id','a.index','a.inner_index']) }} as swaps_pumpfun_id,
     sysdate() as inserted_timestamp,
     sysdate() as modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
@@ -208,7 +208,7 @@ SELECT
             to_amount
     END AS to_amount,
     _inserted_timestamp,
-    swaps_inner_intermediate_jupiterv6_id,
+    swaps_pumpfun_id,
     inserted_timestamp,
     modified_timestamp,
     _invocation_id
