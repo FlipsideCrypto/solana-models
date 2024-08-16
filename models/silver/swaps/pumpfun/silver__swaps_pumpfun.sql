@@ -40,7 +40,7 @@
     
     {% do run_query(base_query) %}
     {% set between_stmts = fsc_utils.dynamic_range_predicate(
-        "silver.swaps_intermediate_pumpfun__intermediate_tmp",
+        "silver.swaps_pumpfun__intermediate_tmp",
         "block_timestamp::date"
     ) %}
 {% endif %}
@@ -67,7 +67,7 @@ token_decimals AS (
         9
 ),
 
-,
+
 swaps as (
 select 
 block_timestamp,
