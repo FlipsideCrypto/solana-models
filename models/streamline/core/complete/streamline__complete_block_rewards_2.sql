@@ -1,3 +1,6 @@
+-- depends_on: {{ ref('bronze__streamline_block_rewards') }}
+-- depends_on: {{ ref('bronze__streamline_FR_block_rewards') }}
+
 {{ config (
     materialized = "incremental",
     unique_key = 'block_id',
