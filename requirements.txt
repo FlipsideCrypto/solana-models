@@ -1,2 +1,3 @@
-dbt-snowflake>=1.4,<1.8
+dbt-core>=1.8,<1.9
+dbt-snowflake>=1.8,<1.9
 protobuf==4.25.3
