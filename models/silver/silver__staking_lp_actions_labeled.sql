@@ -2,7 +2,8 @@
     materialized = 'incremental',
     unique_key = ['block_id','tx_id','index'],
     incremental_strategy = 'delete+insert',
-    cluster_by = ['block_timestamp::DATE'],
+    cluster_by = ['block_timestamp::DATE','event_type'],
+    post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(tx_id,stake_authority,withdraw_authority,stake_account)'),
     tags = ['scheduled_non_core']
 ) }}
 

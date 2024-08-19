@@ -2,7 +2,7 @@
     materialized = 'incremental',
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     unique_key = ['nft_sales_tensorswap_cnft_id'],
-    cluster_by = ['block_timestamp::DATE'],
+    cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
     merge_exclude_columns = ["inserted_timestamp"],
     tags = ['scheduled_non_core']
 ) }}

@@ -5,7 +5,7 @@
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     merge_exclude_columns = ["inserted_timestamp"],
     unique_key = "nft_sales_tensorswap_id",
-    cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
+    cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
     tags = ['scheduled_non_core']
 ) }}
 

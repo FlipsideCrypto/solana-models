@@ -1,8 +1,23 @@
 {{ config(
-  materialized = 'view',
-  meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'VALIDATOR' }}},
-  tags = ['scheduled_non_core']
+    materialized = 'incremental',
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'VALIDATOR' }}},
+    unique_key = ['fact_stake_accounts_id'],
+    cluster_by = ['epoch','activation_epoch','deactivation_epoch'],
+    merge_exclude_columns = ["inserted_timestamp"],
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(stake_pubkey, vote_pubkey)'),
+    tags = ['scheduled_non_core']
 ) }}
+
+{% if execute %}
+    {% if is_incremental() %}
+        {% set query %}
+            SELECT MAX(modified_timestamp) AS max_modified_timestamp
+            FROM {{ this }}
+        {% endset %}
+
+        {% set max_modified_timestamp = run_query(query).columns[0].values()[0] %}
+    {% endif %}
+{% endif %}
 
 SELECT
   epoch_recorded :: INT AS epoch,
@@ -37,6 +52,11 @@ SELECT
     ) AS modified_timestamp
 FROM
   {{ ref('silver__snapshot_stake_accounts') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
+{% if not is_incremental() %}
 UNION ALL
 SELECT
   epoch_ingested_at :: INT AS epoch,
@@ -62,3 +82,4 @@ SELECT
   '2000-01-01' AS modified_timestamp
 FROM
   {{ ref('silver__historical_stake_account') }}
+{% endif %}

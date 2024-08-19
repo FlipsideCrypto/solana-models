@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "tx_id",
     incremental_strategy = 'delete+insert',
-    cluster_by = ['block_timestamp::DATE'],
+    cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
     tags = ['scheduled_non_core']
 ) }}
 
