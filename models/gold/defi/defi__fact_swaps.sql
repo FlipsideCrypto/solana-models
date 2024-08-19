@@ -322,6 +322,28 @@ WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 WHERE
     modified_timestamp::date < '{{ backfill_to_date }}'
 {% endif %}
+UNION ALL
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    swapper,
+    from_amount AS swap_from_amount,
+    from_mint AS swap_from_mint,
+    to_amount AS swap_to_amount,
+    to_mint AS swap_to_mint,
+    program_id,
+    swap_index,
+    swaps_pumpfun_id as fact_swaps_id,
+    inserted_timestamp,
+    modified_timestamp
+FROM
+    {{ ref('silver__swaps_pumpfun') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
 )
 
 select 

@@ -205,7 +205,7 @@ distinct_missing_decimals AS (
 get_missing_decimals AS (
     SELECT
         mint,
-        solana.live.udf_api(
+        live.udf_api(
             'POST',
             '{service}/{Authentication}',
             OBJECT_CONSTRUCT(

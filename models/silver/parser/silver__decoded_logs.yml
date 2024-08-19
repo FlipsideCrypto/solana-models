@@ -20,6 +20,16 @@ models:
         description: "{{ doc('tx_id') }}"
         tests: 
           - not_null: *recent_date_filter
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_logs_swaps_pumpfun_tx_id
+              to: ref('silver__swaps_pumpfun')
+              field: tx_id
+              from_condition: >
+                program_id = '6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P'
+                AND event_type = 'TradeEvent'
+                AND succeeded
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
       - name: INDEX
         description: "{{ doc('event_index') }}"
         tests: 
