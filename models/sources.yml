@@ -113,3 +113,4 @@ sources:
     schema: test_silver 
     tables: 
       - name: transactions_and_votes_missing_7_days
+      - name: rewards_gaps
