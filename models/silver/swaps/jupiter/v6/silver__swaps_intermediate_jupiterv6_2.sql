@@ -69,6 +69,12 @@
     {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.swaps_intermediate_jupiterv6__intermediate_tmp","block_timestamp::date") %}
 {% endif %}
 
+{% set jupiter_dca_singers = [
+    'DCAKuApAuZtVNYLk3KTAVW9GLWVvPbnb5CxxRRmVgcTr',
+    'DCAKxn5PFNN1mBREPWGdk1RXg5aVH9rPErLfBFEi2Emb',
+    'DCAK36VfExkPdAkYUQg6ewgxyinvcEyPLyHjRbmveKFw'
+] %}
+
 WITH all_routes AS (
     SELECT 
         *
@@ -169,6 +175,17 @@ output_swaps AS (
     WHERE
         s.is_output_swap
     GROUP BY 1,2,3,4
+),
+dca_filled AS (
+    SELECT
+        tx_id,
+        decoded_log:args:userKey::string AS dca_requester,
+    FROM 
+        {{ ref('silver__decoded_logs') }}
+    WHERE 
+        {{ between_stmts }}
+        AND program_id = 'DCA265Vj8a9CEuX1eb1LWRnDT7uK6q1xMipnNyatn23M'
+        AND event_type = 'Filled'
 )
 SELECT 
     b.block_timestamp,
@@ -184,6 +201,8 @@ SELECT
     i.amount AS from_amount,
     o.mint AS to_mint,
     o.amount AS to_amount,
+    i.swapper IN ('{{ jupiter_dca_singers | join("','") }}') AS is_dca_swap,
+    d.dca_requester,
     b._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['b.tx_id','b.index','b.inner_index']) }} AS swaps_intermediate_jupiterv6_id,
     sysdate() AS inserted_timestamp,
@@ -201,3 +220,6 @@ LEFT JOIN
     ON b.tx_id = o.tx_id
     AND b.index = o.index
     AND coalesce(b.inner_index,-1) = coalesce(o.inner_index,-1)
+LEFT JOIN
+    dca_filled d
+    ON b.tx_id = d.tx_id
