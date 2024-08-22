@@ -99,6 +99,25 @@ models:
         description:  "{{ doc('swaps_to_amt') }}"
         tests: 
           - not_null: *recent_date_filter
+      - name: IS_DCA_SWAP
+        description: "Whether the swap was initiated by a Jupiter DCA"
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "= True"
+              config:
+                where: >
+                  swapper IN ('DCAKuApAuZtVNYLk3KTAVW9GLWVvPbnb5CxxRRmVgcTr','DCAKxn5PFNN1mBREPWGdk1RXg5aVH9rPErLfBFEi2Emb','DCAK36VfExkPdAkYUQg6ewgxyinvcEyPLyHjRbmveKFw')
+                  AND _inserted_timestamp >= current_date - 7
+                  AND block_timestamp >= '2024-08-23' /* remove when DCA is backfilled */
+      - name: DCA_REQUESTER
+        description: "Original address that requested the DCA swap"
+        tests:
+          - not_null:
+              config:
+                where: >
+                  is_dca_swap
+                  AND _inserted_timestamp >= current_date - 7
+                  AND block_timestamp >= '2024-08-23' /* remove when DCA is backfilled */
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
