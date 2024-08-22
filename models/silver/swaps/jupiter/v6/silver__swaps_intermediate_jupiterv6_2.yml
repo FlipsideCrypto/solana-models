@@ -100,7 +100,7 @@ models:
         tests: 
           - not_null: *recent_date_filter
       - name: IS_DCA_SWAP
-        description: "Whether the swap was initiated by a Jupiter DCA"
+        description: "Whether the swap was initiated by a Jupiter DCA. If value is NULL then it is NOT a DCA Swap"
         tests:
           - dbt_utils.expression_is_true:
               expression: "= True"
