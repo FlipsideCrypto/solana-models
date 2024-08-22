@@ -26,7 +26,12 @@ WITH idl_in_play AS (
     FROM
         {{ ref('silver__verified_idls') }}
     WHERE   
-        program_id IN ('JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4','PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY','6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P')
+        program_id IN (
+            'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4',
+            'PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY',
+            '6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P',
+            'DCA265Vj8a9CEuX1eb1LWRnDT7uK6q1xMipnNyatn23M'
+        )
 ),
 event_subset AS (
     SELECT
@@ -50,7 +55,7 @@ event_subset AS (
         ON array_contains(b.program_id::variant, e.inner_instruction_program_ids)
         AND b.program_id = inner_program_id
     WHERE
-        e.block_timestamp >= CURRENT_DATE - 2   
+        e.block_timestamp >= CURRENT_DATE - 2
         AND e.succeeded
         AND array_size(i.value:accounts::array) = 1
     UNION ALL
