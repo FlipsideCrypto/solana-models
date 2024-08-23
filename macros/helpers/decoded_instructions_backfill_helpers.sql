@@ -168,8 +168,8 @@
     
     {% set min_block_id = range_results[0] %}
     {% set max_block_id = range_results[1] %}
-    {% set step = 10000000 %}
-    {% set retry_start_timestamp = modules.datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") %}
+    {% set step = 2000000 %}
+    {% set retry_start_timestamp = modules.datetime.datetime.now(modules.pytz.utc).strftime("%Y-%m-%d %H:%M:%S") %}
 
     {% for i in range(min_block_id, max_block_id, step) %}
         {% if i == min_block_id %}
@@ -201,6 +201,7 @@
                 and succeeded
                 and decoded_instruction:error::string is not null
                 and block_id between {{ start_block }} and {{ end_block }}
+
             ),
             retry_events as (
                 select 
