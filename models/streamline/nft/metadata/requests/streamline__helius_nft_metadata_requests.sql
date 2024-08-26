@@ -42,7 +42,7 @@ list_mints AS (
 )
 SELECT
     concat_ws('_',max_mint_event_inserted_timestamp,group_num) AS helius_nft_metadata_requests_id,
-    max_mint_event_inserted_timestamp AS max_mint_event_inserted_timestamp,
+    max_mint_event_inserted_timestamp::string AS max_mint_event_inserted_timestamp,
     current_date::string AS partition_key,
     {{ target.database }}.live.udf_api(
         'POST',
