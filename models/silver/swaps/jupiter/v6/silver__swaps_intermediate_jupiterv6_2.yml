@@ -106,7 +106,7 @@ models:
               expression: "= True"
               config:
                 where: >
-                  swapper IN ('DCAKuApAuZtVNYLk3KTAVW9GLWVvPbnb5CxxRRmVgcTr','DCAKxn5PFNN1mBREPWGdk1RXg5aVH9rPErLfBFEi2Emb','DCAK36VfExkPdAkYUQg6ewgxyinvcEyPLyHjRbmveKFw')
+                  swapper IN ('DCAKuApAuZtVNYLk3KTAVW9GLWVvPbnb5CxxRRmVgcTr','DCAKxn5PFNN1mBREPWGdk1RXg5aVH9rPErLfBFEi2Emb','DCAK36VfExkPdAkYUQg6ewgxyinvcEyPLyHjRbmveKFw','BFQ2te7ERN319HA87mn6NJ9oxMUvNxyifqEhUWHFTie9')
                   AND _inserted_timestamp >= current_date - 7
                   AND block_timestamp >= '2024-08-23' /* remove when DCA is backfilled */
       - name: DCA_REQUESTER

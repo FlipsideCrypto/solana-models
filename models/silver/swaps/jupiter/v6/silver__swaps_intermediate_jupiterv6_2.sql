@@ -72,7 +72,8 @@
 {% set jupiter_dca_singers = [
     'DCAKuApAuZtVNYLk3KTAVW9GLWVvPbnb5CxxRRmVgcTr',
     'DCAKxn5PFNN1mBREPWGdk1RXg5aVH9rPErLfBFEi2Emb',
-    'DCAK36VfExkPdAkYUQg6ewgxyinvcEyPLyHjRbmveKFw'
+    'DCAK36VfExkPdAkYUQg6ewgxyinvcEyPLyHjRbmveKFw',
+    'BFQ2te7ERN319HA87mn6NJ9oxMUvNxyifqEhUWHFTie9'
 ] %}
 
 WITH all_routes AS (

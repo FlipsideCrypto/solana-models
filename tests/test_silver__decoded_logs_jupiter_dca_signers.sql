@@ -8,5 +8,6 @@ WHERE
     AND _inserted_timestamp >= current_date - 7
     AND signer NOT IN ('DCAKxn5PFNN1mBREPWGdk1RXg5aVH9rPErLfBFEi2Emb',
         'DCAK36VfExkPdAkYUQg6ewgxyinvcEyPLyHjRbmveKFw',
-        'DCAKuApAuZtVNYLk3KTAVW9GLWVvPbnb5CxxRRmVgcTr'
+        'DCAKuApAuZtVNYLk3KTAVW9GLWVvPbnb5CxxRRmVgcTr',
+        'BFQ2te7ERN319HA87mn6NJ9oxMUvNxyifqEhUWHFTie9' /* this was used early on for a few dca txs */
     )
