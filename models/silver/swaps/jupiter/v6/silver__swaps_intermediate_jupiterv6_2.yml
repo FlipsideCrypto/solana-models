@@ -108,7 +108,7 @@ models:
                 where: >
                   swapper IN ('DCAKuApAuZtVNYLk3KTAVW9GLWVvPbnb5CxxRRmVgcTr','DCAKxn5PFNN1mBREPWGdk1RXg5aVH9rPErLfBFEi2Emb','DCAK36VfExkPdAkYUQg6ewgxyinvcEyPLyHjRbmveKFw','BFQ2te7ERN319HA87mn6NJ9oxMUvNxyifqEhUWHFTie9')
                   AND _inserted_timestamp >= current_date - 7
-                  AND block_timestamp >= '2024-08-23' /* remove when DCA is backfilled */
+                  AND block_timestamp >= '2024-05-12' /* last recorded date where some txs used the Beta DCA program (Betam4GuxvAes2uQ5vX8SackcxL5pxRuHowM5m2Ykmcq) */
       - name: DCA_REQUESTER
         description: "Original address that requested the DCA swap"
         tests:
@@ -117,7 +117,7 @@ models:
                 where: >
                   is_dca_swap
                   AND _inserted_timestamp >= current_date - 7
-                  AND block_timestamp >= '2024-08-23' /* remove when DCA is backfilled */
+                  AND block_timestamp >= '2024-05-12' /* last recorded date where some txs used the Beta DCA program (Betam4GuxvAes2uQ5vX8SackcxL5pxRuHowM5m2Ykmcq)  */
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
