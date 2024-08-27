@@ -30,7 +30,8 @@ WITH idl_in_play AS (
             'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4',
             'PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY',
             '6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P',
-            'DCA265Vj8a9CEuX1eb1LWRnDT7uK6q1xMipnNyatn23M'
+            'DCA265Vj8a9CEuX1eb1LWRnDT7uK6q1xMipnNyatn23M',
+            '7a4WjyR8VZ7yZz5XJAKm39BUGn5iT9CKcv2pmG9tdXVH'
         )
 ),
 event_subset AS (
