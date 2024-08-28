@@ -49,63 +49,8 @@ WHERE
     modified_timestamp::date < '{{ backfill_to_date }}'
 {% endif %}
 )
-/* TODO: DEPRECATE - remove jupiter swaps from this table, we will only cover individual dexes moving forward. Aggregator(s) get their own model(s) */
 ,
 swaps_individual as (
-SELECT
-    block_timestamp,
-    block_id,
-    tx_id,
-    succeeded,
-    swapper,
-    from_amt AS swap_from_amount,
-    from_mint AS swap_from_mint,
-    to_amt AS swap_to_amount,
-    to_mint AS swap_to_mint,
-    program_id,
-    swap_index,
-    swaps_intermediate_jupiterv6_id as fact_swaps_id,
-    inserted_timestamp,
-    modified_timestamp
-FROM
-    {{ ref('silver__swaps_intermediate_jupiterv6_view') }}
-WHERE 
-    block_timestamp::date < '2023-08-03'
-{% if is_incremental() %}
-AND
-    modified_timestamp >= '{{ max_modified_timestamp }}'
-{% else %}
-AND
-    modified_timestamp::date < '{{ backfill_to_date }}'
-{% endif %}
-UNION ALL
-SELECT
-    block_timestamp,
-    block_id,
-    tx_id,
-    succeeded,
-    swapper,
-    from_amount AS swap_from_amount,
-    from_mint AS swap_from_mint,
-    to_amount AS swap_to_amount,
-    to_mint AS swap_to_mint,
-    program_id,
-    swap_index,
-    swaps_intermediate_jupiterv6_id as fact_swaps_id,
-    inserted_timestamp,
-    modified_timestamp
-FROM
-    {{ ref('silver__swaps_intermediate_jupiterv6_2') }}
-WHERE
-    block_timestamp::date >= '2023-08-03'
-{% if is_incremental() %}
-AND
-    modified_timestamp >= '{{ max_modified_timestamp }}'
-{% else %}
-AND 
-    modified_timestamp::date < '{{ backfill_to_date }}'
-{% endif %}
-UNION ALL
 SELECT
     block_timestamp,
     block_id,
