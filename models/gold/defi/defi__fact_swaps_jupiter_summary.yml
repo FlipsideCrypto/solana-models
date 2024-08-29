@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: defi__fact_swaps_jupiter_summary
-    description: This table contains summarized swaps for trades initiated on Jupiter. This showcases the the initial amount/mint that is swapped from and the final amount/mint that is swapped to, without the intermediate swaps that Jupiter routes through.
+    description: This table contains summarized swaps for trades initiated on Jupiter. This showcases the the initial amount/mint that is swapped from and the final amount/mint that is swapped to, without the intermediate swaps that Jupiter routes through. This also includes columns for DCA (dollar cost averaging) information to identify the initial requester of the DCA swaps.
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -53,6 +53,14 @@ models:
           - dbt_expectations.expect_column_to_exist
       - name: SWAP_TO_MINT
         description:  "{{ doc('swaps_to_mint') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: IS_DCA_SWAP
+        description: "Whether the swap was initiated by a Jupiter DCA. If value is NULL then it is NOT a DCA Swap"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: DCA_REQUESTER
+        description: "Original address that requested the DCA swap"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: FACT_SWAPS_JUPITER_SUMMARY_ID
