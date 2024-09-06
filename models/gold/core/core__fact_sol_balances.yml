@@ -2,47 +2,74 @@ version: 2
 models:
   - name: core__fact_sol_balances
     description: "{{ doc('sol_balance_table_doc') }}"
+    recent_date_filter: &recent_date_filter
+      config:
+        where: modified_timestamp >= current_date - 7
+    tests:
+      - reference_tx_missing:
+          reference_tables:
+            - 'silver__sol_balances'
+          id_column: 'tx_id'
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
       - name: ACCOUNT_ADDRESS
         description: "{{ doc('balances_account') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
       - name: MINT
         description: "{{ doc('mint') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
       - name: OWNER
         description: "{{ doc('sol_balances_owner') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
       - name: PRE_BALANCE
         description: "{{ doc('balances_pre_amount') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
       - name: BALANCE
         description: "{{ doc('balances_post_amount') }}" 
         tests:
           - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
       - name: FACT_SOL_BALANCES_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("pk") }}'
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+          - unique: *recent_date_filter
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("inserted_timestamp") }}'
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter  
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+        description: '{{ doc("modified_timestamp") }}'
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter  
           
