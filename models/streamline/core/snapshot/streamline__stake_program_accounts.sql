@@ -9,7 +9,6 @@
             "producer_batch_size" :"20000",
             "worker_batch_size" :"1000",
             "sql_source" :"{{this.identifier}}",
-            "exploded_key": tojson(["result.value"]),
             "order_by_column": "group_num",
         }
     )
@@ -49,8 +48,10 @@ agg AS (
         group_num
 )
 SELECT
-    current_date::string AS partition_key,
+    replace(current_date::string,'-','_') AS partition_key, -- Issue with streamline handling `-` in partition key so changing to `_`
+    accounts_requested::string AS accounts_requested,
     group_num,
+    '{{ invocation_id }}' AS invocation_id,
     {{ target.database }}.live.udf_api(
         'POST',
         '{service}/{Authentication}',
