@@ -55,6 +55,7 @@ sources:
       - name: program_parser
       - name: decoded_instructions_2
       - name: decoded_logs
+      - name: stake_program_accounts_2
   - name: bronze_api
     schema: bronze_api
     tables:
