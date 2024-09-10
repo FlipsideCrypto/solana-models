@@ -18,6 +18,7 @@
             {{ create_udf_bulk_instructions_decoder() }};
             {{ create_udf_verify_idl() }};
             {{ create_udf_decode_compressed_mint_change_logs() }};
+            {{ create_udf_bulk_rest_api_v2() }};
         {% endif %}
 
         {{ create_udf_ordered_signers(

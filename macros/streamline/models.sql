@@ -82,8 +82,12 @@ WHERE
                 ) A
             )
         SELECT
+            {% if unique_key is not none and unique_key != "" %}
             {{ unique_key }},
+            {% endif %}
+            {% if other_cols is not none and other_cols != "" %}
             {{ other_cols }},
+            {% endif %}
             DATA,
             _inserted_timestamp,
             s.{{ partition_name }},
@@ -122,8 +126,12 @@ WHERE
             ) A
     )
 SELECT
+    {% if unique_key is not none and unique_key != "" %}
     {{ unique_key }},
-     {{ other_cols }},
+    {% endif %}
+    {% if other_cols is not none and other_cols != "" %}
+    {{ other_cols }},
+    {% endif %}
     DATA,
     _inserted_timestamp,
     s.{{ partition_name }},
