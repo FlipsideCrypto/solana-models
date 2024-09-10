@@ -79,5 +79,3 @@ SELECT
     ) AS request
 FROM
     agg
--- ORDER BY
---     group_num
