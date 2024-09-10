@@ -88,7 +88,7 @@ parsed_account_info AS (
     FROM
         stake_program_accounts
     WHERE 
-        account_info IS NOT NULL
+        account_info::string IS NOT NULL
 ),
 epochs_recorded AS (
     SELECT
