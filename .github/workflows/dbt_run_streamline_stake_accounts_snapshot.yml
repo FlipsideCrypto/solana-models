@@ -42,4 +42,5 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt build -s "solana_models,tag:streamline_stake_accounts"
+          dbt run -s "solana_models,streamline__stake_program_accounts_2"
 
