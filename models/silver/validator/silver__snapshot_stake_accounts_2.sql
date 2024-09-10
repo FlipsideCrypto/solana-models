@@ -20,9 +20,6 @@ WITH base AS (
     WHERE
         _inserted_timestamp >= (SELECT max(_inserted_timestamp) FROM {{ this }})
         AND _partition_by_created_date >= replace((current_date - 4)::string,'-','_')
-    {% else %}
-    WHERE
-        _inserted_timestamp < '2024-09-10 13:50:36.000 +0000'
     {% endif %}
 ),
 responses_flattened AS (
