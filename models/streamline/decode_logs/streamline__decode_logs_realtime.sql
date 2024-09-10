@@ -79,7 +79,7 @@ event_subset AS (
         USING(block_timestamp, tx_id)
     WHERE 
         l.block_timestamp >= CURRENT_DATE - 2
-        AND l.program_id = 'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN'
+        AND l.program_id in ('TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN','JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB')
 ),
 completed_subset AS (
     SELECT
