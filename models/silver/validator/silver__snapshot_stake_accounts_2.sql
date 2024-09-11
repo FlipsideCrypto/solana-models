@@ -19,7 +19,7 @@ WITH base AS (
     {% if is_incremental() %}
     WHERE
         _inserted_timestamp >= (SELECT max(_inserted_timestamp) FROM {{ this }})
-        AND _partition_by_created_date >= replace((current_date - 4)::string,'-','_')
+        AND _partition_by_created_date >= replace((current_date - 4)::string,'-','_') -- default lookback buffer
     {% endif %}
 ),
 responses_flattened AS (
