@@ -6,7 +6,7 @@
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, program_id, event_type, inner_instruction_program_ids)'),
     full_refresh = false,
     merge_exclude_columns = ["inserted_timestamp"],
-    tags = ['scheduled_core']
+    tags = ['events_inner_backfill']
 ) }}
 
 

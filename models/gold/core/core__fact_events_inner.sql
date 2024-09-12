@@ -5,7 +5,7 @@
     cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(tx_id, instruction_program_id, program_id)'),
-    tags = ['scheduled_non_core']
+    tags = ['events_inner_backfill']
 ) }}
 
 SELECT
