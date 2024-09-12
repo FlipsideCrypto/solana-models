@@ -1,5 +1,5 @@
 {% docs inner_index %}
 
-Location of the inner instruction within an instruction (event)
+Location of the instruction within an instruction's (event) inner instruction
 
 {% enddocs %}
