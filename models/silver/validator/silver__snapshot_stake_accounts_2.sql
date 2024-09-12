@@ -3,6 +3,7 @@
     incremental_strategy = 'merge',
     unique_key = ["epoch_recorded", "stake_pubkey"],
     cluster_by = ['modified_timestamp::DATE', '_inserted_timestamp::DATE'],
+    full_refresh = false,
     tags = ['validator_2']
 ) }}
 
