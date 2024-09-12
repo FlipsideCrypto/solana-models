@@ -5,6 +5,10 @@ models:
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7
+    recent_date_filter_and_exclude_records: &recent_date_filter_and_exclude_records
+      config:
+        where: modified_timestamp >= current_date - 7 and fact_validators_id not in ('6bc02a10c28c15613f7f2928c28042f8','4dd0900961b16a7e72ebaacbffe44044','2f9e9b502eaa55c1e0c97ebd1005138a','849bcdc32080e7036196ee3946b7f108','69ede8ffd174d0d181ca941297a31d06')
+        # API response returned null values for these records from epochs 666-668 so excluding from tests
     tests:
       - reference_tx_missing:
           reference_tables:
@@ -30,7 +34,7 @@ models:
         description: "Active stake in SOL delegated to the validator"
         tests:
           - dbt_expectations.expect_column_to_exist
-          - not_null: *recent_date_filter
+          - not_null: *recent_date_filter_and_exclude_records
       - name: admin_warning
         description: "Admin warning for the validator"
         tests:
@@ -43,7 +47,7 @@ models:
         description: "% of rewards payout to the vote account"
         tests:
           - dbt_expectations.expect_column_to_exist
-          - not_null: *recent_date_filter
+          - not_null: *recent_date_filter_and_exclude_records
       - name: created_at
         description: "date when validator was created"
         tests:
@@ -61,7 +65,7 @@ models:
         description: "Status whether the validator is offline/delinquent"
         tests:
           - dbt_expectations.expect_column_to_exist
-          - not_null: *recent_date_filter
+          - not_null: *recent_date_filter_and_exclude_records
       - name: details
         description: "Details for the validator"
         tests:
