@@ -1,0 +1,80 @@
+version: 2
+models:
+  - name: silver__swaps_inner_intermediate_jupiterv5
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - INDEX
+            - LOG_INDEX
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null
+      - name: INDEX
+        description: "{{ doc('event_index') }}"
+        tests: 
+          - not_null
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}. This is the inner index of the log event listing the inner swap"
+      - name: SWAP_INDEX
+        description: "{{ doc('swaps_swap_index') }} as it relates to the top level Jupiter V6 swap instruction"
+        tests: 
+          - not_null
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null
+      - name: SWAP_PROGRAM_ID
+        description: "{{ doc('program_id') }}. This is the AMM performing the swap."
+        tests: 
+          - not_null
+      - name: AGGREGATOR_PROGRAM_ID
+        description: "{{ doc('program_id') }}. This is the aggregator calling the different AMMs."
+        tests: 
+          - not_null
+      - name: SWAPPER
+        description: "{{ doc('swaps_swapper') }}"
+        tests: 
+          - not_null
+      - name: FROM_AMOUNT
+        description:  "{{ doc('swaps_from_amt') }}"
+        tests: 
+          - not_null
+      - name: FROM_MINT
+        description:  "{{ doc('swaps_from_mint') }}"
+        tests: 
+          - not_null
+      - name: TO_AMOUNT
+        description:  "{{ doc('swaps_to_amt') }}"
+        tests: 
+          - not_null
+      - name: TO_MINT
+        description:  "{{ doc('swaps_to_mint') }}"
+        tests: 
+          - not_null 
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
+      - name: SWAPS_INNER_INTERMEDIATE_JUPITERV5_ID
+        description: '{{ doc("pk") }}'   
+        tests: 
+          - unique
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        tests: 
+          - not_null
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        tests: 
+          - not_null
