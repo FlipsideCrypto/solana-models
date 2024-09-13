@@ -7,8 +7,8 @@ models:
         where: modified_timestamp >= current_date - 7
     recent_date_filter_and_exclude_records: &recent_date_filter_and_exclude_records
       config:
-        where: modified_timestamp >= current_date - 7 and fact_validators_id not in ('6bc02a10c28c15613f7f2928c28042f8','4dd0900961b16a7e72ebaacbffe44044','2f9e9b502eaa55c1e0c97ebd1005138a','849bcdc32080e7036196ee3946b7f108','69ede8ffd174d0d181ca941297a31d06')
-        # API response returned null values for these records from epochs 666-668 so excluding from tests
+        where: modified_timestamp >= current_date - 7 and NOT (node_pubkey = 'KtKiqBftjVcPR9WNi8dyoXoajj4xWtebf8enapgDv2Y' AND epoch in (666,667,668)) and NOT (node_pubkey = '2ViH5QVqCX3LjsCHBniMN2yfUEVc6W2cp9M6m6ZpVpxi' AND epoch = 667) and NOT (node_pubkey = 'isusUYC5gwsBpARY4Mf8wnFahMDVCtvPp91VBnR81yF' AND epoch = 668)
+        # API response returned null values for these validators from epochs 666-668 so excluding from tests
     tests:
       - reference_tx_missing:
           reference_tables:
