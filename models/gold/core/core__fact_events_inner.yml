@@ -86,5 +86,5 @@ models:
         description: '{{ doc("modified_timestamp") }}' 
         tests:
           - dbt_expectations.expect_column_to_exist   
-          - not_null: *recent_date_filter
+          - not_null
           
