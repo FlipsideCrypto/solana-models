@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = ['fact_events_inner_id'],
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
-    cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
+    cluster_by = ['block_timestamp::DATE'],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(tx_id, instruction_program_id, program_id)'),
     tags = ['events_inner_backfill']

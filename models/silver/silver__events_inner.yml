@@ -80,5 +80,5 @@ models:
         description: '{{ doc("_invocation_id") }}' 
         data_tests: 
           - not_null:
-              name: test_silver__not_null_inner_instructions_invocation_id
+              name: test_silver__not_null_events_inner_invocation_id
               <<: *recent_date_filter
