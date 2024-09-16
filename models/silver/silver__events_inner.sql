@@ -1,10 +1,9 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ['events_inner_id'],
+    unique_key = ['block_id', 'tx_id', 'instruction_index', 'inner_index'],
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
-    cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE','program_id'],
-    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, program_id, event_type, instruction_program_id)'),
-    full_refresh = false,
+    cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE','ROUND(block_id, -3)'],
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, program_id, instruction_program_id, instruction_index, inner_index, event_type)'),
     merge_exclude_columns = ["inserted_timestamp"],
     tags = ['events_inner_backfill']
 ) }}
@@ -33,10 +32,10 @@ WITH pre_final AS (
 
 {% if is_incremental() %}
 {% if execute %}
-    {{ get_batch_load_logic(this,15,'2022-09-05') }}
+    {{ get_batch_load_logic(this,10,'2024-09-15') }}
 {% endif %}
 {% else %}
-    AND _inserted_timestamp :: DATE BETWEEN '2022-08-12' AND '2022-08-15'
+    AND _inserted_timestamp :: DATE BETWEEN '2024-08-01' AND '2024-08-05'
 {% endif %}
 )
 SELECT

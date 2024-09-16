@@ -1,10 +1,10 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ['fact_events_inner_id'],
+    unique_key = ['block_id', 'tx_id', 'instruction_index', 'inner_index'],
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
-    cluster_by = ['block_timestamp::DATE'],
+    cluster_by = ['block_timestamp::DATE','ROUND(block_id, -3)'],
     merge_exclude_columns = ["inserted_timestamp"],
-    post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(tx_id, instruction_program_id, program_id)'),
+    post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(tx_id, program_id, instruction_program_id, instruction_index, inner_index, event_type)'),
     tags = ['events_inner_backfill']
 ) }}
 
