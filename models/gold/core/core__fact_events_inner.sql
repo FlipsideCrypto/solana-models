@@ -8,6 +8,18 @@
     tags = ['events_inner_backfill']
 ) }}
 
+{% if execute %}
+    {% if is_incremental() %}
+    {% set max_modified_query %}
+    SELECT
+        MAX(modified_timestamp) AS modified_timestamp
+    FROM
+        {{ this }}
+    {% endset %}
+    {% set max_modified_timestamp = run_query(max_modified_query)[0][0] %}
+    {% endif %}
+{% endif %}
+
 SELECT
     block_timestamp,
     block_id,
@@ -29,10 +41,5 @@ FROM
 
 {% if is_incremental() %}
 WHERE
-    modified_timestamp >= (
-        SELECT
-            MAX(modified_timestamp)
-        FROM
-            {{ this }}
-    )
+    modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
