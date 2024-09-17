@@ -1,40 +1,70 @@
+ -- depends_on: {{ ref('silver__decoded_logs') }}
 {{ config(
-    materialized = 'table',
-    unique_key = ['swaps_inner_intermediate_jupiterv4_id'],
+    materialized = 'incremental',
+    unique_key = "swaps_inner_intermediate_jupiterv4_id",
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
+    merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
     post_hook = enable_search_optimization(
         '{{this.schema}}',
         '{{this.identifier}}',
         'ON EQUALITY(tx_id, swapper, from_mint, to_mint)'
-    )
+    ),
+    tags = ['scheduled_non_core'],
 ) }}
 
-WITH base AS (
-
+{% if execute %}
+    {% set base_query %}
+    CREATE OR REPLACE TEMPORARY TABLE silver.swaps_inner_intermediate_jupiterv4__intermediate_tmp AS
     SELECT
         block_timestamp,
         block_id,
         tx_id,
         program_id,
-        INDEX,
+        index,
         inner_index,
         log_index,
         succeeded,
         event_type,
-        decoded_log :args :amm :: STRING AS swap_program_id,
-        decoded_log :args :inputMint :: STRING AS from_mint,
-        decoded_log :args :inputAmount :: STRING AS from_amount,
-        decoded_log :args :outputMint :: STRING AS to_mint,
-        decoded_log :args :outputAmount :: STRING AS to_amount,
-        _inserted_timestamp,
+        decoded_log:args:amm::string AS swap_program_id,
+        decoded_log:args:inputMint::string AS from_mint,
+        decoded_log:args:inputAmount::string AS from_amount,
+        decoded_log:args:outputMint::string AS to_mint,
+        decoded_log:args:outputAmount::string AS to_amount,
+        _inserted_timestamp
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
         program_id = 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
-        AND event_type = 'SwapEvent'
+        AND event_type = 'Swap'
         AND succeeded
-        AND _inserted_timestamp :: DATE BETWEEN '2024-09-06'
-        AND '2024-09-07'
+
+    {% if is_incremental() %}
+    AND _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '1 hour'
+        FROM
+            {{ this }}
+    )
+    -- TO DO: update the date range
+    {% else %}
+        AND block_timestamp :: DATE > '2023-07-15'
+
+    {% endif %}
+    {% endset %}
+    
+    {% do run_query(base_query) %}
+    {% set between_stmts = fsc_utils.dynamic_range_predicate(
+        "silver.swaps_inner_intermediate_jupiterv4__intermediate_tmp",
+        "block_timestamp::date"
+    ) %}
+{% endif %}
+
+WITH base AS (
+    SELECT 
+        *
+    FROM
+        silver.swaps_inner_intermediate_jupiterv4__intermediate_tmp
 ),
 swappers AS (
     SELECT
@@ -45,15 +75,14 @@ swappers AS (
             'userTransferAuthority',
             decoded_instruction :accounts
         ) AS swapper,
+        lead(inner_index) OVER (PARTITION BY tx_id, index ORDER BY inner_index) AS next_summary_swap_index,
         _inserted_timestamp
     FROM
         {{ ref('silver__decoded_instructions_combined') }}
     WHERE
-        _inserted_timestamp :: DATE = '2023-11-03'
-        AND program_id IN (
-            'JUP5cHjnnCx2DppVsufsLrXs8EBZeEZzGtEK9Gdz6ow',
-            'JUP5pEAZeHdHrLxh5UCwAbpjGwYKKoquCpda2hfP4u8'
-        )
+
+        {{ between_stmts }}
+        AND program_id = 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
         AND event_type = 'route'
         AND swapper IS NOT NULL
 ),
@@ -106,6 +135,15 @@ pre_final AS (
         LEFT OUTER JOIN swappers s
         ON b.tx_id = s.tx_id
         AND b.index = s.index
+        AND (
+                s.inner_index IS NULL 
+                OR
+                (
+                    b.inner_index = s.inner_index
+                    AND (b.inner_index < s.next_summary_swap_index 
+                        OR s.next_summary_swap_index IS NULL)
+                )
+            )
         LEFT OUTER JOIN token_decimals d
         ON b.from_mint = d.mint
         LEFT OUTER JOIN token_decimals d2

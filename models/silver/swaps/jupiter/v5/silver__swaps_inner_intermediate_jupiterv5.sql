@@ -52,7 +52,7 @@ swappers AS (
     FROM
         {{ ref('silver__decoded_instructions_combined') }}
     WHERE
-        _inserted_timestamp :: DATE = '2023-11-03'
+        _inserted_timestamp :: DATE in ('2023-11-03','2024-09-12')
         AND program_id IN (
             'JUP5cHjnnCx2DppVsufsLrXs8EBZeEZzGtEK9Gdz6ow',
             'JUP5pEAZeHdHrLxh5UCwAbpjGwYKKoquCpda2hfP4u8'
