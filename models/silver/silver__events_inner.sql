@@ -32,7 +32,7 @@ WITH pre_final AS (
 
 {% if is_incremental() %}
 {% if execute %}
-    {{ get_batch_load_logic(this,10,'2024-09-15') }}
+    {{ get_batch_load_logic(this,5,'2024-09-15') }}
 {% endif %}
 {% else %}
     AND _inserted_timestamp :: DATE BETWEEN '2024-08-01' AND '2024-08-05'

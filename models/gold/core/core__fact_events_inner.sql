@@ -41,5 +41,6 @@ FROM
 
 {% if is_incremental() %}
 WHERE
-    modified_timestamp >= '{{ max_modified_timestamp }}'
+    modified_timestamp > '{{ max_modified_timestamp }}'
+    -- to-do: revert back to >= after backfill
 {% endif %}
