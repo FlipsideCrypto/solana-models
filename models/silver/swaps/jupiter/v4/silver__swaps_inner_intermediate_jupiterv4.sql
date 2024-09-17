@@ -85,6 +85,7 @@ swappers AS (
         AND program_id = 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
         AND event_type = 'route'
         AND swapper IS NOT NULL
+        and succeeded
 ),
 token_decimals AS (
     SELECT
