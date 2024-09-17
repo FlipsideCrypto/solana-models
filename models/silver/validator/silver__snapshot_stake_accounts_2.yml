@@ -1,0 +1,67 @@
+version: 2
+models:
+  - name: silver__snapshot_stake_accounts_2
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
+    columns:
+      - name: EPOCH_RECORDED
+        description: "The epoch when data was recorded"
+        tests:
+          - not_null: *recent_date_filter
+      - name: AUTHORIZED_STAKE
+        description: "Account responsible for signing stake delegations/deactivativations transactions"
+      - name: AUTHORIZED_WITHDRAWER
+        description: "Account responsible for signing any stake withdrawal transactions"
+      - name: LOCKUP
+        description: "Lockup information when tokens can be withdrawn"
+      - name: RENT_EXEMPT_RESERVE
+        description: "Minimum SOL balance that must be maintained for this account to remain rent exempt"
+      - name: CREDITS_OBSERVED
+        description: "Credits observed for the validator"
+      - name: ACTIVATION_EPOCH
+        description: "Epoch when stake was activated"
+      - name: DEACTIVATION_EPOCH
+        description: "Epoch when stake will be deactivated"
+      - name: ACTIVE_STAKE
+        description: "Amount staked in SOL"
+      - name: VOTER
+        description: "Vote account of the validator this stake is delegated to"
+      - name: WARMUP_COOLDOWN_RATE
+        description: "Rate at which stake can be activated/deactivated"
+      - name: TYPE_STAKE
+        description: "Status of the stake"
+      - name: PROGRAM
+        description: "The type of account"
+      - name: ACCOUNT_SOL
+        description: "SOL held in this account"
+        tests:
+          - not_null: *recent_date_filter
+      - name: RENT_EPOCH
+        description: "Epoch at which this account will next owe rent"
+      - name: STAKE_PUBKEY
+        description: "Address of stake account"
+        tests:
+          - not_null: *recent_date_filter
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
+      - name: SNAPSHOT_STAKE_ACCOUNTS_2_ID
+        description: '{{ doc("pk") }}'
+        tests: 
+          - not_null: *recent_date_filter
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        tests: 
+          - not_null: *recent_date_filter
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        tests: 
+          - not_null:
+              name: test_silver__not_null_snapshot_stake_accounts_2_invocation_id
+              <<: *recent_date_filter
