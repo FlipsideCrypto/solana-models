@@ -5,6 +5,7 @@
     cluster_by = ['block_timestamp::DATE','ROUND(block_id, -3)'],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(tx_id, program_id, instruction_program_id, instruction_index, inner_index, event_type)'),
+    full_refresh = false,
     tags = ['events_inner_backfill']
 ) }}
 
