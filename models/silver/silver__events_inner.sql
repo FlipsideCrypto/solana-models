@@ -5,6 +5,7 @@
     cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE','ROUND(block_id, -3)'],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, program_id, instruction_program_id, instruction_index, inner_index, event_type)'),
     merge_exclude_columns = ["inserted_timestamp"],
+    full_refresh = false,
     tags = ['events_inner_backfill']
 ) }}
 
@@ -35,7 +36,7 @@ WITH pre_final AS (
     {{ get_batch_load_logic(this,5,'2024-09-15') }}
 {% endif %}
 {% else %}
-    AND _inserted_timestamp :: DATE BETWEEN '2024-08-01' AND '2024-08-05'
+    AND _inserted_timestamp :: DATE BETWEEN '2022-08-12' AND '2022-08-15'
 {% endif %}
 )
 SELECT
