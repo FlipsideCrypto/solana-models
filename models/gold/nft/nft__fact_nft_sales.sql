@@ -219,6 +219,31 @@ SELECT
 FROM
     {{ ref('silver__nft_sales_solsniper_v1_events_view') }}
 UNION ALL
+SELECT
+    'hyperspace',
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    purchaser,
+    seller,
+    mint,
+    sales_amount,
+    NULL as tree_authority,
+    NULL as merkle_tree,
+    NULL as leaf_index,
+    FALSE as is_compressed,
+    nft_sales_hyperspace_id AS fact_nft_sales_id,
+    inserted_timestamp,
+    modified_timestamp
+FROM
+    {{ ref('silver__nft_sales_hyperspace_view') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
+UNION ALL
 {% endif %}
 -- Only select from active models during incremental
 SELECT
@@ -324,42 +349,6 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_hadeswap') }}
-{% if is_incremental() %}
-WHERE
-    modified_timestamp >= '{{ max_modified_timestamp }}'
-{% endif %}
-UNION ALL
-SELECT
-    'hyperspace',
-    block_timestamp,
-    block_id,
-    tx_id,
-    succeeded,
-    program_id,
-    purchaser,
-    seller,
-    mint,
-    sales_amount,
-    NULL as tree_authority,
-    NULL as merkle_tree,
-    NULL as leaf_index,
-    FALSE as is_compressed,
-    COALESCE (
-        nft_sales_hyperspace_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_id','mint']
-        ) }}
-    ) AS fact_nft_sales_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
-FROM
-    {{ ref('silver__nft_sales_hyperspace') }}
 {% if is_incremental() %}
 WHERE
     modified_timestamp >= '{{ max_modified_timestamp }}'

@@ -86,6 +86,8 @@ sources:
       - name: nft_sales_solsniper_v1_events
       - name: swaps_intermediate_jupiterv6
       - name: nft_sales_amm_sell
+      - name: nft_sales_hyperspace
+      - name: stake_pool_actions_lido
   - name: solana_streamline
     database: solana
     schema: streamline
