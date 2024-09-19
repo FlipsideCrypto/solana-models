@@ -8,7 +8,7 @@
         {{ "and _inserted_timestamp between (select max(_inserted_timestamp) from " ~ model_name ~ ") and (select dateadd('hour',12,max(_inserted_timestamp)) from " ~ model_name ~ ")" }}
     {% elif max_date >= '2022-08-24' and max_date < '2022-08-31' %}
         {{ "and _inserted_timestamp between (select max(_inserted_timestamp) from " ~ model_name ~ ") and '2022-08-31 01:00:00.000' " }}
-    {% elif max_date == '2024-09-01' %}
+    {% elif max_date == '2022-09-01' %}
         {{ "and _inserted_timestamp between (select max(_inserted_timestamp) from " ~ model_name ~ ") and (select dateadd('hour',8,max(_inserted_timestamp)) from " ~ model_name ~ ")" }}
     {% elif max_date >= '2022-08-31' and max_date < '2022-09-05' %}
         {{ "and _inserted_timestamp between (select max(_inserted_timestamp) from " ~ model_name ~ ") and (select dateadd('hour',4,max(_inserted_timestamp)) from " ~ model_name ~ ")" }}
