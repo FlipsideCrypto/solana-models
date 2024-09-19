@@ -6,8 +6,27 @@ models:
           combination_of_columns:
             - TX_ID
             - INDEX
-            - INNER_INDEX
+            - LOG_INDEX
           where: block_timestamp::date > current_date - 30
+      - compare_model_subset:
+          name: silver__swaps_inner_intermediate_jupiterv4_business_logic_test
+          compare_model: ref('testing__swaps_inner_intermediate_jupiterv4')
+          compare_columns: 
+            - tx_id
+            - index
+            - inner_index
+            - swap_index
+            - swapper
+            - from_mint
+            - round(from_amount,2)
+            - to_mint
+            - round(to_amount,2)
+            - swap_program_id
+          model_condition: "where tx_id in ('4ZjTuZyq3BTMVaciLQNwWFA2yHydBNWHC8nYSP33TxEedKgZok7m62cpMkQrBBnCC8PcMfSpzery4HDG3BxmdYGC',
+          '4oFr1wz6jKBjqJb1FCv6ZypUdF2vEXuvPEHK1gABrvvCWHP5mDyfLTMRrXzHEDhHk1Z983R9sKkcFGcgfTHsjvBR',
+          '4tP7KutvrYEKArvKPHLC7KtHttDeNHFmfZrtMqq2B5YEFHiaDjoGjYzAqaXkpMAJJCubmm3kQyQbWygXsvayq34n',
+          '5Wj1T8eKwAEnbRUrrv6T86r9SrboeDJ4mQNnGZJx1gHhBaujfzgntLh6yjy9TfuFDDdVVNYutWdVoW8byfAJzLAv',
+          '5eP2sF6tX9sBj7rLb97dK5AWFx8EHoVeuoxPDjvZojtQEznBRoGFq2prQzQJE93Xe3izRCB1nwhnRRvRoBEibLDW')"
     recent_date_filter: &recent_date_filter
       config:
         where: _inserted_timestamp >= current_date - 7
@@ -32,11 +51,9 @@ models:
         tests: 
           - not_null: *recent_date_filter
       - name: INNER_INDEX
-        description: "{{ doc('inner_index') }}. This is the inner index of the log event listing the inner swap"
-        tests: 
-          - not_null: *recent_date_filter
+        description: "{{ doc('inner_index') }}"
       - name: SWAP_INDEX
-        description: "{{ doc('swaps_swap_index') }} as it relates to the top level Jupiter V6 swap instruction"
+        description: "{{ doc('swaps_swap_index') }} as it relates to the top level Jupiter V4 swap instruction"
         tests: 
           - not_null: *recent_date_filter
       - name: SUCCEEDED
