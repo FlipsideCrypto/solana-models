@@ -1,0 +1,90 @@
+version: 2
+models:
+  - name: core__fact_events_inner
+    description: Contains each event that occurs within the inner instructions of an instruction. These are also known as CPI (Cross-Program Invocations), where a program makes a call to another.
+    recent_date_filter: &recent_date_filter
+      config:
+        where: modified_timestamp >= current_date - 7
+    tests:
+      - reference_tx_missing:
+          reference_tables:
+            - 'silver__events_inner'
+          id_column: 'tx_id'
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null:
+              where: block_id > 39824213 and _inserted_timestamp >= current_date - 7
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: SIGNERS
+        description: "{{ doc('signers') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: INSTRUCTION_INDEX
+        description: "{{ doc('event_index') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
+        tests:  
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: INSTRUCTION_PROGRAM_ID
+        description: "{{ doc('program_id') }}. For the instruction calling this inner instruction."
+        tests:
+          - dbt_expectations.expect_column_to_exist  
+          - not_null: *recent_date_filter
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist  
+          - not_null: *recent_date_filter
+      - name: EVENT_TYPE
+        description: "{{ doc('event_type') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist  
+      - name: INSTRUCTION
+        description: "{{ doc('instruction') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist   
+          - not_null: *recent_date_filter
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist   
+          - not_null
+      - name: FACT_EVENTS_INNER_ID
+        description: '{{ doc("pk") }}'
+        tests:
+          - dbt_expectations.expect_column_to_exist   
+          - not_null: *recent_date_filter
+          - unique: *recent_date_filter
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        tests:
+          - dbt_expectations.expect_column_to_exist   
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        tests:
+          - dbt_expectations.expect_column_to_exist   
+          - not_null
+          
