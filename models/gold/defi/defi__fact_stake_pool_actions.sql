@@ -21,23 +21,12 @@ SELECT
     stake_pool,
     amount,
     'SOL' AS token,
-    COALESCE (
-        stake_pool_actions_lido_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_id','index']
-        ) }}
-    ) AS fact_stake_pool_actions_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
+    stake_pool_actions_lido_id AS fact_stake_pool_actions_id,
+    inserted_timestamp,
+    modified_timestamp
 FROM
     {{ ref(
-        'silver__stake_pool_actions_lido'
+        'silver__stake_pool_actions_lido_view'
     ) }}
 {% if is_incremental() %}
 WHERE modified_timestamp >= (

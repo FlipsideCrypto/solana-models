@@ -168,7 +168,7 @@ SELECT
     mint,
     _inserted_timestamp
 FROM
-    {{ ref('silver__nft_sales_hyperspace') }}
+    {{ ref('silver__nft_sales_hyperspace_view') }}
 
 {% if is_incremental() %}
 WHERE
