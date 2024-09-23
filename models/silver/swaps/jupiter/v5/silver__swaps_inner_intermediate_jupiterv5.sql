@@ -36,8 +36,7 @@ WITH base AS (
         )
         AND event_type = 'SwapEvent'
         AND succeeded
-        AND _inserted_timestamp :: DATE BETWEEN '2024-09-06'
-        AND '2024-09-07'
+        AND _inserted_timestamp :: DATE BETWEEN '2024-09-06' AND '2024-09-07'
 ),
 swappers AS (
     SELECT

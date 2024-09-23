@@ -47,6 +47,10 @@ models:
         description: "{{ doc('swaps_swap_index') }} as it relates to the top level Jupiter V6 swap instruction"
         tests: 
           - not_null
+      - name: LOG_INDEX
+        description: "{{ doc('log_index') }}"
+        tests: 
+          - not_null
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests: 
