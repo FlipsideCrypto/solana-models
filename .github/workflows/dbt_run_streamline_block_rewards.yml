@@ -42,4 +42,4 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run -s models/streamline/core/complete/streamline__complete_block_rewards_2.sql
-          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS": True}' -s models/streamline/decode_logs/streamline__decode_logs_realtime.sql
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS": True}' -s streamline__block_rewards_2
