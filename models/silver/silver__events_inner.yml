@@ -10,7 +10,7 @@ models:
             - TX_ID
             - INSTRUCTION_INDEX
             - INNER_INDEX
-          where: block_timestamp::date > current_date - 30
+          where: block_timestamp::date > current_date - 7
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
