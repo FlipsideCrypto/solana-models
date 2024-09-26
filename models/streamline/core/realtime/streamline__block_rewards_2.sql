@@ -3,7 +3,7 @@
     post_hook = fsc_utils.if_data_call_function_v2(
         func = 'streamline.udf_bulk_rest_api_v2',
         target = "{{this.schema}}.{{this.identifier}}",
-        params ={ "external_table" :"block_rewards",
+        params ={ "external_table" :"block_rewards_2",
         "sql_limit" :"100000",
         "producer_batch_size" :"100000",
         "worker_batch_size" :"12500",
@@ -16,7 +16,7 @@
     {% set next_batch_num_query %}
     SELECT
         greatest(
-            (SELECT coalesce(max(_partition_id),0) FROM {{ ref('streamline__complete_block_rewards') }}),
+            59751, /* TODO replace with cutoff partition id in PROD after deploy */
             (SELECT coalesce(max(_partition_id),0) FROM {{ ref('streamline__complete_block_rewards_2') }})
         )+1
     {% endset %}
@@ -33,6 +33,8 @@ WITH blocks AS (
         block_id
     FROM
         {{ ref('streamline__complete_block_rewards') }}
+    WHERE
+        block_id <= 292059956 /* TODO replace with cutoff block in PROD after deploy */
     EXCEPT
     SELECT 
         block_id
