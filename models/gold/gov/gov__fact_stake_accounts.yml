@@ -8,7 +8,7 @@ models:
     tests:
       - reference_tx_missing:
           reference_tables:
-            - 'silver__snapshot_stake_accounts'
+            - 'silver__snapshot_stake_accounts_2'
           id_column: 'stake_pubkey'
     columns:
       - name: epoch
