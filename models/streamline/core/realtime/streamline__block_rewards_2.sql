@@ -16,7 +16,7 @@
     {% set next_batch_num_query %}
     SELECT
         greatest(
-            59751, /* TODO replace with cutoff partition id in PROD after deploy */
+            59890, /* cutoff partition id in PROD after deploy */
             (SELECT coalesce(max(_partition_id),0) FROM {{ ref('streamline__complete_block_rewards_2') }})
         )+1
     {% endset %}
@@ -34,7 +34,7 @@ WITH blocks AS (
     FROM
         {{ ref('streamline__complete_block_rewards') }}
     WHERE
-        block_id <= 292059956 /* TODO replace with cutoff block in PROD after deploy */
+        block_id <= 292334107 /* cutoff block_id in PROD after deploy */
     EXCEPT
     SELECT 
         block_id
