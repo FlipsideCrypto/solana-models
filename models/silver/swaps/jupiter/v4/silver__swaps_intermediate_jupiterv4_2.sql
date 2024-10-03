@@ -1,5 +1,4 @@
 -- depends_on: {{ ref('silver__decoded_instructions_combined') }}
-
 {{ config(
     materialized = 'incremental',
     unique_key = "swaps_intermediate_jupiterv4_id",
@@ -24,7 +23,7 @@
         block_id,
         succeeded,
         tx_id,
-        index,
+        INDEX,
         inner_index,
         program_id,
         decoded_instruction,
@@ -34,7 +33,12 @@
         {{ ref('silver__decoded_instructions_combined') }}
     WHERE
         program_id = 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
-        AND event_type in ('route','raydiumSwapExactOutput','raydiumClmmSwapExactOutput','whirlpoolSwapExactOutput')
+        AND event_type IN (
+            'route',
+            'raydiumSwapExactOutput',
+            'raydiumClmmSwapExactOutput',
+            'whirlpoolSwapExactOutput'
+        )
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -44,7 +48,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND block_timestamp :: DATE > '2023-01-20'
+    AND block_timestamp :: DATE between '2023-01-20' and '2023-05-01'
 {% endif %}
 
 {% endset %}
@@ -55,21 +59,18 @@ AND _inserted_timestamp >= (
 ) %}
 {% endif %}
 
-
-
 WITH base AS (
     SELECT
         *
     FROM
         silver.swaps_intermediate_jupiterv4__intermediate_tmp
 ),
-
-swaps as (
-select 
+swaps AS (
+    SELECT
         block_timestamp,
         block_id,
         tx_id,
-        index,
+        INDEX,
         inner_index,
         log_index,
         swap_index,
@@ -79,81 +80,106 @@ select
         to_mint,
         to_amount,
         _inserted_timestamp
-from {{ ref('silver__swaps_inner_intermediate_jupiterv4') }}
+    FROM
+        {{ ref('silver__swaps_inner_intermediate_jupiterv4') }}
     WHERE
         {{ between_stmts }}
+),
+dest_swap AS (
+    SELECT
+        A.block_timestamp,
+        A.block_id,
+        A.tx_id,
+        A.succeeded,
+        A.program_id,
+        A.index,
+        A.inner_index,
+        b.log_index,
+        b.swap_index,
+        b.swapper,
+        b.to_mint,
+        b.to_amount,
+        A._inserted_timestamp
+    FROM
+        base A
+        LEFT JOIN swaps b
+        ON A.block_timestamp :: DATE = b.block_timestamp :: DATE
+        AND A.tx_id = b.tx_id
+        AND A.index = b.index
+        AND COALESCE(
+            A.inner_index,
+            -1
+        ) = COALESCE(
+            b.inner_index,
+            -1
+        ) qualify ROW_NUMBER() over (
+            PARTITION BY b.tx_id,
+            b.index,
+            b.inner_index
+            ORDER BY
+                COALESCE(
+                    b.swap_index,
+                    -1
+                ) DESC
+        ) = 1
+),
+source_swap AS (
+    SELECT
+        A.block_timestamp,
+        A.block_id,
+        A.tx_id,
+        A.succeeded,
+        A.program_id,
+        A.index,
+        A.inner_index,
+        b.log_index,
+        b.swap_index,
+        b.swapper,
+        b.from_mint,
+        b.from_amount,
+        A._inserted_timestamp
+    FROM
+        base A
+        LEFT JOIN swaps b
+        ON A.block_timestamp :: DATE = b.block_timestamp :: DATE
+        AND A.tx_id = b.tx_id
+        AND A.index = b.index
+        AND COALESCE(
+            A.inner_index,
+            -1
+        ) = COALESCE(
+            b.inner_index,
+            -1
+        )
+    WHERE
+        swap_index = 0
 )
-,
-dest_swap as (
-select   a.block_timestamp,
-a.block_id,
-a.tx_id,
-a.succeeded,
-a.program_id,
-a.index,
-a.inner_index,
-b.log_index,
-b.swap_index,
-b.swapper,
-b.to_mint,
-b.to_amount,
-a._inserted_timestamp
-    from base a
-    left join swaps b
-    on a.block_timestamp::date = b.block_timestamp::date 
-        and a.tx_id = b.tx_id
-        and a.index = b.index
-        AND coalesce(a.inner_index,-1) = coalesce(b.inner_index,-1)
-    QUALIFY
-            row_number() OVER (PARTITION BY b.tx_id, b.index,b.inner_index ORDER BY coalesce(b.swap_index,-1) desc) = 1
-
-)
--- select * from dest_swap;
-,
-source_swap as (
-select     a.block_timestamp,
-a.block_id,
-a.tx_id,
-a.succeeded,
-a.program_id,
-a.index,
-a.inner_index,
-b.log_index,
-b.swap_index,
-b.swapper,
-b.from_mint,
-b.from_amount,
-a._inserted_timestamp
-    from base a
-    left join swaps b
-    on a.block_timestamp::date = b.block_timestamp::date 
-        and a.tx_id = b.tx_id
-        and a.index = b.index
-        AND coalesce(a.inner_index,-1) = coalesce(b.inner_index,-1)
-    where swap_index = 0
-
-)
-
-select 
-a.block_timestamp,
-a.block_id,
-a.tx_id,
-a.index,
-a.inner_index,
-row_number() OVER (PARTITION BY a.tx_id ORDER BY a.index, a.inner_index)-1 AS swap_index,
-a.succeeded,
-a.program_id,
-a.swapper,
-a.from_mint,
-a.from_amount,
-b.to_mint,
-b.to_amount,
-    a._inserted_timestamp,
+SELECT
+    A.block_timestamp,
+    A.block_id,
+    A.tx_id,
+    A.index,
+    A.inner_index,
+    ROW_NUMBER() over (
+        PARTITION BY A.tx_id
+        ORDER BY
+            A.index,
+            A.inner_index
+    ) -1 AS swap_index,
+    A.succeeded,
+    A.program_id,
+    A.swapper,
+    A.from_mint,
+    A.from_amount,
+    b.to_mint,
+    b.to_amount,
+    A._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['a.tx_id','a.index','a.inner_index']) }} AS swaps_intermediate_jupiterv4_id,
-    sysdate() AS inserted_timestamp,
-    sysdate() AS modified_timestamp,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
-from source_swap a
-left join dest_swap b
-on a.tx_id = b.tx_id
-and a.index = b.index
+FROM
+    source_swap A
+    LEFT JOIN dest_swap b
+    ON A.tx_id = b.tx_id
+    AND A.index = b.index
