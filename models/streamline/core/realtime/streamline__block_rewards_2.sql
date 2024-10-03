@@ -8,7 +8,8 @@
         "producer_batch_size" :"100000",
         "worker_batch_size" :"12500",
         "exploded_key": tojson(["result.rewards"]),
-        "sql_source" :"{{this.identifier}}" }
+        "sql_source" :"{{this.identifier}}",
+        "order_by_column": "block_id", }
     )
 ) }}
 
@@ -77,5 +78,3 @@ SELECT
     ) AS request
 FROM
     blocks
-ORDER BY
-    block_id
