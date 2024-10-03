@@ -73,7 +73,10 @@
     'DCAKuApAuZtVNYLk3KTAVW9GLWVvPbnb5CxxRRmVgcTr',
     'DCAKxn5PFNN1mBREPWGdk1RXg5aVH9rPErLfBFEi2Emb',
     'DCAK36VfExkPdAkYUQg6ewgxyinvcEyPLyHjRbmveKFw',
-    'BFQ2te7ERN319HA87mn6NJ9oxMUvNxyifqEhUWHFTie9'
+    'BFQ2te7ERN319HA87mn6NJ9oxMUvNxyifqEhUWHFTie9',
+    'JD1dHSqYkrXvqUVL8s6gzL1yB7kpYymsHfwsGxgwp55h',
+    'JD38n7ynKYcgPpF7k1BhXEeREu1KqptU93fVGy3S624k',
+    'JD25qVdtd65FoiXNmR89JjmoJdYk9sjYQeSTZAALFiMy'
 ] %}
 
 WITH all_routes AS (
