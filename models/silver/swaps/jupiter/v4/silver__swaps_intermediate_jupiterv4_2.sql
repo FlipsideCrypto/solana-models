@@ -47,6 +47,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+and block_timestamp <= '2023-09-01'
 {% else %}
     AND block_timestamp :: DATE between '2023-01-20' and '2023-05-01'
 {% endif %}
@@ -183,3 +184,4 @@ FROM
     LEFT JOIN dest_swap b
     ON A.tx_id = b.tx_id
     AND A.index = b.index
+    AND a.swap_index <> b.swap_index;
