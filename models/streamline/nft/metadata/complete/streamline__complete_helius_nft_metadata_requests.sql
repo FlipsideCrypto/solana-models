@@ -1,8 +1,8 @@
 {{
     config(
-        materialized="incremental",
-        unique_key="mint",
-        cluster_by=["_inserted_timestamp::date"]
+        materialized = 'incremental',
+        unique_key = 'mint',
+        cluster_by = ['_inserted_timestamp::date']
     )
 }}
 
@@ -13,17 +13,22 @@ SELECT
     _partition_id,
     _inserted_timestamp
 FROM
-{% if is_incremental() %}
+    {% if is_incremental() %}
     {{ ref('bronze__streamline_helius_nft_metadata') }}
+    {% else %}
+    {{ ref('bronze__streamline_FR_helius_nft_metadata') }}
+    {% endif %}
+{% if is_incremental() %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
+            coalesce(max(_inserted_timestamp), '1970-01-01'::DATE) max_inserted_timestamp
         FROM
             {{ this }}
     )
-{% else %}
-    {{ ref('bronze__streamline_FR_helius_nft_metadata') }}
 {% endif %}
 QUALIFY
-    row_number() OVER (PARTITION BY mint ORDER BY _inserted_timestamp DESC) = 1
+    row_number() OVER (
+        PARTITION BY mint
+        ORDER BY _inserted_timestamp DESC
+    ) = 1
