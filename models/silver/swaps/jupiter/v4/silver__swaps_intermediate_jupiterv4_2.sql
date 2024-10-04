@@ -184,4 +184,4 @@ FROM
     LEFT JOIN dest_swap b
     ON A.tx_id = b.tx_id
     AND A.index = b.index
-    AND a.swap_index <> b.swap_index;
+    AND a.swap_index <> b.swap_index
