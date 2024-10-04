@@ -38,7 +38,6 @@ WITH base AS (
         AND _partition_id >= 59891
         {% endif %}
 ),
-
 {% if is_incremental() %}
 prev_null_block_timestamp_txs AS (
     SELECT
@@ -54,10 +53,7 @@ prev_null_block_timestamp_txs AS (
         A.inserted_timestamp,
         A.modified_timestamp,
         A._invocation_id,
-        GREATEST(
-            A._inserted_timestamp,
-            b._inserted_timestamp
-        ) AS _inserted_timestamp
+        greatest(A._inserted_timestamp, b._inserted_timestamp) AS _inserted_timestamp
     FROM
         {{ this }} A
     INNER JOIN 
@@ -69,40 +65,26 @@ prev_null_block_timestamp_txs AS (
 ),
 {% endif %}
 epoch AS (
-    SELECT
-        *
-    FROM
+    SELECT *
+    FROM 
         {{ ref('silver__epoch') }}
-
-{% if is_incremental() %}
-WHERE
-    start_block <= (
-        SELECT
-            MAX(block_id)
-        FROM
-            base
-    )
-{% endif %}
+    {% if is_incremental() %}
+    WHERE start_block <= (SELECT MAX(block_id) FROM base)
+    {% endif %}
 ),
-pre_final as (
+pre_final AS (
     SELECT
         A.block_timestamp,
         A.block_id,
-        A.amount / pow(
-            10,
-            9
-        ) AS reward_amount_sol,
-        A.post_balance / pow(
-            10,
-            9
-        ) AS post_balance_sol,
+        A.amount / pow(10, 9) AS reward_amount_sol,
+        A.post_balance / pow(10, 9) AS post_balance_sol,
         A.account AS vote_pubkey,
         b.epoch AS epoch_earned,
         A._partition_id,
-        {{ dbt_utils.generate_surrogate_key(['b.epoch','a.block_id','a.account']) }} AS rewards_fee_2_id,
+        {{ dbt_utils.generate_surrogate_key(['b.epoch', 'a.block_id', 'a.account']) }} AS rewards_fee_2_id,
         {{ dbt_utils.generate_surrogate_key(['b.epoch']) }} AS epoch_id,
-        SYSDATE() AS inserted_timestamp,
-        SYSDATE() AS modified_timestamp,
+        sysdate() AS inserted_timestamp,
+        sysdate() AS modified_timestamp,
         '{{ invocation_id }}' AS _invocation_id,
         A._inserted_timestamp
     FROM
@@ -112,15 +94,16 @@ pre_final as (
         ON A.block_id BETWEEN b.start_block AND b.end_block 
     {% if is_incremental() %}
     UNION
-    SELECT
-        *
-    FROM
+    SELECT *
+    FROM 
         prev_null_block_timestamp_txs
     {% endif %}
 )
-SELECT 
-    *
+SELECT *
 FROM 
     pre_final 
-QUALIFY
-    row_number() OVER (PARTITION BY epoch_earned, vote_pubkey, block_id ORDER BY _inserted_timestamp DESC) = 1
+QUALIFY 
+    row_number() OVER (
+        PARTITION BY epoch_earned, vote_pubkey, block_id
+        ORDER BY _inserted_timestamp DESC
+    ) = 1
