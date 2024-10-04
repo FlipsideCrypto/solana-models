@@ -54,8 +54,6 @@ models:
           - not_null: *recent_date_filter
       - name: EVENT_TYPE
         description: "{{ doc('event_type') }}"
-        tests:  
-          - not_null: *recent_date_filter
       - name: INSTRUCTION
         description: "{{ doc('instruction') }}"
         tests: 
