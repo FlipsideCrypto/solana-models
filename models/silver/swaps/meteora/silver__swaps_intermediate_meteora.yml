@@ -26,7 +26,9 @@ models:
           '2eV5PUm4WL7X9T1X4nSbBmAGDLTx9pUiygK34ngMSyR9QwQUS8ZpnzGKTCbuJHeVGYNHjHBGtPh4fLYxkBLGVJeB',
           '35QkSCVWRNFaqFM8DZrDWKWsBdDTrHVMmskd3H9D3pcQstdYsWqZiXVhMpkaCFrBQTi8XZaWgNZaWnQZzwPpZ1dv',
           '2CkwiLBE82MALvqW4uHscPLbEdAqgVXhSPsmoeVPq6wzS9iTv1wDfwsE7SBqoR6j7L2KFyi2NMwAy5Yq5a45RuVy',
-          '64PW2o1TjxU3kJXAWsAZrL6wJAhKeAY2esJNbjp9UfBb4q4mZMF9KdXXqv3DjkAiNZUacitwzU5v8rCCb3zkdvmp')"  
+          '64PW2o1TjxU3kJXAWsAZrL6wJAhKeAY2esJNbjp9UfBb4q4mZMF9KdXXqv3DjkAiNZUacitwzU5v8rCCb3zkdvmp',
+          '42a7GeWqCVi8p3e5EGqKh6pcYnuqK4c6Kjg9ZmiN7SKe1aFhtvUDQJrPiMinTwvKPeAcTVVYjXE4TH33mMH52yD5',
+          '5KboaM89D79KwHwmRaoaSA7wD3xduMpdqVnWWxkEYvi4b16dTKBQBtGQYoQ1PgStD66mF95vi7FGNrcfmW3EGTpB')"  
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
