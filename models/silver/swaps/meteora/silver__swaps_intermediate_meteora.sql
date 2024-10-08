@@ -305,15 +305,15 @@ swaps as (
             j.to_mint
         ) AS to_mint,
         p._inserted_timestamp
-FROM
-    pre_final p
-    LEFT JOIN jup_decoded_swaps j
-    ON p.tx_id = j.tx_id
-    AND p.index = j.index
-    AND p.block_timestamp::date = j.block_timestamp::date
-    AND program_id = 'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB'
-    AND p.to_amt IS NULL
-    AND p.to_mint IS NULL
+    FROM
+        pre_final p
+        LEFT JOIN jup_decoded_swaps j
+        ON p.tx_id = j.tx_id
+        AND p.index = j.index
+        AND p.block_timestamp :: DATE = j.block_timestamp :: DATE
+        AND program_id = 'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB'
+        AND p.to_amt IS NULL
+        AND p.to_mint IS NULL
 )
 
 SELECT
