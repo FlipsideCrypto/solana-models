@@ -41,13 +41,13 @@
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) - INTERVAL '1 hour'
-    FROM
-        {{ this }}
-)
-and block_timestamp <= '2023-09-01'
+-- AND _inserted_timestamp >= (
+--     SELECT
+--         MAX(_inserted_timestamp) - INTERVAL '1 hour'
+--     FROM
+--         {{ this }}
+-- )
+and block_timestamp between '2022-07-10' and '2023-01-20'
 {% else %}
     AND block_timestamp :: DATE between '2023-01-20' and '2023-05-01'
 {% endif %}

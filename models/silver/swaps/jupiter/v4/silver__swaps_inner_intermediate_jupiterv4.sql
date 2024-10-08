@@ -49,7 +49,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND block_timestamp :: DATE > '2023-01-18'
+    AND block_timestamp :: DATE > '2022-07-12'
 {% endif %}
 
 {% endset %}

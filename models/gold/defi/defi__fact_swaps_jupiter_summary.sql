@@ -95,3 +95,25 @@ SELECT
     modified_timestamp,
 FROM
     {{ ref('silver__swaps_intermediate_jupiterv5_2_view') }}
+UNION ALL
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    index,
+    inner_index,
+    swap_index,
+    succeeded,
+    swapper,
+    from_mint AS swap_from_mint,
+    from_amt AS swap_from_amount,
+    to_mint AS swap_to_mint,
+    to_amt AS swap_to_amount,
+    program_id,
+    NULL as is_dca_swap,
+    NULL as dca_requester,
+    swaps_intermediate_jupiterv4_2_id AS fact_swaps_jupiter_summary_id,
+    inserted_timestamp,
+    modified_timestamp,
+FROM
+    {{ ref('silver__swaps_intermediate_jupiterv4_2') }}
