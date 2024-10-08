@@ -1,3 +1,5 @@
+-- depends_on: {{ ref('bronze__streamline_helius_nft_metadata') }}
+
 {{
     config(
         materialized = 'incremental',
@@ -10,7 +12,7 @@ SELECT
     mint,
     helius_nft_metadata_requests_id,
     max_mint_event_inserted_timestamp,
-    _partition_id,
+    _partition_by_created_date,
     _inserted_timestamp
 FROM
     {% if is_incremental() %}
