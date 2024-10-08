@@ -11,37 +11,57 @@
 
 {% if execute %}
     {% set base_query %}
-    CREATE OR REPLACE TEMPORARY TABLE silver.swaps_intermediate_meteora__intermediate_tmp AS
-    SELECT
-        *
-    FROM
-        {{ ref('silver__decoded_instructions_combined') }}
-    WHERE
-        program_id IN (
-            'LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo',
-            -- DLMM program
-            'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB' -- AMM program
+        CREATE OR REPLACE TEMPORARY TABLE silver.swaps_intermediate_meteora__intermediate_tmp AS 
+        WITH distinct_entities AS (
+            SELECT DISTINCT
+                tx_id
+            FROM 
+                {{ ref('silver__decoded_instructions_combined') }} d
+            WHERE
+                program_id IN (
+                'LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo', -- DLMM program
+                'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB' -- AMM program
+                )
+                AND event_type = 'swap'                
+                AND succeeded
+                {% if is_incremental() %}
+                AND _inserted_timestamp >= (
+                    SELECT
+                        MAX(_inserted_timestamp) - INTERVAL '1 hour'
+                    FROM
+                        {{ this }}
+                )
+                {% endif %}
         )
-        AND event_type = 'swap'
+        /* need to re-select all decoded instructions from all tx_ids in incremental subset 
+        in order for the window function to output accurate values */
+        SELECT 
+            d.block_timestamp,
+            d.block_id,
+            d.tx_id,
+            d.index,
+            d.inner_index,
+            d.signers,
+            d.succeeded,
+            d.program_id,
+            d.decoded_instruction,
+            d.event_type,
+            d._inserted_timestamp
+        FROM 
+            {{ ref('silver__decoded_instructions_combined') }} d
+        JOIN
+            distinct_entities
+            USING(tx_id)
+        WHERE
+             program_id IN (
+            'LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo',
+            'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB'
+        )
+        AND event_type = 'swap'                
         AND succeeded
-
-    {% if is_incremental() %}
-    AND _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp) - INTERVAL '1 hour'
-        FROM
-            {{ this }}
-    )
-    {% else %}
-        AND block_timestamp :: DATE >= '2022-07-14'
-    {% endif %}
     {% endset %}
-    
     {% do run_query(base_query) %}
-    {% set between_stmts = fsc_utils.dynamic_range_predicate(
-        "silver.swaps_intermediate_meteora__intermediate_tmp",
-        "block_timestamp::date"
-    ) %}
+    {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.swaps_intermediate_meteora__intermediate_tmp","block_timestamp::date") %}
 {% endif %}
 
 WITH base AS (
@@ -245,18 +265,63 @@ pre_final AS (
         ROW_NUMBER() over (PARTITION BY A.tx_id, A.index, A.inner_INDEX
             ORDER BY inner_index
         ) = 1
+),
+jup_decoded_swaps as (
+    SELECT 
+        tx_id,
+        index,
+        swap_program_id,
+        to_amount,
+        to_mint,
+        block_timestamp
+    FROM 
+        {{ ref('silver__swaps_inner_intermediate_jupiterv6') }}
+    WHERE
+        swap_program_id = 'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB'
+        AND {{ between_stmts }}
+),
+swaps as (
+    SELECT
+        p.block_id,
+        p.block_timestamp,
+        p.program_id,
+        p.tx_id,
+        ROW_NUMBER() over (
+            PARTITION BY p.tx_id
+            ORDER BY
+                p.index,
+                p.inner_index
+        ) AS swap_index,
+        p.succeeded,
+        p.swapper,
+        p.from_amt,
+        p.from_mint,
+        COALESCE(
+            p.to_amt,
+            j.to_amount
+        ) AS to_amt,
+        COALESCE(
+            p.to_mint,
+            j.to_mint
+        ) AS to_mint,
+        p._inserted_timestamp
+    FROM
+        pre_final p
+        LEFT JOIN jup_decoded_swaps j
+        ON p.tx_id = j.tx_id
+        AND p.index = j.index
+        AND p.block_timestamp :: DATE = j.block_timestamp :: DATE
+        AND program_id = 'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB'
+        AND p.to_amt IS NULL
+        AND p.to_mint IS NULL
 )
+
 SELECT
     block_id,
     block_timestamp,
     program_id,
     tx_id,
-    ROW_NUMBER() over (
-        PARTITION BY tx_id
-        ORDER BY
-            INDEX,
-            inner_index
-    ) AS swap_index,
+    swap_index,
     succeeded,
     swapper,
     from_amt,
@@ -269,4 +334,4 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS invocation_id
 FROM
-    pre_final
+    swaps
