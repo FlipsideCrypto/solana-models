@@ -4,7 +4,9 @@
     merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_timestamp::DATE','floor(block_id,-6)','_inserted_timestamp::DATE'],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(vote_pubkey, epoch_earned)'),
-    tags = ['rewards', 'scheduled_non_core']
+    tags = ['rewards'],
+    full_refresh = false,
+    enabled = false
 ) }}
 
 WITH base AS (

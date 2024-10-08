@@ -18,7 +18,7 @@ SELECT
   inserted_timestamp,
   epoch_id as dim_epoch_id
 FROM
-  {{ ref('silver__rewards_fee') }}
+  {{ ref('silver__rewards_fee_view') }}
 WHERE
   block_id <= {{ switchover_block_id }}
 UNION ALL

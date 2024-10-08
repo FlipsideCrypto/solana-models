@@ -77,6 +77,9 @@ sources:
       - name: swaps_intermediate_jupiterv5_1
       - name: swaps_intermediate_jupiterv5_2
       - name: rewards_rent
+      - name: rewards_fee
+      - name: rewards_voting
+      - name: rewards_staking
       - name: stake_pool_actions_eversol
       - name: nft_sales_smb
       - name: nft_mint_price_other
