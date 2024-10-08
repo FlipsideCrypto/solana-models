@@ -4,6 +4,8 @@
     cluster_by = "_partition_id",
     merge_update_columns = ["_partition_id"],
     tags = ['streamline'],
+    full_refresh = false,
+    enabled = false,
 ) }}
 
 SELECT

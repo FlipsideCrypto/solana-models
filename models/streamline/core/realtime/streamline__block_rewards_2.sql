@@ -33,7 +33,7 @@ WITH blocks AS (
     SELECT
         block_id
     FROM
-        {{ ref('streamline__complete_block_rewards') }}
+        {{ source('solana_streamline', 'complete_block_rewards') }}
     WHERE
         block_id <= 292334107 /* cutoff block_id in PROD after deploy */
     EXCEPT

@@ -15,7 +15,12 @@ WITH missing AS (
     SELECT 
         block_id
     FROM 
-        {{ ref('streamline__complete_block_rewards') }}
+        {{ source('solana_streamline', 'complete_block_rewards') }}
+    EXCEPT
+    SELECT 
+        block_id
+    FROM
+        {{ ref('streamline__complete_block_rewards_2') }}
 ),
 first_block_of_epoch AS (
     SELECT 
