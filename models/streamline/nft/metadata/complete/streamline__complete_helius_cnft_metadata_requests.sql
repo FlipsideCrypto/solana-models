@@ -4,7 +4,8 @@
     config(
         materialized = 'incremental',
         unique_key = 'mint',
-        cluster_by = ['_inserted_timestamp::date']
+        cluster_by = ['_inserted_timestamp::date'],
+        post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(mint)')
     )
 }}
 
