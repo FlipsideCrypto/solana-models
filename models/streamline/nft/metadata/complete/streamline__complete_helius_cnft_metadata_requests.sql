@@ -1,4 +1,4 @@
--- depends_on: {{ ref('bronze__streamline_helius_nft_metadata') }}
+-- depends_on: {{ ref('bronze__streamline_helius_cnft_metadata') }}
 
 {{
     config(
@@ -16,9 +16,9 @@ SELECT
     _inserted_timestamp
 FROM
     {% if is_incremental() %}
-    {{ ref('bronze__streamline_helius_nft_metadata') }}
+    {{ ref('bronze__streamline_helius_cnft_metadata') }}
     {% else %}
-    {{ ref('bronze__streamline_FR_helius_nft_metadata') }}
+    {{ ref('bronze__streamline_FR_helius_cnft_metadata') }}
     {% endif %}
 {% if is_incremental() %}
 WHERE
