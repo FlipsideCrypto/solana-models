@@ -27,13 +27,13 @@ WITH all_unknown_metadata AS (
             SELECT 
                 coalesce(max(max_mint_event_inserted_timestamp),'2000-01-01') 
             FROM 
-                {{ ref('streamline__complete_helius_nft_metadata_requests') }}
+                {{ ref('streamline__complete_helius_cnft_metadata_requests') }}
         )
     EXCEPT
     SELECT
         mint
     FROM
-        {{ ref('streamline__complete_helius_nft_metadata_requests') }}
+        {{ ref('streamline__complete_helius_cnft_metadata_requests') }}
 ),
 numbered AS (
     SELECT
@@ -49,7 +49,7 @@ numbered AS (
             SELECT 
                 coalesce(max(max_mint_event_inserted_timestamp),'2000-01-01') 
             FROM 
-                {{ ref('streamline__complete_helius_nft_metadata_requests') }}
+                {{ ref('streamline__complete_helius_cnft_metadata_requests') }}
         )
 ),
 grouped AS (
