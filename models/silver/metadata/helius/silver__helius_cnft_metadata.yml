@@ -1,0 +1,54 @@
+version: 2
+models:
+  - name: silver__helius_cnft_metadata
+    description: Contains cNFT metadata provided by Helius DAS API
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp::date >= current_date - 7
+    columns:
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        tests:
+          - not_null: *recent_date_filter
+          - unique
+      - name: CREATORS
+        description: "Creators of the NFT and what percentage of royalties they receive"
+      - name: AUTHORITY
+        description: "Authority address for the mint. When editions are minted, the authority remains the one from the master NFT"
+      - name: METADATA
+        description: "Metadata attributes that describe the NFT"
+      - name: IMAGE_URL
+        description: "{{ doc('image_url') }}"
+      - name: METADATA_URI
+        description: "{{ doc('token_metadata_uri') }}"
+      - name: NFT_NAME
+        description: "The name of the NFT"
+      - name: COLLECTION_ID
+        description: >
+          The ID of the collection
+      - name: NFT_COLLECTION_ID
+        description: >
+          The surrogate key of the collection. NULL if collection_id is NULL
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: HELIUS_CNFT_METADATA_ID
+        description: '{{ doc("pk") }}'
+        tests: 
+          - not_null: *recent_date_filter
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        tests: 
+          - not_null
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        tests: 
+          - not_null:
+              name: test_silver__not_null_silver_helius_cnft_metadata_invocation_id
+              <<: *recent_date_filter
+    
