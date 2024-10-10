@@ -2,6 +2,7 @@ name: dbt_run_snapshot_validators
 run-name: dbt_run_snapshot_validators
 
 on:
+  workflow_dispatch:
   schedule:
     # Runs 02:22 daily (see https://crontab.guru)
     - cron: '22 2 * * *'
