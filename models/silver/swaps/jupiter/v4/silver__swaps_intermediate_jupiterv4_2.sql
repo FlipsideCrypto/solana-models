@@ -41,15 +41,11 @@
         )
 
 {% if is_incremental() %}
--- AND _inserted_timestamp >= (
---     SELECT
---         MAX(_inserted_timestamp) - INTERVAL '1 hour'
---     FROM
---         {{ this }}
--- )
-and block_timestamp between '2022-07-10' and '2023-01-20'
+    {% if execute %}
+    {{ get_batch_load_logic(this,30,'2023-10-08') }}
+    {% endif %}
 {% else %}
-    AND block_timestamp :: DATE between '2023-01-20' and '2023-05-01'
+    AND block_timestamp::date between '2022-09-11' and '2022-10-01'
 {% endif %}
 
 {% endset %}
@@ -153,7 +149,16 @@ source_swap AS (
             -1
         )
     WHERE
-        swap_index = 0
+        swapper IS NOT NULL qualify ROW_NUMBER() over (
+            PARTITION BY b.tx_id,
+            b.index,
+            b.inner_index
+            ORDER BY
+                COALESCE(
+                    b.swap_index,
+                    -1
+                ) ASC
+        ) = 1
 )
 SELECT
     A.block_timestamp,
@@ -184,4 +189,10 @@ FROM
     LEFT JOIN dest_swap b
     ON A.tx_id = b.tx_id
     AND A.index = b.index
-    AND a.swap_index <> b.swap_index
+    AND (
+        A.inner_index = b.inner_index
+        OR (
+            A.inner_index IS NULL
+            AND b.inner_index IS NULL
+        )
+    )
