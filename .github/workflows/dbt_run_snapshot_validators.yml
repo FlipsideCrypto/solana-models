@@ -1,5 +1,5 @@
-name: dbt_run_streamline_stake_accounts_snapshot
-run-name: dbt_run_streamline_stake_accounts_snapshot
+name: dbt_run_snapshot_validators
+run-name: dbt_run_snapshot_validators
 
 on:
   schedule:
