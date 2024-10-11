@@ -182,10 +182,12 @@ tx_base AS (
             ) THEN FALSE
             ELSE NULL
         END AS stake_active,
-        silver.udf_get_account_balances_index(
-            stake_account,
-            account_keys
-        ) AS balance_index,
+        CASE
+            WHEN account_keys is null THEN NULL
+            ELSE silver.udf_get_account_balances_index(
+                    stake_account,
+                    account_keys
+        ) END AS balance_index,
         pre_balances [balance_index] :: INTEGER AS pre_tx_staked_balance,
         post_balances [balance_index] :: INTEGER AS post_tx_staked_balance,
         instruction :parsed :info :voteAccount :: STRING AS vote_acct,
