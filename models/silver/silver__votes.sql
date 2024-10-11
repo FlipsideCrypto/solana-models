@@ -41,7 +41,7 @@ WITH pre_final AS (
         ) = 'Vote111111111111111111111111111111111111111'
     {% if is_incremental() %}
     AND 
-        _partition_id > 116864 /* TODO REVERT */
+        _partition_id > 116863 /* TODO REVERT */
     AND
         _partition_id <= (
             SELECT 
