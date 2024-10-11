@@ -52,7 +52,7 @@ WITH pre_final AS (
         )
 
 {% if is_incremental() %}
-    AND _partition_id > 116863 /* TODO REVERT */
+    AND _partition_id > 116864 /* TODO REVERT */
     AND _partition_id <= (
         SELECT 
             MAX(_partition_id)
