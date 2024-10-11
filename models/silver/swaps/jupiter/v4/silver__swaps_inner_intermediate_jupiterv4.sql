@@ -15,49 +15,91 @@
 
 {% if execute %}
     {% set base_query %}
-    CREATE
-    OR REPLACE temporary TABLE silver.swaps_inner_intermediate_jupiterv4__intermediate_tmp AS
-
-    SELECT
-        block_timestamp,
-        block_id,
-        tx_id,
-        program_id,
-        INDEX,
-        inner_index,
-        log_index,
-        succeeded,
-        event_type,
-        decoded_log :args :amm :: STRING AS swap_program_id,
-        decoded_log :args :inputMint :: STRING AS from_mint,
-        decoded_log :args :inputAmount :: STRING AS from_amount,
-        decoded_log :args :outputMint :: STRING AS to_mint,
-        decoded_log :args :outputAmount :: STRING AS to_amount,
-        _inserted_timestamp
-    FROM
-        {{ ref('silver__decoded_logs') }}
-    WHERE
-        program_id = 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
-        AND event_type = 'Swap'
-        AND succeeded
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) - INTERVAL '1 hour'
-    FROM
-        {{ this }}
-)
-{% else %}
-    AND block_timestamp :: DATE > '2022-07-12'
-{% endif %}
-
-{% endset %}
-{% do run_query(base_query) %}
-{% set between_stmts = fsc_utils.dynamic_range_predicate(
-    "silver.swaps_inner_intermediate_jupiterv4__intermediate_tmp",
-    "block_timestamp::date"
-) %}
+        CREATE OR REPLACE TEMPORARY TABLE silver.swaps_inner_intermediate_jupiterv4__intermediate_tmp AS 
+        WITH base AS (
+            SELECT 
+                tx_id
+            FROM 
+                {{ ref('silver__decoded_logs') }}
+            WHERE
+                program_id = 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
+                AND event_type = 'Swap'
+                AND succeeded
+                {% if is_incremental() %}
+                AND _inserted_timestamp >= (
+                    SELECT
+                        MAX(_inserted_timestamp) - INTERVAL '1 hour'
+                    FROM
+                        {{ this }}
+                )
+                {% else %} 
+                AND _inserted_timestamp::date >= '2024-09-09'
+                AND _inserted_timestamp::date < '2024-09-15'
+                {% endif %}
+            {% if is_incremental() %}
+            UNION ALL
+            SELECT 
+                l.tx_id
+            FROM
+                {{ this }} s 
+            INNER JOIN 
+                {{ ref('silver__decoded_logs') }} l
+                ON s.block_timestamp::date = l.block_timestamp::date
+                AND s.tx_id = l.tx_id
+            WHERE
+                l.program_id = 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
+                AND l.event_type = 'Swap'
+                AND l.succeeded
+                AND s.swapper IS NULL
+                AND s._inserted_timestamp >= current_date - 2 /* only look back 2 days */
+            {% endif %}
+        ),
+        /* we need to grab all inner_swaps for any tx that is in the incremental subset because it is required to do the window function later on */
+        distinct_entities AS (
+            SELECT
+                DISTINCT tx_id
+            FROM
+                base
+        )
+        SELECT
+            block_timestamp,
+            block_id,
+            tx_id,
+            program_id,
+            index,
+            inner_index,
+            log_index,
+            succeeded,
+            event_type,
+            decoded_log:args:amm::string AS swap_program_id,
+            decoded_log:args:inputMint::string AS from_mint,
+            decoded_log:args:inputAmount::string AS from_amount,
+            decoded_log:args:outputMint::string AS to_mint,
+            decoded_log:args:outputAmount::string AS to_amount,
+            _inserted_timestamp,
+        FROM
+            {{ ref('silver__decoded_logs') }}
+        JOIN
+            distinct_entities
+            USING(tx_id)
+        WHERE 
+            program_id = 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
+            AND event_type = 'Swap'
+            AND succeeded
+            /* need to always keep the upper bound (if there is one) to prevent time gaps in incremental loading */
+            {% if is_incremental() %} 
+            AND _inserted_timestamp < (
+                SELECT
+                    MAX(_inserted_timestamp) + INTERVAL '100 day'
+                FROM
+                    {{ this }}
+            )
+            {% else %} 
+            AND _inserted_timestamp::date < '2024-09-15'
+            {% endif %}
+    {% endset %}
+    {% do run_query(base_query) %}
+    {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.swaps_inner_intermediate_jupiterv4__intermediate_tmp","block_timestamp::date") %}
 {% endif %}
 
 WITH base AS (
@@ -65,6 +107,8 @@ WITH base AS (
         *
     FROM
         silver.swaps_inner_intermediate_jupiterv4__intermediate_tmp
+    QUALIFY
+        row_number() OVER (PARTITION BY tx_id, index, coalesce(inner_index,-1) ORDER BY _inserted_timestamp DESC) = 1
 ),
 swappers AS (
     SELECT
@@ -72,43 +116,20 @@ swappers AS (
         INDEX,
         inner_index,
         CASE
-            WHEN event_type = 'route' THEN solana_dev.silver.udf_get_account_pubkey_by_name(
-                'userTransferAuthority',
-                decoded_instruction :accounts
-            )
-            WHEN event_type = 'whirlpoolSwapExactOutput' THEN solana_dev.silver.udf_get_account_pubkey_by_name(
-                'tokenAuthority',
-                decoded_instruction :accounts
-            )
-            WHEN event_type = 'raydiumClmmSwapExactOutput' THEN solana_dev.silver.udf_get_account_pubkey_by_name(
-                'payer',
-                decoded_instruction :accounts
-            )
-            WHEN event_type = 'raydiumSwapExactOutput' THEN solana_dev.silver.udf_get_account_pubkey_by_name(
-                'userSourceOwner',
-                decoded_instruction :accounts
-            )
+            WHEN event_type = 'route' THEN silver.udf_get_account_pubkey_by_name('userTransferAuthority', decoded_instruction :accounts)
+            WHEN event_type = 'whirlpoolSwapExactOutput' THEN silver.udf_get_account_pubkey_by_name('tokenAuthority', decoded_instruction :accounts)
+            WHEN event_type = 'raydiumClmmSwapExactOutput' THEN silver.udf_get_account_pubkey_by_name('payer', decoded_instruction :accounts)
+            WHEN event_type = 'raydiumSwapExactOutput' THEN silver.udf_get_account_pubkey_by_name('userSourceOwner', decoded_instruction :accounts)
         END AS swapper,
-        LEAD(inner_index) over (
-            PARTITION BY tx_id,
-            INDEX
-            ORDER BY
-                inner_index
-        ) AS next_summary_swap_index,
+        LEAD(inner_index) over (PARTITION BY tx_id, INDEX ORDER BY inner_index) AS next_summary_swap_index,
         _inserted_timestamp
     FROM
         {{ ref('silver__decoded_instructions_combined') }}
     WHERE
         {{ between_stmts }}
         AND program_id = 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
-        AND event_type IN (
-            'route',
-            'raydiumSwapExactOutput',
-            'raydiumClmmSwapExactOutput',
-            'whirlpoolSwapExactOutput'
-        )
+        AND event_type IN ('route', 'raydiumSwapExactOutput', 'raydiumClmmSwapExactOutput', 'whirlpoolSwapExactOutput')
         AND swapper IS NOT NULL
-        AND succeeded
 ),
 token_decimals AS (
     SELECT
@@ -133,26 +154,17 @@ pre_final AS (
         b.index,
         b.inner_index,
         b.log_index,
-        ROW_NUMBER() over (
-            PARTITION BY b.tx_id,
-            b.index
-            ORDER BY
-                b.log_index
-        ) -1 AS swap_index,
+        ROW_NUMBER() over (PARTITION BY b.tx_id, b.index ORDER BY b.log_index) -1 AS swap_index,
         b.succeeded,
         b.swap_program_id,
         b.program_id AS aggregator_program_id,
         s.swapper,
         b.from_mint,
         b.from_amount AS from_amount_int,
-        b.from_amount * pow(
-            10,- d.decimal
-        ) AS from_amount,
+        b.from_amount * pow(10,- d.decimal) AS from_amount,
         b.to_mint,
         b.to_amount AS to_amount_int,
-        b.to_amount * pow(
-            10,- d2.decimal
-        ) AS to_amount,
+        b.to_amount * pow(10,- d2.decimal) AS to_amount,
         b._inserted_timestamp
     FROM
         base b
