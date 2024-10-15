@@ -100,6 +100,7 @@ sources:
     tables:
       - name: complete_block_txs
       - name: complete_block_rewards
+      - name: complete_blocks
   - name: bronze
     schema: bronze
     tables:
