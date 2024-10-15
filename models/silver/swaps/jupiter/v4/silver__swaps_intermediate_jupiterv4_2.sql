@@ -78,12 +78,12 @@ route_events AS (
         d.program_id,
         d.event_type,
         _inserted_timestamp,
-        p.key AS key,
-        p.value AS VALUE,
+        p.key AS key_1,
+        p.value AS value_1,
         d.decoded_instruction
     FROM
         base d
-        JOIN TABLE(FLATTEN(decoded_instruction :args :swapLeg :chain :swapLegs)) p
+        JOIN TABLE(FLATTEN(decoded_instruction :args :swapLeg)) p
     WHERE
         event_type = 'route'
 ),
@@ -106,11 +106,12 @@ non_route_events AS (
             'raydiumSwapExactOutput',
             'raydiumClmmSwapExactOutput',
             'whirlpoolSwapExactOutput'
-        )
+        ) 
+        OR decoded_instruction:args:swapLeg:swap:swap:phoenix is not null
 ),
 all_routes AS (
     SELECT
-        -- further flatten 'split' events
+        -- further flatten split event
         i.block_timestamp,
         i.block_id,
         i.tx_id,
@@ -122,14 +123,16 @@ all_routes AS (
         i.event_type,
         LEAD(i.inner_index) over ( PARTITION BY i.tx_id, i.index ORDER BY i.inner_index) AS next_summary_swap_index_tmp,
         IFF(next_summary_swap_index_tmp = i.inner_index, NULL, next_summary_swap_index_tmp) AS next_summary_swap_index,
-        MAX(i.key) over (PARTITION BY i.tx_id, i.index, i.inner_index) AS last_swap_index,
+        MAX(k.key) over (PARTITION BY i.tx_id, i.index, i.inner_index) AS last_swap_index,
         i._inserted_timestamp,
-        TRUE AS is_split
+        FALSE AS is_split
     FROM
         route_events i
-        JOIN TABLE(FLATTEN(VALUE :split :splitLegs)) k
+        JOIN TABLE(FLATTEN(value_1:splitLegs['0'] :swapLeg :chain :swapLegs)) k -- new splits
+    WHERE key_1 = 'split'
     UNION ALL
     SELECT
+        -- further flatten swap with split
         i.block_timestamp,
         i.block_id,
         i.tx_id,
@@ -137,17 +140,39 @@ all_routes AS (
         i.inner_index,
         i.succeeded,
         i.program_id,
-        i.key AS swap_index,
+        k.key AS swap_index,
         i.event_type,
         LEAD(i.inner_index) over ( PARTITION BY i.tx_id, i.index ORDER BY i.inner_index) AS next_summary_swap_index_tmp,
         IFF(next_summary_swap_index_tmp = i.inner_index, NULL, next_summary_swap_index_tmp) AS next_summary_swap_index,
-        MAX(i.key) over (PARTITION BY i.tx_id, i.index, i.inner_index) AS last_swap_index,
+        MAX(k.key) over (PARTITION BY i.tx_id, i.index, i.inner_index) AS last_swap_index,
+        i._inserted_timestamp,
+        TRUE AS is_split
+    FROM
+        route_events i
+        JOIN TABLE(FLATTEN(value_1:swapLegs['0']: split :splitLegs)) k
+    WHERE key_1 = 'chain'
+    UNION ALL
+    SELECT
+    --further flatten standard swap
+        i.block_timestamp,
+        i.block_id,
+        i.tx_id,
+        i.index,
+        i.inner_index,
+        i.succeeded,
+        i.program_id,
+        k.key AS swap_index,
+        i.event_type,
+        LEAD(i.inner_index) over ( PARTITION BY i.tx_id, i.index ORDER BY i.inner_index) AS next_summary_swap_index_tmp,
+        IFF(next_summary_swap_index_tmp = i.inner_index, NULL, next_summary_swap_index_tmp) AS next_summary_swap_index,
+        MAX(k.key) over (PARTITION BY i.tx_id, i.index, i.inner_index) AS last_swap_index,
         i._inserted_timestamp,
         FALSE AS is_split
     FROM
         route_events i
-    WHERE
-        VALUE :split IS NULL
+        JOIN TABLE(FLATTEN(value_1:swapLegs)) k
+    WHERE key_1 = 'chain'
+        AND value_1:swapLegs['0']:swap is not null
     UNION ALL
     SELECT
         -- separately get non-route events

@@ -29,7 +29,8 @@ models:
           '5mXRCiDTYcoBjhmCm32r9r5TSeRtyYASAJkWPrNNUwDaKzhF6ye2VfKdNfoevuxAjkfp3Kojg1Trix1sTnb4jW41',
           '5eP2sF6tX9sBj7rLb97dK5AWFx8EHoVeuoxPDjvZojtQEznBRoGFq2prQzQJE93Xe3izRCB1nwhnRRvRoBEibLDW',
           '59GfwKse9EUygc69RaBFmPfeabaJFegEzXpQ55vmJmAfS4wJaJ91pVnm6r3RWaHqq2kF7Mh3Y9hCWp2wFrBqz3dk',
-          '4Kvrre2S5gPffgSfQhCk8tMUAT8BQD8AiaZooms5hKTLEK7yCg9cs28LrXiKoGn3bZnUJj223f8HHoCnMVVe9BxM')"
+          '4Kvrre2S5gPffgSfQhCk8tMUAT8BQD8AiaZooms5hKTLEK7yCg9cs28LrXiKoGn3bZnUJj223f8HHoCnMVVe9BxM',
+          '5vCvutCV5YwBu5D8gqXRH6nbvUvbTnG7ATVBKYBwaUDYiSu2gjPF3NtSLoiFCuoCopHdiRjPM3fQCXTLmz13eQjS')"
     recent_date_filter: &recent_date_filter
       config:
         where: _inserted_timestamp >= current_date - 7
