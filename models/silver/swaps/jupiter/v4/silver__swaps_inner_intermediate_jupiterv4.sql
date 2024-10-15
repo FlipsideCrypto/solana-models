@@ -32,9 +32,6 @@
                     FROM
                         {{ this }}
                 )
-                {% else %} 
-                AND _inserted_timestamp::date >= '2024-09-09'
-                AND _inserted_timestamp::date < '2024-09-15'
                 {% endif %}
             {% if is_incremental() %}
             UNION ALL
@@ -76,7 +73,7 @@
             decoded_log:args:inputAmount::string AS from_amount,
             decoded_log:args:outputMint::string AS to_mint,
             decoded_log:args:outputAmount::string AS to_amount,
-            _inserted_timestamp,
+            _inserted_timestamp
         FROM
             {{ ref('silver__decoded_logs') }}
         JOIN
@@ -94,8 +91,6 @@
                 FROM
                     {{ this }}
             )
-            {% else %} 
-            AND _inserted_timestamp::date < '2024-09-15'
             {% endif %}
     {% endset %}
     {% do run_query(base_query) %}
@@ -107,8 +102,6 @@ WITH base AS (
         *
     FROM
         silver.swaps_inner_intermediate_jupiterv4__intermediate_tmp
-    QUALIFY
-        row_number() OVER (PARTITION BY tx_id, index, coalesce(inner_index,-1) ORDER BY _inserted_timestamp DESC) = 1
 ),
 swappers AS (
     SELECT
@@ -154,7 +147,7 @@ pre_final AS (
         b.index,
         b.inner_index,
         b.log_index,
-        ROW_NUMBER() over (PARTITION BY b.tx_id, b.index ORDER BY b.log_index) -1 AS swap_index,
+        row_number() OVER (PARTITION BY b.tx_id, b.index, s.inner_index ORDER BY b.log_index)-1 AS swap_index, /* we want the swap index as it relates to the top level swap instruction */
         b.succeeded,
         b.swap_program_id,
         b.program_id AS aggregator_program_id,

@@ -27,11 +27,12 @@
                 AND event_type IN ('route', 'raydiumSwapExactOutput', 'raydiumClmmSwapExactOutput', 'whirlpoolSwapExactOutput')
                 AND succeeded
             {% if is_incremental() %}
-            {% if execute %}
-                {{ get_batch_load_logic(this, 30, '2023-10-08') }}
-                {% endif %}
-                {% else %}
-                    AND _inserted_timestamp :: DATE BETWEEN '2023-08-11' AND '2023-09-10'
+                AND _inserted_timestamp >= (
+                    SELECT
+                        MAX(_inserted_timestamp) - INTERVAL '1 hour'
+                    FROM
+                        {{ this }}
+                )
                 {% endif %}
         )
 
@@ -118,7 +119,6 @@ all_routes AS (
         i.succeeded,
         i.program_id,
         k.key AS swap_index,
-        ROW_NUMBER() over (PARTITION BY i.tx_id, i.index, i.inner_index ORDER BY swap_index) -1 AS temp_swap_index, -- get index to join to inner table
         i.event_type,
         LEAD(i.inner_index) over ( PARTITION BY i.tx_id, i.index ORDER BY i.inner_index) AS next_summary_swap_index_tmp,
         IFF(next_summary_swap_index_tmp = i.inner_index, NULL, next_summary_swap_index_tmp) AS next_summary_swap_index,
@@ -138,7 +138,6 @@ all_routes AS (
         i.succeeded,
         i.program_id,
         i.key AS swap_index,
-        ROW_NUMBER() over (PARTITION BY i.tx_id, i.index ORDER BY swap_index) -1 AS temp_swap_index,
         i.event_type,
         LEAD(i.inner_index) over ( PARTITION BY i.tx_id, i.index ORDER BY i.inner_index) AS next_summary_swap_index_tmp,
         IFF(next_summary_swap_index_tmp = i.inner_index, NULL, next_summary_swap_index_tmp) AS next_summary_swap_index,
@@ -160,7 +159,6 @@ all_routes AS (
         succeeded,
         program_id,
         0 AS swap_index,
-        ROW_NUMBER() over (PARTITION BY i.tx_id, i.index ORDER BY swap_index) -1 AS temp_swap_index,
         event_type,
         LEAD(inner_index) over (PARTITION BY tx_id, INDEX ORDER BY inner_index) AS next_summary_swap_index_tmp,
         IFF(next_summary_swap_index_tmp = inner_index, NULL, next_summary_swap_index_tmp) AS next_summary_swap_index,
@@ -179,14 +177,13 @@ summary_base AS (
         r.inner_index,
         r.succeeded,
         r.program_id,
-        0 AS input_index,
         r._inserted_timestamp
     FROM
         all_routes r
     WHERE
         swap_index = last_swap_index
 ),
-summary_input_or_ouput_routes AS (
+summary_input_or_output_routes AS (
     SELECT
         r.*,
         CASE
@@ -208,6 +205,7 @@ summary_input_or_ouput_routes AS (
     WHERE
         swap_index = last_swap_index
         OR swap_index = 0
+        OR is_split
 ),
 inner_swaps AS (
     SELECT
@@ -235,13 +233,13 @@ input_swaps AS (
         from_mint AS mint,
         SUM(from_amount) AS amount
     FROM
-        summary_input_or_ouput_routes s
+        summary_input_or_output_routes s
         LEFT JOIN inner_swaps i
         ON i.block_timestamp :: DATE = s.block_timestamp :: DATE
         AND i.tx_id = s.tx_id
         AND i.index = s.index
         AND COALESCE(i.inner_index,-1) = COALESCE(s.inner_index,-1)
-        AND i.swap_index = s.temp_swap_index
+        AND i.swap_index = s.swap_index
     WHERE
         s.is_input_swap
     GROUP BY 1,2,3,4,5
@@ -254,7 +252,7 @@ output_swaps AS (
         to_mint AS mint,
         SUM(to_amount) AS amount
     FROM
-        summary_input_or_ouput_routes s
+        summary_input_or_output_routes s
         LEFT JOIN inner_swaps i
         ON i.block_timestamp :: DATE = s.block_timestamp :: DATE
         AND i.tx_id = s.tx_id
@@ -266,7 +264,7 @@ output_swaps AS (
             s.inner_index,
             -1
         )
-        AND i.swap_index = s.temp_swap_index
+        AND i.swap_index = s.swap_index
     WHERE
         s.is_output_swap
     GROUP BY 1,2,3,4
