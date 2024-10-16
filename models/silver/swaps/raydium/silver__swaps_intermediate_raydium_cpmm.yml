@@ -83,7 +83,7 @@ models:
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
-          - not_null: *recent_date_filter
+          - not_null
       - name: SWAPS_INTERMEDIATE_RAYDIUM_CPMM_ID
         description: '{{ doc("pk") }}'   
         tests: 
