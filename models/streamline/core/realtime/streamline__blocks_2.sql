@@ -16,7 +16,7 @@
     {% set next_batch_num_query %}
     SELECT
         greatest(
-            295784058, /* TODO: cutoff block_id in PROD after deploy */
+            295976123,
             (SELECT coalesce(max(block_id),0) FROM {{ ref('streamline__complete_blocks_2') }})
         )+1
     {% endset %}
@@ -34,7 +34,7 @@ WITH blocks AS (
     FROM
         {{ source('solana_streamline', 'complete_blocks') }}
     WHERE
-        block_id <= 295784058 /* TODO: cutoff block_id in PROD after deploy */
+        block_id <= 295976123
     EXCEPT
     SELECT 
         block_id
