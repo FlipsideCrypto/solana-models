@@ -13,7 +13,7 @@ SELECT
     mint,
     helius_nft_metadata_requests_id,
     max_mint_event_inserted_timestamp,
-    _partition_by_created_date,
+    _partition_by_created_hour,
     _inserted_timestamp
 FROM
     {% if is_incremental() %}

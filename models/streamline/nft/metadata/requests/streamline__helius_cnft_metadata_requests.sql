@@ -74,7 +74,7 @@ SELECT
     group_num,
     concat_ws('_', current_timestamp, group_num) AS helius_nft_metadata_requests_id,
     max_mint_event_inserted_timestamp::string AS max_mint_event_inserted_timestamp,
-    replace(current_date::string, '-', '_') AS partition_key,
+    to_char(current_timestamp, 'YYYY_MM_DD_HH24') AS partition_key,
     {{ target.database }}.live.udf_api(
         'POST',
         '{service}/?api-key={Authentication}',
