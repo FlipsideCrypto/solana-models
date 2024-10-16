@@ -58,6 +58,7 @@ sources:
       - name: stake_program_accounts_2
       - name: block_rewards_2
       - name: helius_nft_metadata
+      - name: blocks_2
   - name: bronze_api
     schema: bronze_api
     tables:
@@ -99,6 +100,7 @@ sources:
     tables:
       - name: complete_block_txs
       - name: complete_block_rewards
+      - name: complete_blocks
   - name: bronze
     schema: bronze
     tables:
