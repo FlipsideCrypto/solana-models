@@ -20,6 +20,7 @@ models:
             - 'silver__swaps_intermediate_raydium_stable'
             - 'silver__swaps_intermediate_raydium_v4_amm'
             - 'silver__swaps_pumpfun'
+            - 'silver__swaps_intermediate_raydium_cpmm'
           id_column: 'tx_id'
     columns:
       - name: BLOCK_TIMESTAMP

@@ -176,6 +176,16 @@ models:
                 AND succeeded
                 and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
               to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_swaps_intermediate_raydium_cpmm_tx_id
+              to: ref('silver__swaps_intermediate_raydium_cpmm')
+              field: tx_id
+              from_condition: >
+                program_id = 'CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C'
+                AND event_type IN ('swapBaseInput','swapBaseOutput')
+                AND succeeded
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
       - name: SIGNERS
         description: "{{ doc('signers') }}"
       - name: SUCCEEDED
