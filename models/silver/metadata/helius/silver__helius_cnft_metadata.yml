@@ -23,12 +23,18 @@ models:
         description: "{{ doc('token_metadata_uri') }}"
       - name: NFT_NAME
         description: "The name of the NFT"
-      - name: COLLECTION_ID
+      - name: HELIUS_COLLECTION_ID
         description: >
-          The ID of the collection
+          The ID of the collection from Helius
       - name: NFT_COLLECTION_ID
         description: >
-          The surrogate key of the collection. NULL if collection_id is NULL
+          The surrogate key of the Helius collection. NULL if helius_collection_id is NULL
+        tests:
+          - not_null:
+              config:
+                where: >
+                  helius_collection_id is not null
+                  AND _inserted_timestamp::date >= current_date - 7
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 

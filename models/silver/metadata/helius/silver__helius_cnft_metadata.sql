@@ -5,6 +5,7 @@
     unique_key = "mint",
     cluster_by = ['_inserted_timestamp::DATE'],
     post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(mint,nft_name,nft_collection_id)'),
+    tags = ['scheduled_non_core']
 ) }}
 
 {% if execute and is_incremental() %}
@@ -51,8 +52,8 @@ SELECT
     image_url,
     metadata_uri,
     nft_name,
-    iff(group_key = 'collection', group_value, NULL) AS collection_id,
-    iff(collection_id IS NOT NULL, {{ dbt_utils.generate_surrogate_key(['collection_id']) }}, NULL) AS nft_collection_id,
+    iff(group_key = 'collection', group_value, NULL) AS helius_collection_id,
+    iff(helius_collection_id IS NOT NULL, {{ dbt_utils.generate_surrogate_key(['helius_collection_id']) }}, NULL) AS nft_collection_id,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['mint']) }} AS helius_cnft_metadata_id,
     sysdate() AS inserted_timestamp,
