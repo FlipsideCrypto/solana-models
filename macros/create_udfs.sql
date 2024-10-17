@@ -8,7 +8,6 @@
             {{ udf_bulk_get_block_txs() }};
             {{ udf_snapshot_get_vote_accounts() }};
             {{ udf_snapshot_get_validators_app_data() }};
-            {{ udf_snapshot_get_stake_accounts() }};
             {{ udf_snapshot_get_vote_program_accounts() }};
             {{ udf_bulk_program_parser() }};
             {{ udf_decode_instructions() }};
