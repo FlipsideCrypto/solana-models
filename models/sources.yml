@@ -59,6 +59,7 @@ sources:
       - name: block_rewards_2
       - name: helius_nft_metadata
       - name: blocks_2
+      - name: validator_vote_accounts_2
   - name: bronze_api
     schema: bronze_api
     tables:
