@@ -90,7 +90,7 @@ WITH pre_final AS (
     AND _inserted_date = '{{ load_date }}'
     AND _inserted_timestamp >= '{{ load_timestamp }}'
     {% else %}
-    AND _inserted_date = '2024-08-12'
+    AND _inserted_date = '2022-08-12'
     {% endif %}
   UNION ALL
   SELECT
@@ -115,7 +115,7 @@ WITH pre_final AS (
     AND _inserted_date = '{{ load_date }}'
     AND _inserted_timestamp >= '{{ load_timestamp }}'
     {% else %}
-    AND _inserted_date = '2024-08-12'
+    AND _inserted_date = '2022-08-12'
     {% endif %}
 )
 SELECT
