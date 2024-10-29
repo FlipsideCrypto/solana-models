@@ -73,7 +73,7 @@ models:
         description: "{{ doc('swaps_swapper') }}"
         tests: 
           - not_null:
-              where: succeeded = TRUE AND _inserted_timestamp >= current_date - 7
+              where: NOT truncated_log AND _inserted_timestamp >= current_date - 7
       - name: FROM_MINT
         description:  "{{ doc('swaps_from_mint') }}"
         tests: 
@@ -81,16 +81,19 @@ models:
       - name: FROM_AMOUNT
         description:  "{{ doc('swaps_from_amt') }}"
         tests: 
-          - not_null: *recent_date_filter
+          - not_null:
+              where: NOT truncated_log AND _inserted_timestamp >= current_date - 7
       - name: TO_MINT
         description:  "{{ doc('swaps_to_mint') }}"
         tests: 
-          - not_null: *recent_date_filter
+          - not_null:
+              where: NOT truncated_log AND _inserted_timestamp >= current_date - 7
       - name: TO_AMOUNT
         description:  "{{ doc('swaps_to_amt') }}"
         tests: 
-          - not_null: *recent_date_filter
-      - name: IS_TRUNCATED
+          - not_null:
+              where: NOT truncated_log AND _inserted_timestamp >= current_date - 7
+      - name: TRUNCATED_LOG
         description:  "Whether logs are truncated"
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"

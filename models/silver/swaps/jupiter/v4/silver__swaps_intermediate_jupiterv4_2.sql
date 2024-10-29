@@ -264,38 +264,34 @@ ct_from_decoded_instructions as (
     SELECT
         COUNT(*) AS ct_inst,
         tx_id,
-        index,
-        inner_index
+        index
     FROM 
         all_routes
-    GROUP BY 2,3,4
+    GROUP BY 2,3
 ),
 ct_from_decoded_logs as (
     SELECT
         COUNT(*) AS ct_log,
         tx_id,
-        index,
-        inner_index
+        index
     FROM 
         inner_swaps
-    GROUP BY 2,3,4
+    GROUP BY 2,3
 ),
 truncated_check as (
     SELECT
         a.tx_id,
         a.index,
-        a.inner_index,
         CASE 
-            WHEN ct_inst > ct_log THEN FALSE 
-            ELSE TRUE 
-        END AS is_truncated
+            WHEN ct_inst = ct_log THEN FALSE 
+            ELSE TRUE
+        END AS truncated_log
     FROM 
         ct_from_decoded_instructions a
     LEFT JOIN 
         ct_from_decoded_logs b
         ON a.tx_id = b.tx_id 
         AND a.index = b.index 
-        AND coalesce(a.inner_index,-1) = coalesce(b.inner_index,-1)
 ),
 input_swaps AS (
     SELECT
@@ -353,7 +349,7 @@ SELECT
     o.mint AS to_mint,
     o.amount AS to_amount,
     b._inserted_timestamp,
-    t.is_truncated,
+    t.truncated_log,
     {{ dbt_utils.generate_surrogate_key(['b.tx_id','b.index','b.inner_index']) }} AS swaps_intermediate_jupiterv4_id,
     sysdate() AS inserted_timestamp,
     sysdate() AS modified_timestamp,
@@ -374,4 +370,3 @@ LEFT JOIN
     truncated_check t
     ON b.tx_id = t.tx_id 
     AND b.index = t.index 
-    AND coalesce(b.inner_index,-1) = coalesce(t.inner_index,-1);
