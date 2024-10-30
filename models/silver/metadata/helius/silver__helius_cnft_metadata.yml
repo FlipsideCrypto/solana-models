@@ -38,7 +38,7 @@ models:
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
-          - not_null: *recent_date_filter
+          - not_null
       - name: HELIUS_CNFT_METADATA_ID
         description: '{{ doc("pk") }}'
         tests: 
