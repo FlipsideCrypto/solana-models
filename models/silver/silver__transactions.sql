@@ -162,8 +162,7 @@ SELECT
     log_messages,
     address_table_lookups,
     CASE 
-        WHEN _partition_id > 24238 
-            THEN compute_units_consumed 
+        WHEN _partition_id > 24238 THEN compute_units_consumed 
         ELSE silver.udf_get_compute_units_consumed(log_messages, instructions) 
     END AS units_consumed,
     silver.udf_get_compute_units_total(log_messages, instructions) as units_limit,
