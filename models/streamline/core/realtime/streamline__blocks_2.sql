@@ -3,11 +3,10 @@
     post_hook = fsc_utils.if_data_call_function_v2(
         func = 'streamline.udf_bulk_rest_api_v2',
         target = "{{this.schema}}.{{this.identifier}}",
-        params ={ "external_table" :"block_rewards_2",
-        "sql_limit" :"100000",
-        "producer_batch_size" :"100000",
-        "worker_batch_size" :"12500",
-        "exploded_key": tojson(["result.rewards"]),
+        params ={ "external_table" :"blocks_2",
+        "sql_limit" :"25000",
+        "producer_batch_size" :"25000",
+        "worker_batch_size" :"10000",
         "sql_source" :"{{this.identifier}}",
         "order_by_column": "block_id", }
     )
@@ -17,8 +16,8 @@
     {% set next_batch_num_query %}
     SELECT
         greatest(
-            59890, /* cutoff partition id in PROD after deploy */
-            (SELECT coalesce(max(_partition_id),0) FROM {{ ref('streamline__complete_block_rewards_2') }})
+            295976123,
+            (SELECT coalesce(max(block_id),0) FROM {{ ref('streamline__complete_blocks_2') }})
         )+1
     {% endset %}
     {% set next_batch_num = run_query(next_batch_num_query)[0][0] %}
@@ -33,18 +32,18 @@ WITH blocks AS (
     SELECT
         block_id
     FROM
-        {{ source('solana_streamline', 'complete_block_rewards') }}
+        {{ source('solana_streamline', 'complete_blocks') }}
     WHERE
-        block_id <= 292334107 /* cutoff block_id in PROD after deploy */
+        block_id <= 295976123
     EXCEPT
     SELECT 
         block_id
     FROM
-        {{ ref('streamline__complete_block_rewards_2') }}
+        {{ ref('streamline__complete_blocks_2') }}
 )
 SELECT
     block_id,
-    'batch={{next_batch_num}}' AS partition_key,
+    replace(current_date::string,'-','_') AS partition_key, -- Issue with streamline handling `-` in partition key so changing to `_`
     {{ target.database }}.live.udf_api(
         'POST',
         '{service}/{Authentication}',
@@ -66,7 +65,7 @@ SELECT
                     'encoding',
                     'jsonParsed',
                     'rewards',
-                    True,
+                    False,
                     'transactionDetails',
                     'none',
                     'maxSupportedTransactionVersion',

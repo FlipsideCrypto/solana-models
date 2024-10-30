@@ -1,0 +1,66 @@
+version: 2
+models:
+  - name: silver__rewards_fee_2
+    recent_date_filter: &recent_date_filter
+      config:
+        where: modified_timestamp >= current_date - 7
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - VOTE_PUBKEY
+            - EPOCH_EARNED
+            - BLOCK_ID
+          where: block_timestamp::date > current_date - 30
+    columns:
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null:
+              where: >
+                modified_timestamp >= current_date - 7
+                AND _inserted_timestamp::date < current_date
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null:
+              where: >
+                modified_timestamp >= current_date - 7
+                AND _inserted_timestamp::date < current_date
+      - name: REWARD_AMOUNT_SOL
+        description: "{{ doc('amount') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: POST_BALANCE_SOL
+        description: "{{ doc('post_balance') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: VOTE_PUBKEY
+        description: "{{ doc('vote_pubkey') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: EPOCH_EARNED
+        description: "{{ doc('epoch_earned') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: REWARDS_FEE_2_ID
+        description: '{{ doc("pk") }}'
+        tests: 
+          - not_null: *recent_date_filter
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        tests: 
+          - not_null
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        tests: 
+          - not_null:
+              name: test_silver__not_null_silver_rewards_fee_2_invocation_id
+              <<: *recent_date_filter

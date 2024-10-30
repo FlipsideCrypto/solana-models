@@ -57,6 +57,8 @@ sources:
       - name: decoded_logs
       - name: stake_program_accounts_2
       - name: block_rewards_2
+      - name: helius_nft_metadata
+      - name: blocks_2
   - name: bronze_api
     schema: bronze_api
     tables:
@@ -77,6 +79,9 @@ sources:
       - name: swaps_intermediate_jupiterv5_1
       - name: swaps_intermediate_jupiterv5_2
       - name: rewards_rent
+      - name: rewards_fee
+      - name: rewards_voting
+      - name: rewards_staking
       - name: stake_pool_actions_eversol
       - name: nft_sales_smb
       - name: nft_mint_price_other
@@ -95,6 +100,7 @@ sources:
     tables:
       - name: complete_block_txs
       - name: complete_block_rewards
+      - name: complete_blocks
   - name: bronze
     schema: bronze
     tables:

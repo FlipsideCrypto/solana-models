@@ -1,11 +1,10 @@
-name: dbt_run_snapshot_validators
-run-name: dbt_run_snapshot_validators
+name: dbt_run_streamline_blocks
+run-name: dbt_run_streamline_blocks
 
 on:
   workflow_dispatch:
-  schedule:
-    # Runs 02:22 daily (see https://crontab.guru)
-    - cron: '22 2 * * *'
+    branches:
+      - "main"
     
 env:
   DBT_PROFILES_DIR: "${{ vars.DBT_PROFILES_DIR }}"
@@ -42,4 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -s "solana_models,tag:validator_2"
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS": True}' -s streamline__complete_blocks_2 streamline__blocks_2

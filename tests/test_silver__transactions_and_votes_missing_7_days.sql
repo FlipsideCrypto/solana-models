@@ -9,10 +9,11 @@ WITH solscan_counts AS (
         s.*
     FROM
         solana.silver._blocks_tx_count s
-        JOIN solana.silver.blocks b
+    JOIN 
+        solana.silver.blocks b
         ON b.block_id = s.block_id
     WHERE
-        b.block_timestamp :: DATE BETWEEN CURRENT_DATE - 8 AND CURRENT_DATE - INTERVAL '12 HOUR'
+        b.block_timestamp BETWEEN current_date - 8 AND current_timestamp - INTERVAL '12 HOUR'
 ),
 silver_counts AS (
     SELECT
@@ -24,10 +25,9 @@ silver_counts AS (
                 block_id,
                 tx_id
             FROM
-                {{ ref('silver__transactions') }}
-                t
+                {{ ref('silver__transactions') }} t
             WHERE
-                block_timestamp :: DATE BETWEEN CURRENT_DATE - 8 AND CURRENT_DATE - INTERVAL '12 HOUR'
+                block_timestamp BETWEEN current_date - 8 AND current_timestamp - INTERVAL '12 HOUR'
             UNION
             SELECT
                 block_id,
@@ -35,7 +35,7 @@ silver_counts AS (
             FROM
                 solana.silver.votes t
             WHERE
-                block_timestamp :: DATE BETWEEN CURRENT_DATE - 8 AND CURRENT_DATE - INTERVAL '12 HOUR'
+                block_timestamp BETWEEN current_date - 8 AND current_timestamp - INTERVAL '12 HOUR'
         )
     GROUP BY
         1
@@ -45,12 +45,14 @@ SELECT
     e.transaction_count AS ect,
     A.transaction_count AS act,
     e.transaction_count - A.transaction_count AS delta,
-    coalesce(c._partition_id,0) as _partition_id
+    coalesce(c._partition_id, 0) AS _partition_id
 FROM
     solscan_counts e
-    LEFT OUTER JOIN silver_counts A
+LEFT OUTER JOIN 
+    silver_counts A
     ON e.block_id = A.block_id
-    LEFT OUTER JOIN streamline.complete_block_txs c
+LEFT OUTER JOIN 
+    streamline.complete_block_txs c
     ON e.block_id = c.block_id
 WHERE
     ect <> 0

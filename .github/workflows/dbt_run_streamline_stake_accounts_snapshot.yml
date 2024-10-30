@@ -2,6 +2,7 @@ name: dbt_run_streamline_stake_accounts_snapshot
 run-name: dbt_run_streamline_stake_accounts_snapshot
 
 on:
+  workflow_dispatch:
   schedule:
     # Runs 01:22 daily (see https://crontab.guru)
     - cron: '22 1 * * *'

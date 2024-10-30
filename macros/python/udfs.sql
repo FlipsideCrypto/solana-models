@@ -309,6 +309,7 @@ handler = 'get_logs_program_data'
 AS
 $$
 import re
+import base64
 
 def get_logs_program_data(logs) -> list:
     def base58_decode(s):
@@ -334,6 +335,22 @@ def get_logs_program_data(logs) -> list:
 
     def is_solana_program_id(s):
         return len(base58_decode(s)) == 32
+    
+    def is_base64(s):
+        if not re.match(r'^[A-Za-z0-9+/]*={0,2}$', s):
+            return False
+        
+        if len(s) % 4 != 0:
+            return False
+        
+        try:
+            decoded = base64.b64decode(s)
+            printable_ratio = sum(32 <= byte <= 126 for byte in decoded) / len(decoded)
+            if printable_ratio > 0.9:
+                return False
+            return True
+        except:
+            return False
 
     program_data = []
     parent_event_type = ""
@@ -404,13 +421,21 @@ def get_logs_program_data(logs) -> list:
                 current_index = parent_index
                 current_inner_index = current_ancestry[-1][1]
             
-            if log.startswith("Program data: "):
-                data = log.replace("Program data: ","")
+            if log.startswith("Program data: "): 
+                data = log.replace("Program data: ", "")
                 program_data.append({"data": data, 
                                     "program_id": current_program_id, 
                                     "index": current_index, 
                                     "inner_index": current_inner_index, 
                                     "event_type": current_event_type})
+            elif log.startswith("Program log: "):
+                data = log.replace("Program log: ", "")
+                if is_base64(data):
+                    program_data.append({"data": data, 
+                                        "program_id": current_program_id, 
+                                        "index": current_index, 
+                                        "inner_index": current_inner_index, 
+                                        "event_type": current_event_type})
     except Exception as e:
         message = f"error trying to parse logs {e}"
         return [{"error": message}]

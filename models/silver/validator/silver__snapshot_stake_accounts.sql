@@ -3,7 +3,7 @@
     unique_key = "CONCAT_WS('-', epoch_recorded, stake_pubkey)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['modified_timestamp::DATE'],
-    tags = ['validator']
+    tags = ['validator','exclude_test_daily']
 ) }}
 
 WITH base AS (

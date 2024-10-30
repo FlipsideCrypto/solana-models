@@ -6,7 +6,6 @@
             {{ udf_bulk_get_validator_metadata() }};
             {{ udf_bulk_get_blocks() }};
             {{ udf_bulk_get_block_txs() }};
-            {{ udf_bulk_get_block_rewards() }};
             {{ udf_snapshot_get_vote_accounts() }};
             {{ udf_snapshot_get_validators_app_data() }};
             {{ udf_snapshot_get_stake_accounts() }};
