@@ -32,7 +32,6 @@ WITH pre_final AS (
         t.data :meta :innerInstructions :: ARRAY AS inner_instructions,
         t.data :meta :logMessages :: ARRAY AS log_messages,
         t.data:transaction:message:addressTableLookups::array as address_table_lookups,
-        t.data :meta :computeUnitsConsumed as compute_units_consumed,
         t.data :version :: STRING as version,
         t._partition_id,
         t._inserted_timestamp
@@ -161,11 +160,7 @@ SELECT
     inner_instructions,
     log_messages,
     address_table_lookups,
-    CASE 
-        WHEN _partition_id > 24238 
-            THEN compute_units_consumed 
-        ELSE silver.udf_get_compute_units_consumed(log_messages, instructions) 
-    END AS units_consumed,
+    silver.udf_get_compute_units_consumed(log_messages, instructions) as units_consumed,
     silver.udf_get_compute_units_total(log_messages, instructions) as units_limit,
     silver.udf_get_tx_size(account_keys,instructions,version,address_table_lookups,signers) as tx_size,
     version,
