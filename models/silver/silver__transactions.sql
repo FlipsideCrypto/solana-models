@@ -32,7 +32,7 @@ WITH pre_final AS (
         t.data :meta :innerInstructions :: ARRAY AS inner_instructions,
         t.data :meta :logMessages :: ARRAY AS log_messages,
         t.data:transaction:message:addressTableLookups::array as address_table_lookups,
-        t.data :meta :computeUnitsConsumed as compute_units_consumed,
+        t.data :meta :computeUnitsConsumed :: NUMBER as compute_units_consumed,
         t.data :version :: STRING as version,
         t._partition_id,
         t._inserted_timestamp
