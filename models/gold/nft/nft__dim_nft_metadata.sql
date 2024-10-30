@@ -22,7 +22,7 @@ FROM
 LEFT JOIN 
   {{ ref('silver__nft_collection') }} b
   ON A.nft_collection_id = b.nft_collection_id
-UNION ALL
+/*UNION ALL
 SELECT
   mint,
   NULL AS nft_collection_name, -- collection data pipe is currently broken so these will be null until it's fixed
@@ -37,4 +37,4 @@ SELECT
   inserted_timestamp,
   modified_timestamp
 FROM
-  {{ ref('silver__helius_cnft_metadata') }}
+  {{ ref('silver__helius_cnft_metadata') }}*/
