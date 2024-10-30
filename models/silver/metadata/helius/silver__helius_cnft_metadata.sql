@@ -4,8 +4,7 @@
     materialized = 'incremental',
     unique_key = "mint",
     cluster_by = ['_inserted_timestamp::DATE'],
-    post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(mint,nft_name,nft_collection_id)'),
-    tags = ['scheduled_non_core']
+    post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(mint,nft_name,nft_collection_id)')
 ) }}
 
 {% if execute and is_incremental() %}
