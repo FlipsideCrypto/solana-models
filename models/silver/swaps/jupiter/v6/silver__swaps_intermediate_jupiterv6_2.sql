@@ -79,6 +79,18 @@
     'JD25qVdtd65FoiXNmR89JjmoJdYk9sjYQeSTZAALFiMy'
 ] %}
 
+{% set jupiter_limit_singers = [
+    'j1oAbxxiDUWvoHxEDhWE7THLjEkDQW2cSHYn2vttxTF',
+    'Gw9QoW4y72hFDVt3RRzyqcD4qrV4pSqjhMMzwdGunz6H',
+    'LoAFmGjxUL84rWHk4X6k8jzrw12Hmb5yyReUXfkFRY6',
+    '71WDyyCsZwyEYDV91Qrb212rdg6woCHYQhFnmZUBxiJ6',
+    'EccxYg7rViwYfn9EMoNu7sUaV82QGyFt6ewiQaH1GYjv',
+    'j1oeQoPeuEDmjvyMwBmCWexzCQup77kbKKxV59CnYbd',
+    'JTJ9Cz7i43DBeps5PZdX1QVKbEkbWegBzKPxhWgkAf1',
+    'j1opmdubY84LUeidrPCsSGskTCYmeJVzds1UWm6nngb',
+    'AfQ1oaudsGjvznX4JNEw671hi57JfWo4CWqhtkdgoVHU'
+] %}
+
 WITH all_routes AS (
     SELECT 
         *
@@ -221,7 +233,7 @@ SELECT
         AND d.tx_id IS NOT NULL
     ) AS is_dca_swap,
     d.dca_requester,
-    case when e.limit_requester is not null then true else false end as is_limit_swap,
+    i.swapper IN ('{{ jupiter_limit_singers | join("','") }}') AS is_limit_swap,
     e.limit_requester,
     b._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['b.tx_id','b.index','b.inner_index']) }} AS swaps_intermediate_jupiterv6_id,
