@@ -41,4 +41,5 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
+          dbt run -s silver___blocks_tx_count
           dbt run --vars '{"STREAMLINE_INVOKE_STREAMS": True}' -s streamline__solscan_blocks
