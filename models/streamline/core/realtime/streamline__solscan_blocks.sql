@@ -40,15 +40,15 @@ SELECT
     /* TODO: change to use service URI from vault when the sync is fixed */
     live.udf_api(
         'GET',
-        concat('https://pro-api.solscan.io/v1.0/block/',block_id),
-        OBJECT_CONSTRUCT(
+        concat('{service}/block/',block_id),
+        object_construct(
             'Content-Type',
             'application/json',
             'token',
             '{Authentication}'
         ),
         {},
-        'Vault/prod/solana/solscan/v1'
+        'Vault/prod/solana/solscan_v1'
     ) AS request
 FROM
     block_ids
