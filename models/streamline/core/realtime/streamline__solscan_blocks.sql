@@ -37,7 +37,7 @@ block_ids AS (
 SELECT
     block_id,
     replace(current_date::string,'-','_') AS partition_key, -- Issue with streamline handling `-` in partition key so changing to `_`
-    /* TODO: change to use service URI from vault when the sync is fixed */
+    /* TODO: change vault secret path when the sync is fixed */
     live.udf_api(
         'GET',
         concat('{service}/block/',block_id),
