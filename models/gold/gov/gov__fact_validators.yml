@@ -34,7 +34,9 @@ models:
         description: "Active stake in SOL delegated to the validator"
         tests:
           - dbt_expectations.expect_column_to_exist
-          - not_null: *recent_date_filter_and_exclude_records
+          - null_threshold:
+              threshold_percent: 0.99 # api returns null for some validators
+              where: modified_timestamp >= current_date - 7
       - name: admin_warning
         description: "Admin warning for the validator"
         tests:
@@ -47,7 +49,9 @@ models:
         description: "% of rewards payout to the vote account"
         tests:
           - dbt_expectations.expect_column_to_exist
-          - not_null: *recent_date_filter_and_exclude_records
+          - null_threshold:
+              threshold_percent: 0.99 # api returns null for some validators
+              where: modified_timestamp >= current_date - 7
       - name: created_at
         description: "date when validator was created"
         tests:
@@ -65,7 +69,9 @@ models:
         description: "Status whether the validator is offline/delinquent"
         tests:
           - dbt_expectations.expect_column_to_exist
-          - not_null: *recent_date_filter_and_exclude_records
+          - null_threshold:
+              threshold_percent: 0.99 # api returns null for some validators
+              where: modified_timestamp >= current_date - 7
       - name: details
         description: "Details for the validator"
         tests:
@@ -98,7 +104,9 @@ models:
         description: "Solana mainnet version"
         tests:
           - dbt_expectations.expect_column_to_exist
-          - not_null: *recent_date_filter
+          - null_threshold:
+              threshold_percent: 0.99 # api returns null for some validators
+              where: modified_timestamp >= current_date - 7
       - name: updated_at
         description: "Last date validator was updated"
         tests:
