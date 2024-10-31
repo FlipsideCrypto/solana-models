@@ -6,8 +6,9 @@
     tags = ['validator']
 ) }}
 
-WITH base AS (
+{% set cutoff_date = '2024-10-30' %}
 
+WITH base AS (
     SELECT
         json_data :status :: STRING AS epoch_status,
         json_data :data :activatedStake :: INT / pow(
@@ -25,16 +26,44 @@ WITH base AS (
         _inserted_timestamp
     FROM
         {{ ref('bronze__vote_accounts_extended_stats') }}
-
-{% if is_incremental() %}
-WHERE
-    _inserted_timestamp > (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
-{% endif %}
+    WHERE
+        _inserted_timestamp::DATE <= '{{ cutoff_date }}'
+        {% if is_incremental() %}
+        AND _inserted_timestamp > (
+            SELECT
+                MAX(_inserted_timestamp)
+            FROM
+                {{ this }}
+        )
+        {% endif %}
+    UNION ALL
+    SELECT
+        status AS epoch_status,
+        data :activatedStake :: INT / pow(
+            10,
+            9
+        ) AS activatedStake,
+        data :commission :: NUMBER AS commission,
+        data :epochCredits [4] [0] :: NUMBER AS latest_epoch,
+        data :epochCredits AS epochCredits,
+        data :epochVoteAccount :: BOOLEAN AS epochVoteAccount,
+        data :lastVote :: NUMBER AS lastVote,
+        data :nodePubkey :: STRING AS nodePubkey,
+        data :rootSlot :: NUMBER AS rootSlot,
+        data :votePubkey :: STRING AS votePubkey,
+        _inserted_timestamp
+    FROM
+        {{ ref('bronze__streamline_validator_vote_accounts_2')}}
+    WHERE
+        _inserted_timestamp::DATE > '{{ cutoff_date }}'
+        {% if is_incremental() %}
+        AND _inserted_timestamp > (
+            SELECT
+                MAX(_inserted_timestamp)
+            FROM
+                {{ this }}
+        )
+        {% endif %}
 ),
 votes_accounts_epoch_recorded AS (
     SELECT
