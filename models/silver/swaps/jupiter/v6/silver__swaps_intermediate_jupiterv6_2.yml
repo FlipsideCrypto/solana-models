@@ -118,6 +118,24 @@ models:
                   is_dca_swap
                   AND _inserted_timestamp >= current_date - 7
                   AND block_timestamp >= '2024-05-12' /* last recorded date where some txs used the Beta DCA program (Betam4GuxvAes2uQ5vX8SackcxL5pxRuHowM5m2Ykmcq)  */
+      - name: IS_LIMIT_SWAP
+        description: "Whether the swap was initiated by a Jupiter limit order. If value is NULL then it is NOT a limit order swap"
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "= True"
+              config:
+                where: >
+                  _inserted_timestamp >= current_date - 7
+                  AND block_timestamp >= '2023-10-01' 
+      - name: LIMIT_REQUESTER
+        description: "Original address that requested the limit order swap"
+        tests:
+          - not_null:
+              config:
+                where: >
+                  is_limit_swap
+                  AND _inserted_timestamp >= current_date - 7
+                  AND block_timestamp >= '2023-10-01' 
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 

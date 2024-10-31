@@ -190,6 +190,17 @@ dca_filled AS (
         {{ between_stmts }}
         AND program_id = 'DCA265Vj8a9CEuX1eb1LWRnDT7uK6q1xMipnNyatn23M'
         AND event_type = 'Filled'
+),
+limit_filled AS (
+    SELECT
+        tx_id,
+        silver.udf_get_account_pubkey_by_name('maker', decoded_instruction:accounts) AS limit_requester,
+    FROM 
+        {{ ref('silver__decoded_instructions_combined') }}
+    WHERE 
+        {{ between_stmts }}
+        AND program_id in ('j1o2qRpjcyUwEvwtcfhEQefh773ZgjxcVRry7LDqg5X','jupoNjAxXgZ4rjzxzPMP4oxduvQsQtZzyknqvzYNrNu')
+        AND event_type = 'flashFillOrder'
 )
 SELECT 
     b.block_timestamp,
@@ -210,6 +221,8 @@ SELECT
         AND d.tx_id IS NOT NULL
     ) AS is_dca_swap,
     d.dca_requester,
+    case when e.limit_requester is not null then true else false end as is_limit_swap,
+    e.limit_requester,
     b._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['b.tx_id','b.index','b.inner_index']) }} AS swaps_intermediate_jupiterv6_id,
     sysdate() AS inserted_timestamp,
@@ -230,3 +243,6 @@ LEFT JOIN
 LEFT JOIN
     dca_filled d
     ON b.tx_id = d.tx_id
+LEFT JOIN
+    limit_filled e
+    ON b.tx_id = e.tx_id
