@@ -14,7 +14,8 @@
         SELECT 
             LEAST(max(_partition_id) + 1, {{ max_partition }}), 
             LEAST(max(_partition_id) + 5, {{ max_partition }}) 
-        FROM {{ this }}
+        FROM 
+            {{ this }}
     {% else %}
         SELECT 24239, 24239 /* When computeUnitsConsumed first appears in node response */
     {% endif %}
@@ -33,23 +34,20 @@
 
 SELECT 
     t.tx_id,
-    t.data :meta :computeUnitsConsumed :: NUMBER as units_consumed,
+    t.data :meta :computeUnitsConsumed :: NUMBER AS units_consumed,
     t._partition_id,
     t._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['tx_id']) }} AS transactions_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
-'{{ invocation_id }}' AS _invocation_id
+    '{{ invocation_id }}' AS _invocation_id
 FROM 
     {{ ref('bronze__transactions2') }} t
 WHERE 
     tx_id IS NOT NULL
     AND (
-        COALESCE(t.data :transaction :message :instructions [0] :programId :: STRING,'') <> 'Vote111111111111111111111111111111111111111'
-        OR
-        (
-            array_size(t.data :transaction :message :instructions) > 1
-        )
+        COALESCE(t.data :transaction :message :instructions [0] :programId :: STRING, '') <> 'Vote111111111111111111111111111111111111111'
+        OR (array_size(t.data :transaction :message :instructions) > 1)
     )
     AND _partition_id >= {{ next_partition }}
     AND _partition_id <= {{ next_partition_2 }}
