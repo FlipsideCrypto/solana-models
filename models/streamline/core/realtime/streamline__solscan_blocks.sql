@@ -37,10 +37,9 @@ block_ids AS (
 SELECT
     block_id,
     replace(current_date::string,'-','_') AS partition_key, -- Issue with streamline handling `-` in partition key so changing to `_`
-    /* TODO: change vault secret path when the sync is fixed */
     live.udf_api(
         'GET',
-        concat('{service}/block/',block_id),
+        concat('{Service}/block/',block_id),
         object_construct(
             'Content-Type',
             'application/json',
@@ -48,7 +47,7 @@ SELECT
             '{Authentication}'
         ),
         {},
-        'Vault/prod/solana/solscan_v1'
+        'Vault/prod/solana/solscan/v1'
     ) AS request
 FROM
     block_ids
