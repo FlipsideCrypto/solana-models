@@ -52,3 +52,5 @@ WHERE
     AND _partition_id >= {{ next_partition }}
     AND _partition_id <= {{ next_partition_2 }}
     AND _partition_id NOT IN ({{ excluded_partitions | join(', ') }})
+    qualify
+        row_number() over(PARTITION BY tx_id ORDER BY _inserted_timestamp DESC) = 1
