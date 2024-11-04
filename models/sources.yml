@@ -62,6 +62,7 @@ sources:
       - name: validator_vote_accounts_2
       - name: validator_vote_program_accounts_2
       - name: validator_metadata_2
+      - name: validators_list_2
   - name: bronze_api
     schema: bronze_api
     tables:

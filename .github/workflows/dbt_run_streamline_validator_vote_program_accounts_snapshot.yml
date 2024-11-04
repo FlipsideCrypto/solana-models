@@ -1,5 +1,5 @@
-name: dbt_run_streamline_validator_vote_program_accounts
-run-name: dbt_run_streamline_validator_vote_program_accounts
+name: dbt_run_streamline_validator_vote_program_accounts_snapshot
+run-name: dbt_run_streamline_validator_vote_program_accounts_snapshot
 
 on:
   workflow_dispatch:
