@@ -5,7 +5,7 @@
             -- 2537463
             select tx_id, block_timestamp
             from silver.nft_compressed_mints_onchain
-            where block_timestamp <= '2024-01-30 02:06:11.000'
+            where block_timestamp between '2024-02-01' and '2024-03-02'
             except 
             select tx_id, block_timestamp
             from silver.nft_compressed_mints
@@ -73,7 +73,8 @@
                 WHERE
                     e.program_id IN (
                         'BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY',
-                        '1atrmQs3eq1N2FEYWu6tyTXbCjP4uQwExpjtnhXtS8h'
+                        '1atrmQs3eq1N2FEYWu6tyTXbCjP4uQwExpjtnhXtS8h',
+                        'F9SixdqdmEBP5kprp2gZPZNeMmfHJRCTMFjN22dx3akf'
                     )
                     AND ii_program_id = 'noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'
                     AND e.block_timestamp between '{{ min_block_timestamp }}' and '{{ max_block_timestamp }}'
@@ -156,7 +157,7 @@
                     FROM
                         bronze_api.PARSE_COMPRESSED_NFT_MINTS_BACKFILL_RESPONSES
                 )
-                
+                AND block_timestamp between '{{ min_block_timestamp }}' and '{{ max_block_timestamp }}'     
             ),
             onchain AS (
                 SELECT
@@ -188,6 +189,7 @@
                     FROM
                         bronze_api.PARSE_COMPRESSED_NFT_MINTS_BACKFILL_RESPONSES
                 )
+                AND m.block_timestamp between '{{ min_block_timestamp }}' and '{{ max_block_timestamp }}'
                 
             )
             SELECT
