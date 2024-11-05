@@ -9,7 +9,8 @@
 SELECT
   block_timestamp,
   block_id,
-  vote_pubkey,
+  vote_pubkey, --todo: remove by 2024-12-03
+  vote_pubkey as pubkey,
   epoch_earned,
   reward_amount_sol,
   post_balance_sol,
@@ -25,7 +26,8 @@ UNION ALL
 SELECT
   block_timestamp,
   block_id,
-  vote_pubkey,
+  vote_pubkey, --todo: remove by 2024-12-03
+  vote_pubkey as pubkey,
   epoch_earned,
   reward_amount_sol,
   post_balance_sol,
