@@ -3,14 +3,14 @@
         create or replace view bronze_api.nft_compressed_mints_backfill_requests as
         with base_delta as (
             -- 2537463
-            select tx_id, block_timestamp
+            select tx_id, block_timestamp, index
             from silver.nft_compressed_mints_onchain
-            where block_timestamp <= '2024-01-30 02:06:11.000'
+            where block_timestamp between '2024-02-01' and '2024-03-02'
             except 
-            select tx_id, block_timestamp
+            select tx_id, block_timestamp, NULL as index
             from silver.nft_compressed_mints
         )
-        select distinct tx_id, block_timestamp
+        select distinct tx_id, block_timestamp, index
         from base_delta
     {% endset %}
     {% do run_query(query) %}
@@ -22,7 +22,8 @@
         create or replace temporary table bronze_api.nft_compressed_mints_backfill_requests_batch as 
         SELECT
             tx_id, 
-            block_timestamp
+            block_timestamp,
+            index
         FROM
             bronze_api.nft_compressed_mints_backfill_requests
         qualify(row_number() over (order by block_timestamp)) <= 1500;
@@ -69,11 +70,13 @@
                     e
                     ON e.block_timestamp :: DATE = C.block_timestamp :: DATE
                     AND C.tx_id = e.tx_id
+                    AND C.index = e.index
                     JOIN TABLE(FLATTEN(e.inner_instruction :instructions)) ii
                 WHERE
                     e.program_id IN (
                         'BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY',
-                        '1atrmQs3eq1N2FEYWu6tyTXbCjP4uQwExpjtnhXtS8h'
+                        '1atrmQs3eq1N2FEYWu6tyTXbCjP4uQwExpjtnhXtS8h',
+                        'F9SixdqdmEBP5kprp2gZPZNeMmfHJRCTMFjN22dx3akf'
                     )
                     AND ii_program_id = 'noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV'
                     AND e.block_timestamp between '{{ min_block_timestamp }}' and '{{ max_block_timestamp }}'
