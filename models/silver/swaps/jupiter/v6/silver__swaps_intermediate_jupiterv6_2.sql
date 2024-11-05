@@ -69,7 +69,7 @@
     {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.swaps_intermediate_jupiterv6__intermediate_tmp","block_timestamp::date") %}
 {% endif %}
 
-{% set jupiter_dca_singers = [
+{% set jupiter_dca_signers = [
     'DCAKuApAuZtVNYLk3KTAVW9GLWVvPbnb5CxxRRmVgcTr',
     'DCAKxn5PFNN1mBREPWGdk1RXg5aVH9rPErLfBFEi2Emb',
     'DCAK36VfExkPdAkYUQg6ewgxyinvcEyPLyHjRbmveKFw',
@@ -205,7 +205,10 @@ SELECT
     i.amount AS from_amount,
     o.mint AS to_mint,
     o.amount AS to_amount,
-    i.swapper IN ('{{ jupiter_dca_singers | join("','") }}') AS is_dca_swap,
+    (
+        i.swapper IN ('{{ jupiter_dca_signers | join("','") }}')
+        AND d.tx_id IS NOT NULL
+    ) AS is_dca_swap,
     d.dca_requester,
     b._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['b.tx_id','b.index','b.inner_index']) }} AS swaps_intermediate_jupiterv6_id,
