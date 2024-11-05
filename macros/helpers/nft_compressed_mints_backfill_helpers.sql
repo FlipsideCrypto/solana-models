@@ -3,14 +3,14 @@
         create or replace view bronze_api.nft_compressed_mints_backfill_requests as
         with base_delta as (
             -- 2537463
-            select tx_id, block_timestamp, index
+            select tx_id, block_timestamp
             from silver.nft_compressed_mints_onchain
             where block_timestamp between '2024-02-01' and '2024-03-02'
             except 
-            select tx_id, block_timestamp, NULL as index
+            select tx_id, block_timestamp
             from silver.nft_compressed_mints
         )
-        select distinct tx_id, block_timestamp, index
+        select distinct tx_id, block_timestamp
         from base_delta
     {% endset %}
     {% do run_query(query) %}
@@ -22,8 +22,7 @@
         create or replace temporary table bronze_api.nft_compressed_mints_backfill_requests_batch as 
         SELECT
             tx_id, 
-            block_timestamp,
-            index
+            block_timestamp
         FROM
             bronze_api.nft_compressed_mints_backfill_requests
         qualify(row_number() over (order by block_timestamp)) <= 1500;
@@ -70,7 +69,6 @@
                     e
                     ON e.block_timestamp :: DATE = C.block_timestamp :: DATE
                     AND C.tx_id = e.tx_id
-                    AND C.index = e.index
                     JOIN TABLE(FLATTEN(e.inner_instruction :instructions)) ii
                 WHERE
                     e.program_id IN (
@@ -159,7 +157,7 @@
                     FROM
                         bronze_api.PARSE_COMPRESSED_NFT_MINTS_BACKFILL_RESPONSES
                 )
-                
+                AND block_timestamp between '{{ min_block_timestamp }}' and '{{ max_block_timestamp }}'     
             ),
             onchain AS (
                 SELECT
@@ -191,6 +189,7 @@
                     FROM
                         bronze_api.PARSE_COMPRESSED_NFT_MINTS_BACKFILL_RESPONSES
                 )
+                AND m.block_timestamp between '{{ min_block_timestamp }}' and '{{ max_block_timestamp }}'
                 
             )
             SELECT
