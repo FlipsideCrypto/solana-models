@@ -20,7 +20,11 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: VOTE_PUBKEY
-        description: "{{ doc('vote_pubkey') }}"
+        description: "DEPRECATING SOON: Column will be removed by 2024-12-03. Please use PUBKEY, as this new naming more accurately defines all addresses receiving rewards."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: PUBKEY
+        description: "The address receiving the fee rewards"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: EPOCH_EARNED
