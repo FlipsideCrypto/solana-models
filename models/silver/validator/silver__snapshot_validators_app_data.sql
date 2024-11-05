@@ -6,6 +6,8 @@
     tags = ['validator']
 ) }}
 
+{% set cutoff_date = "2024-11-04" %}
+
 WITH base AS (
 
     SELECT
@@ -45,16 +47,56 @@ WITH base AS (
         _inserted_timestamp
     FROM
         {{ ref('bronze__validators_app_api') }}
-
-{% if is_incremental() %}
-WHERE
-    _inserted_timestamp > (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
-{% endif %}
+    WHERE
+        _inserted_timestamp <= '{{ cutoff_date }}'
+        {% if is_incremental() %}
+        AND _inserted_timestamp > (SELECT max(_inserted_timestamp) FROM {{ this }})
+        {% endif %}
+    UNION ALL
+    SELECT
+        d.value:account::STRING AS node_pubkey,
+        d.value:active_stake::NUMBER AS active_stake,
+        d.value:admin_warning :: STRING AS admin_warning,
+        d.value:authorized_withdrawer_score :: STRING AS authorized_withdrawer_score,
+        d.value:avatar_url :: STRING AS avatar_url,
+        d.value:commission :: NUMBER AS commission,
+        d.value:consensus_mods_score :: NUMBER AS consensus_mods_score,
+        d.value:created_at :: STRING AS created_at,
+        d.value:data_center_concentration_score :: STRING AS data_center_concentration_score,
+        d.value:data_center_host :: STRING AS data_center_host,
+        d.value:data_center_key :: STRING AS data_center_key,
+        d.value:delinquent :: BOOLEAN AS delinquent,
+        d.value:details :: STRING AS details,
+        d.value:epoch :: NUMBER AS epoch_active,
+        d.value:epoch_credits :: NUMBER AS epoch_credits,
+        d.value:keybase_id :: STRING AS keybase_id,
+        d.value:latitude :: STRING AS latitude,
+        d.value:longitude :: STRING AS longitude,
+        d.value:name :: STRING AS validator_name,
+        d.value:published_information_score :: NUMBER AS published_information_score,
+        d.value:root_distance_score :: NUMBER AS root_distance_score,
+        d.value:security_report_score :: NUMBER AS security_report_score,
+        d.value:skipped_slot_score :: NUMBER AS skipped_slot_score,
+        d.value:skipped_slot :: NUMBER AS skipped_slot,
+        d.value:skipped_slot_percent :: NUMBER AS skipped_slot_percent,
+        d.value:software_version :: STRING AS software_version,
+        d.value:software_version_score :: NUMBER AS software_version_score,
+        d.value:stake_concentration_score :: NUMBER AS stake_concentration_score,
+        d.value:total_score :: NUMBER AS total_score,
+        d.value:updated_at :: STRING AS updated_at,
+        d.value:vote_account :: STRING AS vote_pubkey,
+        d.value:vote_distance_score :: NUMBER AS vote_distance_score,
+        d.value:www_url :: STRING AS www_url,
+        _inserted_timestamp
+    FROM
+        {{ ref('bronze__streamline_validators_list_2')}}
+    JOIN
+        table(flatten(data)) AS d
+    WHERE
+        _inserted_timestamp > '{{ cutoff_date }}'
+        {% if is_incremental() %}
+        AND _inserted_timestamp > (SELECT max(_inserted_timestamp) FROM {{ this }})
+        {% endif %}
 ),
 validators_epoch_recorded AS (
     SELECT
