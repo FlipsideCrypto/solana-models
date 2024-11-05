@@ -41,5 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run-operation run_sp_bulk_get_validator_metadata
           dbt run-operation get_solscan_token_list

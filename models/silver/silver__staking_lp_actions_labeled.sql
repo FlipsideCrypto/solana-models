@@ -203,14 +203,18 @@ tx_base AS (
 ),
 validators AS (
     SELECT
-        VALUE :nodePubkey :: STRING AS node_pubkey,
-        VALUE :commission :: INTEGER AS commission,
-        VALUE :votePubkey :: STRING AS vote_pubkey,
-        VALUE :number :: INTEGER AS validator_rank
+        r.value:identity::STRING AS node_pubkey,
+        r.value:commission::INTEGER AS commission,
+        r.value:vote_identity::STRING AS vote_pubkey,
+        r.value:activated_stake::FLOAT AS stake,
+        row_number() OVER (ORDER BY stake DESC) AS validator_rank
     FROM
-        {{ ref(
-            'silver__validator_metadata_api'
-        ) }}
+        {{ ref('bronze__streamline_validator_metadata_2') }} AS v
+    JOIN
+        table(flatten(data::ARRAY)) AS r
+    WHERE
+        v._partition_by_created_date = (SELECT max(_partition_by_created_date) FROM {{ ref('bronze__streamline_validator_metadata_2') }})
+        AND v._inserted_timestamp = (SELECT max(_inserted_timestamp) FROM {{ ref('bronze__streamline_validator_metadata_2') }})
 ),
 fill_vote_acct AS (
     SELECT
