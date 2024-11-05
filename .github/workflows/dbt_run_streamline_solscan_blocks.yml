@@ -1,10 +1,10 @@
-name: dbt_run_scheduled_daily
-run-name: dbt_run_scheduled_daily
+name: dbt_run_streamline_solscan_blocks
+run-name: dbt_run_streamline_solscan_blocks
 
 on:
-  schedule:
-    # Runs 00:35 daily (see https://crontab.guru)
-    - cron: '35 0 * * *'
+  workflow_dispatch:
+    branches:
+      - "main"
     
 env:
   DBT_PROFILES_DIR: "${{ vars.DBT_PROFILES_DIR }}"
@@ -41,11 +41,5 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -s models/silver/silver__daily_signers.sql+
-          dbt run -s models/silver/nfts/silver__nft_mints.sql --full-refresh
-          dbt run-operation run_sp_snapshot_get_stake_accounts
-          dbt run -s models/bronze/bronze__stake_program_accounts.sql
-          dbt run -s models/silver/validator/silver__snapshot_validators_app_data.sql models/silver/validator/silver__snapshot_vote_accounts.sql models/silver/validator/silver__snapshot_vote_accounts_extended_stats.sql
-          dbt run -s "solana_models,tag:nft_api"
-          dbt run -s "solana_models,tag:daily"
-
+          dbt run -s silver___blocks_tx_count
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS": True}' -s streamline__solscan_blocks

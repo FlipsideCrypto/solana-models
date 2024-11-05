@@ -33,9 +33,7 @@ on-run-start:
   - '{{ create_sps() }}'
   - '{{ create_udfs() }}'
   - '{{ sp_create_bulk_get_decoded_instructions_data() }}'
-  - '{{ sp_create_bulk_get_validator_metadata() }}'
   - '{{ sp_create_snapshot_get_stake_accounts() }}'
-  - '{{ sp_create_snapshot_get_validators_app_data() }}'
 
 on-run-end:
   - '{{ apply_meta_as_tags(results) }}'
