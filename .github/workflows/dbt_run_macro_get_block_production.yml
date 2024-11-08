@@ -2,6 +2,7 @@ name: dbt_run_macro_get_block_production
 run-name: dbt_run_macro_get_block_production
 
 on:
+  workflow_dispatch:
   schedule:
     # Runs "every 4 hours" (see https://crontab.guru)
     - cron: '0 */4 * * *'
