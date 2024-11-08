@@ -77,6 +77,9 @@ decoded AS (
         tx_id,
         INDEX,
         inner_index,
+        COALESCE(LEAD(inner_index) OVER (PARTITION BY tx_id, index 
+            ORDER BY inner_index) -1, 999999
+        ) AS inner_index_end,
         program_id,
         silver.udf_get_account_pubkey_by_name(
             'user',
@@ -118,6 +121,10 @@ decoded AS (
         tx_id,
         INDEX,
         inner_index,
+        COALESCE(LEAD(inner_index) OVER (PARTITION BY tx_id, index 
+            ORDER BY
+            inner_index) -1, 999999
+        ) AS inner_index_end,
         program_id,
         silver.udf_get_account_pubkey_by_name(
             'user',
@@ -150,14 +157,6 @@ decoded AS (
             decoded_instruction :args :amountIn :: INT <> 0
             OR decoded_instruction :args :inAmount :: INT <> 0
         )
-),
-decoded_w_index_range as (
-select *,
-        COALESCE(LEAD(inner_index) OVER (PARTITION BY tx_id, index 
-            ORDER BY
-            inner_index) -1, 999999
-        ) AS inner_index_end
-from decoded
 ),
 transfers AS (
     SELECT
@@ -212,7 +211,7 @@ pre_final AS (
         ) AS to_mint,
         A._inserted_timestamp
     FROM
-        decoded_w_index_range A
+        decoded A
         LEFT JOIN transfers b
         ON A.tx_id = b.tx_id
         AND A.source_token_account = b.source_token_account
@@ -265,73 +264,43 @@ pre_final AS (
         ROW_NUMBER() over (PARTITION BY A.tx_id, A.index, A.inner_INDEX
             ORDER BY inner_index
         ) = 1
-),
-jup_decoded_swaps as (
-    SELECT 
-        tx_id,
-        index,
-        swap_program_id,
-        to_amount,
-        to_mint,
-        block_timestamp
-    FROM 
-        {{ ref('silver__swaps_inner_intermediate_jupiterv6') }}
-    WHERE
-        swap_program_id = 'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB'
-        AND {{ between_stmts }}
-),
-swaps as (
-    SELECT
-        p.block_id,
-        p.block_timestamp,
-        p.program_id,
-        p.tx_id,
-        ROW_NUMBER() over (
-            PARTITION BY p.tx_id
-            ORDER BY
-                p.index,
-                p.inner_index
-        ) AS swap_index,
-        p.succeeded,
-        p.swapper,
-        p.from_amt,
-        p.from_mint,
-        COALESCE(
-            p.to_amt,
-            j.to_amount
-        ) AS to_amt,
-        COALESCE(
-            p.to_mint,
-            j.to_mint
-        ) AS to_mint,
-        p._inserted_timestamp
-    FROM
-        pre_final p
-        LEFT JOIN jup_decoded_swaps j
-        ON p.tx_id = j.tx_id
-        AND p.index = j.index
-        AND p.block_timestamp :: DATE = j.block_timestamp :: DATE
-        AND program_id = 'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB'
-        AND p.to_amt IS NULL
-        AND p.to_mint IS NULL
 )
-
 SELECT
     block_id,
     block_timestamp,
     program_id,
     tx_id,
-    swap_index,
+    ROW_NUMBER() over (
+        PARTITION BY tx_id
+        ORDER BY
+            INDEX,
+            inner_index
+    ) AS swap_index,
     succeeded,
     swapper,
     from_amt,
     from_mint,
-    to_amt,
-    to_mint,
+    /* 
+        handle edge cases where the transaction is depositing a small amount of some token and there is no corresponding WSOL/SOL transfer back to the owner
+       when this is done via Jupiter v6, it is listed as to_amount/to_mint as 0/WSOL
+       we will default to this pattern for native meteora swaps as well that meet this criteria
+    */
+    CASE
+        WHEN to_amt IS NULL AND from_mint IS NOT NULL and from_amt IS NOT NULL AND program_id = 'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB' THEN
+            0
+        ELSE
+            to_amt
+    END AS to_amt,
+    CASE
+        WHEN to_mint IS NULL AND from_mint IS NOT NULL AND from_amt IS NOT NULL AND program_id = 'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB' THEN
+            'So11111111111111111111111111111111111111112'
+        ELSE
+            to_mint
+    END AS to_mint,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['tx_id','swap_index','program_id']) }} AS swaps_intermediate_meteora_id,
-    SYSDATE() AS inserted_timestamp,
-    SYSDATE() AS modified_timestamp,
+    sysdate() AS inserted_timestamp,
+    sysdate() AS modified_timestamp,
     '{{ invocation_id }}' AS invocation_id
 FROM
-    swaps
+    pre_final
