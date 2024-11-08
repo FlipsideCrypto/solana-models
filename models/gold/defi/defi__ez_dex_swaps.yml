@@ -28,7 +28,7 @@ models:
       - name: SWAP_TO_SYMBOL
         description: The symbol of the token being swapped to
       - name: PROGRAM_ID
-        description: Token being received or swapped for 
+        description: "{{ doc('program_id') }}" 
       - name: SWAP_PROGRAM
         description: name of decentralized exchange used to perform the swap
       - name: _LOG_ID
