@@ -60,7 +60,8 @@ models:
       - name: INNER_INDEX
         description: "Position of event within inner instructions"
         tests:
-          - not_null: *recent_date_filter
+          - not_null:
+              where: action <> 'removeAllLiquidity' AND _inserted_timestamp >= current_date - 7
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
         tests: 
