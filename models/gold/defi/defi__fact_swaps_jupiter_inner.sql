@@ -85,8 +85,8 @@ SELECT
     inner_swap_program_id AS swap_program_id,
     program_id AS aggregator_program_id,
     {{ dbt_utils.generate_surrogate_key(['tx_id','index','inner_index']) }} AS fact_swaps_jupiter_inner_id,
-    '2000-01-01' as inserted_timestamp,
-    '2000-01-01' AS modified_timestamp
+    inserted_timestamp,
+    modified_timestamp
 FROM
     {{ ref('silver__swaps_intermediate_jupiterv4_view') }}
 WHERE

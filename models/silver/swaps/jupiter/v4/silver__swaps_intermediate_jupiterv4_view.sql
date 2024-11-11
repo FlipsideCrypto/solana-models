@@ -3,7 +3,9 @@
 ) }}
 
 SELECT
-    *
+    *,
+    '2000-01-01' as inserted_timestamp,
+    '2000-01-01' AS modified_timestamp
 FROM
     {{ source(
         'solana_silver',
