@@ -20,6 +20,8 @@ SELECT
     program_id,
     NULL as is_dca_swap,
     NULL as dca_requester,
+    NULL as is_limit_swap,
+    NULL as limit_requester,
     swaps_intermediate_jupiterv6_id AS fact_swaps_jupiter_summary_id,
     inserted_timestamp,
     modified_timestamp,
@@ -44,6 +46,8 @@ SELECT
     program_id,
     is_dca_swap,
     dca_requester,
+    is_limit_swap,
+    limit_requester,
     swaps_intermediate_jupiterv6_id AS fact_swaps_jupiter_summary_id,
     inserted_timestamp,
     modified_timestamp,
@@ -68,6 +72,8 @@ SELECT
     program_id,
     NULL as is_dca_swap,
     NULL as dca_requester,
+    NULL as is_limit_swap,
+    NULL as limit_requester,
     swaps_intermediate_jupiterv5_id as fact_swaps_jupiter_summary_id,
     inserted_timestamp,
     modified_timestamp
@@ -90,6 +96,8 @@ SELECT
     program_id,
     NULL as is_dca_swap,
     NULL as dca_requester,
+    NULL as is_limit_swap,
+    NULL as limit_requester,
     swaps_intermediate_jupiterv5_id as fact_swaps_jupiter_summary_id,
     inserted_timestamp,
     modified_timestamp
@@ -112,6 +120,8 @@ SELECT
     program_id,
     NULL as is_dca_swap,
     NULL as dca_requester,
+    NULL as is_limit_swap,
+    NULL as limit_requester,
     swaps_intermediate_jupiterv4_id as fact_swaps_jupiter_summary_id,
     inserted_timestamp,
     modified_timestamp
@@ -136,6 +146,8 @@ SELECT
     program_id,
     NULL as is_dca_swap,
     NULL as dca_requester,
+    NULL as is_limit_swap,
+    NULL as limit_requester,
     swaps_id as fact_swaps_jupiter_summary_id,
     inserted_timestamp,
     modified_timestamp
