@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: defi__fact_swaps_jupiter_summary
-    description: This table contains summarized swaps for trades initiated on Jupiter. This showcases the the initial amount/mint that is swapped from and the final amount/mint that is swapped to, without the intermediate swaps that Jupiter routes through. This also includes columns for DCA (dollar cost averaging) information to identify the initial requester of the DCA swaps.
+    description: This table contains summarized swaps for trades initiated on Jupiter. This showcases the the initial amount/mint that is swapped from and the final amount/mint that is swapped to, without the intermediate swaps that Jupiter routes through. This also includes columns for DCA (dollar cost averaging) information to identify the initial requester of the DCA swaps. Jupiter V4 swaps before 2023-10-31 have NULL index and inner_index value, and default to 0 for swap_index.
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -16,15 +16,15 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: INDEX
-        description: "{{ doc('event_index') }}"
+        description: "{{ doc('event_index') }}. Jupiter V4 swaps prior to 2023-10-31 are NULL"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: INNER_INDEX
-        description: "{{ doc('inner_index') }}. This is the inner index of the log event listing the inner swap"
+        description: "{{ doc('inner_index') }}. This is the inner index of the log event listing the inner swap. This value is null for Jupiter v5 swaps which do not have swaps within the inner index, as well as Jupiter v4 swaps prior to 2023-10-31'"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: SWAP_INDEX
-        description: "{{ doc('swaps_swap_index') }} as it relates to the top level Jupiter V6 swap instruction"
+        description: "{{ doc('swaps_swap_index') }} as it relates to the top level Jupiter swap instruction. This value is 0 for Jupiter v4 swaps prior to 2023-10-31'"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: SUCCEEDED

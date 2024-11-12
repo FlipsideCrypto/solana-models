@@ -91,3 +91,4 @@ FROM
     {{ ref('silver__swaps_intermediate_jupiterv4_view') }}
 WHERE
     block_timestamp <= '2023-10-31'
+    and succeeded

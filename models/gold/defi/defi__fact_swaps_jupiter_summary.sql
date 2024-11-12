@@ -60,9 +60,9 @@ SELECT
     block_timestamp,
     block_id,
     tx_id,
-    NULL as index,
+    swap_index as index,
     NULL as inner_index,
-    swap_index,
+    row_number() OVER (PARTITION BY tx_id ORDER BY index)-1 AS swap_index,
     succeeded,
     swapper,
     from_mint AS swap_from_mint,
@@ -84,9 +84,9 @@ SELECT
     block_timestamp,
     block_id,
     tx_id,
-    NULL as index,
+    swap_index as index,
     NULL as inner_index,
-    swap_index,
+    row_number() OVER (PARTITION BY tx_id ORDER BY index)-1 AS swap_index,
     succeeded,
     swapper,
     from_mint AS swap_from_mint,
@@ -136,7 +136,7 @@ SELECT
     tx_id,
     NULL as index,
     NULL as inner_index,
-    NULL as swap_index,
+    0 as swap_index,
     succeeded,
     swapper,
     from_mint AS swap_from_mint,
@@ -156,3 +156,4 @@ FROM
 WHERE
     program_id = 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
     and block_timestamp::date <= '2023-10-31'
+    and succeeded
