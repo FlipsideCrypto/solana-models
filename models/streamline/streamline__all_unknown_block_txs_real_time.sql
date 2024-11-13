@@ -88,12 +88,9 @@ solscan_discrepancy_retries AS (
     SELECT
         m.block_id
     FROM
-        {{ source(
-            'solana_test_silver',
-            'transactions_and_votes_missing_7_days'
-        ) }}
-        m
-        LEFT JOIN {{ ref('streamline__complete_block_txs') }} C
+        {{ ref('streamline__transactions_and_votes_missing_7_days') }} m
+    LEFT JOIN 
+        {{ ref('streamline__complete_block_txs') }} C
         ON C.block_id = m.block_id
     WHERE
         C._partition_id <= m._partition_id
