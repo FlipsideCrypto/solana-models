@@ -15,15 +15,18 @@ SELECT
 FROM
     {% if is_incremental() %}
     {{ ref('bronze__streamline_blocks_2') }}
-    WHERE
-        _inserted_timestamp >= (
-            SELECT
-                coalesce(max(_inserted_timestamp), '1970-01-01'::DATE) max_inserted_timestamp
-            FROM
-                {{ this }}
-        )
     {% else %}
     {{ ref('bronze__streamline_FR_blocks_2') }}
+    {% endif %}
+WHERE
+    data IS NOT NULL
+    {% if is_incremental() %}
+    AND _inserted_timestamp >= (
+        SELECT
+            coalesce(max(_inserted_timestamp), '1970-01-01'::DATE) max_inserted_timestamp
+        FROM
+            {{ this }}
+    )
     {% endif %}
 QUALIFY
     row_number() OVER (
