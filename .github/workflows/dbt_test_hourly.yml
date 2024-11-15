@@ -49,5 +49,6 @@ jobs:
         run: |
           dbt test -s "solana_models,tag:test_hourly"
       - name: Run DBT Jobs 2
+        if: success() || failure()
         run: |
           dbt run -s streamline__transactions_and_votes_missing_7_days
