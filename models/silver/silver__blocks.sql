@@ -111,6 +111,7 @@ WITH pre_final AS (
     AND block_id IS NOT NULL
     AND error IS NULL
     AND data:error::STRING IS NULL
+    AND data IS NOT NULL
     {% if is_incremental() %}
     AND _inserted_date = '{{ load_date }}'
     AND _inserted_timestamp >= '{{ load_timestamp }}'
