@@ -66,6 +66,7 @@ sources:
       - name: solscan_blocks_2
       - name: solscan_token_list
       - name: decoded_instructions_3
+      - name: decoded_logs_2
   - name: bronze_api
     schema: bronze_api
     tables:
