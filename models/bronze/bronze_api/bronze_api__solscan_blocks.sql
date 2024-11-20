@@ -2,8 +2,13 @@
     materialized = 'incremental',
     tags = ['bronze_api'],
     full_refresh=false,
+    enabled = false
 ) }}
+/*
+DEPRECATED - keeping so that we know this table still exists in snowflake
+*/
 
+/*
 {% set producer_limit_size = 1000 %}
 
 with base as (
@@ -51,3 +56,4 @@ select
     concat_ws('-',_inserted_timestamp,1) as _id
 from make_requests mr
 where array_size(block_ids) > 0
+*/
