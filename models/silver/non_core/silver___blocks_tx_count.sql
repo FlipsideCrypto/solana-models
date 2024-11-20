@@ -5,7 +5,7 @@
 
 SELECT
     block_id,
-    data:result:transactionCount as transaction_count,
+    coalesce(data:data:transactions_count,data:result:transactionCount) as transaction_count,
     _inserted_timestamp
 FROM
     {{ ref('bronze__streamline_solscan_blocks_2') }}
