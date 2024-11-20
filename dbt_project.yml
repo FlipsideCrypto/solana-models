@@ -91,5 +91,6 @@ vars:
   core_folders: [
     'silver/core',
     'gold/core', 
-    'streamline/core'
+    'streamline/core',
+    'silver/program_logs'
   ]
