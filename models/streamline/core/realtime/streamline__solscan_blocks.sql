@@ -23,7 +23,8 @@ WITH base AS (
         ON b.block_id = b2.block_id
     WHERE 
         b.block_id >= 226000000
-        AND b2.block_id IS NULL
+        AND (b2.block_id IS NULL 
+            OR b2.transaction_count IS NULL)
         AND b.block_timestamp::DATE <= current_date
 ),
 block_ids AS (
