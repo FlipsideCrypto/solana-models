@@ -63,6 +63,7 @@ models:
     columns: true
   +on_schema_change: "append_new_columns"
   solana_models:
+    +pre-hook: '{{ fsc_utils.set_query_tag() }}'
     gold:
       +post-hook: >
         {% if 'exclude_change_tracking' not in config.get('tags') %}
@@ -87,3 +88,8 @@ vars:
   EXTERNAL_FUNCTION_URI: '{{ var("config")[target.name]["EXTERNAL_FUNCTION_URI"] if var("config")[target.name] else var("config")["dev"]["EXTERNAL_FUNCTION_URI"] }}'
   ROLES: |
       ["INTERNAL_DEV"]
+  core_folders: [
+    'silver/core',
+    'gold/core', 
+    'streamline/core'
+  ]
