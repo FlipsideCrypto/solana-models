@@ -20,7 +20,7 @@ SELECT
 FROM
   {{ ref('silver__helius_nft_metadata') }} A
 LEFT JOIN 
-  {{ ref('silver__nft_collection') }} b
+  {{ ref('silver__nft_collection_view') }} b
   ON A.nft_collection_id = b.nft_collection_id
 UNION ALL
 SELECT

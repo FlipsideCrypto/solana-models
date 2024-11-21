@@ -99,6 +99,7 @@ sources:
       - name: nft_sales_amm_sell
       - name: nft_sales_hyperspace
       - name: stake_pool_actions_lido
+      - name: nft_collection
   - name: solana_streamline
     database: solana
     schema: streamline
