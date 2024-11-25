@@ -1,5 +1,5 @@
-name: dbt_run_streamline_validator_metadata_snapshot
-run-name: dbt_run_streamline_validator_metadata_snapshot
+name: dbt_run_streamline_solscan_token_list
+run-name: dbt_run_streamline_solscan_token_list
 
 on:
   workflow_dispatch:
