@@ -10,8 +10,11 @@
             {{ udf_bulk_parse_compressed_nft_mints() }};
             {{ udf_bulk_get_solscan_blocks() }};
             {{ create_udf_bulk_instructions_decoder() }};
+            {{ create_udf_bulk_instructions_decoder_v2() }};
             {{ create_udf_verify_idl() }};
+            {{ create_udf_verify_idl_v2() }};
             {{ create_udf_decode_compressed_mint_change_logs() }};
+            {{ create_udf_decode_compressed_mint_change_logs_v2() }};
             {{ create_udf_bulk_rest_api_v2() }};
         {% endif %}
 

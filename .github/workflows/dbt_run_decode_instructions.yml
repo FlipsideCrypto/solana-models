@@ -42,3 +42,4 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run --vars '{"STREAMLINE_INVOKE_STREAMS": True}' -s models/streamline/decode_instructions/streamline__decode_instructions_2_realtime.sql
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS": True}' -s models/streamline/decode_instructions/streamline__decode_instructions_3_realtime.sql
