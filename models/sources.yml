@@ -64,6 +64,7 @@ sources:
       - name: validator_metadata_2
       - name: validators_list_2
       - name: solscan_blocks_2
+      - name: solscan_token_list
   - name: bronze_api
     schema: bronze_api
     tables:
