@@ -1,33 +1,57 @@
 version: 2
 models:
   - name: silver__solscan_tokens
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
     columns:
       - name: TOKEN_ADDRESS
-        description: "The token address"
+        description: >
+          The token address
         tests:
-          - not_null
+          - not_null: *recent_date_filter
           - unique
       - name: COINGECKO_ID
-        description: "The unique id from coin gecko"
+        description: >
+          The unique id from coin gecko
+          NULL for new tokens after 2024-11-10
       - name: NAME
-        description: "The token name"
+        description: >
+          The token name
       - name: SYMBOL
-        description: "The token symbol" 
+        description: >
+          The token symbol
       - name: DECIMALS
-        description: "The number of decimals of the token"
+        description: >
+          The number of decimals of the token
       - name: TAGS
-        description: "Tags for the coin"
+        description: >
+          Tags for the coin
+          NULL for new tokens after 2024-11-10
       - name: ICON
-        description: "The image of the token"
+        description: >
+          The image of the token
+          NULL for new tokens after 2024-11-10
       - name: TWITTER
-        description: "The twitter account for the project"
-      - name: TAGS
-        description: "The website for the project"
-      - name: _inserted_timestamp
+        description: >
+          The twitter account for the project
+          NULL for new tokens after 2024-11-10
+      - name: WEBSITE
+        description: >
+          The website for the project
+          NULL for new tokens after 2024-11-10
+      - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
-              interval: 30
-   
+              interval: 8
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'  
+        tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        tests: 
+          - not_null: *recent_date_filter
