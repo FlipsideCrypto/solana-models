@@ -3,12 +3,13 @@
     post_hook = fsc_utils.if_data_call_function_v2(
         func = 'streamline.udf_bulk_rest_api_v2',
         target = "{{this.schema}}.{{this.identifier}}",
-        params ={ "external_table" :"block_rewards_2",
+        params ={ "external_table" :"block_txs_2",
         "sql_limit" :"10000",
         "producer_batch_size" :"10000",
-        "worker_batch_size" :"250",
+        "worker_batch_size" :"200",
         "async_concurrent_requests": "10",
         "exploded_key": tojson(["result.transactions"]),
+        "include_top_level_json": tojson(["result.blockTime"]),
         "sql_source" :"{{this.identifier}}",
         "order_by_column": "block_id", }
     )
@@ -30,13 +31,15 @@ WITH blocks AS (
         block_id
     FROM
         {{ ref("streamline__blocks") }}
+    WHERE
+        block_id >= 303962468
     EXCEPT
     SELECT
         block_id
     FROM
         {{ source('solana_streamline', 'complete_block_txs') }}
     WHERE
-        block_id <= 292334107 /* cutoff block_id in PROD after deploy */
+        block_id <= 303962468 /* TODO: cutoff block_id in PROD after deploy */
     EXCEPT
     SELECT 
         block_id
