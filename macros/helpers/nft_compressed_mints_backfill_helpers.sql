@@ -25,7 +25,7 @@
             block_timestamp
         FROM
             bronze_api.nft_compressed_mints_backfill_requests
-        qualify(row_number() over (order by block_timestamp)) <= 1500;
+        qualify(row_number() over (order by block_timestamp)) <= 9000;
     {% endset %}
     {% do run_query(request_batch_setup) %}
 

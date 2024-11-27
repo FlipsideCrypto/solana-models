@@ -64,6 +64,9 @@ sources:
       - name: validator_metadata_2
       - name: validators_list_2
       - name: solscan_blocks_2
+      - name: solscan_token_list
+      - name: decoded_instructions_3
+      - name: decoded_logs_2
   - name: bronze_api
     schema: bronze_api
     tables:
@@ -100,6 +103,7 @@ sources:
       - name: nft_sales_hyperspace
       - name: stake_pool_actions_lido
       - name: swaps_intermediate_jupiterv4
+      - name: nft_collection
   - name: solana_streamline
     database: solana
     schema: streamline

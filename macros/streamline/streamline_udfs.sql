@@ -46,3 +46,50 @@
         'https://vmax5o4p1a.execute-api.us-east-1.amazonaws.com/stg/udf_bulk_rest_api'
     {%- endif %}
 {% endmacro %}
+
+{% macro create_udf_bulk_instructions_decoder_v2() %}
+    CREATE
+    OR REPLACE EXTERNAL FUNCTION streamline.udf_bulk_instructions_decoder_v2(
+        json variant
+    ) returns text api_integration = 
+    {% if target.database == 'SOLANA' -%}
+        AWS_SOLANA_API_PROD_V2
+        AS
+        'https://eurlntbb7k.execute-api.us-east-1.amazonaws.com/prod/udf_bulk_instructions_decoder'
+    {% else %}
+        AWS_SOLANA_API_STG_V2
+        AS
+        'https://vmax5o4p1a.execute-api.us-east-1.amazonaws.com/stg/udf_bulk_instructions_decoder'
+    {%- endif %}
+{% endmacro %}
+
+{% macro create_udf_verify_idl_v2() %}
+    CREATE
+    OR REPLACE EXTERNAL FUNCTION streamline.udf_verify_idl_v2("JSON" ARRAY) returns VARIANT 
+    api_integration = 
+    {% if target.database == 'SOLANA' -%}
+        AWS_SOLANA_API_PROD_V2
+        AS
+        'https://eurlntbb7k.execute-api.us-east-1.amazonaws.com/prod/verify_idl'
+    {% else %}
+        AWS_SOLANA_API_STG_V2
+        AS
+        'https://vmax5o4p1a.execute-api.us-east-1.amazonaws.com/stg/verify_idl'
+    {%- endif %}
+{% endmacro %}
+
+{% macro create_udf_decode_compressed_mint_change_logs_v2() %}
+    CREATE
+    OR REPLACE EXTERNAL FUNCTION streamline.udf_decode_compressed_mint_change_logs_v2("JSON" ARRAY) 
+    returns VARIANT 
+    api_integration = 
+    {% if target.database == 'SOLANA' -%}
+        AWS_SOLANA_API_PROD_V2
+        AS
+        'https://eurlntbb7k.execute-api.us-east-1.amazonaws.com/prod/udf_decode_compressed_mint_change_logs'
+    {% else %}
+        AWS_SOLANA_API_STG_V2
+        AS
+        'https://vmax5o4p1a.execute-api.us-east-1.amazonaws.com/stg/udf_decode_compressed_mint_change_logs'
+    {%- endif %}
+{% endmacro %}
