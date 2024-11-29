@@ -85,7 +85,7 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    {{ ref('silver__swaps_intermediate_jupiterv4') }}
+    {{ ref('silver__swaps_intermediate_jupiterv4_view') }}
 
 {% if is_incremental() %}
 WHERE

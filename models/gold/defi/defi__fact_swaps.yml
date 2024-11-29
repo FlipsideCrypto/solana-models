@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: defi__fact_swaps
-    description: This table contains swaps performed on Jupiter (V4 and V5), Orca, Raydium, Saber, Bonkswap, Dooar, Phoenix and Meteora swap programs. Intermediate swaps are aggregated over the DEX programs, so the values showcase the final mint/amount swap values. Ie. a swap on Jupiter that swaps SOL->USDC->mSOL->ETH would show the initial amount in and the final amount out of SOL->ETH. For Phoenix, we are not capturing swaps where there are separate transactions for placing the order and filling the order. 
+    description: This table contains swaps performed on Jupiter (V4 and V5), Orca, Raydium, Saber, Bonkswap, Dooar, Phoenix and Meteora swap programs. Intermediate swaps are aggregated over the DEX programs, so the values showcase the final mint/amount swap values. Ie. a swap on Jupiter that swaps SOL->USDC->mSOL->ETH would show the initial amount in and the final amount out of SOL->ETH. For Phoenix, we are not capturing swaps where there are separate transactions for placing the order and filling the order. NOTE - Jupiter V4 and V5 swaps will be removed from this table on December 9th, and the corresponding swaps will exist in defi.fact_swaps_jupiter_summary. 
     recent_date_filter: &recent_date_filter
       config:
         where: block_timestamp >= current_date - 7
@@ -11,7 +11,6 @@ models:
     tests:
       - reference_tx_missing:
           reference_tables:
-            - 'silver__swaps'
             - 'silver__swaps_intermediate_bonkswap'
             - 'silver__swaps_intermediate_meteora'
             - 'silver__swaps_intermediate_dooar'
