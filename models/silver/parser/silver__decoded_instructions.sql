@@ -54,9 +54,14 @@ FROM
     {{ ref('bronze__streamline_decoded_instructions_2') }} A
     {% elif is_incremental() %}
     {{ ref('bronze__streamline_decoded_instructions_3') }} A
+    {% endif %}
+    /*
+    No longer allow full refresh of this model. 
+    If we need to full refresh, manual intervention is required as we need to union both sets of raw data
     {% else %}
     {{ ref('bronze__streamline_FR_decoded_instructions_2') }} A
     {% endif %}
+    */
 JOIN 
     {{ ref('silver__blocks') }} b
     ON A.block_id = b.block_id
