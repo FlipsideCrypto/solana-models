@@ -2,6 +2,7 @@
 -- depends_on: {{ ref('silver__transactions') }}
 -- depends_on: {{ ref('bronze__streamline_decoded_logs') }}
 -- depends_on: {{ ref('bronze__streamline_FR_decoded_logs') }}
+-- depends_on: {{ ref('bronze__streamline_decoded_logs_2') }}
 {{ config(
     materialized = 'incremental',
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
@@ -13,11 +14,13 @@
         '{{this.identifier}}',
         'ON EQUALITY(tx_id, event_type, decoded_logs_id)'
     ),
-    tags = ['scheduled_non_core']
+    full_refresh = false,
+    tags = ['scheduled_non_core'],
 ) }}
 
 {% set CUTOVER_DATETIME = modules.datetime.datetime.strptime("2024-07-16 17:00:00", "%Y-%m-%d %H:%M:%S") %}
 {% set use_legacy_logic = False %}
+{% set streamline_2_cutover_datetime = modules.datetime.datetime.strptime("2024-12-04 00:00:00+00:00", "%Y-%m-%d %H:%M:%S%z") %}
 
 /* run incremental timestamp value first then use it as a static value */
 {% if execute %}
@@ -128,11 +131,18 @@ SELECT
     sysdate() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    {% if is_incremental() %}
+    {% if is_incremental() and max_inserted_timestamp < streamline_2_cutover_datetime %}
     {{ ref('bronze__streamline_decoded_logs') }}
+    {% elif is_incremental() %}
+    {{ ref('bronze__streamline_decoded_logs_2') }}
+    {% endif %}
+    /*
+    No longer allow full refresh of this model. 
+    If we need to full refresh, manual intervention is required as we need to union both sets of raw data
     {% else %}
     {{ ref('bronze__streamline_FR_decoded_logs') }}
     {% endif %}
+    */
 {% if is_incremental() %}
 WHERE
     _inserted_timestamp >= '{{ max_inserted_timestamp }}'
