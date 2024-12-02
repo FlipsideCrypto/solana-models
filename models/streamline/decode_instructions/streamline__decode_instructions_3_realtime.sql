@@ -78,7 +78,7 @@ event_subset AS (
 completed_subset AS (
     SELECT
         block_id,
-        complete_decoded_instructions_2_id as id
+        complete_decoded_instructions_3_id as id
     FROM
         {{ ref('streamline__complete_decoded_instructions_3') }}
     WHERE
