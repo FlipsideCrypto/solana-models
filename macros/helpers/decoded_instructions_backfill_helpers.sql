@@ -35,9 +35,9 @@
                 SELECT
                     block_id,
                     program_id,
-                    complete_decoded_instructions_2_id as id
+                    complete_decoded_instructions_3_id as id
                 FROM
-                    {{ ref('streamline__complete_decoded_instructions_2') }}
+                    {{ ref('streamline__complete_decoded_instructions_3') }}
                 WHERE
                     program_id = '{{ program_id }}'
                 AND
@@ -83,75 +83,6 @@
 
         {% do run_query(query) %}
     {% endfor %}
-{% endmacro %}
-
-
--- DEPRECATE SOON, ONLY USE IF BACKFILLING PARSER 1.0 ERRORS
-{% macro decoded_instructions_backfill_missing_and_retries_generate_views(program_id) %}
-    {% set start_block = 0 %}  /* we just pick the lowest possible value so that retry views are always run last (i.e. after main backfill is done) */
-    {% set end_block = 239165744 %} /* legacy decoder not used after this block */
-    {% set query = """create or replace view streamline.decoded_instructions_backfill_""" ~ start_block ~ """_""" ~ end_block ~ """_retry_""" ~ program_id ~ """ AS
-        with missing_decode as (
-            select block_id, tx_id, index, coalesce(inner_index,-1) as inner_index
-            from """ ~ ref('streamline__complete_decoded_instructions_2') ~ """
-            where program_id = '""" ~ program_id ~ """'
-            and _inserted_timestamp::date < '2024-01-04'
-            except
-            select block_id, tx_id, index, coalesce(inner_index,-1)
-            from """ ~ ref('silver__decoded_instructions') ~ """ 
-            where program_id = '""" ~ program_id ~ """'
-        ),
-        prev_failed_decode as (
-            select block_id, tx_id, index, coalesce(inner_index,-1)
-            from """ ~ ref('silver__decoded_instructions') ~ """ 
-            where program_id = '""" ~ program_id ~ """'
-            and decoded_instruction:error::string is not null
-            and _inserted_timestamp::date < '2024-01-04'
-        ),
-        retries as (
-            select *
-            from missing_decode
-            union all 
-            select *
-            from prev_failed_decode
-        ),
-        retry_events as (
-            select
-                e.block_id,
-                e.tx_id,
-                e.index,
-                NULL as inner_index,
-                e.instruction,
-                e.program_id,
-                e.block_timestamp,
-                md5(cast(coalesce(cast(e.block_id as TEXT), '_dbt_utils_surrogate_key_null_') || '-' || coalesce(cast(e.tx_id as TEXT), '_dbt_utils_surrogate_key_null_') || '-' || coalesce(cast(e.index as TEXT), '_dbt_utils_surrogate_key_null_') || '-' || coalesce(cast(inner_index as TEXT), '_dbt_utils_surrogate_key_null_') || '-' || coalesce(cast(e.program_id as TEXT), '_dbt_utils_surrogate_key_null_') as TEXT)) as id
-            from retries r
-            join """ ~ ref('silver__events') ~ """  e on r.block_id = e.block_id 
-                and r.tx_id = e.tx_id 
-                and r.index = e.index 
-            where e.program_id = '""" ~ program_id ~ """'
-            and e.succeeded
-        ),
-        completed_subset as (
-            select 
-                *
-            from 
-                """ ~ ref('streamline__complete_decoded_instructions_2') ~ """
-            where 
-                program_id = '""" ~ program_id ~ """'
-            and 
-                _inserted_timestamp >= '2024-01-04'
-        )
-        select 
-            e.*
-        from retry_events e 
-        left outer join completed_subset c 
-                on c.complete_decoded_instructions_2_id = e.id
-        where 
-            c.complete_decoded_instructions_2_id is null
-        ;""" %}
-
-        {% do run_query(query) %}
 {% endmacro %}
 
 -- USE THIS TO BACKFILL PARSER 2.0 ERRORS
@@ -249,7 +180,7 @@
                 select 
                     *
                 from 
-                    {{ ref('streamline__complete_decoded_instructions_2') }}
+                    {{ ref('streamline__complete_decoded_instructions_3') }}
                 where 
                     program_id = '{{ program_id }}'
                 and 
@@ -259,9 +190,9 @@
                 e.*
             from retry_events e 
             left outer join completed_subset c 
-                    on c.complete_decoded_instructions_2_id = e.id
+                    on c.complete_decoded_instructions_3_id = e.id
             where 
-                c.complete_decoded_instructions_2_id is null
+                c.complete_decoded_instructions_3_id is null
             ;
         {% endset %}
 
@@ -284,7 +215,7 @@
         {% set has_requests = run_query("""select 1 from """ ~ schema_names[0] ~ """.""" ~ table_name ~ """ limit 1""").columns[0].values()[0] %}
         {% if not has_requests %}
             {% do run_query("""drop view """ ~ schema_names[0] ~ """.""" ~ table_name) %}
-            {% do run_query("""insert into """ ~ ref('streamline__complete_decoded_instructions_2_backfill') ~ """ values('""" ~ schema_names[0] ~ """','""" ~ table_name ~ """')""") %}
+            {% do run_query("""insert into """ ~ ref('streamline__complete_decoded_instructions_3_backfill') ~ """ values('""" ~ schema_names[0] ~ """','""" ~ table_name ~ """')""") %}
         {% endif %}
     {% endfor %}
 {% endmacro %}
@@ -304,7 +235,7 @@
         select 
             schema_name,
             table_name
-        from """ ~ ref('streamline__complete_decoded_instructions_2_backfill') ~ """
+        from """ ~ ref('streamline__complete_decoded_instructions_3_backfill') ~ """
         order by 2 desc
         limit 1;""").columns %}
     {% set schema_names = results[0].values() %}
