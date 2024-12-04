@@ -12,7 +12,7 @@
     full_refresh = false,
 ) }}
 
-{% set legacy_cutoff_timestamp = '2024-12-04 00:00:00+00:00' %}
+{% set legacy_cutoff_timestamp = '2024-12-09 00:00:00+00:00' %}
 
 /* run incremental timestamp value first then use it as a static value */
 {% if execute %}
@@ -67,7 +67,7 @@ JOIN
     ON A.block_id = b.block_id
 {% if is_incremental() %}
 WHERE
-    A._inserted_timestamp >= dateadd('minute', -5, '{{ max_inserted_timestamp }}')
+    A._inserted_timestamp >= dateadd('hour', -2, '{{ max_inserted_timestamp }}')
     AND A._partition_by_created_date_hour >= dateadd('hour', -2, date_trunc('hour', '{{ max_inserted_timestamp }}'::timestamp_ntz))
 {% endif %}
 QUALIFY
