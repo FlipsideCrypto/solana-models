@@ -198,6 +198,42 @@ WHERE
     block_id between 4260184 and 5260184
 {% endif %}
 ),
+base_sol_account_keys AS (
+    SELECT
+        tx_id,
+        account_keys
+    FROM
+        {{ ref('silver__transactions') }}
+    {% if is_incremental() and env_var(
+        'DBT_IS_BATCH_LOAD',
+        "false"
+    ) == "true" %}
+    WHERE
+        block_id BETWEEN (
+            SELECT
+                LEAST(COALESCE(MAX(block_id), 4260184)+1,151386092)
+            FROM
+                {{ this }}
+        )
+        AND (
+            SELECT
+                LEAST(COALESCE(MAX(block_id), 4260184)+4000000,151386092)
+            FROM
+                {{ this }}
+        ) 
+    {% elif is_incremental() %}
+    WHERE
+        _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp)
+            FROM
+                {{ this }}
+        )
+    {% else %}
+    WHERE
+        block_id between 4260184 and 5260184
+    {% endif %}
+),
 spl_transfers AS (
     SELECT
         e.block_id,
@@ -234,7 +270,8 @@ spl_transfers AS (
             p.mint,
             p2.mint,
             p3.mint,
-            p4.mint
+            p4.mint,
+            iff(p5.tx_id IS NOT NULL,'So11111111111111111111111111111111111111112',NULL)
         ) AS mint,
         instruction :parsed :info :source :: STRING as source_token_account,
         instruction :parsed :info :destination :: STRING as dest_token_account,
@@ -243,16 +280,22 @@ spl_transfers AS (
         base_transfers_i e
         LEFT OUTER JOIN base_pre_token_balances p
         ON e.tx_id = p.tx_id
-        AND e.instruction :parsed :info :source :: STRING = p.account
+        AND source_token_account = p.account
         LEFT OUTER JOIN base_post_token_balances p2
         ON e.tx_id = p2.tx_id
-        AND e.instruction :parsed :info :destination :: STRING = p2.account
+        AND dest_token_account = p2.account
         LEFT OUTER JOIN base_post_token_balances p3
         ON e.tx_id = p3.tx_id
-        AND e.instruction :parsed :info :source :: STRING = p3.account
+        AND source_token_account = p3.account
         LEFT OUTER JOIN base_pre_token_balances p4
         ON e.tx_id = p4.tx_id
-        AND e.instruction :parsed :info :destination :: STRING = p4.account
+        AND dest_token_account = p4.account
+        LEFT OUTER JOIN base_sol_account_keys p5
+        ON e.tx_id = p5.tx_id
+        AND (
+            silver.udf_get_account_balances_index(dest_token_account, p5.account_keys) IS NOT NULL
+            OR silver.udf_get_account_balances_index(source_token_account, p5.account_keys) IS NOT NULL
+        )
     WHERE
         (
             e.instruction :parsed :info :authority :: STRING IS NOT NULL
