@@ -41,9 +41,9 @@
                 SELECT
                     block_id,
                     program_id,
-                    complete_decoded_logs_id as id
+                    complete_decoded_logs_2_id as id
                 FROM
-                    {{ ref('streamline__complete_decoded_logs') }}
+                    {{ ref('streamline__complete_decoded_logs_2') }}
                 WHERE
                     program_id = '{{ program_id }}'
                 AND
@@ -136,7 +136,7 @@
         {% set has_requests = run_query("""select 1 from """ ~ schema_names[0] ~ """.""" ~ table_name ~ """ limit 1""").columns[0].values()[0] %}
         {% if not has_requests %}
             {% do run_query("""drop view """ ~ schema_names[0] ~ """.""" ~ table_name) %}
-            {% do run_query("""insert into """ ~ ref('streamline__complete_decoded_logs_backfill') ~ """ values('""" ~ schema_names[0] ~ """','""" ~ table_name ~ """')""") %}
+            {% do run_query("""insert into """ ~ ref('streamline__complete_decoded_logs_2_backfill') ~ """ values('""" ~ schema_names[0] ~ """','""" ~ table_name ~ """')""") %}
         {% endif %}
     {% endfor %}
 {% endmacro %}
@@ -156,7 +156,7 @@
         select 
             schema_name,
             table_name
-        from """ ~ ref('streamline__complete_decoded_logs_backfill') ~ """
+        from """ ~ ref('streamline__complete_decoded_logs_2_backfill') ~ """
         order by 2 desc
         limit 1;""").columns %}
     {% set schema_names = results[0].values() %}
