@@ -140,9 +140,9 @@ FROM
     /*
     No longer allow full refresh of this model. 
     If we need to full refresh, manual intervention is required as we need to union both sets of raw data
-    {% else %}
+    {# {% else %}
     {{ ref('bronze__streamline_FR_decoded_logs') }}
-    {% endif %}
+    {% endif %} #}
     */
 {% if is_incremental() %}
 WHERE
