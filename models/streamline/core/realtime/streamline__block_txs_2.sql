@@ -19,7 +19,7 @@
     {% set next_batch_num_query %}
     SELECT
         greatest(
-            126664, /* TODO: cutoff partition id in PROD after deploy */
+            129041, /* cutoff partition id in PROD after deploy */
             (SELECT coalesce(max(_partition_id),0) FROM {{ ref('streamline__complete_block_txs_2') }})
         )+1
     {% endset %}
@@ -32,14 +32,14 @@ WITH blocks AS (
     FROM
         {{ ref("streamline__blocks") }}
     WHERE
-        block_id >= 303962468
+        block_id >= 305806921
     EXCEPT
     SELECT
         block_id
     FROM
         {{ source('solana_streamline', 'complete_block_txs') }}
     WHERE
-        block_id <= 303962468 /* TODO: cutoff block_id in PROD after deploy */
+        block_id <= 305806921 /* cutoff block_id in PROD after deploy */
     EXCEPT
     SELECT 
         block_id
