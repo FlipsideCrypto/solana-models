@@ -19,7 +19,7 @@ select
         silver.udf_get_account_balances_index(dest_token_account, t.account_keys) IS NOT NULL
         OR silver.udf_get_account_balances_index(source_token_account, t.account_keys) IS NOT NULL
     ) AS is_wsol
-from solana_dev.silver.transfers_null_mints AS tr
+from solana.silver.transfers_null_mints AS tr
 join solana.silver.transactions AS t 
     using(tx_id)
 where
