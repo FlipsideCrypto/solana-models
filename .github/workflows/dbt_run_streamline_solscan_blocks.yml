@@ -40,6 +40,8 @@ jobs:
           pip install -r requirements.txt
           dbt deps
       - name: Run DBT Jobs
+        # TODO: Replace w/ solscan blocks once we have credits again
+        # dbt run --vars '{"STREAMLINE_INVOKE_STREAMS": True}' -s streamline__solscan_blocks
         run: |
           dbt run -s silver___blocks_tx_count
-          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS": True}' -s streamline__solscan_blocks
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS": True}' -s streamline__helius_blocks
