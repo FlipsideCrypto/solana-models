@@ -1,7 +1,6 @@
 {{
     config(
-        tags=["test_hourly"],
-        enabled=false
+        tags=["test_hourly"]
     )
 }}
 
