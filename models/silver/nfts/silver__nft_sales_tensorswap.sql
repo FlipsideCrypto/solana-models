@@ -285,3 +285,5 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM 
     pre_final
+QUALIFY
+    row_number() OVER (PARTITION BY nft_sales_tensorswap_id ORDER BY _inserted_timestamp DESC) = 1
