@@ -115,14 +115,14 @@ QUALIFY
     ) = 1
 {% else %}
 SELECT
-    value:request_data:block_timestamp::timestamp_ntz AS block_timestamp,
+    coalesce(value:block_timestamp::timestamp_ntz,value:request_data:block_timestamp::timestamp_ntz) AS block_timestamp,
     block_id,
     tx_id,
     index,
     inner_index,
     log_index,
-    value:request_data:signers::array AS signers,
-    value:request_data:succeeded::boolean AS succeeded,
+    coalesce(value:signers::array,value:request_data:signers::array) AS signers,
+    coalesce(value:succeeded::boolean,value:request_data:succeeded::boolean) AS succeeded,
     program_id,
     data AS decoded_log,
     decoded_log:name::string AS event_type,
