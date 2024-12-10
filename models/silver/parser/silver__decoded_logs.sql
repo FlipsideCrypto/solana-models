@@ -21,7 +21,7 @@
 
 {% set CUTOVER_DATETIME = modules.datetime.datetime.strptime("2024-07-16 17:00:00", "%Y-%m-%d %H:%M:%S") %}
 {% set use_legacy_logic = False %}
-{% set streamline_2_cutover_datetime = modules.datetime.datetime.strptime("2024-12-09 00:00:00+00:00", "%Y-%m-%d %H:%M:%S%z") %}
+{% set streamline_2_cutover_datetime = modules.datetime.datetime.strptime("2024-12-11 00:00:00+00:00", "%Y-%m-%d %H:%M:%S%z") %}
 
 /* run incremental timestamp value first then use it as a static value */
 {% if execute %}
