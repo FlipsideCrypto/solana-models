@@ -106,6 +106,9 @@ sources:
       - name: stake_pool_actions_lido
       - name: swaps_intermediate_jupiterv4
       - name: nft_collection
+      - name: burns_orca_non_whirlpool
+      - name: mints_orca_non_whirlpool
+      - name: pool_transfers_orca_non_whirlpool
   - name: solana_streamline
     database: solana
     schema: streamline
