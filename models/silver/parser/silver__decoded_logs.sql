@@ -28,8 +28,7 @@
     {% if is_incremental() %}
         {% set max_inserted_query %}
             SELECT
-                /* TODO: REVERT BACK TO 1 HOUR LOOKBACK */
-                max(_inserted_timestamp) - INTERVAL '2 HOUR' AS _inserted_timestamp
+                max(_inserted_timestamp) - INTERVAL '1 HOUR' AS _inserted_timestamp
             FROM
                 {{ this }}
         {% endset %}
