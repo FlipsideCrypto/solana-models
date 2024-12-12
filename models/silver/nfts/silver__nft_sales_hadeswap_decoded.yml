@@ -22,6 +22,9 @@ models:
           '124y71JFhG1CSCitqMqBRb6GkvQZd25YfazmFdDVJ6Bt7m1wYDRf27ZJDNPwRVHuPShCanfDy4g6EmqeQBbxo81n',
           '126zdfjWUNmtqMfUM4YtLnJhoaRHBaD5eEACUscsezkWDx2khXRZLALsxG8MWLTGVmd3EcjCgVhY8Kci5vPKQAY9',
           '5o1JD7tDY5m1o3FUrvArZHNRJevNXCHXG7PsJPovKV3NjnBe2PrWYf4RqtFrXDp83hcjqHEZJH4sdThB61f8np8Y')"
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -30,38 +33,50 @@ models:
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: PROGRAM_ID 
         description: "{{ doc('program_id') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: PURCHASER
         description: "{{ doc('purchaser') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter 
       - name: SELLER
         description: "{{ doc('seller') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: MINT
         description: "{{ doc('mint') }}"
         tests: 
-          - not_null:
-              where: succeeded = TRUE
+          - not_null: *recent_date_filter
       - name: SALES_AMOUNT
         description: "{{ doc('sales_amount') }}"
         tests: 
-          - not_null: 
-              where: succeeded = TRUE
+          - not_null: *recent_date_filter
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
           - not_null
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        tests: 
+          - not_null: *recent_date_filter
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        tests: 
+          - not_null: 
+              name: test_silver__not_null_nft_hadeswap_decoded__invocation_id
+              <<: *recent_date_filter

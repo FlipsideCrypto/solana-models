@@ -28,7 +28,7 @@
         {{ ref('silver__decoded_instructions_combined') }}
     WHERE
         program_id = 'TB1Dqt8JeKQh7RLDzfYDJsq8KS4fS2yt87avRjyRxMv'
-and event_type = 'takeBid'
+        and event_type = 'takeBid'
         AND succeeded
 
 {% if is_incremental() %}
@@ -53,24 +53,18 @@ AND _inserted_timestamp >= (
 
 
 
-with 
-decoded AS (
+WITH decoded AS (
     SELECT
         block_timestamp,
         block_id,
         tx_id,
         program_id,
-        
-solana_dev.silver.udf_get_account_pubkey_by_name('bidder',decoded_instruction :accounts) AS purchaser,
-        solana_dev.silver.udf_get_account_pubkey_by_name('seller',decoded_instruction :accounts) AS seller, -- main payment sent here
-
- solana_dev.silver.udf_get_account_pubkey_by_name('nftMint',decoded_instruction :accounts) AS mint,
- (decoded_instruction:args:lamports::int) / pow(
-            10,
-            9
-        ) as sales_amount,
+        solana_dev.silver.udf_get_account_pubkey_by_name('buyer', decoded_instruction:accounts) AS purchaser,
+        solana_dev.silver.udf_get_account_pubkey_by_name('seller', decoded_instruction:accounts) AS seller,
+        solana_dev.silver.udf_get_account_pubkey_by_name('nftMint', decoded_instruction:accounts) AS mint,
+        (decoded_instruction:args:lamports::int) / pow(10, 9) as sales_amount,
         _inserted_timestamp
-    FROM
+    FROM 
         silver.nft_sales_tensor_bid__intermediate_tmp
 )
 
@@ -90,4 +84,4 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS invocation_id
 FROM
-    decoded;
+    decoded

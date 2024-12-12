@@ -21,5 +21,5 @@ SELECT
 FROM
   {{ source(
     'solana_silver',
-    'nft_hadeswap_sell'
+    'nft_sales_hadeswap'
   ) }}
