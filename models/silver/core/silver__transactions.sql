@@ -11,10 +11,8 @@
     tags = ['scheduled_core']
 ) }}
 
-/* TODO: Update this to be the block id of the cutover before merge */
-{% set cutover_block_id = 306891387 %}
-/* TODO: Update this to be the partition id of the cutover before merge */
-{% set cutover_partition_id = 129927 %}
+{% set cutover_block_id = 307103862 %}
+{% set cutover_partition_id = 150215 %}
 
 WITH pre_final AS (
 

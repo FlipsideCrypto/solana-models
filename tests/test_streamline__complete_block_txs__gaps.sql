@@ -1,7 +1,5 @@
-/* TODO: Update this to be the block id of the cutover before merge */
-{% set cutover_block_id = 308000000 %}
-/* TODO: Update this to be the partition id of the cutover before merge */
-{% set cutover_partition_id = 150000 %}
+{% set cutover_block_id = 307103862 %}
+{% set cutover_partition_id = 150215 %}
 {% set start_block_id = 306000000 %}
 
 WITH base_blocks AS (
