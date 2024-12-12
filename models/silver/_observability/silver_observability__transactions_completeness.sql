@@ -5,6 +5,9 @@
     tags = ['observability']
 ) }}
 
+/* TODO: Update this to be the block id of the cutover before merge */
+{% set cutover_block_id = 308000000 %}
+
 WITH summary_stats AS (
 
     SELECT
@@ -133,12 +136,25 @@ broken_blocks AS (
         m.block_id
     FROM
         potential_missing_txs m
-        LEFT OUTER JOIN {{ ref('streamline__complete_block_txs') }}
-        cmp
-        ON m.block_id = cmp.block_id
+        LEFT OUTER JOIN 
+            {{ ref('streamline__complete_block_txs') }} cmp
+            ON m.block_id = cmp.block_id
     WHERE
-        cmp.error IS NOT NULL
-        OR cmp.block_id IS NULL
+        (cmp.error IS NOT NULL
+        OR cmp.block_id IS NULL)
+        AND cmp.block_id < {{ cutover_block_id }}
+    UNION ALL
+    SELECT
+        m.block_id
+    FROM
+        potential_missing_txs m
+        LEFT OUTER JOIN
+            {{ ref('streamline__complete_block_txs_2') }} cmp2
+            ON m.block_id = cmp2.block_id
+    WHERE
+        (cmp2.block_id IS NULL)
+        AND cmp2._partition_id >= 150000
+        AND cmp2.block_id >= {{ cutover_block_id }}
 ),
 impacted_blocks AS (
     SELECT
