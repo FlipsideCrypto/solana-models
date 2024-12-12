@@ -7,6 +7,8 @@
 
 /* TODO: Update this to be the block id of the cutover before merge */
 {% set cutover_block_id = 308000000 %}
+/* TODO: Update this to be the partition id of the cutover before merge */
+{% set cutover_partition_id = 150000 %}
 
 WITH summary_stats AS (
 
@@ -153,7 +155,7 @@ broken_blocks AS (
             ON m.block_id = cmp2.block_id
     WHERE
         (cmp2.block_id IS NULL)
-        AND cmp2._partition_id >= 150000
+        AND cmp2._partition_id >= {{ cutover_partition_id }}
         AND cmp2.block_id >= {{ cutover_block_id }}
 ),
 impacted_blocks AS (

@@ -1,5 +1,8 @@
 /* TODO: Update this to be the block id of the cutover before merge */
-{% set cutover_block_id = 307000000 %}
+{% set cutover_block_id = 308000000 %}
+/* TODO: Update this to be the partition id of the cutover before merge */
+{% set cutover_partition_id = 150000 %}
+{% set start_block_id = 306000000 %}
 
 WITH base_blocks AS (
     SELECT
@@ -11,7 +14,7 @@ WITH base_blocks AS (
         solana_dev.silver.blocks
         {% endif %}
     WHERE
-        block_id >= 306000000 -- this query wont give correct results prior to this block_id
+        block_id >= {{ start_block_id }}
         AND _inserted_date < CURRENT_DATE
 ),
 base_txs AS (
@@ -24,7 +27,7 @@ base_txs AS (
         solana_dev.silver.transactions
         {% endif %}
     WHERE
-        block_id >= 306000000
+        block_id >= {{ start_block_id }}
     UNION
     SELECT
         DISTINCT block_id
@@ -35,7 +38,7 @@ base_txs AS (
         solana_dev.silver.votes
         {% endif %}
     WHERE
-        block_id >= 306000000
+        block_id >= {{ start_block_id }}
 ),
 potential_missing_txs AS (
     SELECT
@@ -62,6 +65,6 @@ WHERE
     )
     OR (
         m.block_id >= {{ cutover_block_id }}
-        AND cmp2._partition_id >= 150000
+        AND cmp2._partition_id >= {{ cutover_partition_id }}
         AND (cmp2.block_id IS NULL)
     )
