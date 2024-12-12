@@ -41,7 +41,7 @@ SELECT
     replace(current_date::string,'-','_') AS partition_key, -- Issue with streamline handling `-` in partition key so changing to `_`
     {{ target.database }}.live.udf_api(
         'POST',
-        '{service}/?api-key={Authentication}',
+        '{Service}?apikey={Authentication}',
         OBJECT_CONSTRUCT(
             'Content-Type',
             'application/json'
@@ -68,7 +68,7 @@ SELECT
                 )
             )
         ),
-        'Vault/prod/solana/helius/mainnet'
+        'Vault/prod/solana/ankr/mainnet'
     ) AS request
 FROM
     block_ids
