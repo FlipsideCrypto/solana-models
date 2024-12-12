@@ -19,7 +19,7 @@
     {% set next_batch_num_query %}
     SELECT
         greatest(
-            129041, /* cutoff partition id in PROD after deploy */
+            150000, /* This partition id needs to start at a value greater than the current max partition of the legacy streamline data */
             (SELECT coalesce(max(_partition_id),0) FROM {{ ref('streamline__complete_block_txs_2') }})
         )+1
     {% endset %}
