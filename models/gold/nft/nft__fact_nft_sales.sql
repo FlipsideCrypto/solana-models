@@ -272,7 +272,7 @@ SELECT
 FROM
     {{ ref('silver__nft_sales_hadeswap_view') }}
 WHERE
-    block_timestamp::date <= '2022-10-30'
+    block_timestamp::date <= '2023-02-08'
 UNION ALL
 {% endif %}
 -- Only select from active models during incremental
