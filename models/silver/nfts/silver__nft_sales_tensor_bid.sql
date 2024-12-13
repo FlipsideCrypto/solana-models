@@ -7,7 +7,6 @@
     cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
     tags = ['scheduled_non_core']
 ) }}
-
 {% if execute %}
     {% set base_query %}
     CREATE OR REPLACE temporary TABLE silver.nft_sales_tensor_bid__intermediate_tmp AS
@@ -50,16 +49,13 @@ AND _inserted_timestamp >= (
 ) %}
 {% endif %}
 
-
-
-
 WITH decoded AS (
     SELECT
         block_timestamp,
         block_id,
         tx_id,
         program_id,
-        solana_dev.silver.udf_get_account_pubkey_by_name('buyer', decoded_instruction:accounts) AS purchaser,
+        solana_dev.silver.udf_get_account_pubkey_by_name('bidder', decoded_instruction:accounts) AS purchaser,
         solana_dev.silver.udf_get_account_pubkey_by_name('seller', decoded_instruction:accounts) AS seller,
         solana_dev.silver.udf_get_account_pubkey_by_name('nftMint', decoded_instruction:accounts) AS mint,
         (decoded_instruction:args:lamports::int) / pow(10, 9) as sales_amount,
@@ -79,9 +75,9 @@ SELECT
     mint,
     sales_amount,
     _inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(['tx_id','mint']) }} AS nft_sales_hadeswap_decoded_id,
+    {{ dbt_utils.generate_surrogate_key(['tx_id','mint']) }} AS nft_sales_tensor_bid_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
-    '{{ invocation_id }}' AS invocation_id
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     decoded

@@ -38,7 +38,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-    AND block_timestamp :: DATE > '2023-02-08' -- TODO: refer to legacy model for sales before this date, because decoding returns errors until this date
+    AND block_timestamp :: DATE > '2023-02-08' --  decoding returns errors until this date
 {% endif %}
 {% endset %}
 
