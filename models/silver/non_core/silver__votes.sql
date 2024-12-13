@@ -1,3 +1,5 @@
+-- depends_on: {{ ref('streamline__complete_block_txs_2') }}
+
 {{ config(
     materialized = 'incremental',
     unique_key = "tx_id",
