@@ -12,7 +12,6 @@ SELECT
     purchaser,
     seller,
     sales_amount,
-    marketplace,
     _inserted_timestamp,
     nft_sales_hadeswap_id,
     inserted_timestamp,

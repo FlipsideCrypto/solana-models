@@ -58,21 +58,21 @@ WITH decoded AS (
         inner_index,
         program_id,
         CASE
-            WHEN event_type = 'sellNftToTokenToNftPair' THEN solana_dev.silver.udf_get_account_pubkey_by_name('assetReceiver', decoded_instruction:accounts)
-            WHEN event_type = 'buyNftFromPair' THEN solana_dev.silver.udf_get_account_pubkey_by_name('user', decoded_instruction:accounts)
-            WHEN event_type = 'sellNftToLiquidityPair' THEN solana_dev.silver.udf_get_account_pubkey_by_name('nftsOwner', decoded_instruction:accounts)
+            WHEN event_type = 'sellNftToTokenToNftPair' THEN silver.udf_get_account_pubkey_by_name('assetReceiver', decoded_instruction:accounts)
+            WHEN event_type = 'buyNftFromPair' THEN silver.udf_get_account_pubkey_by_name('user', decoded_instruction:accounts)
+            WHEN event_type = 'sellNftToLiquidityPair' THEN silver.udf_get_account_pubkey_by_name('nftsOwner', decoded_instruction:accounts)
         END AS purchaser,
         CASE
-            WHEN event_type = 'sellNftToTokenToNftPair' THEN solana_dev.silver.udf_get_account_pubkey_by_name('user', decoded_instruction:accounts)
-            WHEN event_type = 'buyNftFromPair' THEN solana_dev.silver.udf_get_account_pubkey_by_name('nftsOwner', decoded_instruction:accounts)
-            WHEN event_type = 'sellNftToLiquidityPair' THEN solana_dev.silver.udf_get_account_pubkey_by_name('user', decoded_instruction:accounts)
+            WHEN event_type = 'sellNftToTokenToNftPair' THEN silver.udf_get_account_pubkey_by_name('user', decoded_instruction:accounts)
+            WHEN event_type = 'buyNftFromPair' THEN silver.udf_get_account_pubkey_by_name('nftsOwner', decoded_instruction:accounts)
+            WHEN event_type = 'sellNftToLiquidityPair' THEN silver.udf_get_account_pubkey_by_name('user', decoded_instruction:accounts)
         END AS seller,
         CASE
-            WHEN event_type = 'sellNftToTokenToNftPair' THEN solana_dev.silver.udf_get_account_pubkey_by_name('fundsSolVault', decoded_instruction:accounts)
-            WHEN event_type = 'buyNftFromPair' THEN solana_dev.silver.udf_get_account_pubkey_by_name('user', decoded_instruction:accounts)
-            WHEN event_type = 'sellNftToLiquidityPair' THEN solana_dev.silver.udf_get_account_pubkey_by_name('fundsSolVault', decoded_instruction:accounts)
+            WHEN event_type = 'sellNftToTokenToNftPair' THEN silver.udf_get_account_pubkey_by_name('fundsSolVault', decoded_instruction:accounts)
+            WHEN event_type = 'buyNftFromPair' THEN silver.udf_get_account_pubkey_by_name('user', decoded_instruction:accounts)
+            WHEN event_type = 'sellNftToLiquidityPair' THEN silver.udf_get_account_pubkey_by_name('fundsSolVault', decoded_instruction:accounts)
         END AS buyer_escrow_vault,
-        solana_dev.silver.udf_get_account_pubkey_by_name('nftMint', decoded_instruction:accounts) AS mint,
+        silver.udf_get_account_pubkey_by_name('nftMint', decoded_instruction:accounts) AS mint,
         _inserted_timestamp
     FROM
         silver.nft_sales_hadeswap_decoded__intermediate_tmp

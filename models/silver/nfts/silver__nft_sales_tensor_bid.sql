@@ -55,9 +55,9 @@ WITH decoded AS (
         block_id,
         tx_id,
         program_id,
-        solana_dev.silver.udf_get_account_pubkey_by_name('bidder', decoded_instruction:accounts) AS purchaser,
-        solana_dev.silver.udf_get_account_pubkey_by_name('seller', decoded_instruction:accounts) AS seller,
-        solana_dev.silver.udf_get_account_pubkey_by_name('nftMint', decoded_instruction:accounts) AS mint,
+        silver.udf_get_account_pubkey_by_name('bidder', decoded_instruction:accounts) AS purchaser,
+        silver.udf_get_account_pubkey_by_name('seller', decoded_instruction:accounts) AS seller,
+        silver.udf_get_account_pubkey_by_name('nftMint', decoded_instruction:accounts) AS mint,
         (decoded_instruction:args:lamports::int) / pow(10, 9) as sales_amount,
         _inserted_timestamp
     FROM 
