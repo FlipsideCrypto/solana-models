@@ -39,6 +39,7 @@ WITH pre_final AS (
         t.data:transaction:message:addressTableLookups::array as address_table_lookups,
         t.data :meta :computeUnitsConsumed :: NUMBER as compute_units_consumed,
         t.data :version :: STRING as version,
+        NULL AS tx_index,
         t._partition_id,
         t._inserted_timestamp
     FROM
@@ -87,6 +88,7 @@ WITH pre_final AS (
         t.data:transaction:message:addressTableLookups::array as address_table_lookups,
         t.data :meta :computeUnitsConsumed :: NUMBER as compute_units_consumed,
         t.data :version :: STRING as version,
+        t.value:array_index::int AS tx_index,
         t._partition_id,
         t._inserted_timestamp
     FROM
@@ -133,6 +135,7 @@ prev_null_block_timestamp_txs AS (
         t.units_limit,
         t.tx_size,
         t.version,
+        t.tx_index,
         t._partition_id,
         GREATEST(
             t._inserted_timestamp,
@@ -200,6 +203,7 @@ SELECT
     silver.udf_get_compute_units_total(log_messages, instructions) as units_limit,
     silver.udf_get_tx_size(account_keys,instructions,version,address_table_lookups,signers) as tx_size,
     version,
+    tx_index,
     _partition_id,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
