@@ -82,6 +82,7 @@
     CREATE
     OR REPLACE EXTERNAL FUNCTION streamline.udf_decode_compressed_mint_change_logs_v2("JSON" ARRAY) 
     returns VARIANT 
+    max_batch_rows = 1
     api_integration = 
     {% if target.database == 'SOLANA' -%}
         AWS_SOLANA_API_PROD_V2
