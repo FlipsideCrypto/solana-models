@@ -115,14 +115,14 @@ pre_final AS (
         ) AS liquidity_pool_address
     FROM
         non_whirlpool_txfers t
-        LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
+        LEFT JOIN {{ ref('silver__initialization_pools_orca_view') }}
         p1
         ON (
             t.dest_token_account = p1.token_a_account
             OR t.dest_token_account = p1.token_b_account
         )
         AND t.action = 'deposit'
-        LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
+        LEFT JOIN {{ ref('silver__initialization_pools_orca_view') }}
         p2
         ON (
             t.source_token_account = p2.token_a_account
