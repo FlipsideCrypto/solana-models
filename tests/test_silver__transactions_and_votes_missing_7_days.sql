@@ -45,7 +45,7 @@ SELECT
     e.transaction_count AS ect,
     A.transaction_count AS act,
     e.transaction_count - A.transaction_count AS delta,
-    coalesce(c._partition_id, 0) AS _partition_id
+    coalesce(c._partition_id, c2._partition_id, 0) AS _partition_id
 FROM
     solscan_counts e
 LEFT OUTER JOIN 
@@ -54,6 +54,9 @@ LEFT OUTER JOIN
 LEFT OUTER JOIN 
     streamline.complete_block_txs c
     ON e.block_id = c.block_id
+LEFT OUTER JOIN 
+    streamline.complete_block_txs_2 c2
+    ON e.block_id = c2.block_id
 WHERE
     ect <> 0
     AND (

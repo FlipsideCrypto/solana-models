@@ -64,6 +64,11 @@ sources:
       - name: validator_metadata_2
       - name: validators_list_2
       - name: solscan_blocks_2
+      - name: solscan_token_list
+      - name: decoded_instructions_3
+      - name: decoded_logs_2
+      - name: block_txs_2
+      - name: helius_blocks
   - name: bronze_api
     schema: bronze_api
     tables:
@@ -100,6 +105,11 @@ sources:
       - name: nft_sales_hyperspace
       - name: stake_pool_actions_lido
       - name: nft_sales_hadeswap
+      - name: swaps_intermediate_jupiterv4
+      - name: nft_collection
+      - name: burns_orca_non_whirlpool
+      - name: mints_orca_non_whirlpool
+      - name: pool_transfers_orca_non_whirlpool
   - name: solana_streamline
     database: solana
     schema: streamline

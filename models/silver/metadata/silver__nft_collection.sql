@@ -4,9 +4,17 @@
     incremental_strategy = 'merge',
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(collection_id,nft_collection_name)'),
-    tags = ['nft_api']
+    tags = ['nft_api'],
+    enabled = false
 ) }}
 
+/*
+DEPRECATED - keeping so that we know this table still exists in snowflake
+
+DEPENDS ON SOLSCAN v1.0 WHICH IS DEPRECATED. v2.0 API HAS NO REPLACEMENT.
+*/
+
+/*
 with collections as (
 SELECT
     items.value ['grouping'] AS GROUPING,
@@ -105,3 +113,4 @@ SELECT
     '{{ invocation_id }}' AS invocation_id
 FROM
     response
+*/

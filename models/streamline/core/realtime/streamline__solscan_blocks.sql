@@ -23,7 +23,8 @@ WITH base AS (
         ON b.block_id = b2.block_id
     WHERE 
         b.block_id >= 226000000
-        AND b2.block_id IS NULL
+        AND (b2.block_id IS NULL 
+            OR b2.transaction_count IS NULL)
         AND b.block_timestamp::DATE <= current_date
 ),
 block_ids AS (
@@ -39,7 +40,7 @@ SELECT
     replace(current_date::string,'-','_') AS partition_key, -- Issue with streamline handling `-` in partition key so changing to `_`
     live.udf_api(
         'GET',
-        concat('{Service}/block/',block_id),
+        concat('{Service}/block/detail?block=',block_id),
         object_construct(
             'Content-Type',
             'application/json',
@@ -47,7 +48,7 @@ SELECT
             '{Authentication}'
         ),
         {},
-        'Vault/prod/solana/solscan/v1'
+        'Vault/prod/solana/solscan/v2'
     ) AS request
 FROM
     block_ids

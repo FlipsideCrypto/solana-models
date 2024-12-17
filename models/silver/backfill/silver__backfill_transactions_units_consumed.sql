@@ -1,7 +1,6 @@
 {{
     config(
         materialized="incremental",
-        unique_key=['tx_id'],
         tags=['units_consumed_backfill']
     )
 }}

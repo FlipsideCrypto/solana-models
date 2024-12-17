@@ -8,7 +8,7 @@
         '{{this.identifier}}',
         'ON EQUALITY(tx_id, swapper, from_mint, to_mint)'
     ),
-    tags = ['scheduled_non_core']
+    enabled=false
 ) }}
 
 WITH base_events AS(

@@ -53,7 +53,7 @@ jobs:
 
       - name: Run DBT Jobs
         run: |
-          dbt run -s models/streamline/decode_instructions/streamline__complete_decoded_instructions_2.sql
+          dbt run -s streamline__complete_decoded_instructions_2 streamline__complete_decoded_instructions_3
       
       - name: Run Real Time Pyth Every 15 minutes
         run: |

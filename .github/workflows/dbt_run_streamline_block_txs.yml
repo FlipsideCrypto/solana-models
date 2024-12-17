@@ -1,10 +1,10 @@
-name: dbt_run_scheduled_weekly
-run-name: dbt_run_scheduled_weekly
+name: dbt_run_streamline_block_txs
+run-name: dbt_run_streamline_block_txs
 
 on:
-  schedule:
-    # Runs 01:00 every Sunday (see https://crontab.guru)
-    - cron: '0 1 * * 0'
+  workflow_dispatch:
+    branches:
+      - "main"
     
 env:
   DBT_PROFILES_DIR: "${{ vars.DBT_PROFILES_DIR }}"
@@ -41,4 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run-operation get_solscan_token_list
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS": True}' -s streamline__complete_block_txs_2 streamline__block_txs_2

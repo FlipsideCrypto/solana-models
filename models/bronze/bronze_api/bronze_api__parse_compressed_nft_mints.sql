@@ -96,7 +96,7 @@ base AS (
 )
 SELECT
     ARRAY_AGG(request) AS batch_request,
-    streamline.udf_decode_compressed_mint_change_logs(batch_request) AS responses,
+    streamline.udf_decode_compressed_mint_change_logs_v2(batch_request) AS responses,
     MIN(event_inserted_timestamp) AS start_inserted_timestamp,
     MAX(event_inserted_timestamp) AS end_inserted_timestamp,
     concat_ws(
