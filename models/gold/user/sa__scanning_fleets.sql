@@ -5,7 +5,7 @@
     post_hook = enable_search_optimization(
         '{{this.schema}}',
         '{{this.identifier}}',
-        'ON EQUALITY(profiles, scanning_fleets,scanning_fleets_id)'
+        'ON EQUALITY(player_profile, scanning_fleets,scanning_fleets_id)'
     ),
     tags = ['daily']
 ) }}
