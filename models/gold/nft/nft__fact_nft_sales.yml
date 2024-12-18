@@ -10,7 +10,7 @@ models:
           reference_tables:
             - 'silver__nft_sales_magic_eden_v2'
             - 'silver__nft_sales_solanart'
-            - 'silver__nft_sales_hadeswap'
+            - 'silver__nft_sales_hadeswap_decoded'
             - 'silver__nft_sales_hyperspace'
             - 'silver__nft_sales_exchange_art'
             - 'silver__nft_sales_amm_sell_decoded'

@@ -104,6 +104,7 @@ sources:
       - name: nft_sales_amm_sell
       - name: nft_sales_hyperspace
       - name: stake_pool_actions_lido
+      - name: nft_sales_hadeswap
       - name: swaps_intermediate_jupiterv4
       - name: nft_collection
       - name: burns_orca_non_whirlpool

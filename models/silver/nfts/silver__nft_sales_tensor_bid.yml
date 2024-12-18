@@ -1,0 +1,79 @@
+version: 2
+models:
+  - name: silver__nft_sales_tensor_bid
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - MINT
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('event_index') }}"
+        data_tests:  
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: PROGRAM_ID 
+        description: "{{ doc('program_id') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: PURCHASER
+        description: "{{ doc('purchaser') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: SELLER
+        description: "{{ doc('seller') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: SALES_AMOUNT
+        description: "{{ doc('sales_amount') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        data_tests: 
+          - not_null
+      - name: NFT_SALES_TENSOR_BID_ID
+        description: '{{ doc("pk") }}'   
+        data_tests: 
+          - unique: *recent_date_filter
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        data_tests: 
+          - not_null: 
+              name: test_silver__not_null_nft_sales_tensor_bid__invocation_id
+              <<: *recent_date_filter
