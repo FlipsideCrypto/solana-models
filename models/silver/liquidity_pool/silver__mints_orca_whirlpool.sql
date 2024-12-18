@@ -75,7 +75,7 @@ SELECT
     A._inserted_timestamp
 FROM
     orca_mint_actions A
-    INNER JOIN {{ ref('silver__initialization_pools_orca') }}
+    INNER JOIN {{ ref('silver__initialization_pools_orca_view') }}
     b
     ON A.liquidity_pool_address = b.liquidity_pool
     qualify(row_number() over (partition by a.block_id, a.tx_id, a.index,a.inner_index order by a.index,a.inner_index)) = 1

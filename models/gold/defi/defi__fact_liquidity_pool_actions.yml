@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: defi__fact_liquidity_pool_actions
-    description: Table containing liquidity pools actions on Orca, Raydium, Saber and Meteora. 
+    description: Table containing liquidity pools actions on Orca, Raydium, Saber and Meteora. NOTE - actions for Orca pools created after 11/22/2024 are not tracked in this table, and we are working on updating our Orca data pipeline to collect these.
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7

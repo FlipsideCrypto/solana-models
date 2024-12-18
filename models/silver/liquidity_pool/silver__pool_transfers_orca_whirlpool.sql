@@ -94,13 +94,13 @@ pre_final AS (
         END AS action_true
     FROM
         whirlpool_txfers t
-        LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
+        LEFT JOIN {{ ref('silver__initialization_pools_orca_view') }}
         p1
         ON (
             t.dest_token_account = p1.token_a_account
             OR t.dest_token_account = p1.token_b_account
         )
-        LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
+        LEFT JOIN {{ ref('silver__initialization_pools_orca_view') }}
         p2
         ON (
             t.source_token_account = p2.token_a_account

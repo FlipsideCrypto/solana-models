@@ -170,7 +170,7 @@ lp_events_w_inner_program_ids AS (
                 C.*
             FROM
                 combined C
-                LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
+                LEFT JOIN {{ ref('silver__initialization_pools_orca_view') }}
                 p1
                 ON (
                     event_instructions :accounts [6] :: STRING = p1.token_a_account
@@ -234,12 +234,12 @@ lp_events_w_inner_program_ids AS (
         END AS action
     FROM
         lp_events_with_swaps_removed A
-        LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
+        LEFT JOIN {{ ref('silver__initialization_pools_orca_view') }}
         p1
         ON (
             A.event_instructions :accounts [3] :: STRING = p1.pool_token
         )
-        LEFT JOIN {{ ref('silver__initialization_pools_orca') }}
+        LEFT JOIN {{ ref('silver__initialization_pools_orca_view') }}
         p2
         ON (
             A.event_instructions :accounts [7] :: STRING = p2.pool_token

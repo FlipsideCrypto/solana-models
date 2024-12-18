@@ -92,7 +92,7 @@ pre_final_orca_mints AS(
         A._inserted_timestamp
     FROM
         orca_mint_actions A
-        INNER JOIN {{ ref('silver__initialization_pools_orca') }}
+        INNER JOIN {{ ref('silver__initialization_pools_orca_view') }}
         b
         ON A.mint = b.pool_token
 ),
@@ -114,7 +114,7 @@ mints_in_swaps AS(
         A._inserted_timestamp
     FROM
         base_mint_actions A
-        INNER JOIN {{ ref('silver__initialization_pools_orca') }}
+        INNER JOIN {{ ref('silver__initialization_pools_orca_view') }}
         b
         ON A.mint = b.pool_token
     WHERE
