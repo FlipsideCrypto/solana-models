@@ -110,6 +110,7 @@ sources:
       - name: burns_orca_non_whirlpool
       - name: mints_orca_non_whirlpool
       - name: pool_transfers_orca_non_whirlpool
+      - name: initialization_pools_orca
   - name: solana_streamline
     database: solana
     schema: streamline
