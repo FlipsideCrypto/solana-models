@@ -57,8 +57,8 @@
   {% endset %}
 
   {% set get_dates_to_load_columns = run_query(get_dates_to_load_query).columns %}
-  {% set load_timestamp = get_dates_to_load_columns[0].values()[0] %}
-  {% set load_date = get_dates_to_load_columns[1].values()[0] %}
+  {% set load_timestamp = get_dates_to_load_columns[0].values()[0] if get_dates_to_load_columns[0].values()[0] is not none else max_inserted_timestamp %}
+  {% set load_date = get_dates_to_load_columns[1].values()[0] if get_dates_to_load_columns[1].values()[0] is not none else max_inserted_timestamp.date() %}
   {% endif %}
 {% endif %}
 
