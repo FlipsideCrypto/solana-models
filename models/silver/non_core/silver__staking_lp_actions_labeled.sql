@@ -44,6 +44,7 @@ merges_and_splits AS (
         INDEX,
         signers,
         instruction :parsed :info :stakeAccount :: STRING AS stake_account,
+        NULL AS parent_stake_account,
         'split_source' AS event_type,
         account_keys,
         pre_balances,
@@ -63,6 +64,7 @@ merges_and_splits AS (
         INDEX,
         signers,
         instruction :parsed :info :newSplitAccount :: STRING AS stake_account,
+        instruction :parsed :info :stakeAccount :: STRING AS parent_stake_account,
         'split_destination' AS event_type,
         account_keys,
         pre_balances,
@@ -82,6 +84,8 @@ merges_and_splits AS (
         INDEX,
         signers,
         instruction :parsed :info :destination :: STRING AS stake_account,
+        -- instruction :parsed :info :source :: STRING AS 
+        NULL AS parent_stake_account,
         'merge_destination' AS event_type,
         account_keys,
         pre_balances,
@@ -101,6 +105,7 @@ merges_and_splits AS (
         INDEX,
         signers,
         instruction :parsed :info :source :: STRING AS stake_account,
+        NULL AS parent_stake_account,
         'merge_source' AS event_type,
         account_keys,
         pre_balances,
@@ -121,6 +126,7 @@ all_actions AS (
         INDEX,
         signers,
         instruction :parsed :info :stakeAccount :: STRING AS stake_account,
+        NULL AS parent_stake_account,
         event_type,
         account_keys,
         pre_balances,
@@ -172,6 +178,7 @@ tx_base AS (
             ELSE NULL
         END AS withdraw_authority,
         stake_account,
+        parent_stake_account,
         CASE
             WHEN event_type = 'delegate' THEN TRUE
             WHEN next_event_type = 'delegate' THEN FALSE
@@ -242,6 +249,7 @@ fill_vote_acct AS (
             ),
             latest_state.withdraw_authority) AS withdraw_authority,
         tx_base.stake_account,
+        tx_base.parent_stake_account,
         COALESCE(tx_base.stake_active, 
             LAST_VALUE(tx_base.stake_active) ignore nulls over (
                 PARTITION BY tx_base.stake_account
@@ -279,6 +287,7 @@ temp AS (
         b.stake_authority,
         b.withdraw_authority,
         b.stake_account,
+        b.parent_stake_account,
         b.stake_active,
         b.pre_tx_staked_balance,
         b.post_tx_staked_balance,
@@ -309,6 +318,7 @@ temp2 AS (
         stake_authority,
         withdraw_authority,
         stake_account,
+        parent_stake_account,
         stake_active,
         pre_tx_staked_balance,
         post_tx_staked_balance,
@@ -338,6 +348,7 @@ SELECT
     stake_authority,
     withdraw_authority,
     stake_account,
+    parent_stake_account,
     stake_active,
     pre_tx_staked_balance,
     post_tx_staked_balance,
