@@ -1,12 +1,5 @@
 {{ config(
-    materialized = 'incremental',
-    unique_key = ['scanning_fleets_id'],
-    merge_exclude_columns = ["inserted_timestamp"],
-    post_hook = enable_search_optimization(
-        '{{this.schema}}',
-        '{{this.identifier}}',
-        'ON EQUALITY(player_profile, scanning_fleets,scanning_fleets_id)'
-    ),
+    materialized = 'table',
     tags = ['daily']
 ) }}
 
@@ -43,11 +36,11 @@ WHERE
     AND VALUE :parsed :info :authority = 'C2478tbSLC1gfcDuCyr4pv66QQiybn77EiR1a4k7htT5'
     AND instruction :accounts [18] = 'DataJpxFgHhzwu4zYJeHCnAv21YqWtanEBphNxXBHdEY'
     AND succeeded
-    AND block_timestamp :: DATE >= '2024-04-01'
-
-{% if is_incremental() %}
-AND modified_timestamp >= '{{ max_modified_timestamp }}'
+    AND block_timestamp :: DATE >= CURRENT_DATE -30 {# {% if is_incremental() %}
+    AND modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
+
+#}
 GROUP BY
     1,
     2
