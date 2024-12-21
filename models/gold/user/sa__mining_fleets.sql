@@ -1,12 +1,5 @@
 {{ config(
-    materialized = 'incremental',
-    unique_key = ['mining_fleets_id'],
-    merge_exclude_columns = ["inserted_timestamp"],
-    post_hook = enable_search_optimization(
-        '{{this.schema}}',
-        '{{this.identifier}}',
-        'ON EQUALITY(wallet, player_profile, mining_fleets,mining_fleets_id)'
-    ),
+    materialized = 'table',
     tags = ['daily']
 ) }}
 
@@ -39,11 +32,11 @@ WHERE
     program_id IN ('SAGE2HAwep459SNq61LHvjxPk4pLPEJLoMETef7f7EE')
     AND instruction :accounts [18] = 'MineMBxARiRdMh7s1wdStSK4Ns3YfnLjBfvF5ZCnzuw'
     AND succeeded --= 'true'
-    AND block_timestamp :: DATE >= '2024-04-01'
-
-{% if is_incremental() %}
-AND modified_timestamp >= '{{ max_modified_timestamp }}'
+    AND block_timestamp :: DATE >= CURRENT_DATE -30 {# {% if is_incremental() %}
+    AND modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
+
+#}
 GROUP BY
     1,
     2,
