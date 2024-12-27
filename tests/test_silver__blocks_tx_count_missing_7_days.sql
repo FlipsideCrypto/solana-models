@@ -1,7 +1,6 @@
 {{
     config(
-        tags=["test_hourly"],
-        severity = 'warn' 
+        tags=["test_hourly"]
     )
 }}
 
