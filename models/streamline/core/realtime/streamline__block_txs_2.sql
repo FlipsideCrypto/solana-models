@@ -26,7 +26,7 @@
     {% set next_batch_num = run_query(next_batch_num_query)[0][0] %}
 {% endif %}
 
-WITH blocks AS (
+WITH blocks_base AS (
     SELECT
         block_id
     FROM
@@ -45,6 +45,29 @@ WITH blocks AS (
         block_id
     FROM
         {{ ref('streamline__complete_block_txs_2') }}
+),
+solscan_discrepancy_retries AS (
+    SELECT
+        m.block_id
+    FROM
+        {{ ref('streamline__transactions_and_votes_missing_7_days') }} m
+    LEFT JOIN 
+        {{ ref('streamline__complete_block_txs_2') }} C
+        ON C.block_id = m.block_id
+    WHERE
+        C._partition_id <= m._partition_id
+    LIMIT 200
+),
+blocks AS (
+    SELECT
+        *
+    FROM
+        blocks_base
+    UNION ALL
+    SELECT
+        *
+    FROM
+        solscan_discrepancy_retries
 )
 SELECT
     block_id,
