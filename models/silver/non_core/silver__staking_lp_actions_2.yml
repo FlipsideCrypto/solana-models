@@ -1,0 +1,96 @@
+version: 2
+models:
+  - name: silver__staking_lp_actions_2
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+            - TX_ID
+            - INDEX
+            - INNER_INDEX
+          where: >
+            block_timestamp::DATE > current_date - 30
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        data_tests:
+          - not_null:
+              where: >
+                block_id > 39824213
+                AND _inserted_timestamp >= current_date - 7
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('index') }}"
+        data_tests:  
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: EVENT_TYPE
+        description: "{{ doc('event_type') }}"
+        data_tests: 
+          - not_null:
+              where: >
+                SUCCEEDED = TRUE
+                AND block_id > 25706401
+                AND _inserted_timestamp >= current_date - 7
+      - name: SIGNERS
+        description: List of accounts that signed the transaction
+      - name: ACCOUNT_KEYS
+        description: List of accounts that are referenced by pre/post sol/token balances objects
+      - name: INSTRUCTION
+        description: "{{ doc('instruction') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: INNER_INSTRUCTION
+        description: "{{ doc('inner_instruction') }}"
+      - name: PRE_BALANCES
+        description: List of pre-transaction balances for different accounts
+      - name: POST_BALANCES
+        description: List of post-transaction balances for different accounts
+      - name: PRE_TOKEN_BALANCES
+        description: List of pre-transaction token balances for different token accounts
+      - name: POST_TOKEN_BALANCES
+        description: List of post-transaction token balances for different token accounts
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        data_tests: 
+          - not_null
+      - name: STAKING_LP_ACTIONS_2_ID
+        description: '{{ doc("pk") }}'   
+        data_tests: 
+          - unique: *recent_date_filter
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        data_tests: 
+          - not_null: 
+              name: test_silver__not_null_staking_lp_actions_2_invocation_id
+              <<: *recent_date_filter

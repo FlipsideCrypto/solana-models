@@ -15,7 +15,7 @@ with first_parents AS (
         withdraw_authority,
         1 AS recursion_depth  -- Start recursion depth from 1
     from 
-        {{ ref('silver__staking_lp_actions_labeled') }}
+        {{ ref('silver__staking_lp_actions_labeled_2') }}
     where stake_authority = 'stWirqFCf2Uts1JBL1Jsd3r6VBWhgnpdPxCTe1MFjrq'
         and withdraw_authority <> 'stWirqFCf2Uts1JBL1Jsd3r6VBWhgnpdPxCTe1MFjrq'
         and withdraw_authority is not null
@@ -28,7 +28,7 @@ children AS (
         children.stake_account,
         children.parent_stake_account
     from
-        {{ ref('silver__staking_lp_actions_labeled') }} AS children
+        {{ ref('silver__staking_lp_actions_labeled_2') }} AS children
     left join
         first_parents
         on first_parents.parent_stake_account = children.stake_account
