@@ -80,11 +80,11 @@ models:
         data_tests:
           - not_null: *recent_date_filter
       - name: STAKE_AUTHORITY
-        description: The wallet address of the user who initialized the transaction. 
+        description: "{{ doc('stake_authority') }}"
       - name: WITHDRAW_AUTHORITY
-        description: The wallet address of the user who can withdraw the SOL from the stake account.
+        description: "{{ doc('withdraw_authority') }}"
       - name: STAKE_ACCOUNT
-        description: An account address containing balances of staked SOL that belongs to the stake authority. 
+        description: "{{ doc('stake_account') }}"
         data_tests:
           - not_null: *recent_date_filter
       - name: PARENT_STAKE_ACCOUNT
@@ -107,6 +107,8 @@ models:
         description: The rank of the validator by amount of delegated SOL. 
       - name: COMMISSION
         description: The percentage of staked earnings given to the validator.
+      - name: VALIDATOR_NAME
+        description: The name of the validator.
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         data_tests: 
