@@ -1,0 +1,109 @@
+version: 2
+models:
+  - name: marinade__ez_native_staking_actions
+    description: Table for staking actions for any account that has interacted with Marinade Native Staking at least once
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_ID
+            - TX_ID
+            - INDEX
+            - INNER_INDEX
+            - EVENT_TYPE
+          where: >
+            block_timestamp::DATE > current_date - 30
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('index') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+          - accepted_values:
+              values:
+                - true
+              quote: false
+              <<: *recent_date_filter
+      - name: EVENT_TYPE
+        description: "{{ doc('event_type') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: STAKE_AUTHORITY
+        description: "{{ doc('stake_authority') }}"
+      - name: PROVIDER_ADDRESS
+        description: "The provider address is the same as the withdraw authority which is defined as...{{ doc('withdraw_authority') }}"
+      - name: STAKE_ACCOUNT
+        description: "{{ doc('stake_account') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: STAKE_ACTIVE
+        description: Whether the stake account is active.
+      - name: WITHDRAW_DESTINATION
+        description: The destination wallet address of the withdrawn SOL.
+      - name: PRE_TX_STAKED_BALANCE
+        description: The amount of Solana belonging to the stake account before the transaction.
+      - name: PRE_TX_STAKED_BALANCE_USD
+        description: The amount of Solana belonging to the stake account before the transaction in USD.
+      - name: POST_TX_STAKED_BALANCE
+        description: The amount of Solana belonging to the stake account after the transaction.
+      - name: POST_TX_STAKED_BALANCE_USD
+        description: The amount of Solana belonging to the stake account after the transaction in USD.
+      - name: VOTE_ACCOUNT
+        description: A voting account belonging to the validator. 
+      - name: NODE_PUBKEY
+        description: A unique key belonging to the validator node. 
+      - name: VALIDATOR_RANK
+        description: The rank of the validator by amount of delegated SOL. 
+      - name: COMMISSION
+        description: The percentage of staked earnings given to the validator.
+      - name: VALIDATOR_NAME
+        description: The name of the validator.
+      - name: PROGRAM_ID
+        description: The program id of the native stake program
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: PLATFORM
+        description: The platform of the staking account either native or marinate native proxy
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        data_tests: 
+          - not_null
+      - name: MARINADE_NATIVE_EZ_STAKING_ACTIONS_ID
+        description: '{{ doc("pk") }}'   
+        data_tests: 
+          - unique: *recent_date_filter
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        data_tests: 
+          - not_null: 
+              name: test_marinade__not_null_ez_native_staking_actions_invocation_id
+              <<: *recent_date_filter
