@@ -8,31 +8,43 @@
 ) }}
 
 WITH base_staking_lp_actions AS (
-
     SELECT
         *
     FROM
         {{ ref('silver__staking_lp_actions_2') }}
     {% if is_incremental() %}
-    WHERE block_timestamp::date >= current_date - 1
+    WHERE 
+        block_timestamp::date >= current_date - 1
     {% endif %}
 ),
+
 {% if is_incremental() %}
-latest_state as (
-    select stake_account, stake_authority, withdraw_authority, stake_active, vote_account
-    from {{ this }}
-    WHERE block_timestamp::date < current_date - 1
-    qualify(row_number() over (partition by stake_account order by block_id desc, block_timestamp desc, index desc, inner_index desc)) = 1
+latest_state AS (
+    SELECT 
+        stake_account,
+        stake_authority,
+        withdraw_authority,
+        stake_active,
+        vote_account
+    FROM 
+        {{ this }}
+    WHERE 
+        block_timestamp::date < current_date - 1
+    QUALIFY
+        row_number() OVER (
+            PARTITION BY stake_account 
+            ORDER BY block_id DESC, block_timestamp DESC, index DESC, inner_index DESC
+        ) = 1
 ),
 {% else %}
 /*dummy cte so that downstream code can stay the same*/
-latest_state as (
-    select 
-        'a' as stake_account, 
-        'a' as stake_authority, 
-        'a' as withdraw_authority, 
-        'a' as stake_active, 
-        'a' as vote_account
+latest_state AS (
+    SELECT 
+        'a' AS stake_account,
+        'a' AS stake_authority,
+        'a' AS withdraw_authority,
+        'a' AS stake_active,
+        'a' AS vote_account
 ),
 {% endif %}
 merges_and_splits AS (
@@ -41,10 +53,10 @@ merges_and_splits AS (
         block_timestamp,
         tx_id,
         succeeded,
-        INDEX,
+        index,
         inner_index,
         signers,
-        instruction :parsed :info :stakeAccount :: STRING AS stake_account,
+        instruction:parsed:info:stakeAccount::string AS stake_account,
         NULL AS parent_stake_account,
         'split_source' AS event_type,
         account_keys,
@@ -56,17 +68,19 @@ merges_and_splits AS (
         base_staking_lp_actions
     WHERE
         event_type = 'split'
-    UNION
+    
+    UNION ALL
+    
     SELECT
         block_id,
         block_timestamp,
         tx_id,
         succeeded,
-        INDEX,
+        index,
         inner_index,
         signers,
-        instruction :parsed :info :newSplitAccount :: STRING AS stake_account,
-        instruction :parsed :info :stakeAccount :: STRING AS parent_stake_account,
+        instruction:parsed:info:newSplitAccount::string AS stake_account,
+        instruction:parsed:info:stakeAccount::string AS parent_stake_account,
         'split_destination' AS event_type,
         account_keys,
         pre_balances,
@@ -77,17 +91,18 @@ merges_and_splits AS (
         base_staking_lp_actions
     WHERE
         event_type = 'split'
-    UNION
+    
+    UNION ALL
+    
     SELECT
         block_id,
         block_timestamp,
         tx_id,
         succeeded,
-        INDEX,
+        index,
         inner_index,
         signers,
-        instruction :parsed :info :destination :: STRING AS stake_account,
-        -- instruction :parsed :info :source :: STRING AS 
+        instruction:parsed:info:destination::string AS stake_account,
         NULL AS parent_stake_account,
         'merge_destination' AS event_type,
         account_keys,
@@ -99,16 +114,18 @@ merges_and_splits AS (
         base_staking_lp_actions
     WHERE
         event_type = 'merge'
-    UNION
+    
+    UNION ALL
+    
     SELECT
         block_id,
         block_timestamp,
         tx_id,
         succeeded,
-        INDEX,
+        index,
         inner_index,
         signers,
-        instruction :parsed :info :source :: STRING AS stake_account,
+        instruction:parsed:info:source::string AS stake_account,
         NULL AS parent_stake_account,
         'merge_source' AS event_type,
         account_keys,
@@ -121,16 +138,17 @@ merges_and_splits AS (
     WHERE
         event_type = 'merge'
 ),
+
 all_actions AS (
     SELECT
         block_id,
         block_timestamp,
         tx_id,
         succeeded,
-        INDEX,
+        index,
         inner_index,
         signers,
-        instruction :parsed :info :stakeAccount :: STRING AS stake_account,
+        instruction:parsed:info:stakeAccount::string AS stake_account,
         NULL AS parent_stake_account,
         event_type,
         account_keys,
@@ -141,48 +159,40 @@ all_actions AS (
     FROM
         base_staking_lp_actions
     WHERE
-        event_type NOT IN (
-            'merge',
-            'split'
-        )
-    UNION
+        event_type NOT IN ('merge', 'split')
+    
+    UNION ALL
+    
     SELECT
         *
     FROM
         merges_and_splits
 ),
+
 tx_base AS (
     SELECT
         block_id,
         block_timestamp,
         tx_id,
         succeeded,
-        INDEX,
+        index,
         inner_index,
         event_type,
-        LEAD(
-            event_type,
-            1
-        ) over (
+        lead(event_type, 1) OVER (
             PARTITION BY stake_account
-            ORDER BY
-                block_id,
-                INDEX,
-                inner_index
+            ORDER BY block_id, index, inner_index
         ) AS next_event_type,
         signers,
         CASE
-            WHEN event_type = 'initialize' THEN instruction :parsed :info :authorized :staker :: STRING
-            WHEN event_type = 'initializeChecked' THEN instruction :parsed :info :staker :: STRING
-            WHEN event_type = 'authorize'
-            AND instruction :parsed :info :authorityType = 'Staker' THEN instruction :parsed :info :newAuthority :: STRING
-            ELSE instruction :parsed :info :stakeAuthority :: STRING
+            WHEN event_type = 'initialize' THEN instruction:parsed:info:authorized:staker::string
+            WHEN event_type = 'initializeChecked' THEN instruction:parsed:info:staker::string
+            WHEN event_type = 'authorize' AND instruction:parsed:info:authorityType = 'Staker' THEN instruction:parsed:info:newAuthority::string
+            ELSE instruction:parsed:info:stakeAuthority::string
         END AS stake_authority,
         CASE
-            WHEN event_type = 'initialize' THEN instruction :parsed :info :authorized :withdrawer :: STRING
-            WHEN event_type = 'initializeChecked' THEN instruction :parsed :info :withdrawer :: STRING
-            WHEN event_type = 'authorize'
-            AND instruction :parsed :info :authorityType = 'Withdrawer' THEN instruction :parsed :info :newAuthority :: STRING
+            WHEN event_type = 'initialize' THEN instruction:parsed:info:authorized:withdrawer::string
+            WHEN event_type = 'initializeChecked' THEN instruction:parsed:info:withdrawer::string
+            WHEN event_type = 'authorize' AND instruction:parsed:info:authorityType = 'Withdrawer' THEN instruction:parsed:info:newAuthority::string
             WHEN event_type = 'split_destination' THEN stake_authority
             ELSE NULL
         END AS withdraw_authority,
@@ -192,103 +202,111 @@ tx_base AS (
             WHEN event_type = 'delegate' THEN TRUE
             WHEN next_event_type = 'delegate' THEN FALSE
             WHEN next_event_type = 'deactivate' THEN TRUE
-            WHEN event_type IN (
-                'deactivate',
-                'merge_source'
-            ) THEN FALSE
+            WHEN event_type IN ('deactivate', 'merge_source') THEN FALSE
             ELSE NULL
         END AS stake_active,
-        silver.udf_get_account_balances_index(
-            stake_account,
-            account_keys
-        ) AS balance_index,
-        pre_balances [balance_index] :: INTEGER AS pre_tx_staked_balance,
-        post_balances [balance_index] :: INTEGER AS post_tx_staked_balance,
-        instruction :parsed :info :voteAccount :: STRING AS vote_acct,
+        silver.udf_get_account_balances_index(stake_account, account_keys) AS balance_index,
+        pre_balances[balance_index]::integer AS pre_tx_staked_balance,
+        post_balances[balance_index]::integer AS post_tx_staked_balance,
+        instruction:parsed:info:voteAccount::string AS vote_acct,
         CASE
-            WHEN event_type = 'withdraw' THEN instruction :parsed :info :lamports :: NUMBER
+            WHEN event_type = 'withdraw' THEN instruction:parsed:info:lamports::number
             ELSE NULL
         END AS withdraw_amount,
         CASE
-            WHEN event_type = 'withdraw' THEN instruction :parsed :info :destination :: STRING
+            WHEN event_type = 'withdraw' THEN instruction:parsed:info:destination::string
             ELSE NULL
         END AS withdraw_destination,
         _inserted_timestamp
     FROM
         all_actions
 ),
+
 validators AS (
     SELECT
-        r.value:identity::STRING AS node_pubkey,
-        r.value:commission::INTEGER AS commission,
-        r.value:vote_identity::STRING AS vote_pubkey,
-        r.value:activated_stake::FLOAT AS stake,
+        r.value:identity::string AS node_pubkey,
+        r.value:commission::integer AS commission,
+        r.value:vote_identity::string AS vote_pubkey,
+        r.value:activated_stake::float AS stake,
         row_number() OVER (ORDER BY stake DESC) AS validator_rank
     FROM
-        {{ ref('bronze__streamline_validator_metadata_2') }} AS v
-    JOIN
-        table(flatten(data::ARRAY)) AS r
+        {{ ref('bronze__streamline_validator_metadata_2') }} AS v,
+        table(flatten(data::array)) AS r
     WHERE
-        v._partition_by_created_date = (SELECT max(_partition_by_created_date) FROM {{ ref('bronze__streamline_validator_metadata_2') }})
-        AND v._inserted_timestamp = (SELECT max(_inserted_timestamp) FROM {{ ref('bronze__streamline_validator_metadata_2') }})
+        v._partition_by_created_date = (
+            SELECT 
+                max(_partition_by_created_date) 
+            FROM 
+                {{ ref('bronze__streamline_validator_metadata_2') }}
+        )
+        AND v._inserted_timestamp = (
+            SELECT 
+                max(_inserted_timestamp) 
+            FROM 
+                {{ ref('bronze__streamline_validator_metadata_2') }}
+        )
 ),
+
 fill_vote_acct AS (
     SELECT
         block_id,
         block_timestamp,
         tx_id,
         succeeded,
-        INDEX,
+        index,
         inner_index,
         event_type,
         signers,
-        COALESCE(tx_base.stake_authority, 
-            LAST_VALUE(tx_base.stake_authority) ignore nulls over (
+        coalesce(
+            tx_base.stake_authority,
+            last_value(tx_base.stake_authority) IGNORE NULLS OVER (
                 PARTITION BY tx_base.stake_account
-                ORDER BY
-                    block_id,
-                    INDEX,
-                    inner_index rows unbounded preceding
+                ORDER BY block_id, index, inner_index 
+                ROWS UNBOUNDED PRECEDING
             ),
-            latest_state.stake_authority) AS stake_authority,
-        COALESCE(tx_base.withdraw_authority, 
-            LAST_VALUE(tx_base.withdraw_authority) ignore nulls over (
+            latest_state.stake_authority
+        ) AS stake_authority,
+        coalesce(
+            tx_base.withdraw_authority,
+            last_value(tx_base.withdraw_authority) IGNORE NULLS OVER (
                 PARTITION BY tx_base.stake_account
-                ORDER BY
-                    block_id,
-                    INDEX,
-                    inner_index rows unbounded preceding
+                ORDER BY block_id, index, inner_index 
+                ROWS UNBOUNDED PRECEDING
             ),
-            latest_state.withdraw_authority) AS withdraw_authority,
+            latest_state.withdraw_authority
+        ) AS withdraw_authority,
         tx_base.stake_account,
         tx_base.parent_stake_account,
-        COALESCE(tx_base.stake_active, 
-            LAST_VALUE(tx_base.stake_active) ignore nulls over (
+        coalesce(
+            tx_base.stake_active,
+            last_value(tx_base.stake_active) IGNORE NULLS OVER (
                 PARTITION BY tx_base.stake_account
-                ORDER BY
-                    block_id,
-                    INDEX,
-                    inner_index rows unbounded preceding
+                ORDER BY block_id, index, inner_index 
+                ROWS UNBOUNDED PRECEDING
             ),
-            latest_state.stake_active) AS stake_active,
+            latest_state.stake_active
+        ) AS stake_active,
         pre_tx_staked_balance,
         post_tx_staked_balance,
         withdraw_amount,
         withdraw_destination,
-        COALESCE(tx_base.vote_acct,
-            LAST_VALUE(tx_base.vote_acct) ignore nulls over (
+        coalesce(
+            tx_base.vote_acct,
+            last_value(tx_base.vote_acct) IGNORE NULLS OVER (
                 PARTITION BY tx_base.stake_account
-                ORDER BY
-                    block_id,
-                    INDEX,
-                    inner_index rows unbounded preceding
+                ORDER BY block_id, index, inner_index 
+                ROWS UNBOUNDED PRECEDING
             ),
-            latest_state.vote_account) AS vote_account,
+            latest_state.vote_account
+        ) AS vote_account,
         tx_base._inserted_timestamp
     FROM
         tx_base
-    LEFT OUTER JOIN latest_state on latest_state.stake_account = tx_base.stake_account
+    LEFT OUTER JOIN 
+        latest_state 
+        ON latest_state.stake_account = tx_base.stake_account
 ),
+
 temp AS (
     SELECT
         b.block_id,
@@ -308,27 +326,26 @@ temp AS (
         b.post_tx_staked_balance,
         b.withdraw_amount,
         b.withdraw_destination,
-        COALESCE(
-            b.vote_account,
-            A.vote_account
-        ) AS vote_account,
+        coalesce(b.vote_account, A.vote_account) AS vote_account,
         b._inserted_timestamp
     FROM
         fill_vote_acct b
-        LEFT OUTER JOIN fill_vote_acct A
+    LEFT OUTER JOIN 
+        fill_vote_acct A
         ON b.tx_id = A.tx_id
         AND b.index = A.index
-        AND b.inner_index = A.inner_index
+        AND coalesce(b.inner_index, -1) = coalesce(A.inner_index, -1)
         AND b.event_type = 'split_destination'
         AND A.event_type = 'split_source'
 ),
+
 temp2 AS (
     SELECT
         block_id,
         block_timestamp,
         tx_id,
         succeeded,
-        INDEX,
+        index,
         inner_index,
         event_type,
         signers,
@@ -342,12 +359,11 @@ temp2 AS (
         withdraw_amount,
         withdraw_destination,
         CASE
-            WHEN vote_account IS NULL THEN LAST_VALUE(vote_account) ignore nulls over (
+            WHEN vote_account IS NULL 
+            THEN last_value(vote_account) IGNORE NULLS OVER (
                 PARTITION BY stake_account
-                ORDER BY
-                    block_id,
-                    INDEX,
-                    inner_index rows unbounded preceding
+                ORDER BY block_id, index, inner_index 
+                ROWS UNBOUNDED PRECEDING
             )
             ELSE vote_account
         END AS vote_account,
@@ -355,12 +371,13 @@ temp2 AS (
     FROM
         temp
 )
+
 SELECT
     block_id,
     block_timestamp,
     tx_id,
     succeeded,
-    INDEX,
+    index,
     inner_index,
     event_type,
     signers,
@@ -377,20 +394,19 @@ SELECT
     node_pubkey,
     validator_rank,
     commission,
-    COALESCE(
-        address_name,
-        vote_account
-    ) AS validator_name,
+    coalesce(address_name, vote_account) AS validator_name,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
-        ['block_id','tx_id','index','inner_index','event_type']
+        ['block_id', 'tx_id', 'index', 'inner_index', 'event_type']
     ) }} AS staking_lp_actions_labeled_2_id,
-    SYSDATE() AS inserted_timestamp,
-    SYSDATE() AS modified_timestamp,
+    sysdate() AS inserted_timestamp,
+    sysdate() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
     temp2
-    LEFT OUTER JOIN validators v
+LEFT OUTER JOIN 
+    validators v
     ON vote_account = vote_pubkey
-    LEFT OUTER JOIN {{ ref('core__dim_labels') }}
+LEFT OUTER JOIN 
+    {{ ref('core__dim_labels') }}
     ON vote_account = address
