@@ -12,14 +12,18 @@ WITH marinade_native_stakers AS (
     FROM 
         {{ ref('silver__staking_lp_actions_labeled_2') }}
     WHERE
-        stake_authority = 'stWirqFCf2Uts1JBL1Jsd3r6VBWhgnpdPxCTe1MFjrq'
+        /* include older stake authority(ex9CfkBZZd6Nv9XdnoDmmB45ymbu4arXVk7g5pWnt3N) used by marinade native staking */
+        stake_authority IN ('stWirqFCf2Uts1JBL1Jsd3r6VBWhgnpdPxCTe1MFjrq', 'ex9CfkBZZd6Nv9XdnoDmmB45ymbu4arXVk7g5pWnt3N')
+        AND succeeded
 ),
 withdraw_authority_from_snapshot_tmp AS (
     SELECT 
         m.stake_account,
         w.authorized_withdrawer AS withdraw_authority,
         w.epoch,
-        e.end_block AS end_block_id
+        e.start_block AS start_block_id,
+        e.end_block AS end_block_id,
+        min(w.epoch) over (partition by m.stake_account) AS min_epoch
     FROM 
         marinade_native_stakers AS m
     JOIN
@@ -33,19 +37,20 @@ withdraw_authority_from_snapshot AS (
     SELECT 
         m.stake_account,
         m.withdraw_authority,
-        e.start_block AS start_block_id,
+        coalesce(e.start_block,m.start_block_id) AS start_block_id,
         m.end_block_id
     FROM 
         withdraw_authority_from_snapshot_tmp AS m
     LEFT JOIN
         {{ ref('silver__epoch') }} AS e
         ON m.epoch-1 = e.epoch
+        AND m.epoch = m.min_epoch
 ),
 reconcile_withdraw_authority_with_snapshot AS (
     SELECT 
         s.* exclude(withdraw_authority),
         CASE
-            WHEN s.withdraw_authority = 'stWirqFCf2Uts1JBL1Jsd3r6VBWhgnpdPxCTe1MFjrq' 
+            WHEN s.withdraw_authority IN ('stWirqFCf2Uts1JBL1Jsd3r6VBWhgnpdPxCTe1MFjrq', 'ex9CfkBZZd6Nv9XdnoDmmB45ymbu4arXVk7g5pWnt3N')
             THEN w.withdraw_authority
             ELSE s.withdraw_authority
         END AS withdraw_authority
@@ -54,6 +59,7 @@ reconcile_withdraw_authority_with_snapshot AS (
     JOIN 
         {{ ref('silver__staking_lp_actions_labeled_2') }} AS s
         ON m.stake_account = s.stake_account
+        AND s.succeeded
     LEFT JOIN
         withdraw_authority_from_snapshot AS w
         ON s.stake_account = w.stake_account
@@ -123,6 +129,22 @@ reconcile_with_window AS (
         ) AS withdraw_authority
     FROM 
         get_withdraw_authority_with_window
+),
+token_prices AS (
+    SELECT
+        HOUR,
+        LOWER(token_address) AS token_address,
+        price
+    FROM
+        {{ ref('price__ez_prices_hourly') }}
+    WHERE
+        HOUR :: DATE IN (
+            SELECT
+                DISTINCT block_timestamp :: DATE
+            FROM
+                reconcile_with_window
+        )
+        AND token_address = 'So11111111111111111111111111111111111111112'
 )
 SELECT 
     block_id,
@@ -130,23 +152,31 @@ SELECT
     tx_id,
     index,
     inner_index,
-    event_type AS action_type,
+    succeeded,
+    event_type,
     withdraw_authority AS provider_address,
     stake_account,
     stake_active,
     stake_authority,
     pre_tx_staked_balance,
+    ((pre_tx_staked_balance / pow(10,9)) * tp.price)::numeric(38,2) AS pre_tx_staked_balance_usd,
     post_tx_staked_balance,
+    ((post_tx_staked_balance / pow(10,9)) * tp.price)::numeric(38,2) AS post_tx_staked_balance_usd,
     withdraw_destination,
     validator_name,
     vote_account,
     node_pubkey,
     validator_rank,
     'Stake11111111111111111111111111111111111111' AS program_id,
-    'marinade native proxy' AS platform,
-    {{ dbt_utils.generate_surrogate_key(['tx_id','index','inner_index']) }} AS marinade_native_ez_staking_actions_id,
+    iff(stake_authority IN ('stWirqFCf2Uts1JBL1Jsd3r6VBWhgnpdPxCTe1MFjrq', 'ex9CfkBZZd6Nv9XdnoDmmB45ymbu4arXVk7g5pWnt3N'), 'marinade native proxy', 'native') AS platform,
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(['tx_id','index','inner_index','event_type']) }} AS marinade_native_ez_staking_actions_id,
     sysdate() AS inserted_timestamp,
     sysdate() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM 
     reconcile_with_window
+LEFT JOIN
+    token_prices AS tp
+    ON date_trunc('hour', reconcile_with_window.block_timestamp) = tp.HOUR
+
