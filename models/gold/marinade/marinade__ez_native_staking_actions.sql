@@ -170,6 +170,7 @@ SELECT
     validator_rank,
     'Stake11111111111111111111111111111111111111' AS program_id,
     iff(stake_authority IN ('stWirqFCf2Uts1JBL1Jsd3r6VBWhgnpdPxCTe1MFjrq', 'ex9CfkBZZd6Nv9XdnoDmmB45ymbu4arXVk7g5pWnt3N'), 'marinade native proxy', 'native') AS platform,
+    (platform = 'marinade native proxy') AS is_using_marinade_native_staking,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['tx_id','index','inner_index','event_type']) }} AS marinade_native_ez_staking_actions_id,
     sysdate() AS inserted_timestamp,

@@ -90,6 +90,10 @@ models:
         description: The platform of the staking account either native or marinate native proxy
         data_tests:
           - not_null: *recent_date_filter
+      - name: IS_USING_MARINADE_NATIVE_STAKING
+        description: Whether the staking action is using Marinade Native Staking
+        data_tests:
+          - not_null: *recent_date_filter
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         data_tests: 
