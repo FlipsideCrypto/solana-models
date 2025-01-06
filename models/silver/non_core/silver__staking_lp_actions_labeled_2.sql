@@ -233,7 +233,7 @@ validators AS (
         {{ ref('bronze__streamline_validator_metadata_2') }} AS v,
         table(flatten(data::array)) AS r
     QUALIFY
-        row_number() OVER(ORDER BY v.partition_by_created_date DESC, v._inserted_timestamp DESC) = 1
+        row_number() OVER(ORDER BY v._partition_by_created_date DESC, v._inserted_timestamp DESC) = 1
 ),
 
 fill_vote_acct AS (
