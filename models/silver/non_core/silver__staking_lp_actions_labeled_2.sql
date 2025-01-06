@@ -232,19 +232,8 @@ validators AS (
     FROM
         {{ ref('bronze__streamline_validator_metadata_2') }} AS v,
         table(flatten(data::array)) AS r
-    WHERE
-        v._partition_by_created_date = (
-            SELECT 
-                max(_partition_by_created_date) 
-            FROM 
-                {{ ref('bronze__streamline_validator_metadata_2') }}
-        )
-        AND v._inserted_timestamp = (
-            SELECT 
-                max(_inserted_timestamp) 
-            FROM 
-                {{ ref('bronze__streamline_validator_metadata_2') }}
-        )
+    QUALIFY
+        row_number() OVER(ORDER BY v.partition_by_created_date DESC, v._inserted_timestamp DESC) = 1
 ),
 
 fill_vote_acct AS (
