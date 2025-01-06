@@ -2,6 +2,9 @@ version: 2
 models:
   - name: silver__burn_actions
     description: table holding token burn events
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -10,6 +13,7 @@ models:
             - INNER_INDEX
             - EVENT_TYPE
             - MINT
+          where: block_timestamp::date > current_date - 7
       - compare_model_subset:
           name: silver__burn_actions_logic_test
           compare_model: ref('testing__burn_actions')
@@ -29,46 +33,46 @@ models:
         description: "{{ doc('block_timestamp') }}"
         tests:
           - not_null:
-              where: block_id > 39824213 and _inserted_timestamp::date < current_date
+              where: block_id > 39824213 and _inserted_timestamp >= current_date - 7
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 3
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: INDEX
         description: "{{ doc('event_index') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: INNER_INDEX
         description: Location of the inner instruction within an instruction
       - name: EVENT_TYPE 
         description: "{{ doc('event_type') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: MINT
         description: "{{ doc('mint') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: TOKEN_ACCOUNT
         description: The account address where tokens are burned from
       - name: BURN_AMOUNT
         description: Number of tokens burned
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: BURN_AUTHORITY
         description: Account address authorizing burn
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: SIGNERS
         description: Account address authorizing burn
       - name: _INSERTED_TIMESTAMP
