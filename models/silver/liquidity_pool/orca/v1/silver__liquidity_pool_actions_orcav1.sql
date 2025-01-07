@@ -49,7 +49,11 @@
         {% if is_incremental() %}
         AND _inserted_timestamp > '{{ max_timestamp }}'
         {% else %}
-        AND block_timestamp::date BETWEEN '2021-02-14' AND '2022-06-01'
+        /* there are data issues from 2021-02-14 to 2021-03-17 with transfers 
+        and some deposits that don't seem to have transfers at all.
+        It would take significant time and complexity for solve for these edge cases 
+        so we are electing to exclude this data for now */
+        AND block_timestamp::date BETWEEN '2021-03-17' AND '2022-06-01' 
         {% endif %}
     {% endset %}
     {% do run_query(base_query) %}
