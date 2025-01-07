@@ -1,3 +1,5 @@
+# Workflow is paused and needs to be added to github_actions__workflows file when needed
+
 name: dbt_run_nft_compressed_mints_backfill
 run-name: dbt_run_nft_compressed_mints_backfill
 
