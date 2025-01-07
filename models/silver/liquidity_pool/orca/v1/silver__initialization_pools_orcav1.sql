@@ -53,17 +53,6 @@ WITH base AS (
     FROM
         silver.initialization_pools_orcav1__intermediate_tmp
 ),
--- post_token_balances AS (
---     SELECT
---         block_timestamp,
---         tx_id,
---         account,
---         mint
---     FROM
---         {{ ref('silver___post_token_balances') }}
---     WHERE
---         {{ between_stmts }}
--- )
 token_account_mints AS (
     SELECT
         tx_id,
@@ -135,9 +124,7 @@ SELECT
     b.pool_token_mint,
     b.token_a_account,
     token_a_response:data:result:value:data:parsed:info:mint::string AS token_a_mint,
-    -- ptb_a.mint AS token_a_mint,
     b.token_b_account,
-    -- ptb_b.mint AS token_b_mint,
     token_b_response:data:result:value:data:parsed:info:mint::string AS token_b_mint,
     b.program_id,
     b._inserted_timestamp,
@@ -152,13 +139,3 @@ JOIN
     ON b.tx_id = t.tx_id
     AND b.index = t.index
     AND coalesce(b.inner_index, -1) = coalesce(t.inner_index, -1)
--- LEFT JOIN
---     post_token_balances AS ptb_a
---     ON b.block_timestamp::date = ptb_a.block_timestamp::date
---     AND b.tx_id = ptb_a.tx_id
---     AND b.token_a_account = ptb_a.account
--- LEFT JOIN
---     post_token_balances AS ptb_b
---     ON b.block_timestamp::date = ptb_b.block_timestamp::date
---     AND b.tx_id = ptb_b.tx_id
---     AND b.token_b_account = ptb_b.account
