@@ -3,10 +3,10 @@
     config(
         materialized = 'incremental',
         incremental_strategy = 'merge',
-        unique_key = 'liquidity_pool_actions_orcav2_id',
+        unique_key = ['block_timestamp::date','liquidity_pool_actions_orcav2_id'],
         incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
         merge_exclude_columns = ["inserted_timestamp"],
-        cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
+        cluster_by = ['block_timestamp::date','modified_timestamp::date'],
         post_hook = enable_search_optimization(
             '{{this.schema}}',
             '{{this.identifier}}',
