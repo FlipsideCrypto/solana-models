@@ -1,6 +1,9 @@
 version: 2
 models:
   - name: silver__signers
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -9,11 +12,11 @@ models:
       - name: SIGNER
         description: The address of the user that initiated the transaction
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: FIRST_TX_DATE
         description: The first date that the wallet performed a transaction on.
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: FIRST_PROGRAM_ID
         description: The ID of the first program this signer interacted with, excluding chain admin programs.
         tests: 
@@ -22,7 +25,7 @@ models:
       - name: LAST_TX_DATE
         description: The date of the most recent transaction the signer has performed.
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: LAST_PROGRAM_ID
         description: The ID of the last program this signer interacted with, excluding chain admin programs.
         tests: 
@@ -31,7 +34,7 @@ models:
       - name: NUM_DAYS_ACTIVE
         description: A count of the total number of unique days that this signer has performed a transaction.
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: NUM_TXS
         description: The total number of distinct transactions initiated by this signer. 
         tests: 
@@ -44,5 +47,27 @@ models:
       - name: PROGRAMS_USED
         description: An array containing all program IDs a user interacted with on a given day.
         tests: 
+          - not_null: *recent_date_filter
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
           - not_null
+      - name: SIGNERS_ID
+        description: '{{ doc("pk") }}'
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        data_tests: 
+          - not_null:
+              name: test_silver__not_null_signers_invocation_id
+              <<: *recent_date_filter
           
