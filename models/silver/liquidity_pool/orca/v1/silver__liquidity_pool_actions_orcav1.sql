@@ -49,10 +49,15 @@
         {% if is_incremental() %}
         AND _inserted_timestamp > '{{ max_timestamp }}'
         {% else %}
-        /* there are data issues from 2021-02-14 to 2021-03-17 with transfers 
+        /* 
+        there are data issues from 2021-02-14 to 2021-03-17 with transfers 
         and some deposits that don't seem to have transfers at all.
         It would take significant time and complexity for solve for these edge cases 
-        so we are electing to exclude this data for now */
+        so we are electing to exclude this data for now 
+        examples:
+            -- 7Jdcs7rwoC3n8vSX6B3CdB98Ms8zzU7AwtAPrNYPuma2tZCdJTWGiEmC5w63RPpWNpfxZFvHrq72baExvU1FGEc
+            -- 34x5eT8bpjKFr2hZzRQLQ77jyLy4KMH98WWeNgJiFmS4q8pECVXkg3iKSd9e5mnehj5kQa37F1XRGWKh795DAH1f
+        */
         AND block_timestamp::date BETWEEN '2021-03-17' AND '2022-06-01' 
         {% endif %}
     {% endset %}
