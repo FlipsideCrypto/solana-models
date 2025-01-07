@@ -34,6 +34,10 @@ models:
         description: "{{ doc('liquidity_pool_address') }}"
         data_tests: 
           - not_null
+      - name: POOL_TOKEN_MINT
+        description: "{{ doc('liquidity_pool_token_mint') }}"
+        data_tests: 
+          - not_null
       - name: TOKEN_A_ACCOUNT
         description:  "{{ doc('token_a_account') }}"
         data_tests: 

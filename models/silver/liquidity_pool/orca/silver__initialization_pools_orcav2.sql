@@ -47,6 +47,7 @@ WITH base AS (
     SELECT
         * exclude(accounts),
         silver.udf_get_account_pubkey_by_name('swap', accounts) AS pool_address,
+        silver.udf_get_account_pubkey_by_name('pool', accounts) AS pool_token_mint,
         silver.udf_get_account_pubkey_by_name('tokenA', accounts) AS token_a_account,
         silver.udf_get_account_pubkey_by_name('tokenB', accounts) AS token_b_account
     FROM
@@ -71,6 +72,7 @@ SELECT
     b.inner_index,
     b.succeeded,
     b.pool_address,
+    b.pool_token_mint,
     b.token_a_account,
     ptb_a.mint AS token_a_mint,
     b.token_b_account,
