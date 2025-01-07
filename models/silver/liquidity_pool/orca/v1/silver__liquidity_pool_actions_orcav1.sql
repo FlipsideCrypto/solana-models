@@ -47,80 +47,78 @@
             'withdrawSingleTokenTypeExactAmountOut'
         )
         {% if is_incremental() %}
-        -- AND _inserted_timestamp > '{{ max_timestamp }}'
-        AND block_timestamp::date between '2022-06-01' and '2023-01-01'
+        AND _inserted_timestamp > '{{ max_timestamp }}'
         {% else %}
-        AND block_timestamp::date between '2021-02-10' and '2022-06-01'
+        AND block_timestamp::date BETWEEN '2021-02-14' AND '2022-06-01'
         {% endif %}
     {% endset %}
     {% do run_query(base_query) %}
     {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.liquidity_pool_actions_orcav1__intermediate_tmp","block_timestamp::date") %}
 {% endif %}
 
-with base as (
-    select 
+WITH base AS (
+    SELECT 
         * exclude(accounts),
         silver.udf_get_account_pubkey_by_name('swap', accounts) AS pool_address,
         silver.udf_get_account_pubkey_by_name('userTransferAuthority', accounts) AS provider_address,
         silver.udf_get_account_pubkey_by_name('swapTokenA', accounts) AS pool_token_a_account,
         silver.udf_get_account_pubkey_by_name('swapTokenB', accounts) AS pool_token_b_account,
-        case 
-            when event_type = 'depositAllTokenTypes' then
+        CASE 
+            WHEN event_type = 'depositAllTokenTypes' THEN
                 silver.udf_get_account_pubkey_by_name('depositTokenA', accounts)
-            when event_type = 'depositSingleTokenTypeExactAmountIn' then
+            WHEN event_type = 'depositSingleTokenTypeExactAmountIn' THEN
                 silver.udf_get_account_pubkey_by_name('sourceToken', accounts)
-            when event_type = 'withdrawAllTokenTypes' then
+            WHEN event_type = 'withdrawAllTokenTypes' THEN
                 silver.udf_get_account_pubkey_by_name('destinationTokenA', accounts)
-            when event_type = 'withdrawSingleTokenTypeExactAmountOut' then
+            WHEN event_type = 'withdrawSingleTokenTypeExactAmountOut' THEN
                 silver.udf_get_account_pubkey_by_name('destination', accounts)
-            else
-                NULL
-        end AS token_a_account,
-        case 
-            when event_type = 'depositAllTokenTypes' then
+            ELSE NULL
+        END AS token_a_account,
+        CASE 
+            WHEN event_type = 'depositAllTokenTypes' THEN
                 silver.udf_get_account_pubkey_by_name('depositTokenB', accounts)
-            when event_type = 'withdrawAllTokenTypes' then
+            WHEN event_type = 'withdrawAllTokenTypes' THEN
                 silver.udf_get_account_pubkey_by_name('destinationTokenB', accounts)
-            else
-                NULL
-        end AS token_b_account,
-        coalesce(lead(inner_index) over (partition by tx_id, index order by inner_index),9999) AS next_lp_action_inner_index
-    from 
+            ELSE NULL
+        END AS token_b_account,
+        coalesce(lead(inner_index) OVER (
+            PARTITION BY tx_id, index 
+            ORDER BY inner_index
+        ), 9999) AS next_lp_action_inner_index
+    FROM 
         silver.liquidity_pool_actions_orcav1__intermediate_tmp
 ),
-transfers as (
-    select * exclude(index),
+
+transfers AS (
+    SELECT 
+        * exclude(index),
         split_part(index,'.',1)::int AS index,
         nullif(split_part(index,'.',2),'')::int AS inner_index
-    from
+    FROM
         {{ ref('silver__transfers') }}
     WHERE
         {{ between_stmts }}
 ),
+
 deposit_transfers AS (
-    select 
+    SELECT 
         b.*,
         t.mint AS token_a_mint,
         t.amount AS token_a_amount,
         t2.mint AS token_b_mint,
-        t2.amount AS token_b_amount,
-    from base AS b
-    left join
+        t2.amount AS token_b_amount
+    FROM 
+        base AS b
+    LEFT JOIN
         transfers AS t
         ON t.block_timestamp::date = b.block_timestamp::date
         AND t.tx_id = b.tx_id
         AND t.index = b.index
         AND coalesce(t.inner_index,0) > coalesce(b.inner_index,-1)
         AND coalesce(t.inner_index,0) < coalesce(b.next_lp_action_inner_index,9999)
-        AND (
-                (t.source_token_account = b.token_a_account
-                AND t.dest_token_account = b.pool_token_a_account)
-            OR
-                (t.source_token_account = b.token_a_account
-                AND t.dest_token_account = b.pool_token_b_account
-                AND b.event_type = 'depositSingleTokenTypeExactAmountIn') /* we always represent single token deposit as a deposit of "token A" */
-            )
-    left join
+        AND t.source_token_account = b.token_a_account
+        AND t.dest_token_account = b.pool_token_a_account
+    LEFT JOIN
         transfers AS t2
         ON t2.block_timestamp::date = b.block_timestamp::date
         AND t2.tx_id = b.tx_id
@@ -129,36 +127,51 @@ deposit_transfers AS (
         AND coalesce(t2.inner_index,0) < coalesce(b.next_lp_action_inner_index,9999)
         AND t2.source_token_account = b.token_b_account
         AND t2.dest_token_account = b.pool_token_b_account
-    where
-        b.event_type IN (
-            'depositAllTokenTypes', 
-            'depositSingleTokenTypeExactAmountIn'
-        )
+    WHERE
+        b.event_type = 'depositAllTokenTypes'
 ),
-withdraw_transfers AS (
-    select 
+
+single_deposit_transfers AS (
+    SELECT 
         b.*,
         t.mint AS token_a_mint,
         t.amount AS token_a_amount,
-        t2.mint AS token_b_mint,
-        t2.amount AS token_b_amount,
-    from base AS b
-    left join
+        NULL AS token_b_mint,
+        NULL AS token_b_amount
+    FROM 
+        base AS b
+    LEFT JOIN
         transfers AS t
         ON t.block_timestamp::date = b.block_timestamp::date
         AND t.tx_id = b.tx_id
         AND t.index = b.index
         AND coalesce(t.inner_index,0) > coalesce(b.inner_index,-1)
         AND coalesce(t.inner_index,0) < coalesce(b.next_lp_action_inner_index,9999)
-        AND (
-                (t.dest_token_account = b.token_a_account
-                AND t.source_token_account = b.pool_token_a_account)
-            OR
-                (t.dest_token_account = b.token_a_account
-                AND t.source_token_account = b.pool_token_b_account
-                AND b.event_type = 'withdrawSingleTokenTypeExactAmountOut') /* we always represent single token withdraw as a withdraw of "token A" */
-            )
-    left join
+        AND t.source_token_account = b.token_a_account
+        AND t.dest_token_account IN (b.pool_token_a_account, b.pool_token_b_account)
+    WHERE
+        b.event_type = 'depositSingleTokenTypeExactAmountIn'
+),
+
+withdraw_transfers AS (
+    SELECT 
+        b.*,
+        t.mint AS token_a_mint,
+        t.amount AS token_a_amount,
+        t2.mint AS token_b_mint,
+        t2.amount AS token_b_amount
+    FROM 
+        base AS b
+    LEFT JOIN
+        transfers AS t
+        ON t.block_timestamp::date = b.block_timestamp::date
+        AND t.tx_id = b.tx_id
+        AND t.index = b.index
+        AND coalesce(t.inner_index,0) > coalesce(b.inner_index,-1)
+        AND coalesce(t.inner_index,0) < coalesce(b.next_lp_action_inner_index,9999)
+        AND t.dest_token_account = b.token_a_account
+        AND t.source_token_account = b.pool_token_a_account
+    LEFT JOIN
         transfers AS t2
         ON t2.block_timestamp::date = b.block_timestamp::date
         AND t2.tx_id = b.tx_id
@@ -167,13 +180,33 @@ withdraw_transfers AS (
         AND coalesce(t2.inner_index,0) < coalesce(b.next_lp_action_inner_index,9999)
         AND t2.dest_token_account = b.token_b_account
         AND t2.source_token_account = b.pool_token_b_account
-    where
-        b.event_type IN (
-            'withdrawAllTokenTypes', 
-            'withdrawSingleTokenTypeExactAmountOut'
-        )
+    WHERE
+        b.event_type = 'withdrawAllTokenTypes'
+),
+
+single_withdraw_transfers AS (
+    SELECT 
+        b.*,
+        t.mint AS token_a_mint,
+        t.amount AS token_a_amount,
+        NULL AS token_b_mint,
+        NULL AS token_b_amount
+    FROM 
+        base AS b
+    LEFT JOIN
+        transfers AS t
+        ON t.block_timestamp::date = b.block_timestamp::date
+        AND t.tx_id = b.tx_id
+        AND t.index = b.index
+        AND coalesce(t.inner_index,0) > coalesce(b.inner_index,-1)
+        AND coalesce(t.inner_index,0) < coalesce(b.next_lp_action_inner_index,9999)
+        AND t.dest_token_account = b.token_a_account
+        AND t.source_token_account IN (b.pool_token_a_account, b.pool_token_b_account)
+    WHERE
+        b.event_type = 'withdrawSingleTokenTypeExactAmountOut'
 )
-select
+
+SELECT
     block_id,
     block_timestamp,
     tx_id,
@@ -190,12 +223,15 @@ select
     program_id,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['block_id', 'tx_id', 'index', 'inner_index']) }} AS liquidity_pool_actions_orcav1_id,
-    sysdate() as inserted_timestamp,
-    sysdate() as modified_timestamp,
+    sysdate() AS inserted_timestamp,
+    sysdate() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
-from deposit_transfers
-union all
-select 
+FROM 
+    deposit_transfers
+
+UNION ALL
+
+SELECT 
     block_id,
     block_timestamp,
     tx_id,
@@ -212,7 +248,58 @@ select
     program_id,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['block_id', 'tx_id', 'index', 'inner_index']) }} AS liquidity_pool_actions_orcav1_id,
-    sysdate() as inserted_timestamp,
-    sysdate() as modified_timestamp,
+    sysdate() AS inserted_timestamp,
+    sysdate() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
-from withdraw_transfers
+FROM 
+    withdraw_transfers
+
+UNION ALL
+
+SELECT 
+    block_id,
+    block_timestamp,
+    tx_id,
+    index,
+    inner_index,
+    succeeded,
+    event_type,
+    pool_address,
+    provider_address,
+    token_a_mint,
+    token_a_amount,
+    token_b_mint,
+    token_b_amount,
+    program_id,
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(['block_id', 'tx_id', 'index', 'inner_index']) }} AS liquidity_pool_actions_orcav1_id,
+    sysdate() AS inserted_timestamp,
+    sysdate() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
+FROM 
+    single_deposit_transfers
+
+UNION ALL
+
+SELECT 
+    block_id,
+    block_timestamp,
+    tx_id,
+    index,
+    inner_index,
+    succeeded,
+    event_type,
+    pool_address,
+    provider_address,
+    token_a_mint,
+    token_a_amount,
+    token_b_mint,
+    token_b_amount,
+    program_id,
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(['block_id', 'tx_id', 'index', 'inner_index']) }} AS liquidity_pool_actions_orcav1_id,
+    sysdate() AS inserted_timestamp,
+    sysdate() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
+FROM 
+    single_withdraw_transfers
