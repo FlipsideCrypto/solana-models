@@ -12,6 +12,7 @@
             '{{this.identifier}}',
             'ON EQUALITY(tx_id, provider_address, token_a_mint, token_b_mint, liquidity_pool_actions_orcav2_id)'
         ),
+        tags = ['scheduled_non_core']
     )
 }}
 
