@@ -1,0 +1,35 @@
+version: 2
+models:
+  - name: silver__marinade_native_staking_account_withdraw_authority_mapping
+    description: Table for re-mapping withdraw authority of native staking accounts using recursive CTE. Strictly for use to model marinade native staking accounts.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - STAKE_ACCOUNT
+            - WITHDRAW_AUTHORITY
+    columns:
+      - name: STAKE_ACCOUNT
+        description: "{{ doc('stake_account') }}"
+        data_tests:
+          - not_null
+      - name: WITHDRAW_AUTHORITY
+        description: "{{ doc('withdraw_authority') }}"
+        data_tests:
+          - not_null
+      - name: MARINADE_NATIVE_STAKING_ACCOUNT_WITHDRAW_AUTHORITY_MAPPING_ID
+        description: '{{ doc("pk") }}'   
+        data_tests: 
+          - unique
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        data_tests: 
+          - not_null
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        data_tests: 
+          - not_null
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        data_tests: 
+          - not_null: 
+              name: test_silver__not_null_marinade_native_staking_account_withdraw_authority_mapping_invocation_id
