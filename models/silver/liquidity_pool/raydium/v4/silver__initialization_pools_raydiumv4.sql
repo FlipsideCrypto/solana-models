@@ -3,7 +3,7 @@
     config(
         materialized = 'incremental',
         incremental_strategy = 'merge',
-        unique_key = 'initialization_pools_raydiumv4_id',
+        unique_key = ['block_timestamp::DATE','initialization_pools_raydiumv4_id'],
         incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
         merge_exclude_columns = ["inserted_timestamp"],
         cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
