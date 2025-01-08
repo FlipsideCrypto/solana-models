@@ -27,6 +27,7 @@
         index,
         inner_index,
         succeeded,
+        event_type,
         decoded_instruction:accounts AS accounts,
         program_id,
         _inserted_timestamp
@@ -36,8 +37,9 @@
         program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
         AND event_type IN ('initialize', 'initialize2')
         {% if is_incremental() %}
-        -- AND _inserted_timestamp > '{{ max_timestamp }}'
-        AND block_timestamp::date BETWEEN '2021-03-21' AND '2023-01-01'
+        AND _inserted_timestamp > '{{ max_timestamp }}'
+        {% else %}
+        AND _inserted_timestamp BETWEEN '2024-05-14' AND '2025-01-01'
         {% endif %}
     {% endset %}
     {% do run_query(base_query) %}
@@ -49,8 +51,10 @@ WITH base AS (
         * exclude(accounts),
         silver.udf_get_account_pubkey_by_name('amm', accounts) AS pool_address,
         silver.udf_get_account_pubkey_by_name('lpMintAddress', accounts) AS pool_token_mint,
-        silver.udf_get_account_pubkey_by_name('coinMintAddress', accounts) AS token_a_account,
-        silver.udf_get_account_pubkey_by_name('pcMintAddress', accounts) AS token_b_account
+        silver.udf_get_account_pubkey_by_name('poolCoinTokenAccount', accounts) AS token_a_account,
+        silver.udf_get_account_pubkey_by_name('poolPcTokenAccount', accounts) AS token_b_account,
+        silver.udf_get_account_pubkey_by_name('coinMintAddress', accounts) AS token_a_mint,
+        silver.udf_get_account_pubkey_by_name('pcMintAddress', accounts) AS token_b_mint
     FROM
         silver.initialization_pools_raydiumv4__intermediate_tmp
     WHERE
@@ -60,23 +64,14 @@ WITH base AS (
         * exclude(accounts),
         silver.udf_get_account_pubkey_by_name('amm', accounts) AS pool_address,
         silver.udf_get_account_pubkey_by_name('lpMint', accounts) AS pool_token_mint,
-        silver.udf_get_account_pubkey_by_name('coinMint', accounts) AS token_a_account,
-        silver.udf_get_account_pubkey_by_name('pcMint', accounts) AS token_b_account
+        silver.udf_get_account_pubkey_by_name('poolCoinTokenAccount', accounts) AS token_a_account,
+        silver.udf_get_account_pubkey_by_name('poolPcTokenAccount', accounts) AS token_b_account,
+        silver.udf_get_account_pubkey_by_name('coinMint', accounts) AS token_a_mint,
+        silver.udf_get_account_pubkey_by_name('pcMint', accounts) AS token_b_mint
     FROM
         silver.initialization_pools_raydiumv4__intermediate_tmp
     WHERE
         event_type = 'initialize2'
-),
-post_token_balances AS (
-    SELECT
-        block_timestamp,
-        tx_id,
-        account,
-        mint
-    FROM
-        {{ ref('silver___post_token_balances') }}
-    WHERE
-        {{ between_stmts }}
 )
 SELECT 
     b.block_id,
@@ -88,9 +83,9 @@ SELECT
     b.pool_address,
     b.pool_token_mint,
     b.token_a_account,
-    ptb_a.mint AS token_a_mint,
+    b.token_a_mint,
     b.token_b_account,
-    ptb_b.mint AS token_b_mint,
+    b.token_b_mint,
     b.program_id,
     b._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['b.block_id', 'b.tx_id', 'b.index', 'b.inner_index']) }} AS initialization_pools_raydiumv4_id,
@@ -99,13 +94,3 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM 
     base AS b
-LEFT JOIN
-    post_token_balances AS ptb_a
-    ON b.block_timestamp::date = ptb_a.block_timestamp::date
-    AND b.tx_id = ptb_a.tx_id
-    AND b.token_a_account = ptb_a.account
-LEFT JOIN
-    post_token_balances AS ptb_b
-    ON b.block_timestamp::date = ptb_b.block_timestamp::date
-    AND b.tx_id = ptb_b.tx_id
-    AND b.token_b_account = ptb_b.account
