@@ -94,3 +94,18 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM 
     base AS b
+WHERE
+    /* 
+    found 157 cases where the instructions seems to be "bad", where it gives incomplete account information.
+    I spot checked a few of these and they seem to be invalid as the pool_address they are trying to initialize has already been created
+    */
+    (
+        b.block_timestamp > '2022-11-10 20:16:52.000'
+        OR (
+            b.block_timestamp < '2022-11-10 20:16:52.000'
+            AND token_a_mint IS NOT NULL
+            AND token_b_mint IS NOT NULL
+            AND token_a_account IS NOT NULL
+            AND token_b_account IS NOT NULL
+        )
+    )
