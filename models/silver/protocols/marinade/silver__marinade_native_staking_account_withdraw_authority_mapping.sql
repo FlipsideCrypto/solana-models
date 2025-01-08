@@ -1,6 +1,7 @@
 {{
     config(
         materialized = 'table',
+        tags = ['scheduled_non_core'],
     )
 }}
 

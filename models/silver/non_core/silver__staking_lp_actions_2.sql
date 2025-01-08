@@ -4,6 +4,7 @@
         unique_key = ['block_timestamp::DATE','staking_lp_actions_2_id'],
         cluster_by = ['block_timestamp::DATE','event_type'],
         post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(tx_id, staking_lp_actions_2_id)'),
+        tags = ['scheduled_non_core'],
     )
 }}
 
