@@ -30,7 +30,6 @@ WITH base_e AS (
             FROM
                 {{ this }}
         )
-        AND _inserted_timestamp < '2024-01-01'
         {% else %}
         AND _inserted_timestamp BETWEEN '2022-08-12' AND '2023-01-01'
         {% endif %}
@@ -60,7 +59,6 @@ WITH base_e AS (
             FROM
                 {{ this }}
         )
-        AND _inserted_timestamp < '2024-01-01'
         {% else %}
         AND _inserted_timestamp BETWEEN '2022-08-12' AND '2023-01-01'
         {% endif %}
@@ -87,7 +85,6 @@ base_t AS (
             FROM
                 {{ this }}
         )
-        AND _inserted_timestamp < '2024-01-01'
         {% else %}
         _inserted_timestamp BETWEEN '2022-08-12' AND '2023-01-01'
         {% endif %}
