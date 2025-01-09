@@ -12,6 +12,7 @@
             '{{this.identifier}}',
             'ON EQUALITY(tx_id, provider_address, token_a_mint, token_b_mint, liquidity_pool_actions_orcav1_id)'
         ),
+        tags = ['scheduled_non_core']
     )
 }}
 
@@ -52,7 +53,7 @@
         -- AND block_timestamp::date BETWEEN '2023-01-01' AND '2023-06-01'
         -- AND block_timestamp::date BETWEEN '2023-06-01' AND '2024-01-01'
         -- AND block_timestamp::date BETWEEN '2024-01-01' AND '2024-06-01'
-        AND block_timestamp::date BETWEEN '2024-06-01' AND '2025-01-05'
+        -- AND block_timestamp::date BETWEEN '2024-06-01' AND '2025-01-05'
         {% else %}
         /* 
         there are data issues from 2021-02-14 to 2021-03-17 with transfers 
