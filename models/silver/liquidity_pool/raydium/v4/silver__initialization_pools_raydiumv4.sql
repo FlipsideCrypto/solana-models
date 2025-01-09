@@ -101,9 +101,9 @@ WHERE
     I spot checked a few of these and they seem to be invalid as the pool_address they are trying to initialize has already been created
     */
     (
-        b.block_timestamp > '2022-11-10 20:16:52.000'
+        b.block_timestamp >= '2022-11-11'
         OR (
-            b.block_timestamp < '2022-11-10 20:16:52.000'
+            b.block_timestamp < '2022-11-11'
             AND token_a_mint IS NOT NULL
             AND token_b_mint IS NOT NULL
             AND token_a_account IS NOT NULL
