@@ -4,7 +4,7 @@ models:
     recent_date_filter: &recent_date_filter
       config:
         where: >
-          _inserted_timestamp < current_date - 7
+          _inserted_timestamp > current_date - 7
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
