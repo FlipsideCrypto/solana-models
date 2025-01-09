@@ -1,6 +1,14 @@
 {{
     config(
         materialized = 'table',
+        meta={
+            'database_tags':{
+                'table': {
+                    'PROTOCOL': 'MARINADE',
+                    'PURPOSE': 'STAKING'
+                }
+            }
+        },
         cluster_by = ['block_timestamp::DATE'],
         post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(tx_id,stake_account,provider_address)'),
         tags = ['scheduled_non_core'],
