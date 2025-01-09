@@ -9,37 +9,17 @@
     tags = ['scheduled_non_core']
 ) }}
 
-WITH swaps_non_agg AS (
-    SELECT 
-        block_id,
-        block_timestamp,
-        tx_id,
-        swapper,
-        swap_from_mint,
-        swap_from_symbol,
-        swap_from_amount,
-        swap_from_amount_usd,
-        swap_to_mint,
-        swap_to_symbol,
-        swap_to_amount,
-        swap_to_amount_usd,
-        program_id,
-        swap_program AS platform,
-        ez_swaps_id AS marinade_ez_swaps_id,
-        inserted_timestamp,
-        modified_timestamp
-    FROM 
-        {{ ref('defi__ez_dex_swaps') }}
-    WHERE 
-        (swap_from_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So')
-        OR swap_to_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So'))
+{% if execute %}
     {% if is_incremental() %}
-    AND 
-        modified_timestamp >= (SELECT MAX(modified_timestamp)FROM {{ this }})
+        {% set query %}
+            SELECT MAX(modified_timestamp) AS max_modified_timestamp
+            FROM {{ this }}
+        {% endset %}
+        {% set max_modified_timestamp = run_query(query).columns[0].values()[0] %}
     {% endif %}
-),
+{% endif %}
 
-swaps_jupiter AS (
+with swaps_jupiter AS (
     SELECT
         s.block_id,
         s.block_timestamp,
@@ -57,13 +37,11 @@ swaps_jupiter AS (
     FROM
         {{ ref('defi__fact_swaps_jupiter_summary') }} s
     LEFT OUTER JOIN {{ ref('core__dim_labels') }} l
-    ON s.program_id = l.address
+        ON s.program_id = l.address
     WHERE 
-        (swap_from_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So')
-        OR swap_to_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So'))
+        (swap_from_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So') OR swap_to_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So'))
     {% if is_incremental() %}
-    AND modified_timestamp >= (SELECT MAX(modified_timestamp) FROM {{ this }}
-    )
+    AND modified_timestamp >= '{{ max_modified_timestamp }}'
     {% endif %}
 ),
 
@@ -99,11 +77,41 @@ swaps_jupiter_prices AS (
     FROM
         swaps_jupiter d
     LEFT JOIN prices p_in
-    ON d.swap_from_mint = p_in.token_address
-    AND DATE_TRUNC('hour', d.block_timestamp) = p_in.hour
+        ON d.swap_from_mint = p_in.token_address
+        AND DATE_TRUNC('hour', d.block_timestamp) = p_in.hour
     LEFT JOIN prices p_out
-    ON d.swap_to_mint = p_out.token_address
-    AND DATE_TRUNC('hour', d.block_timestamp) = p_out.hour
+        ON d.swap_to_mint = p_out.token_address
+        AND DATE_TRUNC('hour', d.block_timestamp) = p_out.hour
+),
+
+swaps_non_agg AS (
+    SELECT 
+        block_id,
+        block_timestamp,
+        tx_id,
+        swapper,
+        swap_from_mint,
+        swap_from_symbol,
+        swap_from_amount,
+        swap_from_amount_usd,
+        swap_to_mint,
+        swap_to_symbol,
+        swap_to_amount,
+        swap_to_amount_usd,
+        program_id,
+        swap_program AS platform,
+        ez_swaps_id AS marinade_ez_swaps_id,
+        inserted_timestamp,
+        modified_timestamp
+    FROM 
+        {{ ref('defi__ez_dex_swaps') }}
+    WHERE 
+        (swap_from_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So') OR swap_to_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So'))
+        AND tx_id NOT IN (SELECT tx_id FROM swaps_jupiter)
+    {% if is_incremental() %}
+    AND 
+        modified_timestamp >= '{{ max_modified_timestamp }}'
+    {% endif %}
 )
 
 SELECT 
