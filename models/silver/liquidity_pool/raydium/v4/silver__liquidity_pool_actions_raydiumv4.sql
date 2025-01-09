@@ -47,7 +47,7 @@
             'withdrawPnl'
         )
         {% if is_incremental() %}
-        AND _inserted_timestamp > '{{ max_timestamp }}'
+        -- AND _inserted_timestamp > '{{ max_timestamp }}'
         /* batches for reload */
         -- AND block_timestamp::date BETWEEN '2022-01-01' AND '2022-06-01'
         AND block_timestamp::date BETWEEN '2022-06-01' AND '2023-01-01'
