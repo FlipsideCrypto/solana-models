@@ -47,7 +47,8 @@
             'withdrawSingleTokenTypeExactAmountOut'
         )
         {% if is_incremental() %}
-        AND _inserted_timestamp > '{{ max_timestamp }}'
+        -- AND _inserted_timestamp > '{{ max_timestamp }}'
+        AND block_timestamp::date BETWEEN '2022-06-01'  AND '2023-01-01'
         {% else %}
         /* 
         there are data issues from 2021-02-14 to 2021-03-17 with transfers 
