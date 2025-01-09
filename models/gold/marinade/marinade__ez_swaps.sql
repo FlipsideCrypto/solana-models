@@ -41,7 +41,7 @@ with swaps_jupiter AS (
     WHERE 
         (swap_from_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So') OR swap_to_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So'))
     {% if is_incremental() %}
-    AND modified_timestamp >= '{{ max_modified_timestamp }}'
+    AND s.modified_timestamp >= '{{ max_modified_timestamp }}'
     {% endif %}
 ),
 
