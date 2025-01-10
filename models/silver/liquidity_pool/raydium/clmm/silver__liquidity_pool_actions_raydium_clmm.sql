@@ -63,7 +63,6 @@
         -- AND block_timestamp::date BETWEEN '2024-06-01' AND '2025-01-05'
         -- AND _inserted_timestamp > '{{ max_timestamp }}'::timestamp_ntz - INTERVAL '1 DAY'
         {% else %}
-        -- AND block_timestamp::date BETWEEN '2023-05-11' AND '2023-05-11'
         AND block_timestamp::date BETWEEN '2022-08-17' AND '2023-01-01'
         {% endif %}
     {% endset %}
@@ -127,7 +126,8 @@ transfers AS (
     FROM
         {{ ref('silver__transfers') }}
     WHERE
-        {{ between_stmts }}
+        succeeded
+        AND {{ between_stmts }}
 ),
 
 deposit_transfers AS (
