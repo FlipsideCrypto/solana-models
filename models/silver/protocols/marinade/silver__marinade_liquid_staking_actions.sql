@@ -1,0 +1,209 @@
+-- depends_on: {{ ref('silver__decoded_instructions_combined') }}
+
+{{ config(
+    materialized = 'incremental',
+    unique_key = ['marinade_liquid_staking_actions_id'],
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
+    merge_exclude_columns = ["inserted_timestamp"],
+    cluster_by = ['block_timestamp::DATE', 'modified_timestamp::DATE'],
+    tags = ['scheduled_non_core']
+) }}
+
+{% if execute %}
+    {% set base_query %}
+    CREATE OR REPLACE TEMPORARY TABLE silver.marinade_liquid_staking_actions__intermediate_tmp AS
+    SELECT
+        *
+    FROM
+        {{ ref('silver__decoded_instructions_combined') }}
+    WHERE
+        program_id = 'MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD'
+        AND event_type IN ('deposit', 'depositStakeAccount', 'orderUnstake', 'claim')
+        AND succeeded
+
+    {% if is_incremental() %}
+    AND _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '1 hour'
+        FROM
+            {{ this }}
+    )
+    {% else %}
+        AND _inserted_timestamp::DATE >= '2023-11-15'
+    {% endif %}
+    {% endset %}
+    
+    {% do run_query(base_query) %}
+    {% set between_stmts = fsc_utils.dynamic_range_predicate(
+        "silver.marinade_liquid_staking_actions__intermediate_tmp",
+        "block_timestamp::date"
+    ) %}
+{% endif %}
+
+WITH base AS (
+    SELECT
+        *
+    FROM
+        silver.marinade_liquid_staking_actions__intermediate_tmp
+),
+mints AS (
+    SELECT 
+        a.*
+    FROM {{ ref('silver__token_mint_actions') }} a
+        INNER JOIN (
+            SELECT 
+                DISTINCT tx_id
+            FROM 
+                base
+            WHERE 
+                event_type IN ('deposit', 'depositStakeAccount')
+        ) b 
+        ON b.tx_id = a.tx_id
+    WHERE
+        a.succeeded
+        AND {{ between_stmts }}
+),
+transfers AS (
+    SELECT
+        a.*
+    FROM 
+        {{ ref('silver__transfers') }} a
+        INNER JOIN (
+            SELECT 
+                DISTINCT tx_id
+            FROM 
+                base
+            WHERE 
+                event_type = 'claim'
+        ) b 
+        ON b.tx_id = a.tx_id
+    WHERE
+        a.succeeded
+        AND {{ between_stmts }}
+),
+deposits AS (
+    SELECT
+        a.block_id,
+        a.block_timestamp,
+        a.tx_id,
+        a.index,
+        a.inner_index,
+        a.event_type AS action_type,
+        CASE 
+            WHEN a.event_type = 'deposit' THEN solana_dev.silver.udf_get_account_pubkey_by_name('transferFrom', decoded_instruction:accounts)
+            ELSE solana_dev.silver.udf_get_account_pubkey_by_name('stakeAuthority', decoded_instruction:accounts)
+        END AS provider_address,
+        (a.decoded_instruction:args:lamports::int) * pow(10, -9) AS deposit_amount,
+        b.mint_amount * pow(10, -9) AS msol_minted,
+        a.program_id,
+        a._inserted_timestamp
+    FROM
+        base a
+    LEFT JOIN mints b 
+        ON a.tx_id = b.tx_id
+        AND a.index = b.index
+        AND b.mint = 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So'
+    WHERE
+        a.event_type IN ('deposit', 'depositStakeAccount')
+),
+order_unstakes AS (
+    SELECT
+        block_id,
+        block_timestamp,
+        tx_id,
+        index,
+        inner_index,
+        event_type AS action_type,
+        silver.udf_get_account_pubkey_by_name('burnMsolAuthority', decoded_instruction:accounts) AS provider_address,
+        (decoded_instruction:args:msolAmount::int) * pow(10, -9) AS msol_burned,
+        program_id,
+        _inserted_timestamp
+    FROM
+        base
+    WHERE
+        event_type = 'orderUnstake'
+),
+claims AS (
+    SELECT
+        a.block_id,
+        a.block_timestamp,
+        a.tx_id,
+        a.index,
+        a.inner_index,
+        a.event_type AS action_type,
+        solana_dev.silver.udf_get_account_pubkey_by_name('transferSolTo', a.decoded_instruction:accounts) AS provider_address,
+        b.amount AS claim_amount,
+        a.program_id,
+        a._inserted_timestamp
+    FROM
+        base a
+    LEFT JOIN
+        transfers b ON a.tx_id = b.tx_id
+        AND a.index = b.index
+    WHERE
+        a.event_type = 'claim'
+        AND b.mint = 'So11111111111111111111111111111111111111111'
+)
+
+SELECT
+    block_id,
+    block_timestamp,
+    tx_id,
+    index,
+    inner_index,
+    action_type,
+    provider_address,
+    deposit_amount,
+    msol_minted,
+    NULL AS msol_burned,
+    NULL AS claim_amount,
+    program_id,
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(['tx_id', 'index', 'action_type']) }} AS marinade_liquid_staking_actions_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS invocation_id
+FROM
+    deposits
+UNION
+SELECT
+    block_id,
+    block_timestamp,
+    tx_id,
+    index,
+    inner_index,
+    action_type,
+    provider_address,
+    NULL AS deposit_amount,
+    NULL AS msol_minted,
+    msol_burned,
+    NULL AS claim_amount,
+    program_id,
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(['tx_id', 'index', 'inner_index']) }} AS marinade_liquid_staking_actions_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS invocation_id
+FROM
+    order_unstakes
+UNION
+SELECT
+    block_id,
+    block_timestamp,
+    tx_id,
+    index,
+    inner_index,
+    action_type,
+    provider_address,
+    NULL AS deposit_amount,
+    NULL AS msol_minted,
+    NULL AS msol_burned,
+    claim_amount,
+    program_id,
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(['tx_id', 'index', 'inner_index']) }} AS marinade_liquid_staking_actions_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS invocation_id
+FROM
+    claims
