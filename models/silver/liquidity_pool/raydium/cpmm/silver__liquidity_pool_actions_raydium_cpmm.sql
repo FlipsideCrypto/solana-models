@@ -48,9 +48,9 @@
         )
         AND succeeded
         {% if is_incremental() %}
-        -- AND _inserted_timestamp > '{{ max_timestamp }}'
+        AND _inserted_timestamp > '{{ max_timestamp }}'
         /* batches for reload */
-        AND _inserted_timestamp::date BETWEEN '2024-11-01' AND '2024-12-31'
+        -- AND _inserted_timestamp::date BETWEEN '2024-11-01' AND '2024-12-31'
         {% else %}
         AND _inserted_timestamp::date BETWEEN '2024-10-11' AND '2024-11-01'
         {% endif %}
