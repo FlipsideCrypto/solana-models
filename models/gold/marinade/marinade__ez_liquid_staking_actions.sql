@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     meta = { 'database_tags': { 'table': { 'PURPOSE': 'STAKING' }}},
-    unique_key = ['marinade_ez_liquid_staking_id'],
+    unique_key = ['marinade_ez_liquid_staking_actions_id'],
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     cluster_by = ['block_timestamp::DATE', 'program_id'],
     merge_exclude_columns = ["inserted_timestamp"],
