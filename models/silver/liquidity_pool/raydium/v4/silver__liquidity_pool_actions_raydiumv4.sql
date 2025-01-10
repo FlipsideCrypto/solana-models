@@ -55,8 +55,8 @@
         -- AND block_timestamp::date BETWEEN '2023-01-01' AND '2023-06-01'
         -- AND block_timestamp::date BETWEEN '2023-06-01' AND '2024-01-01'
         -- AND block_timestamp::date BETWEEN '2024-01-01' AND '2024-06-01'
-        AND block_timestamp::date BETWEEN '2024-06-01' AND '2025-01-05'
-        -- AND _inserted_timestamp > '{{ max_timestamp }}'::timestamp_ntz - INTERVAL '1 DAY'
+        -- AND block_timestamp::date BETWEEN '2024-06-01' AND '2025-01-05'
+        AND _inserted_timestamp > '{{ max_timestamp }}'::timestamp_ntz - INTERVAL '1 DAY'
         {% else %}
         -- AND block_timestamp::date BETWEEN '2024-01-01' AND '2024-02-05'
         AND block_timestamp::date BETWEEN '2021-03-21' AND '2022-01-01'
