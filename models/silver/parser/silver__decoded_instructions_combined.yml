@@ -215,6 +215,16 @@ models:
                 AND succeeded
                 and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
               to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_marinade_liquid_staking_actions_tx_id
+              to: ref('silver__marinade_liquid_staking_actions')
+              field: tx_id
+              from_condition: >
+                program_id = 'MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD'
+                AND event_type IN ('deposit', 'depositStakeAccount', 'orderUnstake', 'claim')
+                AND succeeded
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
       - name: SIGNERS
         description: "{{ doc('signers') }}"
       - name: SUCCEEDED
