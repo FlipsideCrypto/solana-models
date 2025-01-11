@@ -114,6 +114,7 @@ fill_null_symbols AS (
         (token_a_symbol IS NULL
         OR token_b_symbol IS NULL)
 ),
+
 pre_final AS (
     SELECT
         b.pool_address,
