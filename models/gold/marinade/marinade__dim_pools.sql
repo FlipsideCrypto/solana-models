@@ -13,8 +13,12 @@
     'meteora',
     'meteora_dlmm'
 */
-/*
-meta={
+
+{{
+    config(
+        materialized = 'incremental',
+        incremental_strategy = 'merge',
+        meta={
             'database_tags':{
                 'table': {
                     'PROTOCOL': 'MARINADE',
@@ -22,13 +26,6 @@ meta={
                 }
             }
         },
-*/
-
-{{
-    config(
-        materialized = 'incremental',
-        incremental_strategy = 'merge',
-        
         unique_key = ['pool_address'],
         merge_exclude_columns = ['inserted_timestamp'],
         post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(pool_address,token_a_mint,token_b_mint)'),
