@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    meta = { 'database_tags': { 'table': { 'PURPOSE': 'STAKING' }}},
+    meta = { 'database_tags': { 'table': { 'PROTOCOL': 'MARINADE', 'PURPOSE': 'STAKING' }}},
     unique_key = ['marinade_ez_liquid_staking_actions_id'],
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     cluster_by = ['block_timestamp::DATE', 'program_id'],
@@ -15,7 +15,7 @@
             SELECT MAX(modified_timestamp) AS max_modified_timestamp
             FROM {{ this }}
         {% endset %}
-        {% set max_modified_timestamp = run_query(query).columns[0].values()[0] %}
+        {% set max_modified_timestamp = run_query(query)[0][0] %}
     {% endif %}
 {% endif %}
 

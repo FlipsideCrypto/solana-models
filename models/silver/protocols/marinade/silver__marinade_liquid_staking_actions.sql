@@ -65,7 +65,9 @@ mints AS (
 ),
 transfers AS (
     SELECT
-        a.*
+        a.* exclude(index),
+        split_part(a.index,'.',1)::int AS index,
+        nullif(split_part(a.index,'.',2),'')::int AS inner_index
     FROM 
         {{ ref('silver__transfers') }} a
         INNER JOIN (
@@ -90,8 +92,8 @@ deposits AS (
         a.inner_index,
         a.event_type AS action_type,
         CASE 
-            WHEN a.event_type = 'deposit' THEN solana_dev.silver.udf_get_account_pubkey_by_name('transferFrom', decoded_instruction:accounts)
-            ELSE solana_dev.silver.udf_get_account_pubkey_by_name('stakeAuthority', decoded_instruction:accounts)
+            WHEN a.event_type = 'deposit' THEN silver.udf_get_account_pubkey_by_name('transferFrom', decoded_instruction:accounts)
+            ELSE silver.udf_get_account_pubkey_by_name('stakeAuthority', decoded_instruction:accounts)
         END AS provider_address,
         (a.decoded_instruction:args:lamports::int) * pow(10, -9) AS deposit_amount,
         b.mint_amount * pow(10, -9) AS msol_minted,
@@ -123,26 +125,50 @@ order_unstakes AS (
     WHERE
         event_type = 'orderUnstake'
 ),
+base_claims AS (
+    SELECT
+        block_id,
+        block_timestamp,
+        tx_id,
+        index,
+        inner_index,
+        event_type AS action_type,
+        silver.udf_get_account_pubkey_by_name('transferSolTo', decoded_instruction:accounts) AS provider_address,
+        program_id,
+        _inserted_timestamp,
+        COALESCE(
+            LEAD(inner_index) OVER (
+                PARTITION BY tx_id, index 
+                ORDER BY inner_index
+            ), 9999
+        ) AS next_claim_inner_index
+    FROM
+        base
+    WHERE
+        event_type = 'claim'
+),
 claims AS (
     SELECT
         a.block_id,
-        a.block_timestamp,
+        a.block_timestamp, 
         a.tx_id,
         a.index,
         a.inner_index,
-        a.event_type AS action_type,
-        solana_dev.silver.udf_get_account_pubkey_by_name('transferSolTo', a.decoded_instruction:accounts) AS provider_address,
+        a.action_type,
+        a.provider_address,
         b.amount AS claim_amount,
         a.program_id,
         a._inserted_timestamp
     FROM
-        base a
-    LEFT JOIN
-        transfers b ON a.tx_id = b.tx_id
+        base_claims a
+    LEFT JOIN transfers b 
+        ON a.tx_id = b.tx_id
         AND a.index = b.index
+        AND COALESCE(b.inner_index, 0) > COALESCE(a.inner_index, -1)
+        AND COALESCE(b.inner_index, 0) < COALESCE(a.next_claim_inner_index, 9999)
+        AND b.tx_to = a.provider_address
     WHERE
-        a.event_type = 'claim'
-        AND b.mint = 'So11111111111111111111111111111111111111111'
+        b.mint = 'So11111111111111111111111111111111111111111'
 )
 
 SELECT
@@ -165,7 +191,7 @@ SELECT
     '{{ invocation_id }}' AS invocation_id
 FROM
     deposits
-UNION
+UNION ALL
 SELECT
     block_id,
     block_timestamp,
@@ -186,7 +212,7 @@ SELECT
     '{{ invocation_id }}' AS invocation_id
 FROM
     order_unstakes
-UNION
+UNION ALL
 SELECT
     block_id,
     block_timestamp,
