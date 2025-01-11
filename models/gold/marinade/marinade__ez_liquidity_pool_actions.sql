@@ -54,9 +54,9 @@ base AS (
             lp.index,
             lp.inner_index,
             case
-                WHEN REGEXP_LIKE(lp.event_type, '^(increase|add|deposit|bootstrap|open)', 'i') THEN 
+                WHEN REGEXP_LIKE(lp.event_type, '^(increase|add|deposit|bootstrap|open).*', 'i') THEN 
                     'deposit'
-                WHEN REGEXP_LIKE(lp.event_type, '^(decrease|remove|withdraw|close)', 'i') THEN 
+                WHEN REGEXP_LIKE(lp.event_type, '^(decrease|remove|withdraw|close).*', 'i') THEN 
                     'withdraw'
                 ELSE
                     lp.event_type
