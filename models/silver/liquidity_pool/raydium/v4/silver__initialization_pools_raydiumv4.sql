@@ -37,6 +37,7 @@
     WHERE
         program_id = '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8'
         AND event_type IN ('initialize', 'initialize2')
+        AND succeeded
         {% if is_incremental() %}
         AND _inserted_timestamp > '{{ max_timestamp }}'
         {% else %}
