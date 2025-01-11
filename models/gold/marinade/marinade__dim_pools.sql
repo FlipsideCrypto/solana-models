@@ -1,19 +1,3 @@
-
-{% set pool_platforms = [
-    'raydiumv4', 
-    'raydium_cpmm', 
-    'raydium_clmm', 
-    'orcav1', 
-    'orcav2', 
-] %}
-
-/*
-    TODO: add these when they have been deployed
-    'orca_whirlpool', 
-    'meteora',
-    'meteora_dlmm'
-*/
-
 {{
     config(
         materialized = 'incremental',
@@ -33,9 +17,23 @@
     )
 }}
 
+/*
+    TODO: add these when they have been deployed
+    'orca_whirlpool', 
+    'meteora',
+    'meteora_dlmm'
+*/
+{% set pool_platforms = [
+    'raydiumv4', 
+    'raydium_cpmm', 
+    'raydium_clmm', 
+    'orcav1', 
+    'orcav2', 
+] %}
+
 WITH base AS (
 {% for platform in pool_platforms %}
-    select 
+    SELECT 
         pool_address,
         pool_token_mint,
         token_a_mint,
@@ -63,28 +61,29 @@ WITH base AS (
             WHEN '{{ platform }}' ILIKE '%orca%' THEN 'orca'
             WHEN '{{ platform }}' ILIKE '%meteora%' THEN 'meteora'
         END AS platform,
-        {{ 'initialization_pools_' ~ platform ~ '_id' }} AS dim_pools_id,
-    from
+        {{ 'initialization_pools_' ~ platform ~ '_id' }} AS dim_pools_id
+    FROM
         {{ ref('silver__initialization_pools_' ~ platform) }} AS p
-    left join
+    LEFT JOIN
         {{ ref('price__ez_asset_metadata') }} AS m
         ON p.token_a_mint = m.token_address
-    left join
+    LEFT JOIN
         {{ ref('price__ez_asset_metadata') }} AS m2
         ON p.token_b_mint = m2.token_address
-    where
+    WHERE
         (
             token_a_mint IN ('mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So','MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey')
             OR token_b_mint IN ('mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So','MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey')
         )
         {% if is_incremental() %}
-            and p.modified_timestamp > (select max(modified_timestamp) from {{ this }})
+            AND p.modified_timestamp > (SELECT max(modified_timestamp) FROM {{ this }})
         {% endif %}
     {% if not loop.last %}
-    union all
+    UNION ALL
     {% endif %}
 {% endfor %}
 ),
+
 fill_null_symbols AS (
     SELECT
         pool_address,
@@ -118,6 +117,7 @@ fill_null_symbols AS (
         (token_a_symbol IS NULL
         OR token_b_symbol IS NULL)
 ),
+
 pre_final AS (
     SELECT
         b.pool_address,
@@ -144,10 +144,12 @@ pre_final AS (
         fill_null_symbols AS s
         ON b.pool_address = s.pool_address
 )
+
 SELECT
     pool_address,
     CASE
-        WHEN token_a_symbol IS NOT NULL AND token_b_symbol IS NOT NULL THEN 
+        WHEN token_a_symbol IS NOT NULL 
+        AND token_b_symbol IS NOT NULL THEN 
             token_a_symbol || '-' || token_b_symbol
         ELSE
             NULL
