@@ -38,7 +38,7 @@
         {% if is_incremental() %}
         AND _inserted_timestamp > '{{ max_timestamp }}'
         {% else %}
-        AND _inserted_timestamp BETWEEN '2024-05-24' AND '2025-05-28'
+        AND _inserted_timestamp BETWEEN '2024-05-24' AND '2024-05-28'
         {% endif %}
     {% endset %}
     {% do run_query(base_query) %}
