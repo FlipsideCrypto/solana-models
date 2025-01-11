@@ -1,5 +1,8 @@
-/*
-meta={
+{{
+    config(
+        materialized = 'incremental',
+        incremental_strategy = 'merge',
+        meta={
             'database_tags':{
                 'table': {
                     'PROTOCOL': 'MARINADE',
@@ -7,12 +10,6 @@ meta={
                 }
             }
         },
-*/
-{{
-    config(
-        materialized = 'incremental',
-        incremental_strategy = 'merge',
-        
         unique_key = ['ez_liquidity_pool_actions_id'],
         merge_exclude_columns = ['inserted_timestamp'],
         post_hook = enable_search_optimization(
