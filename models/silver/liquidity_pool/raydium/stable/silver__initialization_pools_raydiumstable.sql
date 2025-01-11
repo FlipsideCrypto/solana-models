@@ -35,6 +35,7 @@
     WHERE
         program_id = '5quBtoiQqxF9Jv6KYKctB59NT3gtJD2Y65kdnB1Uev3h'
         AND event_type = 'initialize'
+        AND succeeded
         {% if is_incremental() %}
         AND _inserted_timestamp > '{{ max_timestamp }}'
         {% else %}
