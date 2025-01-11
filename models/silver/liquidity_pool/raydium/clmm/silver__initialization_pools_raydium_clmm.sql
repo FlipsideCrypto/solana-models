@@ -37,6 +37,7 @@
     WHERE
         program_id = 'CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK'
         AND event_type = 'createPool'
+        AND succeeded
         {% if is_incremental() %}
         AND _inserted_timestamp > '{{ max_timestamp }}'
         {% else %}
