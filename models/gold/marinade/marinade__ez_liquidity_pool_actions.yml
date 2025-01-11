@@ -34,6 +34,9 @@ models:
         description: "{{ doc('event_type') }}"
         data_tests: 
           - not_null: *recent_date_filter
+          - accepted_values:
+              values: ["deposit", "withdraw"]
+              <<: *recent_date_filter
       - name: PROVIDER_ADDRESS
         description:  "{{ doc('liquidity_provider') }}"
         data_tests: 
