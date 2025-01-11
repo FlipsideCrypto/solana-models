@@ -81,4 +81,4 @@ FROM
     base AS b
 WHERE
     /* the USDT/USDC pool was created twice according to instructions, ignoring the first one */
-    b.block_timestamp > '2022-01-18 07:37:50.000'
+    b.block_timestamp >= '2022-01-18 07:37:50.000'
