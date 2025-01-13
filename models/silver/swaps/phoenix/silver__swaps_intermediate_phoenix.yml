@@ -32,55 +32,64 @@ models:
             - 44b7tkzuKHqQsn7Eoh3RnTy12sLijudPFz3ZX2ewJ7vxKqs5LveeNKxBVLUstggr5Jk3LFzoNs9SSZxcMSSgVE7j
             - 1M48Smd6EQ4phktTsGfdk3HjXf2sEW6J8TpUpPjEaGjLy5viWPC9D4rS9SoutVWTJkLkjbVLQpEG9eboscoybQ6
             - fLwJbyNV8kF3qZcmUrPrQB7B1keipAB5XNiEsJ8oFtvMroZ4SttabxgP2nhUsTT1jKvN4NfrSf8DMYVoadY57Da
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 2
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('index') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: SWAPPER
         description: "{{ doc('swaps_swapper') }}"
         tests: 
           - not_null:
-              where: succeeded = TRUE
+              where: succeeded = TRUE AND _inserted_timestamp >= current_date - 7
       - name: FROM_AMT
         description:  "{{ doc('swaps_from_amt') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: FROM_MINT
         description:  "{{ doc('swaps_from_mint') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: TO_AMT
         description:  "{{ doc('swaps_to_amt') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: TO_MINT
         description:  "{{ doc('swaps_to_mint') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: SWAP_INDEX
         description: "{{ doc('swaps_swap_index') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 

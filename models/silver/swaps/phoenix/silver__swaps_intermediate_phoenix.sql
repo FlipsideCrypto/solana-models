@@ -166,6 +166,8 @@ SELECT
     block_timestamp,
     program_id,
     tx_id,
+    index,
+    inner_index,
     ROW_NUMBER() over (
         PARTITION BY tx_id
         ORDER BY
