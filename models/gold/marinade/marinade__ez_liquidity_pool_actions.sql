@@ -20,10 +20,6 @@
     )
 }}
 
-/*
-    TODO: add these when they have been deployed
-    'orca_whirlpool', 
-*/
 {% set pool_platforms = [
     'raydiumv4', 
     'raydium_cpmm', 
@@ -32,6 +28,7 @@
     'orcav2',
     'meteora',
     'meteora_dlmm',
+    'orca_whirlpool',
 ] %}
 
 WITH marinade_pool_tokens AS (
