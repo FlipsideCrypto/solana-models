@@ -74,6 +74,6 @@ SELECT
 FROM
     liquid_staking_actions a
 LEFT JOIN prices b
-    ON a.action_type IN ('claim', 'deposit')
+    ON a.action_type IN ('claim', 'deposit', 'depositStakeAccount')
     AND b.token_address = 'So11111111111111111111111111111111111111112'
     AND DATE_TRUNC('hour', a.block_timestamp) = b.hour
