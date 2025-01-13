@@ -89,6 +89,24 @@ transfers AS (
         a.succeeded
         AND {{ between_stmts }}
 ),
+sol_balances as (
+    SELECT
+        a.*
+    FROM 
+        {{ ref('silver__sol_balances') }} a
+        INNER JOIN (
+            SELECT 
+                DISTINCT tx_id
+            FROM 
+                base
+            WHERE 
+                event_type = 'depositStakeAccount'
+        ) b 
+        ON b.tx_id = a.tx_id
+    WHERE
+        a.succeeded
+        AND {{ between_stmts }}
+)
 deposits AS (
     SELECT
         a.block_id,
@@ -101,7 +119,10 @@ deposits AS (
             WHEN a.event_type = 'deposit' THEN silver.udf_get_account_pubkey_by_name('transferFrom', decoded_instruction:accounts)
             ELSE silver.udf_get_account_pubkey_by_name('stakeAuthority', decoded_instruction:accounts)
         END AS provider_address,
-        (a.decoded_instruction:args:lamports::int) * pow(10, -9) AS deposit_amount,
+        CASE 
+            WHEN a.event_type = 'depositStakeAccount' THEN c.post_amount
+            ELSE (a.decoded_instruction:args:lamports::int) * pow(10, -9) 
+        END AS deposit_amount,
         b.mint_amount * pow(10, -9) AS msol_minted,
         a.program_id,
         a._inserted_timestamp
@@ -113,6 +134,10 @@ deposits AS (
         AND b.mint = 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So'
         AND COALESCE(b.inner_index, 0) > COALESCE(a.inner_index, -1)
         AND COALESCE(b.inner_index, 0) < COALESCE(a.next_liquid_staking_action_inner_index, 9999)
+    LEFT JOIN sol_balances c
+        ON a.tx_id = b.tx_id
+        AND silver.udf_get_account_pubkey_by_name('stakeAccount', decoded_instruction:accounts) = c.account
+        AND a.event_type = 'depositStakeAccount'
     WHERE
         a.event_type IN ('deposit', 'depositStakeAccount')
 ),
