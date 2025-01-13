@@ -17,18 +17,15 @@
     )
 }}
 
-/*
-    TODO: add these when they have been deployed
-    'orca_whirlpool', 
-    'meteora',
-    'meteora_dlmm'
-*/
 {% set pool_platforms = [
     'raydiumv4', 
     'raydium_cpmm', 
     'raydium_clmm', 
     'orcav1', 
     'orcav2', 
+    'orca_whirlpool', 
+    'meteora',
+    'meteora_dlmm'
 ] %}
 
 WITH base AS (
