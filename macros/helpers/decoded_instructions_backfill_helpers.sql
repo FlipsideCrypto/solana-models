@@ -6,7 +6,7 @@
         where program_id = '""" ~ program_id ~ """';""").columns %}
     {% set min_block_id = result_cols[0].values()[0] | int %}
     {% set max_block_id = result_cols[1].values()[0] | int %}
-    {% set step = 10000000 %}
+    {% set step = 2000000 %}
 
     {% for i in range(min_block_id, max_block_id, step) %}
         {% if i == min_block_id %}
@@ -193,6 +193,133 @@
                     on c.complete_decoded_instructions_3_id = e.id
             where 
                 c.complete_decoded_instructions_3_id is null
+            ;
+        {% endset %}
+
+        {% do run_query(query) %}
+    {% endfor %}
+{% endmacro %}
+
+{% macro decoded_instructions_backfill_single_date_all_programs(backfill_date, priority=None) %}
+    {% set get_block_id_range_query %}
+        SELECT 
+            min(block_id),
+            max(block_id),
+            replace(block_timestamp::date::string,'-','_') AS backfill_date_string
+        FROM 
+            {{ ref('silver__blocks') }}
+        WHERE 
+            block_timestamp::date = '{{ backfill_date }}'
+        GROUP BY 
+            block_timestamp::date
+    {% endset %}
+    {% set range_results = run_query(get_block_id_range_query)[0] %}
+    
+    {% set min_block_id = range_results[0] %}
+    {% set max_block_id = range_results[1] %}
+    {% set backfill_date_string = range_results[2] %}
+    {% set step = 2000000 %}
+    {% set retry_start_timestamp = modules.datetime.datetime.now(modules.pytz.utc).strftime("%Y-%m-%d %H:%M:%S") %}
+
+    {% for i in range(min_block_id, max_block_id, step) %}
+        {% if i == min_block_id %}
+            {% set start_block = i %}
+        {% else %}
+            {% set start_block = i+1 %}
+        {% endif %}
+
+        {% if i+step >= max_block_id %}
+            {% set end_block = max_block_id %}
+        {% else %}
+            {% set end_block = i+step %}
+        {% endif %}
+
+        {% set suffix %}
+            {%- if priority is none -%}
+                {{ '%011d' % start_block }}_{{ '%011d' % end_block }}_retry_single_date_{{ backfill_date_string }}
+            {%- else -%}
+                {{ '%02d' % priority }}_{{ '%011d' % start_block }}_{{ '%011d' % end_block }}_retry_single_date_{{ backfill_date_string }}
+            {%- endif -%}
+        {% endset %}
+
+        {% set query %}
+            CREATE OR REPLACE VIEW streamline.decoded_instructions_backfill_{{ suffix }} AS
+            WITH idl_in_play AS (
+                SELECT
+                    program_id
+                FROM
+                    {{ ref('silver__verified_idls') }}
+                WHERE   
+                    program_id <> 'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH'
+            ),
+            retry_events AS (
+                SELECT
+                    e.program_id,
+                    e.tx_id,
+                    e.index,
+                    NULL as inner_index,
+                    e.instruction,
+                    e.block_id,
+                    e.block_timestamp,
+                    {{ dbt_utils.generate_surrogate_key(['e.block_id','e.tx_id','e.index','inner_index','e.program_id']) }} as id
+                FROM
+                    {{ ref('silver__events') }} AS e
+                JOIN 
+                    idl_in_play AS b
+                    ON e.program_id = b.program_id
+                WHERE
+                    e.block_timestamp::date = '{{ backfill_date }}'
+                    AND e.succeeded
+                UNION ALL
+                SELECT
+                    e.program_id AS inner_program_id,
+                    e.tx_id,
+                    e.instruction_index AS index,
+                    e.inner_index,
+                    e.instruction,
+                    e.block_id,
+                    e.block_timestamp,
+                    {{ dbt_utils.generate_surrogate_key(['e.block_id','e.tx_id','e.instruction_index','e.inner_index','e.program_id']) }} as id
+                FROM
+                    {{ ref('silver__events_inner') }} AS e
+                JOIN 
+                    idl_in_play b
+                    ON e.program_id = b.program_id
+                WHERE
+                    e.block_timestamp::date = '{{ backfill_date }}'
+                    AND e.succeeded
+                    AND (
+                        (
+                            e.program_id IN ('FLASH6Lo6h3iasJKWDs2F8TkW2UKf3s15C8PMGuVfgBn','SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g','GovaE4iu227srtG2s3tZzB4RmWBzw8sTwrCLZz7kN7rY','JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4','DCA265Vj8a9CEuX1eb1LWRnDT7uK6q1xMipnNyatn23M','PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu','LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo','PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY','6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P')
+                            AND array_size(e.instruction:accounts) > 1
+                        )
+                        OR e.program_id NOT IN ('FLASH6Lo6h3iasJKWDs2F8TkW2UKf3s15C8PMGuVfgBn','SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g','GovaE4iu227srtG2s3tZzB4RmWBzw8sTwrCLZz7kN7rY','JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4','DCA265Vj8a9CEuX1eb1LWRnDT7uK6q1xMipnNyatn23M','PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu','LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo','PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY','6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P')
+                    )
+            ),
+            completed_subset AS (
+                SELECT 
+                    *
+                FROM 
+                    {{ ref('streamline__complete_decoded_instructions_3') }}
+                WHERE 
+                    program_id = '{{ program_id }}'
+                    AND _inserted_timestamp >= '{{ retry_start_timestamp }}'
+            )
+            SELECT
+                e.program_id,
+                e.tx_id,
+                e.index,
+                e.inner_index,
+                e.instruction,
+                e.block_id,
+                e.block_timestamp
+            FROM
+                retry_events e 
+            LEFT JOIN 
+                completed_subset c 
+                ON c.complete_decoded_instructions_3_id = e.id
+            WHERE 
+                c.complete_decoded_instructions_3_id IS NULL
             ;
         {% endset %}
 
