@@ -106,7 +106,7 @@ sol_balances as (
     WHERE
         a.succeeded
         AND {{ between_stmts }}
-)
+),
 deposits AS (
     SELECT
         a.block_id,
@@ -135,7 +135,7 @@ deposits AS (
         AND COALESCE(b.inner_index, 0) > COALESCE(a.inner_index, -1)
         AND COALESCE(b.inner_index, 0) < COALESCE(a.next_liquid_staking_action_inner_index, 9999)
     LEFT JOIN sol_balances c
-        ON a.tx_id = b.tx_id
+        ON a.tx_id = c.tx_id
         AND silver.udf_get_account_pubkey_by_name('stakeAccount', decoded_instruction:accounts) = c.account
         AND a.event_type = 'depositStakeAccount'
     WHERE
@@ -197,7 +197,7 @@ SELECT
     NULL AS claim_amount,
     program_id,
     _inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(['tx_id', 'index', 'action_type']) }} AS marinade_liquid_staking_actions_id,
+    {{ dbt_utils.generate_surrogate_key(['tx_id', 'index', 'inner_index']) }} AS marinade_liquid_staking_actions_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS invocation_id
