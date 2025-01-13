@@ -42,7 +42,13 @@
 
 WITH base AS (
     SELECT
-        *
+        *,
+        COALESCE(
+            LEAD(inner_index) OVER (
+                PARTITION BY tx_id, index 
+                ORDER BY inner_index
+            ), 9999
+        ) AS next_liquid_staking_action_inner_index
     FROM
         silver.marinade_liquid_staking_actions__intermediate_tmp
 ),
@@ -105,6 +111,8 @@ deposits AS (
         ON a.tx_id = b.tx_id
         AND a.index = b.index
         AND b.mint = 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So'
+        AND COALESCE(b.inner_index, 0) > COALESCE(a.inner_index, -1)
+        AND COALESCE(b.inner_index, 0) < COALESCE(a.next_liquid_staking_action_inner_index, 9999)
     WHERE
         a.event_type IN ('deposit', 'depositStakeAccount')
 ),
@@ -125,28 +133,6 @@ order_unstakes AS (
     WHERE
         event_type = 'orderUnstake'
 ),
-base_claims AS (
-    SELECT
-        block_id,
-        block_timestamp,
-        tx_id,
-        index,
-        inner_index,
-        event_type AS action_type,
-        silver.udf_get_account_pubkey_by_name('transferSolTo', decoded_instruction:accounts) AS provider_address,
-        program_id,
-        _inserted_timestamp,
-        COALESCE(
-            LEAD(inner_index) OVER (
-                PARTITION BY tx_id, index 
-                ORDER BY inner_index
-            ), 9999
-        ) AS next_claim_inner_index
-    FROM
-        base
-    WHERE
-        event_type = 'claim'
-),
 claims AS (
     SELECT
         a.block_id,
@@ -154,21 +140,22 @@ claims AS (
         a.tx_id,
         a.index,
         a.inner_index,
-        a.action_type,
-        a.provider_address,
+        a.event_type AS action_type,
+        silver.udf_get_account_pubkey_by_name('transferSolTo', a.decoded_instruction:accounts) AS provider_address,
         b.amount AS claim_amount,
         a.program_id,
         a._inserted_timestamp
     FROM
-        base_claims a
+        base a
     LEFT JOIN transfers b 
         ON a.tx_id = b.tx_id
         AND a.index = b.index
         AND COALESCE(b.inner_index, 0) > COALESCE(a.inner_index, -1)
-        AND COALESCE(b.inner_index, 0) < COALESCE(a.next_claim_inner_index, 9999)
-        AND b.tx_to = a.provider_address
+        AND COALESCE(b.inner_index, 0) < COALESCE(a.next_liquid_staking_action_inner_index, 9999)
+        AND b.tx_to = provider_address
     WHERE
-        b.mint = 'So11111111111111111111111111111111111111111'
+        a.event_type = 'claim'
+        AND b.mint = 'So11111111111111111111111111111111111111111'
 )
 
 SELECT
