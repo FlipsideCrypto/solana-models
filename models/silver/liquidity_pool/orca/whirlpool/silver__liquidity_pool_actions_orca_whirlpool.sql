@@ -52,8 +52,8 @@
         {% if is_incremental() %}
         -- AND _inserted_timestamp > '{{ max_timestamp }}'
         /* batches for reload */
-        AND block_timestamp::date BETWEEN '2023-01-01' AND '2023-06-01'
-        -- AND block_timestamp::date BETWEEN '2023-06-01' AND '2024-01-01'
+        -- AND block_timestamp::date BETWEEN '2023-01-01' AND '2023-06-01'
+        AND block_timestamp::date BETWEEN '2023-06-01' AND '2024-01-01'
         -- AND block_timestamp::date BETWEEN '2024-01-01' AND '2024-06-01'
         -- AND block_timestamp::date BETWEEN '2024-06-01' AND '2025-01-05'
         -- AND _inserted_timestamp > '{{ max_timestamp }}'::timestamp_ntz - INTERVAL '1 DAY'
