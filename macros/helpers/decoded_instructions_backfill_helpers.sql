@@ -306,6 +306,7 @@
                     ON c.program_id = b.program_id
                 WHERE 
                     _inserted_timestamp >= '{{ retry_start_timestamp }}'
+                    AND block_id BETWEEN {{ start_block }} AND {{ end_block }}
             )
             SELECT
                 e.program_id,
