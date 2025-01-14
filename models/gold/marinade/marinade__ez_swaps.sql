@@ -1,4 +1,4 @@
--- depends_on: {{ ref('defi__fact_swaps_jupiter_summary') }}
+  -- depends_on: {{ ref('defi__fact_swaps_jupiter_summary') }}
 
 {{ config(
     materialized = 'incremental',
@@ -12,6 +12,10 @@
 ) }}
 
 {% if execute %}
+
+    {% set MSOL_MINT = 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So' %}
+    {% set MNDE_MINT = 'MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey' %}
+
     {% set base_query %}
         CREATE OR REPLACE TEMPORARY TABLE silver.marinade_ez_swaps__intermediate_tmp AS 
         SELECT 
@@ -33,8 +37,8 @@
         FROM
             {{ ref('defi__fact_swaps_jupiter_summary') }}
         WHERE
-            (swap_from_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So') 
-            OR swap_to_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So'))
+            (swap_from_mint IN ('{{ MNDE_MINT }}', '{{ MSOL_MINT }}') 
+            OR swap_to_mint IN ('{{ MNDE_MINT }}', '{{ MSOL_MINT }}'))
             {% if is_incremental() %}
             AND modified_timestamp >= (
                 SELECT
@@ -54,6 +58,7 @@ WITH jupiter_summary_swaps AS (
     FROM 
         silver.marinade_ez_swaps__intermediate_tmp
 ),
+
 dex_swaps AS (
     SELECT
         block_timestamp,
@@ -76,6 +81,7 @@ dex_swaps AS (
     WHERE 
         {{ between_stmts }}
 ),
+
 jupiter_inner_swaps AS (
     SELECT DISTINCT 
         tx_id, 
@@ -83,11 +89,12 @@ jupiter_inner_swaps AS (
     FROM 
         {{ ref('defi__fact_swaps_jupiter_inner') }}
     WHERE 
-        (swap_from_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So') 
-        OR swap_to_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So'))
+        (swap_from_mint IN ('{{ MNDE_MINT }}', '{{ MSOL_MINT }}') 
+        OR swap_to_mint IN ('{{ MNDE_MINT }}', '{{ MSOL_MINT }}'))
         AND succeeded
         AND {{ between_stmts }}
 ),
+
 dex_swaps_excluding_jupiter_inner AS (
     SELECT 
         a.*
@@ -100,6 +107,7 @@ dex_swaps_excluding_jupiter_inner AS (
     WHERE 
         b.tx_id IS NULL
 ),
+
 combined AS (
     SELECT
         block_timestamp,
@@ -139,6 +147,7 @@ combined AS (
     FROM 
         jupiter_summary_swaps
 ),
+
 prices AS (
     SELECT
         hour,
@@ -148,6 +157,7 @@ prices AS (
     FROM
         {{ ref('price__ez_prices_hourly') }}
 )
+
 SELECT 
     c.block_timestamp,
     c.block_id,
