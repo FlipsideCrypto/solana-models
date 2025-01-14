@@ -213,7 +213,8 @@ limit_filled AS (
         {{ between_stmts }}
         AND program_id in ('j1o2qRpjcyUwEvwtcfhEQefh773ZgjxcVRry7LDqg5X','jupoNjAxXgZ4rjzxzPMP4oxduvQsQtZzyknqvzYNrNu')
         AND event_type = 'flashFillOrder'
-)
+),
+prefinal as (
 SELECT 
     b.block_timestamp,
     b.block_id,
@@ -258,6 +259,10 @@ LEFT JOIN
 LEFT JOIN
     dca_filled d
     ON b.tx_id = d.tx_id
-LEFT JOIN
-    limit_filled e
-    ON b.tx_id = e.tx_id
+    LEFT JOIN
+        limit_filled e
+        ON b.tx_id = e.tx_id
+)
+SELECT *
+FROM prefinal
+qualify(row_number() over (partition by tx_id, index, inner_index order by swap_index desc)) = 1
