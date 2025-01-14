@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: marinade__ez_liquidity_pool_actions
+    description: Convenience table capturing actions for liquidity pools that use either MSOL or MNDE as one of the liquidity pairs. This includes deposit and withdrawal events.
     recent_date_filter: &recent_date_filter
       config:
         where: >
