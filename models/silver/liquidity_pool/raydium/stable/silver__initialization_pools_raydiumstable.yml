@@ -1,0 +1,81 @@
+version: 2
+models:
+  - name: silver__initialization_pools_raydiumstable
+    data_data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - INDEX
+            - INNER_INDEX
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        data_tests:
+          - not_null
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        data_tests:
+          - not_null
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        data_tests:
+          - not_null
+      - name: INDEX
+        description: "{{ doc('event_index') }}"
+        data_tests: 
+          - not_null
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        data_tests: 
+          - not_null
+      - name: POOL_ADDRESS
+        description: "{{ doc('liquidity_pool_address') }}"
+        data_tests: 
+          - not_null
+      - name: POOL_TOKEN_MINT
+        description: "{{ doc('liquidity_pool_token_mint') }}"
+        data_tests: 
+          - not_null
+      - name: TOKEN_A_ACCOUNT
+        description:  "{{ doc('token_a_account') }}"
+        data_tests: 
+          - not_null
+      - name: TOKEN_A_MINT
+        description:  "{{ doc('token_a_mint') }}"
+        data_tests: 
+          - not_null
+      - name: TOKEN_B_ACCOUNT
+        description:  "{{ doc('token_b_account') }}"
+        data_tests: 
+          - not_null
+      - name: TOKEN_B_MINT
+        description:  "{{ doc('token_b_mint') }}"
+        data_tests: 
+          - not_null
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        data_tests: 
+          - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        data_tests: 
+          - not_null
+      - name: INITIALIZATION_POOLS_RAYDIUMSTABLE_ID
+        description: '{{ doc("pk") }}'   
+        data_tests: 
+          - unique
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        data_tests: 
+          - not_null
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        data_tests: 
+          - not_null
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        data_tests: 
+          - not_null:
+              name: test_silver__not_null_initialization_pools_raydiumstable_invocation_id

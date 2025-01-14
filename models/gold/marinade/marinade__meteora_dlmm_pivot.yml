@@ -1,0 +1,54 @@
+version: 2
+models:
+  - name: marinade__meteora_dlmm_pivot
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - INDEX
+            - INNER_INDEX
+      - dbt_utils.expression_is_true:
+          expression: "inner_index >= 0"
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+      - name: INDEX
+        description: "{{ doc('event_index') }}"
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+      - name: EVENT_TYPE
+        description: "{{ doc('event_type') }}"
+      - name: POOL_ADDRESS
+        description: "{{ doc('liquidity_pool_address') }}"
+      - name: PROVIDER_ADDRESS
+        description:  "{{ doc('liquidity_provider') }}"
+      - name: TOKEN_A_MINT
+        description:  "{{ doc('token_a_mint') }}"
+        data_tests:
+          - not_null
+      - name: TOKEN_A_AMOUNT
+        description:  "{{ doc('token_a_amount') }}"
+        data_tests:
+          - not_null
+      - name: TOKEN_B_MINT
+        description:  "{{ doc('token_b_mint') }}"
+      - name: TOKEN_B_AMOUNT
+        description:  "{{ doc('token_b_amount') }}"
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+      - name: LIQUIDITY_POOL_ACTIONS_METEORA_DLMM_ID
+        description: '{{ doc("pk") }}'
+        data_tests:
+          - unique
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}'
