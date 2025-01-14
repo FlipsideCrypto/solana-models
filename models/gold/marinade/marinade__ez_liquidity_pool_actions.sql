@@ -15,7 +15,7 @@
         post_hook = enable_search_optimization(
             '{{this.schema}}',
             '{{this.identifier}}',
-            'ON EQUALITY(ez_liquidity_pool_actions_id, pool_address, provider_address, tx_id, action, token_a_mint, token_b_mint)'),
+            'ON EQUALITY(ez_liquidity_pool_actions_id, pool_address, provider_address, tx_id, action_type, token_a_mint, token_b_mint)'),
         tags = ['scheduled_non_core'],
     )
 }}
