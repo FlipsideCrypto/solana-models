@@ -42,10 +42,8 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_generic') }}
 WHERE 
-    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') 
-    OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT')
-    )
-    and succeeded
+    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT'))
+    AND succeeded
     {% if is_incremental() %}
     AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
     {% endif %}
@@ -72,16 +70,14 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_orca') }}
 WHERE 
-    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') 
-    OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT')
-    )
-    and succeeded
-    and swap_to_amount is not null
+    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT'))
+    AND succeeded
+    AND swap_to_amount IS NOT NULL
     {% if is_incremental() %}
     AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
     {% endif %}
 UNION ALL
-select
+SELECT
     block_timestamp,
     block_id,
     tx_id,
@@ -103,14 +99,12 @@ select
 FROM
     {{ ref('silver__swaps_intermediate_meteora') }}
     WHERE 
-        (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') 
-        OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT')
-        )
-    and succeeded
-    {% if is_incremental() %}
-    AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
-    {% endif %}
-union all
+        (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT'))
+        AND succeeded
+        {% if is_incremental() %}
+        AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
+        {% endif %}
+UNION ALL
 SELECT
     block_timestamp,
     block_id,
@@ -133,10 +127,8 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_phoenix') }}
 WHERE 
-    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') 
-    OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT')
-    )
-    and succeeded
+    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT'))
+    AND succeeded
     {% if is_incremental() %}
     AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
     {% endif %}
@@ -162,11 +154,9 @@ SELECT
     '{{ invocation_id }}' AS invocation_id
 FROM
     {{ ref('silver__swaps_intermediate_bonkswap') }}
-    WHERE 
-        (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') 
-        OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT')
-        )
-    and succeeded
+WHERE 
+    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT'))
+    AND succeeded
     {% if is_incremental() %}
     AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
     {% endif %}
@@ -193,10 +183,8 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_raydium_v4_amm') }}
 WHERE
-    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') 
-        OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT')
-        )
-    and succeeded
+    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT'))
+    AND succeeded
     {% if is_incremental() %}
     AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
     {% endif %}
@@ -223,10 +211,8 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_raydium_cpmm') }}
 WHERE
-    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') 
-        OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT')
-        )
-    and succeeded
+    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT'))
+    AND succeeded
     {% if is_incremental() %}
     AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
     {% endif %}
@@ -253,10 +239,8 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_raydium_clmm') }}
 WHERE
-    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') 
-        OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT')
-        )
-    and succeeded
+    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT'))
+    AND succeeded
     {% if is_incremental() %}
     AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
     {% endif %}

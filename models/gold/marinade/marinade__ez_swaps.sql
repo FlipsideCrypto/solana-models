@@ -54,7 +54,6 @@ WITH jupiter_summary_swaps AS (
     FROM 
         silver.marinade_ez_swaps__intermediate_tmp
 ),
-
 dex_swaps AS (
     SELECT
         block_timestamp,
@@ -77,7 +76,6 @@ dex_swaps AS (
     WHERE 
         {{ between_stmts }}
 ),
-
 jupiter_inner_swaps AS (
     SELECT DISTINCT 
         tx_id, 
@@ -90,7 +88,6 @@ jupiter_inner_swaps AS (
         AND succeeded
         AND {{ between_stmts }}
 ),
-
 dex_swaps_excluding_jupiter_inner AS (
     SELECT 
         a.*
@@ -103,7 +100,6 @@ dex_swaps_excluding_jupiter_inner AS (
     WHERE 
         b.tx_id IS NULL
 ),
-
 combined AS (
     SELECT
         block_timestamp,
@@ -143,7 +139,6 @@ combined AS (
     FROM 
         jupiter_summary_swaps
 ),
-
 prices AS (
     SELECT
         hour,
@@ -153,7 +148,6 @@ prices AS (
     FROM
         {{ ref('price__ez_prices_hourly') }}
 )
-
 SELECT 
     c.block_timestamp,
     c.block_id,
