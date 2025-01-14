@@ -298,12 +298,14 @@
             ),
             completed_subset AS (
                 SELECT 
-                    *
+                    complete_decoded_instructions_3_id
                 FROM 
-                    {{ ref('streamline__complete_decoded_instructions_3') }}
+                    {{ ref('streamline__complete_decoded_instructions_3') }} AS c
+                JOIN 
+                    idl_in_play b
+                    ON c.program_id = b.program_id
                 WHERE 
-                    program_id = '{{ program_id }}'
-                    AND _inserted_timestamp >= '{{ retry_start_timestamp }}'
+                    _inserted_timestamp >= '{{ retry_start_timestamp }}'
             )
             SELECT
                 e.program_id,
