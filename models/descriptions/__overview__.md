@@ -81,6 +81,13 @@ There is more information on how to use dbt docs in the last section of this doc
 ### Stats Tables (`Solana`.`STATS`.`<table_name>`)
 - [ez_core_metrics](#!/model/model.solana_models.stats__ez_core_metrics)
 
+### Marinade Tables (`Solana`.`MARINADE`.`<table_name>`)
+- [dim_pools](#!/model/model.solana_models.marinade__dim_pools)
+- [ez_liquidity_pool_actions](#!/model/model.solana_models.marinade__ez_liquidity_pool_actions)
+- [ez_liquid_staking_actions](#!/model/model.solana_models.marinade__ez_liquid_staking_actions)
+- [ez_native_staking_actions](#!/model/model.solana_models.marinade__ez_native_staking_actions)
+- [ez_swaps](#!/model/model.solana_models.marinade__ez_swaps)
+
 
 ## **Data Model Overview**
 
