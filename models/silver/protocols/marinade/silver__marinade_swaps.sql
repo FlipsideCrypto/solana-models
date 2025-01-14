@@ -17,6 +17,9 @@
     {% endif %}
 {% endif %}
 
+{% set MSOL_MINT = 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So' %}
+{% set MNDE_MINT = 'MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey' %}
+
 SELECT
     block_timestamp,
     block_id,
@@ -39,8 +42,8 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_generic') }}
 WHERE 
-    (swap_from_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So') 
-    OR swap_to_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So')
+    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') 
+    OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT')
     )
     and succeeded
     {% if is_incremental() %}
@@ -69,8 +72,8 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_orca') }}
 WHERE 
-    (swap_from_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So') 
-    OR swap_to_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So')
+    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') 
+    OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT')
     )
     and succeeded
     and swap_to_amount is not null
@@ -100,8 +103,8 @@ select
 FROM
     {{ ref('silver__swaps_intermediate_meteora') }}
     WHERE 
-        (swap_from_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So') 
-        OR swap_to_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So')
+        (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') 
+        OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT')
         )
     and succeeded
     {% if is_incremental() %}
@@ -130,8 +133,8 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_phoenix') }}
 WHERE 
-    (swap_from_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So') 
-    OR swap_to_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So')
+    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') 
+    OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT')
     )
     and succeeded
     {% if is_incremental() %}
@@ -160,8 +163,8 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_bonkswap') }}
     WHERE 
-        (swap_from_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So') 
-        OR swap_to_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So')
+        (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') 
+        OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT')
         )
     and succeeded
     {% if is_incremental() %}
@@ -190,8 +193,8 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_raydium_v4_amm') }}
 WHERE
-    (swap_from_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So') 
-        OR swap_to_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So')
+    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') 
+        OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT')
         )
     and succeeded
     {% if is_incremental() %}
@@ -220,8 +223,8 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_raydium_cpmm') }}
 WHERE
-    (swap_from_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So') 
-        OR swap_to_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So')
+    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') 
+        OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT')
         )
     and succeeded
     {% if is_incremental() %}
@@ -250,8 +253,8 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_raydium_clmm') }}
 WHERE
-    (swap_from_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So') 
-        OR swap_to_mint IN ('MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey', 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So')
+    (swap_from_mint IN ('MNDE_MINT', 'MSOL_MINT') 
+        OR swap_to_mint IN ('MNDE_MINT', 'MSOL_MINT')
         )
     and succeeded
     {% if is_incremental() %}
