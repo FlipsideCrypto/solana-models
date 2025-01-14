@@ -121,6 +121,145 @@
     {% endfor %}
 {% endmacro %}
 
+{% macro decoded_logs_backfill_retry_single_date_all_programs(backfill_date, priority=None) %}
+    {% set program_ids_to_decode_inner_instrunction_logs = [
+        'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4',
+        'PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY',
+        '6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P',
+        'DCA265Vj8a9CEuX1eb1LWRnDT7uK6q1xMipnNyatn23M',
+        '7a4WjyR8VZ7yZz5XJAKm39BUGn5iT9CKcv2pmG9tdXVH'
+    ] %}
+    {% set program_ids_to_decode_log_messages = [
+        'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN',
+        'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
+    ] %}
+
+    {% set get_block_id_range_query %}
+        SELECT 
+            min(block_id),
+            max(block_id),
+            replace(block_timestamp::date::string,'-','_') AS backfill_date_string
+        FROM
+            {{ ref('silver__blocks') }}
+         WHERE 
+            block_timestamp::date = '{{ backfill_date }}'
+        GROUP BY 
+            block_timestamp::date
+    {% endset %}
+    {% set range_results = run_query(get_block_id_range_query)[0] %}
+    
+    {% set min_block_id = range_results[0] %}
+    {% set max_block_id = range_results[1] %}
+    {% set backfill_date_string = range_results[2] %}
+    {% set retry_start_timestamp = modules.datetime.datetime.now(modules.pytz.utc).strftime("%Y-%m-%d %H:%M:%S") %}
+    {% set step = 2000000 %}
+
+    {% for i in range(min_block_id, max_block_id, step) %}
+        {% if i == min_block_id %}
+            {% set start_block = i %}
+        {% else %}
+            {% set start_block = i+1 %}
+        {% endif %}
+
+        {% if i+step >= max_block_id %}
+            {% set end_block = max_block_id %}
+        {% else %}
+            {% set end_block = i+step %}
+        {% endif %}
+
+        {% set suffix %}
+            {%- if priority is none -%}
+                {{ '%011d' % start_block }}_{{ '%011d' % end_block }}_retry_single_date_{{ backfill_date_string }}
+            {%- else -%}
+                {{ '%02d' % priority }}_{{ '%011d' % start_block }}_{{ '%011d' % end_block }}_retry_single_date_{{ backfill_date_string }}
+            {%- endif -%}
+        {% endset %}
+
+        {% set query %}
+            CREATE OR REPLACE VIEW streamline.decoded_logs_backfill_{{ suffix }} AS 
+            WITH completed_subset AS (
+                SELECT
+                    block_id,
+                    program_id,
+                    complete_decoded_logs_2_id as id
+                FROM
+                    {{ ref('streamline__complete_decoded_logs_2') }}
+                WHERE
+                    program_id IN ('{{ (program_ids_to_decode_inner_instrunction_logs + program_ids_to_decode_log_messages) | join("','") }}')
+                    AND block_id BETWEEN {{ start_block }} AND {{ end_block }}
+                    AND _inserted_timestamp >= '{{ retry_start_timestamp }}'
+            ),
+            event_subset AS (
+                SELECT
+                    e.program_id AS inner_program_id,
+                    e.tx_id,
+                    e.instruction_index AS index,
+                    e.inner_index,
+                    NULL AS log_index,
+                    e.instruction AS instruction,
+                    e.block_id,
+                    e.block_timestamp,
+                    e.signers,
+                    e.succeeded,
+                    {{ dbt_utils.generate_surrogate_key(['e.block_id','e.tx_id','e.instruction_index','e.inner_index','log_index','inner_program_id']) }} as id
+                FROM
+                    {{ ref('silver__events_inner') }} e
+                WHERE
+                    e.block_id BETWEEN {{ start_block }} AND {{ end_block }}
+                    AND e.block_timestamp::date = '{{ backfill_date }}'
+                    AND e.succeeded
+                    AND e.program_id IN ('{{ program_ids_to_decode_inner_instrunction_logs | join("','") }}')
+                    AND array_size(e.instruction:accounts::array) = 1
+                UNION ALL
+                SELECT 
+                    l.program_id,
+                    l.tx_id,
+                    l.index,
+                    l.inner_index,
+                    l.log_index,
+                    object_construct('accounts',[],'data',l.data,'programId',l.program_id) as instruction,
+                    l.block_id,
+                    l.block_timestamp,
+                    t.signers,
+                    t.succeeded,
+                    {{ dbt_utils.generate_surrogate_key(['l.block_id','l.tx_id','l.index','l.inner_index','l.log_index','l.program_id']) }} as id
+                FROM
+                    {{ ref('silver__transaction_logs_program_data') }} l
+                JOIN
+                    {{ ref('silver__transactions') }} t
+                    USING(block_timestamp, tx_id)
+                WHERE 
+                    l.block_id BETWEEN {{ start_block }} AND {{ end_block }}
+                    AND l.block_timestamp::date = '{{ backfill_date }}'
+                    AND l.program_id IN ('{{ program_ids_to_decode_log_messages | join("','") }}')
+                    AND l.succeeded
+            )
+            SELECT 
+                e.inner_program_id as program_id,
+                e.tx_id,
+                e.index,
+                e.inner_index,
+                e.log_index,
+                e.instruction,
+                e.block_id,
+                e.block_timestamp,
+                e.signers,
+                e.succeeded,
+            FROM
+                event_subset e
+            LEFT OUTER JOIN
+                completed_subset c
+                ON c.program_id = e.inner_program_id
+                AND c.block_id = e.block_id
+                AND c.id = e.id
+            WHERE
+                c.block_id IS NULL
+        {% endset %}
+
+        {% do run_query(query) %}
+    {% endfor %}
+{% endmacro %}
+
 {% macro decoded_logs_backill_cleanup_views() %}
     {% set results = run_query("""select
             table_schema,
