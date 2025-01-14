@@ -1,0 +1,105 @@
+version: 2
+models:
+  - name: marinade__ez_liquid_staking_actions
+    description: Convenience table capturing actions related to Marinade liquid staking, including deposits, unstakes, and claims.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - INDEX
+            - INNER_INDEX
+          where: block_timestamp::date > current_date - 30
+    recent_date_filter: &recent_date_filter
+      config:
+        where: block_timestamp >= current_date - 7
+    recent_modified_date_filter: &recent_modified_date_filter
+      config:
+        where: modified_timestamp >= current_date - 7
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_modified_date_filter
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('event_index') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: ACTION_TYPE
+        description: "{{ doc('action') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: PROVIDER_ADDRESS
+        description: "{{ doc('liquidity_provider') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: DEPOSIT_AMOUNT
+        description: "The amount of SOL deposited"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+          - not_null:
+              where: action_type = 'deposit' AND block_timestamp >= current_date - 7
+      - name: DEPOSIT_AMOUNT_USD
+        description: "The amount of SOL deposited in USD"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+          - not_null:
+              where: action_type = 'deposit' AND block_timestamp >= current_date - 7
+      - name: MSOL_MINTED
+        description: "The amount of mSOL minted"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: MSOL_BURNED
+        description: "The amount of mSOL burned"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+          - not_null:
+              where: action_type = 'orderUnstake' AND block_timestamp >= current_date - 7
+      - name: CLAIM_AMOUNT
+        description: "The amount of SOL claimed"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+          - not_null:
+              where: action_type = 'claim' AND block_timestamp >= current_date - 7
+      - name: CLAIM_AMOUNT_USD
+        description: "The amount of SOL claimed in USD"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+          - not_null:
+              where: action_type = 'claim' AND block_timestamp >= current_date - 7
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: MARINADE_EZ_LIQUID_STAKING_ACTIONS_ID
+        description: "{{ doc('pk') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - unique: *recent_date_filter
+      - name: INSERTED_TIMESTAMP
+        description: "{{ doc('inserted_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: "{{ doc('modified_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
