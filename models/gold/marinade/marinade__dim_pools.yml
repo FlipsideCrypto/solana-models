@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: marinade__dim_pools
+    description: Dimensional table containing information onliquidity pools that involve MNDE or MSOL tokens as one of the liquidity pairs.
     columns:
       - name: POOL_ADDRESS
         description: "{{ doc('liquidity_pool_address') }}"
