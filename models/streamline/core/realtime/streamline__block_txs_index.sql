@@ -6,7 +6,7 @@
         params ={ "external_table" :"block_txs_index_backfill",
             "sql_limit" :"10000",
             "producer_batch_size" :"10000",
-            "worker_batch_size" :"10000", --20k worker and lambda runs out of disk space
+            "worker_batch_size" :"10000",
             "sql_source" :"{{this.identifier}}", 
             "order_by_column": "block_id DESC",
             "exploded_key": tojson(["result.signatures"]),
