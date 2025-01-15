@@ -200,7 +200,7 @@
     {% endfor %}
 {% endmacro %}
 
-{% macro decoded_instructions_backfill_single_date_all_programs(backfill_date, priority=None) %}
+{% macro decoded_instructions_backfill_retry_single_date_all_programs(backfill_date, priority=None) %}
     {% set get_block_id_range_query %}
         SELECT 
             min(block_id),
