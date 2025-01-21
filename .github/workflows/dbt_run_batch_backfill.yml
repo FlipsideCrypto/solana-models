@@ -43,5 +43,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-            dbt run -s silver__backfill_transactions_index
-            dbt run --vars '{"STREAMLINE_INVOKE_STREAMS": True}' -s streamline__block_txs_index
+            dbt run --vars '{"STREAMLINE_INVOKE_STREAMS": True}' -s silver__backfill_transactions_index streamline__block_txs_index
