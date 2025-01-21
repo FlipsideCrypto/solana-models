@@ -274,8 +274,6 @@ FROM
 WHERE
     block_timestamp::date <= '2023-02-08'
 UNION ALL
-{% endif %}
--- Only select from active models during incremental
 SELECT
     'magic eden v2' as marketplace,
     block_timestamp,
@@ -307,11 +305,11 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_sales_magic_eden_v2') }}
-{% if is_incremental() %}
 WHERE
-    modified_timestamp >= '{{ max_modified_timestamp }}'
-{% endif %}
+    block_timestamp::date <= '2023-02-08' -- adjust to appropriate date
 UNION ALL
+{% endif %}
+-- Only select from active models during incremental
 SELECT
     'solanart',
     block_timestamp,
@@ -590,6 +588,32 @@ SELECT
     modified_timestamp,
 FROM
     {{ ref('silver__nft_sales_tensor_bid') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
+UNION ALL
+SELECT
+    'magic eden v2' AS marketplace,
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    purchaser,
+    seller,
+    mint,
+    sales_amount,
+    payment_mint,
+    NULL as tree_authority,
+    NULL as merkle_tree,
+    NULL as leaf_index,
+    FALSE as is_compressed,
+    nft_sales_magic_eden_v2_decoded_id AS fact_nft_sales_id,
+    inserted_timestamp,
+    modified_timestamp,
+FROM
+    {{ ref('silver__nft_sales_magic_eden_v2_decoded') }}
 {% if is_incremental() %}
 WHERE
     modified_timestamp >= '{{ max_modified_timestamp }}'
