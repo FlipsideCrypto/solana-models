@@ -140,3 +140,4 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM
     pre_final
+qualify(row_number() over (partition by tx_id, mint order by index desc)) = 1
