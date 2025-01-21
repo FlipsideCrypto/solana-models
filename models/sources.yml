@@ -69,6 +69,7 @@ sources:
       - name: decoded_logs_2
       - name: block_txs_2
       - name: helius_blocks
+      - name: block_txs_index_backfill
   - name: bronze_api
     schema: bronze_api
     tables:

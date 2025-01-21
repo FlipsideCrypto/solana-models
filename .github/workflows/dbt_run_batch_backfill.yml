@@ -1,11 +1,11 @@
-name: dbt_run_scheduled_batch_backfill
-run-name: dbt_run_scheduled_batch_backfill
+name: dbt_run_batch_backfill
+run-name: dbt_run_batch_backfill
 
 on:
   workflow_dispatch:
   schedule:
-    # Runs every 7 mins, adjust to appropriate schedule as needed
-    - cron: '*/7 * * * *'
+    # Runs every 10 mins, adjust to appropriate schedule as needed
+    - cron: '*/10 * * * *'
     
 env:
   DBT_PROFILES_DIR: "${{ vars.DBT_PROFILES_DIR }}"
@@ -16,7 +16,7 @@ env:
   PASSWORD: "${{ secrets.PASSWORD }}"
   REGION: "${{ vars.REGION }}"
   DATABASE: "${{ vars.DATABASE }}"
-  WAREHOUSE: DBT_EMERGENCY
+  WAREHOUSE: "${{ vars.WAREHOUSE }}"
   SCHEMA: "${{ vars.SCHEMA }}"
   DBT_IS_BATCH_LOAD: true
 
@@ -43,4 +43,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-            dbt run -s models/silver/rewards/silver__rewards_rent.sql
+            dbt run --vars '{"STREAMLINE_INVOKE_STREAMS": True}' -s silver__backfill_transactions_index streamline__block_txs_index
