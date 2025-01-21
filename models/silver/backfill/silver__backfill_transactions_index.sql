@@ -3,7 +3,7 @@
 {{
     config(
         materialized="incremental",
-        cluster_by = ["_partition_by_created_date","_inserted_timestamp::date"],
+        cluster_by = ['block_timestamp::date','block_id'],
         tags=['tx_index_backfill']
     )
 }}
