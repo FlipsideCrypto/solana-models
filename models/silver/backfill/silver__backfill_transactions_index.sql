@@ -37,6 +37,6 @@ FROM
 WHERE 
     data IS NOT NULL
 {% if is_incremental() %}
-    AND _partition_by_created_date >= {{ max_partition }}
+    AND _partition_by_created_date >= '{{ max_partition }}'
     AND _inserted_timestamp > (SELECT max(_inserted_timestamp) FROM {{ this }}) 
 {% endif %}
