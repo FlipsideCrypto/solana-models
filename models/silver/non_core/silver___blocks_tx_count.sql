@@ -20,6 +20,7 @@ WITH solscan_blocks AS (
         )
     {% endif %}
 ),
+/* This is used as a backup for when there are issues with solscan raw data pipeline */
 helius_blocks AS (
     SELECT
         block_id,
