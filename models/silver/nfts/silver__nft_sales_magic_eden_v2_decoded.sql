@@ -28,7 +28,7 @@
         {{ ref('silver__decoded_instructions_combined') }}
     WHERE
         program_id = 'M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K'
-        AND event_type IN ('mip1ExecuteSaleV2', 'executeSaleV2', 'ocpExecuteSaleV2')
+        AND event_type IN ('mip1ExecuteSaleV2', 'executeSaleV2', 'ocpExecuteSaleV2', 'coreExecuteSaleV2', 'extExecuteSaleV2')
         AND succeeded
 
 {% if is_incremental() %}
@@ -39,7 +39,8 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% else %}
-        AND block_timestamp::DATE > '2024-10-01' -- temp test but update to where decoded instructions are good
+        -- AND block_timestamp::DATE > '2024-10-01' -- temp test but update to where decoded instructions are good
+        and _inserted_timestamp >= '2023-11-15'
 {% endif %}
 {% endset %}
 
@@ -71,7 +72,10 @@ decoded AS (
             WHEN event_type in ('executeSaleV2') THEN solana_dev.silver.udf_get_account_pubkey_by_name('escrowPaymentAccount', decoded_instruction:accounts) 
             else solana_dev.silver.udf_get_account_pubkey_by_name('buyerEscrowPaymentAccount', decoded_instruction:accounts) 
         end as buyer_payment_acct,
-        solana_dev.silver.udf_get_account_pubkey_by_name('tokenMint', decoded_instruction:accounts) AS mint,
+        CASE
+            WHEN event_type in ('coreExecuteSaleV2') THEN solana_dev.silver.udf_get_account_pubkey_by_name('asset', decoded_instruction:accounts) 
+            else solana_dev.silver.udf_get_account_pubkey_by_name('tokenMint', decoded_instruction:accounts) 
+        end as mint,
         _inserted_timestamp
     FROM
         base
@@ -112,7 +116,7 @@ pre_final AS (
         a.purchaser,
         a.seller,
         a.mint,
-        b.mint as currency_mint,
+        b.mint as currency_address,
         a._inserted_timestamp,
         SUM(b.amount) AS sales_amount
     FROM
@@ -137,11 +141,11 @@ SELECT
     seller,
     mint,
     sales_amount,
-    currency_mint,
+    currency_address,
     _inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(['a.tx_id', 'a.mint']) }} AS nft_sales_hadeswap_decoded_id,
+    {{ dbt_utils.generate_surrogate_key(['tx_id', 'mint']) }} AS nft_sales_magic_eden_v2_decoded_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    pre_final a
+    pre_final

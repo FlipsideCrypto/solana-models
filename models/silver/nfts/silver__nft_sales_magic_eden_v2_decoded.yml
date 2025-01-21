@@ -50,8 +50,8 @@ models:
         description: "{{ doc('sales_amount') }}"
         tests: 
           - not_null: *recent_date_filter
-      - name: CURRENCY_MINT
-        description: "Token used to pay for the NFT"
+      - name: CURRENCY_ADDRESS
+        description: "Address of token used to pay for the NFT"
         tests: 
           - not_null: *recent_date_filter
       - name: _INSERTED_TIMESTAMP
