@@ -143,7 +143,7 @@ SELECT
     sales_amount,
     currency_address,
     _inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(['tx_id', 'mint']) }} AS nft_sales_magic_eden_v2_decoded_id,
+    {{ dbt_utils.generate_surrogate_key(['tx_id']) }} AS nft_sales_magic_eden_v2_decoded_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
