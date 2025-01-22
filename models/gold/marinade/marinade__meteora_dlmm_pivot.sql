@@ -15,11 +15,8 @@ select
     row_number() over (partition by lp.tx_id, lp.index, lp.action order by lp.inner_index) as rn
 from 
     {{ ref('silver__liquidity_pool_actions_meteora_dlmm') }} AS lp
-/*
-TODO: Add this when meteora pools have been added to dim pools
 inner join {{ ref('marinade__dim_pools') }} AS m 
     on lp.liquidity_pool_address = m.pool_address
-*/
 where action in (
             'removeLiquidityByRange',
             'removeLiquidity',
