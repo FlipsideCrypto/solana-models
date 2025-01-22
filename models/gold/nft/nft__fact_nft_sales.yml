@@ -8,7 +8,7 @@ models:
     tests:
       - reference_tx_missing:
           reference_tables:
-            - 'silver__nft_sales_magic_eden_v2'
+            - 'silver__nft_sales_magic_eden_v2_decoded'
             - 'silver__nft_sales_solanart'
             - 'silver__nft_sales_hadeswap_decoded'
             - 'silver__nft_sales_hyperspace'
@@ -19,7 +19,6 @@ models:
             - 'silver__nft_sales_tensorswap_cnft'
             - 'silver__nft_sales_magic_eden_cnft'
             - 'silver__nft_sales_solsniper_cnft'
-            - 'silver__nft_sales_magic_eden_v2_decoded'
           id_column: 'tx_id'
     columns:
       - name: BLOCK_TIMESTAMP

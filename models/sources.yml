@@ -111,6 +111,7 @@ sources:
       - name: mints_orca_non_whirlpool
       - name: pool_transfers_orca_non_whirlpool
       - name: initialization_pools_orca
+      - name: nft_sales_magic_eden_v2
   - name: solana_streamline
     database: solana
     schema: streamline

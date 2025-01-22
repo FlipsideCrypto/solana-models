@@ -320,9 +320,9 @@ SELECT
         '2000-01-01'
     ) AS modified_timestamp
 FROM
-    {{ ref('silver__nft_sales_magic_eden_v2') }}
+    {{ ref('silver__nft_sales_magic_eden_v2_view') }}
 WHERE
-    block_timestamp::date <= '2023-01-09' -- 
+    block_timestamp::date <= '2023-01-09' -- use legacy model before this date
 UNION ALL
 {% endif %}
 -- Only select from active models during incremental
