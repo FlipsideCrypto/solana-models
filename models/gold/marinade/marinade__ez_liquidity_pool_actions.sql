@@ -28,6 +28,7 @@
     'orcav2',
     'meteora',
     'meteora_dlmm',
+    'meteora_multi',
     'orca_whirlpool',
 ] %}
 
@@ -83,7 +84,7 @@ base AS (
             m.platform,
             lp.liquidity_pool_actions_{{ platform }}_id AS ez_liquidity_pool_actions_id
         from 
-            {% if platform == 'meteora' or platform == 'meteora_dlmm' %}
+            {% if platform in ['meteora', 'meteora_dlmm', 'meteora_multi'] %}
             {{ ref('marinade__' ~ platform ~ '_pivot') }} AS lp
             {% else %}
             {{ ref('silver__liquidity_pool_actions_' ~ platform) }} AS lp

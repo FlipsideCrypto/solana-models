@@ -14,28 +14,18 @@ select
     lp.*,
     row_number() over (partition by lp.tx_id, lp.index, lp.action order by lp.inner_index) as rn
 from 
-    {{ ref('silver__liquidity_pool_actions_meteora_dlmm') }} AS lp
+    {{ ref('silver__liquidity_pool_actions_meteora_multi') }} AS lp
 inner join {{ ref('marinade__dim_pools') }} AS m 
     on lp.liquidity_pool_address = m.pool_address
 where action in (
-            'removeLiquidityByRange',
-            'removeLiquidity',
-            'removeAllLiquidity',
-            'addLiquidityByStrategyOneSide',
-            'addLiquidityOneSide',
-            'addLiquidity',
-            'addLiquidityByWeight',
-            'addLiquidityByStrategy'
+            'deposit',
+            'withdraw'
         )
 ),
 pre_final as (
 select 
     b1.* exclude(inner_index),
-    case when b1.action IN ('addLiquidityByStrategyOneSide','addLiquidityOneSide') then
-        NULL
-    else 
-        iff(b1.inner_index=0,NULL,b1.inner_index-1)
-    end AS inner_index,
+    iff(b1.inner_index=0,NULL,b1.inner_index-1) AS inner_index,
     b2.mint as b_mint,
     b2.amount AS b_amount
 from base b1
@@ -48,10 +38,6 @@ left join
     and b2.rn <> 1
 where
     b1.rn = 1
-/*
-have to put this here because upstream has bad data
-ex: fYzxEgSFVmK24twSBaVBSue1evhFnzTBE31SGduCC28Z6BAbx68BCQJJe4PVsKnRpHof5rM9hBF5GJr3w8C755B
-*/
 qualify
     row_number() over (partition by b1.tx_id, b1.index, b1.action order by b2.rn) = 1
 )
@@ -71,5 +57,5 @@ select
     b_amount AS token_b_amount,
     program_id,
     modified_timestamp,
-    {{ dbt_utils.generate_surrogate_key(['block_id', 'tx_id', 'index', 'inner_index']) }} AS liquidity_pool_actions_meteora_dlmm_id
+    {{ dbt_utils.generate_surrogate_key(['block_id', 'tx_id', 'index', 'inner_index']) }} AS liquidity_pool_actions_meteora_multi_id
 from pre_final
