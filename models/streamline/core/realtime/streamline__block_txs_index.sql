@@ -31,7 +31,11 @@ WITH block_ids AS (
 )
 SELECT
     block_id,
-    replace(current_date::string,'-','_') AS partition_key, -- Issue with streamline handling `-` in partition key so changing to `_`
+    to_char(dateadd(
+        minute, 
+        floor(date_part(minute, current_timestamp) / 15) * 15, 
+        date_trunc('hour', current_timestamp)
+    ), 'YYYY_MM_DD_HH24_MI') AS partition_key, -- Issue with streamline handling `-` in partition key so changing to `_`
     {{ target.database }}.live.udf_api(
         'POST',
         '{Service}?apikey={Authentication}',
