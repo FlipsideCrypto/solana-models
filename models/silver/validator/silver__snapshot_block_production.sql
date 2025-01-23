@@ -1,6 +1,6 @@
 {{ config(
   materialized = 'incremental',
-  unique_key = "CONCAT_WS('-', epoch, node_pubkey)",
+  unique_key = "CONCAT_WS('-', epoch, node_pubkey, start_slot, end_slot)",
   incremental_strategy = 'delete+insert',
   cluster_by = ['_inserted_timestamp::DATE'],
   tags = ['validator']
@@ -15,7 +15,7 @@ select
     json_data:data:result:value:range:lastSlot :: INT as end_slot,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
-        ['epoch', 'node_pubkey']
+        ['epoch', 'node_pubkey', 'start_slot', 'end_slot']
     ) }} AS snapshot_block_production_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
@@ -33,7 +33,7 @@ WHERE _inserted_timestamp > (
     {{ this }}
 )
 {% endif %}
-qualify(ROW_NUMBER() over(PARTITION BY epoch, node_pubkey
+qualify(ROW_NUMBER() over(PARTITION BY epoch, node_pubkey, start_slot, end_slot
 ORDER BY
     _inserted_timestamp DESC)) = 1
 
