@@ -67,6 +67,10 @@ models:
         description: The size of the transaction in bytes.
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: TX_INDEX
+        description: "{{ doc('tx_index') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: FACT_TRANSACTIONS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
