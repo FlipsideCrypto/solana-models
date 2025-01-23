@@ -11,7 +11,7 @@
 {% if execute %}
     {% if is_incremental() %}
         {% set max_partition_query %}
-        SELECT max(_partition_by_created_date) FROM {{ this }}
+        SELECT max(_partition_by_created_timestamp) FROM {{ this }}
         {% endset %}
         {% set max_partition = run_query(max_partition_query)[0][0] %}
     {% endif %}
@@ -22,7 +22,7 @@ SELECT
     to_timestamp_ntz(value:"result.blockTime"::int) AS block_timestamp,
     data::string as tx_id,
     value:array_index::int as tx_index,
-    _partition_by_created_date,
+    _partition_by_created_timestamp,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['tx_id']) }} AS transactions_id,
     sysdate() AS inserted_timestamp,
@@ -37,6 +37,6 @@ FROM
 WHERE 
     data IS NOT NULL
 {% if is_incremental() %}
-    AND _partition_by_created_date >= '{{ max_partition }}'
+    AND _partition_by_created_timestamp >= '{{ max_partition }}'
     AND _inserted_timestamp > (SELECT max(_inserted_timestamp) FROM {{ this }}) 
 {% endif %}
