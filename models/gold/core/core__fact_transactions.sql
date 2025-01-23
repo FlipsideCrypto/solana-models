@@ -23,6 +23,7 @@ SELECT
     units_consumed,
     units_limit,
     tx_size,
+    tx_index,
     COALESCE (
         transactions_id,
         {{ dbt_utils.generate_surrogate_key(
