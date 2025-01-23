@@ -48,10 +48,10 @@ models:
         data_tests: 
           - not_null:
               # event_type = initializePermissionedPool does not provide token A/B accounts in the initialization instructions
-              # As of 2025-01-11, there are only 27 such events
+              # As of 2025-01-23, there are only 30 such events
               config:
                 severity: error
-                error_if: "> 27" 
+                error_if: "> 30" 
       - name: TOKEN_A_MINT
         description:  "{{ doc('token_a_mint') }}"
         data_tests: 
@@ -61,10 +61,10 @@ models:
         data_tests: 
           - not_null:
               # event_type = initializePermissionedPool does not provide token A/B accounts in the initialization instructions
-              # As of 2025-01-11, there are only 27 such events
+              # As of 2025-01-23, there are only 30 such events
               config:
                 severity: error
-                error_if: "> 27"
+                error_if: "> 30"
       - name: TOKEN_B_MINT
         description:  "{{ doc('token_b_mint') }}"
         data_tests: 
