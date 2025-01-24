@@ -1,0 +1,50 @@
+version: 2
+models:
+  - name: silver__snapshot_block_production_2
+    columns:
+      - name: EPOCH
+        description: "{{ doc('epoch') }}"
+        data_tests:
+          - not_null
+      - name: NODE_PUBKEY
+        description: >
+          Pubkey for the Solana validator node
+        data_tests:
+          - not_null
+      - name: NUM_LEADER_SLOTS
+        description: > 
+          Number of slots the validator was the leader for between start_slot and end_slot
+      - name: NUM_BLOCKS_PRODUCED
+        description: >
+          Number of blocks the validator produced between start_slot and end_slot
+      - name: START_SLOT
+        description: >
+          First slot of the RPC request
+      - name: END_SLOT
+        description: >
+          Final slot of the RPC request
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        data_tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: SNAPSHOT_BLOCK_PRODUCTION_2_ID
+        description: '{{ doc("pk") }}'
+        data_tests: 
+          - not_null
+          - unique
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        data_tests: 
+          - not_null
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        data_tests: 
+          - not_null
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        data_tests: 
+          - not_null:
+              name: test_silver__not_null_snapshot_block_production_2_invocation_id
