@@ -3,7 +3,9 @@
     unique_key = "tx_id",
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
-    tags = ['scheduled_non_core']
+    tags = ['scheduled_non_core'],
+    full_refresh = false,
+    enabled = false
 ) }}
 
 /* run incremental timestamp value first then use it as a static value */

@@ -10,6 +10,9 @@
 ) }}
 
 {% if execute %}
+
+    {% set SOL_MINT = 'So11111111111111111111111111111111111111111' %}
+
     {% if is_incremental() %}
         {% set query %}
             SELECT MAX(modified_timestamp) AS max_modified_timestamp
@@ -19,6 +22,8 @@
         {% set max_modified_timestamp = run_query(query).columns[0].values()[0] %}
     {% endif %}
 {% endif %}
+
+
 
 -- Select from the deprecated _view models only during the initial FR
 {% if not is_incremental() %}
@@ -33,6 +38,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
@@ -58,6 +64,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
@@ -81,6 +88,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
@@ -106,6 +114,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
@@ -129,6 +138,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
@@ -152,6 +162,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
@@ -175,6 +186,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
@@ -209,6 +221,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
@@ -230,6 +243,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
@@ -251,6 +265,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
@@ -274,10 +289,8 @@ FROM
 WHERE
     block_timestamp::date <= '2023-02-08'
 UNION ALL
-{% endif %}
--- Only select from active models during incremental
 SELECT
-    'magic eden v2' as marketplace,
+    'magic eden v2',
     block_timestamp,
     block_id,
     tx_id,
@@ -287,6 +300,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
@@ -306,14 +320,12 @@ SELECT
         '2000-01-01'
     ) AS modified_timestamp
 FROM
-    {{ ref('silver__nft_sales_magic_eden_v2') }}
-{% if is_incremental() %}
-WHERE
-    modified_timestamp >= '{{ max_modified_timestamp }}'
-{% endif %}
+    {{ ref('silver__nft_sales_magic_eden_v2_view') }}
 UNION ALL
+{% endif %}
+-- Only select from active models during incremental
 SELECT
-    'solanart',
+    'solanart' as marketplace,
     block_timestamp,
     block_id,
     tx_id,
@@ -323,6 +335,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
@@ -359,6 +372,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
@@ -384,6 +398,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
@@ -420,6 +435,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
@@ -445,6 +461,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
@@ -481,6 +498,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
@@ -506,6 +524,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     tree_authority,
     merkle_tree,
     leaf_index,
@@ -531,6 +550,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     tree_authority,
     merkle_tree,
     leaf_index,
@@ -556,6 +576,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     tree_authority,
     merkle_tree,
     leaf_index,
@@ -581,6 +602,7 @@ SELECT
     seller,
     mint,
     sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
@@ -590,6 +612,32 @@ SELECT
     modified_timestamp,
 FROM
     {{ ref('silver__nft_sales_tensor_bid') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
+UNION ALL
+SELECT
+    'magic eden v2' AS marketplace,
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    program_id,
+    purchaser,
+    seller,
+    mint,
+    sales_amount,
+    currency_address,
+    NULL as tree_authority,
+    NULL as merkle_tree,
+    NULL as leaf_index,
+    FALSE as is_compressed,
+    nft_sales_magic_eden_v2_decoded_id AS fact_nft_sales_id,
+    inserted_timestamp,
+    modified_timestamp,
+FROM
+    {{ ref('silver__nft_sales_magic_eden_v2_decoded') }}
 {% if is_incremental() %}
 WHERE
     modified_timestamp >= '{{ max_modified_timestamp }}'
