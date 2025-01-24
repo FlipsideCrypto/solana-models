@@ -10,8 +10,10 @@ WITH base_block_production AS (
     node_pubkey,
     sum(num_leader_slots) AS num_leader_slots,
     sum(num_blocks_produced) AS num_blocks_produced,
+    max(inserted_timestamp) AS inserted_timestamp,
+    max(modified_timestamp) AS modified_timestamp
   FROM
-    {{ ref('silver__snapshot_block_production') }}
+    {{ ref('silver__snapshot_block_production_2') }}
   GROUP BY 1,2
 )
 SELECT
@@ -36,7 +38,6 @@ FROM
 LEFT JOIN
   {{ ref('silver__epoch') }} AS e
   ON bp.epoch = e.epoch
-GROUP BY 1,2
 UNION ALL
 SELECT
   epoch,
