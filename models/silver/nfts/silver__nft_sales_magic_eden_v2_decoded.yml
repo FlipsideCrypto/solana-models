@@ -2,10 +2,6 @@ version: 2
 models:
   - name: silver__nft_sales_magic_eden_v2_decoded
     description: intermediary model for sales on Magic Eden V2 using decoded instructions
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - TX_ID
     recent_date_filter: &recent_date_filter
       config:
         where: _inserted_timestamp >= current_date - 7
@@ -25,10 +21,17 @@ models:
         description: "{{ doc('tx_id') }}"
         tests:
           - not_null: *recent_date_filter
+          - unique: *recent_date_filter
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests:
           - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('index') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
       - name: PROGRAM_ID 
         description: "{{ doc('program_id') }}"
         tests: 

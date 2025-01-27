@@ -66,15 +66,15 @@ decoded AS (
         index,
         inner_index,
         program_id,
-        solana_dev.silver.udf_get_account_pubkey_by_name('buyer', decoded_instruction:accounts) AS purchaser,
-        solana_dev.silver.udf_get_account_pubkey_by_name('seller', decoded_instruction:accounts) AS seller,
+        silver.udf_get_account_pubkey_by_name('buyer', decoded_instruction:accounts) AS purchaser,
+        silver.udf_get_account_pubkey_by_name('seller', decoded_instruction:accounts) AS seller,
         CASE
-            WHEN event_type in ('executeSaleV2') THEN solana_dev.silver.udf_get_account_pubkey_by_name('escrowPaymentAccount', decoded_instruction:accounts) 
-            else solana_dev.silver.udf_get_account_pubkey_by_name('buyerEscrowPaymentAccount', decoded_instruction:accounts) 
+            WHEN event_type in ('executeSaleV2') THEN silver.udf_get_account_pubkey_by_name('escrowPaymentAccount', decoded_instruction:accounts) 
+            else silver.udf_get_account_pubkey_by_name('buyerEscrowPaymentAccount', decoded_instruction:accounts) 
         end as buyer_payment_acct,
         CASE
-            WHEN event_type in ('coreExecuteSaleV2') THEN solana_dev.silver.udf_get_account_pubkey_by_name('asset', decoded_instruction:accounts) 
-            else solana_dev.silver.udf_get_account_pubkey_by_name('tokenMint', decoded_instruction:accounts) 
+            WHEN event_type in ('coreExecuteSaleV2') THEN silver.udf_get_account_pubkey_by_name('asset', decoded_instruction:accounts) 
+            else silver.udf_get_account_pubkey_by_name('tokenMint', decoded_instruction:accounts) 
         end as mint,
         _inserted_timestamp
     FROM
@@ -91,10 +91,10 @@ transfers AS (
         a.mint,         
         a.succeeded,      
         a.index,
-        COALESCE(SPLIT_PART(a.index::text, '.', 1)::INT, a.index::INT) AS index_1,
+        COALESCE(SPLIT_PART(a.index, '.', 1)::INT, a.index::INT) AS index_1,
         a._inserted_timestamp 
     FROM
-        solana_dev.silver.transfers a
+        {{ ref('silver__transfers') }} a
     INNER JOIN (
         SELECT DISTINCT tx_id
         FROM decoded
