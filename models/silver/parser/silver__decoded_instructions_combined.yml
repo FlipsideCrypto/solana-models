@@ -225,6 +225,16 @@ models:
                 AND succeeded
                 and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
               to_condition: "_inserted_timestamp >= current_date - 7"
+          - dbt_utils.relationships_where:
+              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_nft_sales_magic_eden_v2_decoded_tx_id
+              to: ref('silver__nft_sales_magic_eden_v2_decoded')
+              field: tx_id
+              from_condition: >
+                program_id = 'M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K'
+                AND event_type IN ('mip1ExecuteSaleV2', 'executeSaleV2', 'ocpExecuteSaleV2', 'coreExecuteSaleV2', 'extExecuteSaleV2')
+                AND succeeded
+                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
+              to_condition: "_inserted_timestamp >= current_date - 7"
       - name: SIGNERS
         description: "{{ doc('signers') }}"
       - name: SUCCEEDED

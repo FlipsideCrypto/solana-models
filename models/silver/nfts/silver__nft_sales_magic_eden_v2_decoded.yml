@@ -1,0 +1,80 @@
+version: 2
+models:
+  - name: silver__nft_sales_magic_eden_v2_decoded
+    description: intermediary model for sales on Magic Eden V2 using decoded instructions
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null: *recent_date_filter
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null: *recent_date_filter
+          - unique: *recent_date_filter
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('index') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
+      - name: PROGRAM_ID 
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: PURCHASER
+        description: "{{ doc('purchaser') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: SELLER
+        description: "{{ doc('seller') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: SALES_AMOUNT
+        description: "{{ doc('sales_amount') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: CURRENCY_ADDRESS
+        description: "Address of token used to pay for the NFT"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null
+      - name: NFT_SALES_MAGIC_EDEN_V2_DECODED_ID
+        description: '{{ doc("pk") }}'   
+        tests: 
+          - unique: *recent_date_filter
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        data_tests: 
+          - not_null: 
+              name: test_silver__not_null_nft_magic_eden_v2_decoded__invocation_id
+              <<: *recent_date_filter
