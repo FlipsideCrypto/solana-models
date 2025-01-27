@@ -252,7 +252,7 @@
                 WHERE   
                     program_id <> 'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH'
             ),
-            retry_events AS (
+            retry_events_tmp AS (
                 SELECT
                     e.program_id,
                     e.tx_id,
@@ -295,6 +295,23 @@
                         )
                         OR e.program_id NOT IN ('FLASH6Lo6h3iasJKWDs2F8TkW2UKf3s15C8PMGuVfgBn','SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g','GovaE4iu227srtG2s3tZzB4RmWBzw8sTwrCLZz7kN7rY','JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4','DCA265Vj8a9CEuX1eb1LWRnDT7uK6q1xMipnNyatn23M','PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu','LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo','PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY','6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P')
                     )
+            ),
+            retry_events AS (
+                SELECT
+                    e.*
+                FROM
+                    retry_events_tmp AS e
+                LEFT JOIN
+                    {{ ref('silver__decoded_instructions_combined') }} AS d
+                    ON e.block_timestamp = d.block_timestamp
+                    AND e.program_id = d.program_id
+                    AND e.tx_id = d.tx_id
+                    AND e.index = d.index
+                    AND e.inner_index IS NOT DISTINCT FROM d.inner_index
+                WHERE
+                    d.tx_id IS NULL
+                    OR d.decoded_instruction:error::string IS NOT NULL
+                    OR d.event_type IS NULL
             ),
             completed_subset AS (
                 SELECT 

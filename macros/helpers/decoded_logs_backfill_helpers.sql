@@ -189,7 +189,7 @@
                     AND block_id BETWEEN {{ start_block }} AND {{ end_block }}
                     AND _inserted_timestamp >= '{{ retry_start_timestamp }}'
             ),
-            event_subset AS (
+            event_subset_tmp AS (
                 SELECT
                     e.program_id AS inner_program_id,
                     e.tx_id,
@@ -233,6 +233,24 @@
                     AND l.block_timestamp::date = '{{ backfill_date }}'
                     AND l.program_id IN ('{{ program_ids_to_decode_log_messages | join("','") }}')
                     AND l.succeeded
+            ),
+            event_subset AS (
+                SELECT 
+                    e.*
+                FROM
+                    event_subset_tmp AS e
+                LEFT JOIN
+                    {{ ref('silver__decoded_logs') }} AS d
+                    ON e.block_timestamp = d.block_timestamp
+                    AND e.inner_program_id = d.program_id
+                    AND e.tx_id = d.tx_id
+                    AND e.index = d.index
+                    AND e.inner_index IS NOT DISTINCT FROM d.inner_index
+                    AND e.log_index IS NOT DISTINCT FROM d.log_index
+                WHERE
+                    d.decoded_log IS NULL
+                    OR d.decoded_log:error::string IS NOT NULL
+                    OR d.event_type IS NULL
             )
             SELECT 
                 e.inner_program_id as program_id,
