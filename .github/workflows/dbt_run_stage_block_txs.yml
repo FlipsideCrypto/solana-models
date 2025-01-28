@@ -41,4 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run stage__block_txs_2
+          dbt run -s stage__block_txs_2
