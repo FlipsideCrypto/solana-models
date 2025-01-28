@@ -300,27 +300,18 @@ SELECT
     seller,
     mint,
     sales_amount,
-    '{{ SOL_MINT }}' as currency_address,
+    currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,
     FALSE as is_compressed,
-    COALESCE (
-        nft_sales_magic_eden_v2_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_id']
-        ) }}
-    ) AS fact_nft_sales_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
+    nft_sales_magic_eden_v2_id as fact_nft_sales_id,
+    inserted_timestamp,
+    modified_timestamp
 FROM
     {{ ref('silver__nft_sales_magic_eden_v2_view') }}
+WHERE
+    block_timestamp::date < '2024-03-16'
 UNION ALL
 {% endif %}
 -- Only select from active models during incremental
@@ -641,4 +632,7 @@ FROM
 {% if is_incremental() %}
 WHERE
     modified_timestamp >= '{{ max_modified_timestamp }}'
+{% else %}
+WHERE
+    block_timestamp::date >= '2024-03-16'
 {% endif %}
