@@ -12,6 +12,7 @@
 {% if execute %}
 
     {% set SOL_MINT = 'So11111111111111111111111111111111111111111' %}
+    {% set magic_eden_switchover_block_timestamp = '2024-03-16' %}
 
     {% if is_incremental() %}
         {% set query %}
@@ -311,7 +312,7 @@ SELECT
 FROM
     {{ ref('silver__nft_sales_magic_eden_v2_view') }}
 WHERE
-    block_timestamp::date < '2024-03-16'
+    block_timestamp::date < '{{ magic_eden_switchover_block_timestamp }}'
 UNION ALL
 {% endif %}
 -- Only select from active models during incremental
@@ -634,5 +635,5 @@ WHERE
     modified_timestamp >= '{{ max_modified_timestamp }}'
 {% else %}
 WHERE
-    block_timestamp::date >= '2024-03-16'
+    block_timestamp::date >= '{{magic_eden_switchover_block_timestamp}}'
 {% endif %}

@@ -2,6 +2,8 @@
   materialized = 'view'
 ) }}
 
+{% set use_to_block_timestamp = '2024-03-16' %}
+
 WITH base AS (
     SELECT
         COALESCE(d.block_timestamp, v.block_timestamp) AS block_timestamp,
@@ -24,6 +26,7 @@ WITH base AS (
         {{ source('solana_silver', 'nft_sales_magic_eden_v2') }} v
     ON
         d.tx_id = v.tx_id
+        and d.block_timestamp::date = v.block_timestamp::date
 )
 
 SELECT
@@ -31,5 +34,5 @@ SELECT
 FROM
     base
 WHERE
-    block_timestamp::DATE < '2024-03-16'
+    block_timestamp::DATE < '{{ use_to_block_timestamp }}'
     AND succeeded
