@@ -74,19 +74,26 @@ SELECT
     user_address,
     amount,
     mint,
-    COALESCE (
-        bridge_mayan_transfers_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['block_id','tx_id', 'index']
-        ) }}
-    ) AS fact_bridge_activity_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
+    bridge_mayan_transfers_id AS fact_bridge_activity_id,
+    inserted_timestamp,
+    modified_timestamp
 FROM
-    {{ ref('silver__bridge_mayan_transfers') }}
+    {{ ref('silver__bridge_mayan_transfers_view') }}
+union all
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    INDEX,
+    program_id,
+    platform,
+    direction,
+    user_address,
+    amount,
+    mint,
+    bridge_mayan_transfers_decoded_id AS fact_bridge_activity_id,
+    inserted_timestamp,
+    modified_timestamp
+FROM
+    {{ ref('silver__bridge_mayan_transfers_decoded') }}

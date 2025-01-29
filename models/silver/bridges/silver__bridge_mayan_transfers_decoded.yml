@@ -1,0 +1,75 @@
+version: 2
+models:
+  - name: silver__bridge_mayan_transfers_decoded
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('index') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: PLATFORM
+        description: Name of the bridge
+        tests: 
+          - not_null: *recent_date_filter
+      - name: DIRECTION
+        description: Direction of the bridge - either inbound to Solana or outbound from Solana
+        tests: 
+          - not_null: *recent_date_filter
+      - name: USER_ADDRESS
+        description: The address receiving or sending bridged tokens
+        tests: 
+          - not_null: *recent_date_filter
+      - name: AMOUNT
+        description: "{{ doc('amount') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: MINT
+        description:  "{{ doc('mint') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('tx_id') }}"
+        tests: 
+          - not_null
+      - name: BRIDGE_MAYAN_TRANSFERS_DECODED_ID
+        description: '{{ doc("pk") }}'   
+        tests: 
+          - unique: *recent_date_filter
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        tests: 
+          - not_null: *recent_date_filter
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        tests: 
+          - not_null: 
+              name: test_silver__not_null_bridge_mayan_transfers_decoded__invocation_id
+              <<: *recent_date_filter
