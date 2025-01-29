@@ -8,9 +8,14 @@
 }}
 
 SELECT
-    *
+    to_timestamp_ntz(t.value:"result.blockTime"::int) AS block_timestamp,
+    t.block_id,
+    t.value:array_index::int AS tx_index,
+    t.data,
+    t._partition_id,
+    t._inserted_timestamp
 FROM
-    {{ ref('bronze__streamline_block_txs_2') }}
+    {{ ref('bronze__streamline_block_txs_2') }} AS t
 WHERE
     {% if is_incremental() %}
     _partition_id >= (SELECT max(_partition_id) FROM {{ this }})
