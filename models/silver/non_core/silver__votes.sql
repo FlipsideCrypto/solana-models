@@ -73,7 +73,8 @@ WITH pre_final AS (
         t._partition_id,
         t._inserted_timestamp
     FROM
-        {{ ref('bronze__streamline_block_txs_2') }} AS t
+        /*solana.bronze.stage_block_txs_2 AS t*/
+        {{ ref('bronze__stage_block_txs_2') }} AS t
     WHERE
         t.block_id >= {{ cutover_block_id }}
         AND tx_id IS NOT NULL
@@ -83,6 +84,7 @@ WITH pre_final AS (
         ) = 'Vote111111111111111111111111111111111111111'
         {% if is_incremental() %}
         AND t._partition_id >= (SELECT max(_partition_id)-1 FROM {{ this }})
+        /*AND t._partition_id <= (SELECT max(_partition_id) FROM solana.streamline.complete_block_txs_2)*/
         AND t._partition_id <= (SELECT max(_partition_id) FROM {{ ref('streamline__complete_block_txs_2') }})
         AND t._inserted_timestamp > (SELECT max(_inserted_timestamp) FROM {{ this }})
         {% else %}
