@@ -69,6 +69,7 @@ sources:
       - name: decoded_logs_2
       - name: block_txs_2
       - name: helius_blocks
+      - name: block_txs_index_backfill
   - name: bronze_api
     schema: bronze_api
     tables:
@@ -112,6 +113,7 @@ sources:
       - name: pool_transfers_orca_non_whirlpool
       - name: initialization_pools_orca
       - name: nft_sales_magic_eden_v2
+      - name: snapshot_block_production
   - name: solana_streamline
     database: solana
     schema: streamline
@@ -119,6 +121,7 @@ sources:
       - name: complete_block_txs
       - name: complete_block_rewards
       - name: complete_blocks
+      - name: complete_block_txs_2
   - name: bronze
     schema: bronze
     tables:

@@ -3,7 +3,9 @@
   unique_key = "CONCAT_WS('-', epoch, node_pubkey)",
   incremental_strategy = 'delete+insert',
   cluster_by = ['_inserted_timestamp::DATE'],
-  tags = ['validator']
+  full_refresh = false,
+  enabled = false,
+  tags = ['deprecated']
 ) }}
 
 select
@@ -36,4 +38,3 @@ WHERE _inserted_timestamp > (
 qualify(ROW_NUMBER() over(PARTITION BY epoch, node_pubkey
 ORDER BY
     _inserted_timestamp DESC)) = 1
-
