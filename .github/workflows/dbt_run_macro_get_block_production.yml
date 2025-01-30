@@ -43,5 +43,5 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run-operation get_block_production
-          dbt run -s models/silver/validator/silver__snapshot_block_production.sql
+          dbt run -s models/silver/validator/silver__snapshot_block_production_2.sql
 
