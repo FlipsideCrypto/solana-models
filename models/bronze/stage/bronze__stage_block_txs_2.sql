@@ -2,7 +2,7 @@
     config(
         materialized = 'incremental',
         cluster_by = '_partition_id',
-        post_hook = ['DELETE FROM {{ this }} WHERE _partition_id < (SELECT max(_partition_id)-20 FROM {{ this }})'],
+        post_hook = ['DELETE FROM {{ this }} WHERE _partition_id < (SELECT max(_partition_id)-1680 FROM {{ this }})'],
         full_refresh = false,
     )
 }}
