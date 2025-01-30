@@ -114,7 +114,10 @@ swappers AS (
         tx_id,
         index,
         inner_index,
-        silver.udf_get_account_pubkey_by_name('userTransferAuthority', decoded_instruction:accounts) AS swapper,
+        COALESCE(
+            silver.udf_get_account_pubkey_by_name('userTransferAuthority', decoded_instruction:accounts),
+            silver.udf_get_account_pubkey_by_name('user_transfer_authority', decoded_instruction:accounts)
+        ) AS swapper,
         lead(inner_index) OVER (PARTITION BY tx_id, index ORDER BY inner_index) AS next_summary_swap_index,
         _inserted_timestamp
     FROM
@@ -122,7 +125,7 @@ swappers AS (
     WHERE
         {{ between_stmts }}
         AND program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
-        AND event_type IN ('exactOutRoute','sharedAccountsExactOutRoute','sharedAccountsRoute','routeWithTokenLedger','route','sharedAccountsRouteWithTokenLedger')
+        AND event_type IN ('exactOutRoute', 'sharedAccountsExactOutRoute', 'sharedAccountsRoute', 'routeWithTokenLedger', 'route', 'sharedAccountsRouteWithTokenLedger', 'exact_out_route', 'shared_accounts_exact_out_route', 'shared_accounts_route', 'route_with_token_ledger', 'shared_accounts_route_with_token_ledger')
         AND swapper IS NOT NULL
     QUALIFY
         row_number() OVER (PARTITION BY tx_id, index, coalesce(inner_index, -1) ORDER BY _inserted_timestamp DESC) = 1
