@@ -66,7 +66,7 @@ WITH pre_final AS (
         AND _partition_id < {{cutover_partition_id}}
     UNION ALL
     SELECT
-        to_timestamp_ntz(t.value:"result.blockTime"::int) AS block_timestamp,
+        t.block_timestamp,
         t.block_id,
         t.data:transaction:signatures[0]::string AS tx_id,
         t.data :transaction :message :recentBlockhash :: STRING AS recent_block_hash,
@@ -88,11 +88,11 @@ WITH pre_final AS (
         t.data:transaction:message:addressTableLookups::array as address_table_lookups,
         t.data :meta :computeUnitsConsumed :: NUMBER as compute_units_consumed,
         t.data :version :: STRING as version,
-        t.value:array_index::int AS tx_index,
+        t.tx_index,
         t._partition_id,
         t._inserted_timestamp
     FROM
-        {{ ref('bronze__streamline_block_txs_2') }} AS t
+        {{ ref('bronze__stage_block_txs_2') }} AS t
     WHERE
         t.block_id >= {{ cutover_block_id }}
         AND tx_id IS NOT NULL
