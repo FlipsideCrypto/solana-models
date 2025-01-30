@@ -54,7 +54,7 @@ WITH pre_final AS (
         AND _partition_id < {{cutover_partition_id}}
     UNION ALL
     SELECT
-        to_timestamp_ntz(t.value:"result.blockTime"::int) AS block_timestamp,
+        t.block_timestamp,
         t.block_id,
         t.data:transaction:signatures[0]::string AS tx_id,
         t.data :transaction :message :recentBlockhash :: STRING AS recent_block_hash,
@@ -73,7 +73,6 @@ WITH pre_final AS (
         t._partition_id,
         t._inserted_timestamp
     FROM
-        /*solana.bronze.stage_block_txs_2 AS t*/
         {{ ref('bronze__stage_block_txs_2') }} AS t
     WHERE
         t.block_id >= {{ cutover_block_id }}
@@ -84,7 +83,6 @@ WITH pre_final AS (
         ) = 'Vote111111111111111111111111111111111111111'
         {% if is_incremental() %}
         AND t._partition_id >= (SELECT max(_partition_id)-1 FROM {{ this }})
-        /*AND t._partition_id <= (SELECT max(_partition_id) FROM solana.streamline.complete_block_txs_2)*/
         AND t._partition_id <= (SELECT max(_partition_id) FROM {{ ref('streamline__complete_block_txs_2') }})
         AND t._inserted_timestamp > (SELECT max(_inserted_timestamp) FROM {{ this }})
         {% else %}
