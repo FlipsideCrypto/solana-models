@@ -26,8 +26,14 @@
     FROM
         {{ ref('silver__decoded_instructions_combined') }}
     WHERE
-        program_id = 'TB1Dqt8JeKQh7RLDzfYDJsq8KS4fS2yt87avRjyRxMv'
-        and event_type = 'takeBid'
+        (
+            (
+                program_id = 'TB1Dqt8JeKQh7RLDzfYDJsq8KS4fS2yt87avRjyRxMv' AND event_type = 'takeBid'
+            )
+            OR (
+                program_id = 'TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp' AND event_type = 'takeBidLegacy'
+            )
+        )
         AND succeeded
 
 {% if is_incremental() %}
@@ -57,10 +63,16 @@ WITH decoded AS (
         index,
         inner_index,
         program_id,
-        silver.udf_get_account_pubkey_by_name('bidder', decoded_instruction:accounts) AS purchaser,
+        CASE 
+            WHEN event_type = 'takeBidLegacy' THEN silver.udf_get_account_pubkey_by_name('owner', decoded_instruction:accounts)
+            ELSE silver.udf_get_account_pubkey_by_name('bidder', decoded_instruction:accounts)
+        END AS purchaser,
         silver.udf_get_account_pubkey_by_name('seller', decoded_instruction:accounts) AS seller,
         silver.udf_get_account_pubkey_by_name('nftMint', decoded_instruction:accounts) AS mint,
-        (decoded_instruction:args:lamports::int) / pow(10, 9) as sales_amount,
+        CASE
+            WHEN event_type = 'takeBidLegacy' THEN (decoded_instruction:args:minAmount::int)/pow(10,9)
+            ELSE (decoded_instruction:args:lamports::int)/pow(10,9)
+        end as sales_amount,
         _inserted_timestamp
     FROM 
         silver.nft_sales_tensor_bid__intermediate_tmp

@@ -200,8 +200,10 @@ models:
               to: ref('silver__nft_sales_tensor_bid')
               field: tx_id
               from_condition: >
-                program_id = 'TB1Dqt8JeKQh7RLDzfYDJsq8KS4fS2yt87avRjyRxMv'
-                AND event_type = 'takeBid'
+                (
+                  (program_id = 'TB1Dqt8JeKQh7RLDzfYDJsq8KS4fS2yt87avRjyRxMv' AND event_type = 'takeBid')
+                  OR (program_id = 'TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp' AND event_type = 'takeBidLegacy')
+                )
                 AND succeeded
                 and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
               to_condition: "_inserted_timestamp >= current_date - 7"
