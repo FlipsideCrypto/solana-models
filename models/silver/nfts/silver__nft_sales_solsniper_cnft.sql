@@ -63,7 +63,7 @@ FROM
 {% if is_incremental() %}
 WHERE A._inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp)
+        MAX(_inserted_timestamp) - INTERVAL '2 hour'
     FROM
         {{ this }}
 )
