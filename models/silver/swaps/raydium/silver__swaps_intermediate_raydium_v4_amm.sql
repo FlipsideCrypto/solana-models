@@ -13,7 +13,8 @@
         CREATE OR REPLACE TEMPORARY TABLE silver.swaps_intermediate_raydium_v4_amm__intermediate_tmp AS
         WITH distinct_entities AS (
             SELECT DISTINCT
-                tx_id
+                tx_id,
+                block_timestamp
             FROM 
                 {{ ref('silver__decoded_instructions_combined') }}
             WHERE
@@ -33,6 +34,7 @@
                 {% else %}
                     AND _inserted_timestamp :: DATE >= '2024-05-14'
                 {% endif %}
+            GROUP BY 1,2
         )
         /* need to re-select all decoded instructions from all tx_ids in incremental subset 
         in order for the window function to output accurate values */
@@ -59,6 +61,7 @@
                 'swapBaseIn',
                 'swapBaseOut'
             )
+            and d.block_timestamp >= (select min(block_timestamp) from distinct_entities)
     {% endset %}
     {% do run_query(base_query) %}
     {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.swaps_intermediate_raydium_v4_amm__intermediate_tmp","block_timestamp::date") %}
