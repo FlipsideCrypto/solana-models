@@ -19,7 +19,8 @@
         CREATE OR REPLACE TEMPORARY TABLE silver.swaps_intermediate_jupiterv6__intermediate_tmp AS 
         WITH distinct_entities AS (
             SELECT DISTINCT
-                tx_id
+                tx_id,
+                block_timestamp
             FROM 
                 {{ ref('silver__decoded_instructions_combined') }} d
             WHERE
@@ -64,6 +65,12 @@
             program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
             AND event_type IN ('exactOutRoute','sharedAccountsExactOutRoute','sharedAccountsRoute','routeWithTokenLedger','route','sharedAccountsRouteWithTokenLedger', 'exact_out_route', 'shared_accounts_exact_out_route', 'shared_accounts_route', 'route_with_token_ledger', 'shared_accounts_route_with_token_ledger')
             AND succeeded
+            AND block_timestamp >= (
+                SELECT
+                    MIN(block_timestamp)
+                FROM
+                    distinct_entities
+            )
     {% endset %}
     {% do run_query(base_query) %}
     {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.swaps_intermediate_jupiterv6__intermediate_tmp","block_timestamp::date") %}

@@ -19,7 +19,8 @@
         CREATE OR REPLACE TEMPORARY TABLE silver.swaps_intermediate_jupiterv4__intermediate_tmp AS
         WITH distinct_entities AS (
             SELECT DISTINCT
-                tx_id
+                tx_id,
+                block_timestamp
             FROM 
                 {{ ref('silver__decoded_instructions_combined') }}
             WHERE 
@@ -55,6 +56,12 @@
             program_id = 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
             AND event_type IN ('route', 'raydiumSwapExactOutput', 'raydiumClmmSwapExactOutput', 'whirlpoolSwapExactOutput')
             AND succeeded
+            AND block_timestamp >= (
+                SELECT
+                    MIN(block_timestamp)
+                FROM
+                    distinct_entities
+            )
     {% endset %}
     {% do run_query(base_query) %}
     {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.swaps_intermediate_jupiterv4__intermediate_tmp", "block_timestamp::date") %}
