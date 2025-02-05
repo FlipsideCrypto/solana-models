@@ -102,13 +102,23 @@ WITH base AS (
             )
             OR
             (
-                event_type IN ('addBalanceLiquidity','removeBalanceLiquidity')
+                event_type IN ('removeLiquiditySingleSide')
+                AND args:poolTokenAmount::int > 0
+            )
+            OR
+            (
+                event_type IN ('addBalanceLiquidity')
                 AND args:maximumTokenAAmount::int > 0 
                 AND args:maximumTokenBAmount::int > 0
                 AND args:poolTokenAmount::int > 0
             )
             OR
-            (event_type NOT IN ('addImbalanceLiquidity','addBalanceLiquidity','removeBalanceLiquidity'))
+            (
+                event_type IN ('removeBalanceLiquidity')
+                AND args:poolTokenAmount::int > 0
+            )
+            OR
+            (event_type = 'bootstrapLiquidity')
         )
 ),
 
