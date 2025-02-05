@@ -18,7 +18,8 @@
         CREATE OR REPLACE TEMPORARY TABLE silver.swaps_inner_intermediate_jupiterv4__intermediate_tmp AS 
         WITH base AS (
             SELECT 
-                tx_id
+                tx_id,
+                block_timestamp
             FROM 
                 {{ ref('silver__decoded_logs') }}
             WHERE
@@ -36,7 +37,8 @@
             {% if is_incremental() %}
             UNION ALL
             SELECT 
-                l.tx_id
+                l.tx_id,
+                l.block_timestamp
             FROM
                 {{ this }} s 
             INNER JOIN 
@@ -53,8 +55,9 @@
         ),
         /* we need to grab all inner_swaps for any tx that is in the incremental subset because it is required to do the window function later on */
         distinct_entities AS (
-            SELECT
-                DISTINCT tx_id
+            SELECT DISTINCT 
+                tx_id,
+                block_timestamp
             FROM
                 base
         )
@@ -83,6 +86,12 @@
             program_id = 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
             AND event_type = 'Swap'
             AND succeeded
+            AND block_timestamp >= (
+                SELECT
+                    MIN(block_timestamp)
+                FROM
+                    distinct_entities
+            )
             /* need to always keep the upper bound (if there is one) to prevent time gaps in incremental loading */
             {% if is_incremental() %} 
             AND _inserted_timestamp < (

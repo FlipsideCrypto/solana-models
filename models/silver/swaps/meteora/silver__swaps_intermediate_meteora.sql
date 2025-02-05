@@ -14,7 +14,8 @@
         CREATE OR REPLACE TEMPORARY TABLE silver.swaps_intermediate_meteora__intermediate_tmp AS 
         WITH distinct_entities AS (
             SELECT DISTINCT
-                tx_id
+                tx_id,
+                block_timestamp
             FROM 
                 {{ ref('silver__decoded_instructions_combined') }} d
             WHERE
@@ -59,6 +60,12 @@
         )
         AND event_type = 'swap'                
         AND succeeded
+        AND block_timestamp >= (
+            SELECT
+                MIN(block_timestamp)
+            FROM
+                distinct_entities
+        )
     {% endset %}
     {% do run_query(base_query) %}
     {% set between_stmts = fsc_utils.dynamic_range_predicate("silver.swaps_intermediate_meteora__intermediate_tmp","block_timestamp::date") %}

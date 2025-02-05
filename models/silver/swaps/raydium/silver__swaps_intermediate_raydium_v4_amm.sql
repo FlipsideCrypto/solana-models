@@ -13,7 +13,8 @@
         CREATE OR REPLACE TEMPORARY TABLE silver.swaps_intermediate_raydium_v4_amm__intermediate_tmp AS
         WITH distinct_entities AS (
             SELECT DISTINCT
-                tx_id
+                tx_id,
+                block_timestamp
             FROM 
                 {{ ref('silver__decoded_instructions_combined') }}
             WHERE
@@ -58,6 +59,12 @@
             AND event_type IN (
                 'swapBaseIn',
                 'swapBaseOut'
+            )
+            AND d.block_timestamp >= (
+                SELECT
+                    MIN(block_timestamp)
+                FROM
+                    distinct_entities
             )
     {% endset %}
     {% do run_query(base_query) %}
