@@ -61,7 +61,7 @@ decoded AS (
     {% if is_incremental() %}
     AND _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp)
+            MAX(_inserted_timestamp) - INTERVAL '1 hour'
         FROM
             {{ this }}
     )
