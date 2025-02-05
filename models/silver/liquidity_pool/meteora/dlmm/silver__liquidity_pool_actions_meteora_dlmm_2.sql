@@ -70,7 +70,7 @@
             {% set end_date = max_block_ts + modules.datetime.timedelta(days=batch_backfill_size) %}
             AND _inserted_timestamp::date BETWEEN '{{ max_block_ts }}' AND '{{ end_date }}'
         {% else %}
-        AND _inserted_timestamp::date BETWEEN '2024-12-01' AND '2025-01-01'
+        AND _inserted_timestamp::date BETWEEN '2024-02-01' AND '2024-03-01'
         {% endif %}
     {% endset %}
     {% do run_query(base_query) %}
