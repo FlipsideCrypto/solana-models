@@ -41,6 +41,8 @@ SELECT
     A.program_id,
     A.tx_id,
     A.succeeded,
+    A.index,
+    A.inner_index,
     A.purchaser,
     A.seller,
     A.tree_authority,

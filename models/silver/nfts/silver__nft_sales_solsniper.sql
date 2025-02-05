@@ -96,6 +96,8 @@ pre_final AS (
         A.program_id,
         A.tx_id,
         b.succeeded,
+        A.index,
+        A.inner_index,
         A.buyer AS purchaser,
         A.seller,
         C.amount AS fee_amt,
@@ -126,13 +128,17 @@ pre_final AS (
         7,
         8,
         9,
-        10
+        10,
+        11,
+        12
 )
 SELECT
     block_timestamp,
     block_id,
     tx_id,
     succeeded,
+    index,
+    inner_index,
     program_id,
     purchaser,
     seller,

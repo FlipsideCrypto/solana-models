@@ -29,7 +29,7 @@ SELECT
     block_timestamp,
     block_id,
     tx_id,
-    INDEX,
+    index,
     inner_index,
     program_id,
     decoded_instruction,
@@ -58,7 +58,8 @@ AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
 with decoded_mints AS (
     SELECT
         tx_id,
-        INDEX,
+        index,
+        inner_index,
         COALESCE(
         decoded_instruction :args :event :taker :tupleData :"0" :assetId :: STRING,
         decoded_instruction :args :event :taker :tupleData :"0" :targetId :: STRING) AS mint
@@ -121,6 +122,8 @@ SELECT
     A.program_id,
     A.tx_id,
     b.succeeded,
+    A.index,
+    A.inner_index,
     A.purchaser,
     A.seller,
     A.mint,
@@ -143,6 +146,8 @@ SELECT
     program_id,
     tx_id,
     succeeded,
+    index,
+    inner_index,
     purchaser,
     seller,
     mint,
