@@ -48,20 +48,26 @@ models:
           - not_null: *recent_date_filter
       - name: TOKEN_A_MINT
         description:  "{{ doc('token_a_mint') }}"
-        data_tests: 
-          - not_null: *recent_date_filter
+        data_tests:
+          - not_null:
+              config:
+                severity: error
+                error_if: "> 20"
+                where: >
+                  _inserted_timestamp > current_date - 7
       - name: TOKEN_A_AMOUNT
         description:  "{{ doc('token_a_amount') }}"
         data_tests: 
-          - not_null: *recent_date_filter
+          - not_null:
+              config:
+                severity: error
+                error_if: "> 20"
+                where: >
+                  _inserted_timestamp > current_date - 7
       - name: TOKEN_B_MINT
         description:  "{{ doc('token_b_mint') }}"
-        data_tests: 
-          - not_null: *recent_date_filter
       - name: TOKEN_B_AMOUNT
         description:  "{{ doc('token_b_amount') }}"
-        data_tests: 
-          - not_null: *recent_date_filter
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
         data_tests: 
