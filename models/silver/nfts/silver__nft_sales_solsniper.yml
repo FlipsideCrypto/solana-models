@@ -17,42 +17,51 @@ models:
             - round(sales_amount,8)
           model_condition: "where tx_id in ('4PvnivhKKYjwXmQrTHo2E3xAnaajNkLpFvH4ZpbJvEE7RsmgGZ7pmPwoBoSwbyAFfrkMNHHUDiLbmkzoz3FUPv41',
             '3r2HhjQJSC2BbGrxR3QvAxWiEz5ypnbGmxtMkEfDvv2ZYs6177uMeCS4DZqKN4VBs4Kn2p2AGBNdtSDw2vXbMYgH')"
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 2
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: PROGRAM_ID 
         description: "{{ doc('program_id') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('event_index') }}"
+        data_tests:  
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
       - name: PURCHASER
         description: "{{ doc('purchaser') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: SELLER
         description: "{{ doc('seller') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: MINT
         description: "{{ doc('mint') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: SALES_AMOUNT
         description: "{{ doc('sales_amount') }}"
       - name: _INSERTED_TIMESTAMP
