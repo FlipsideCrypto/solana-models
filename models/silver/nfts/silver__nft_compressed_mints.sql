@@ -63,7 +63,7 @@ decoded AS (
         SELECT
             MAX(_inserted_timestamp)
         FROM
-            {{ this }}
+            {{ this }}  - INTERVAL '1 hour'
     )
     {% endif %}
 ),
