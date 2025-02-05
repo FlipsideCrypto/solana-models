@@ -1,0 +1,96 @@
+version: 2
+models:
+  - name: silver__liquidity_pool_actions_meteora_dlmm_2
+    recent_date_filter: &recent_date_filter
+      config:
+        where: >
+          _inserted_timestamp > current_date - 7
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - INDEX
+            - INNER_INDEX
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('event_index') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: EVENT_TYPE
+        description: "{{ doc('event_type') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: POOL_ADDRESS
+        description: "{{ doc('liquidity_pool_address') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: PROVIDER_ADDRESS
+        description:  "{{ doc('liquidity_provider') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: TOKEN_A_MINT
+        description:  "{{ doc('token_a_mint') }}"
+        data_tests: 
+          - not_null:
+              config:
+                severity: error
+                error_if: "> 250"
+                where: >
+                  _inserted_timestamp > current_date - 7
+      - name: TOKEN_A_AMOUNT
+        description:  "{{ doc('token_a_amount') }}"
+        data_tests: 
+          - not_null:
+              config:
+                severity: error
+                error_if: "> 250"
+                where: >
+                  _inserted_timestamp > current_date - 7
+      - name: TOKEN_B_MINT
+        description:  "{{ doc('token_b_mint') }}"
+      - name: TOKEN_B_AMOUNT
+        description:  "{{ doc('token_b_amount') }}"
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        data_tests: 
+          - not_null
+      - name: LIQUIDITY_POOL_ACTIONS_METEORA_DLMM_2_ID
+        description: '{{ doc("pk") }}'   
+        data_tests: 
+          - unique
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        data_tests: 
+          - not_null:
+              name: test_silver__not_null_liquidity_pool_actions_meteora_dlmm_2_invocation_id
+              <<: *recent_date_filter
