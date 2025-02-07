@@ -220,28 +220,6 @@ single_deposit_transfers AS (
         )
 ),
 
-/*single_withdraw_transfers AS (
-    SELECT 
-        b.*,
-        t.mint AS token_a_mint,
-        t.amount AS token_a_amount,
-        NULL AS token_b_mint,
-        NULL AS token_b_amount
-    FROM 
-        base AS b
-    LEFT JOIN
-        transfers AS t
-        ON t.block_timestamp::date = b.block_timestamp::date
-        AND t.tx_id = b.tx_id
-        AND t.index = b.index
-        AND coalesce(t.inner_index,0) > coalesce(b.inner_index,-1)
-        AND coalesce(t.inner_index,0) < coalesce(b.next_lp_action_inner_index,9999)
-        AND t.dest_token_account = b.token_a_account
-        AND t.source_token_account IN (b.pool_token_a_account, b.pool_token_b_account)
-    WHERE
-        b.event_type = 'removeLiquiditySingleSide'
-),*/
-
 pre_final AS (
     SELECT
         block_id,
