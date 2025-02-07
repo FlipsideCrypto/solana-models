@@ -106,13 +106,17 @@ WITH base AS (
 
 transfers AS (
     SELECT 
-        * exclude(index),
-        split_part(index,'.',1)::int AS index,
-        nullif(split_part(index,'.',2),'')::int AS inner_index
+        t.* exclude(index),
+        split_part(t.index,'.',1)::int AS index,
+        nullif(split_part(t.index,'.',2),'')::int AS inner_index
     FROM
-        {{ ref('silver__transfers') }}
+        {{ ref('silver__transfers') }} AS t
+    INNER JOIN
+        (SELECT DISTINCT block_timestamp AS bt, tx_id FROM base) AS b
+        ON b.bt::date = t.block_timestamp::date
+        AND b.tx_id = t.tx_id
     WHERE
-        succeeded
+        t.succeeded
         AND {{ between_stmts }}
 ),
 
