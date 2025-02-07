@@ -78,19 +78,31 @@ WITH base AS (
         silver.udf_get_account_pubkey_by_name('userTransferAuthority', accounts) AS provider_address,
         silver.udf_get_account_pubkey_by_name('Remaining 0', accounts) AS pool_token_a_account,
         silver.udf_get_account_pubkey_by_name('Remaining 1', accounts) AS pool_token_b_account,
-        iff(array_size(accounts) >= 12,silver.udf_get_account_pubkey_by_name('Remaining 2', accounts),NULL) AS pool_token_c_account,
-        iff(array_size(accounts) >= 14,silver.udf_get_account_pubkey_by_name('Remaining 3', accounts),NULL) AS pool_token_d_account,
         CASE
-            WHEN array_size(accounts) = 10 THEN
+            WHEN event_type = 'removeLiquidityOneToken' THEN
+                iff(array_size(accounts) >= 10,silver.udf_get_account_pubkey_by_name('Remaining 2', accounts),NULL) 
+            ELSE
+                iff(array_size(accounts) >= 12,silver.udf_get_account_pubkey_by_name('Remaining 2', accounts),NULL) 
+        END AS pool_token_c_account,
+        CASE
+            WHEN event_type = 'removeLiquidityOneToken' THEN
+                iff(array_size(accounts) >= 11,silver.udf_get_account_pubkey_by_name('Remaining 3', accounts),NULL) 
+            ELSE
+                iff(array_size(accounts) >= 14,silver.udf_get_account_pubkey_by_name('Remaining 3', accounts),NULL)
+        END AS pool_token_d_account,
+        CASE
+            WHEN array_size(accounts) = 10 OR (event_type = 'removeLiquidityOneToken' AND array_size(accounts) = 9) THEN
                 silver.udf_get_account_pubkey_by_name('Remaining 3', accounts)
-            WHEN array_size(accounts) = 12 THEN
+            WHEN array_size(accounts) = 12 OR (event_type = 'removeLiquidityOneToken' AND array_size(accounts) = 10) THEN
                 silver.udf_get_account_pubkey_by_name('Remaining 4', accounts)
-            WHEN array_size(accounts) = 14 THEN
+            WHEN array_size(accounts) = 14 OR (event_type = 'removeLiquidityOneToken' AND array_size(accounts) = 11) THEN
                 silver.udf_get_account_pubkey_by_name('Remaining 5', accounts)
             ELSE
                 NULL
         END AS token_a_account,
         CASE
+            WHEN event_type = 'removeLiquidityOneToken' THEN
+                NULL
             WHEN array_size(accounts) = 10 THEN
                 silver.udf_get_account_pubkey_by_name('Remaining 4', accounts)
             WHEN array_size(accounts) = 12 THEN
@@ -101,6 +113,8 @@ WITH base AS (
                 NULL
         END AS token_b_account,
         CASE
+            WHEN event_type = 'removeLiquidityOneToken' THEN
+                NULL
             WHEN array_size(accounts) = 12 THEN
                 silver.udf_get_account_pubkey_by_name('Remaining 6', accounts)
             WHEN array_size(accounts) = 14 THEN
@@ -109,6 +123,8 @@ WITH base AS (
                 NULL
         END AS token_c_account,
         CASE
+            WHEN event_type = 'removeLiquidityOneToken' THEN
+                NULL
             WHEN array_size(accounts) = 14 THEN
                 silver.udf_get_account_pubkey_by_name('Remaining 8', accounts)
             ELSE
@@ -138,71 +154,71 @@ transfers AS (
         AND {{ between_stmts }}
 ),
 
-distinct_pool_accounts AS (
-    SELECT DISTINCT
-        pool_token_a_account AS pool_account
-    FROM
-        base
-    WHERE
-        pool_token_a_account IS NOT NULL
-    UNION
-    SELECT DISTINCT
-        pool_token_b_account
-    FROM
-        base
-    WHERE
-        pool_token_b_account IS NOT NULL
-    UNION
-    SELECT DISTINCT
-        pool_token_c_account
-    FROM
-        base
-    WHERE
-        pool_token_c_account IS NOT NULL
-    UNION
-    SELECT DISTINCT
-        pool_token_d_account
-    FROM
-        base
-    WHERE
-        pool_token_d_account IS NOT NULL
-),
+-- distinct_pool_accounts AS (
+--     SELECT DISTINCT
+--         pool_token_a_account AS pool_account
+--     FROM
+--         base
+--     WHERE
+--         pool_token_a_account IS NOT NULL
+--     UNION
+--     SELECT DISTINCT
+--         pool_token_b_account
+--     FROM
+--         base
+--     WHERE
+--         pool_token_b_account IS NOT NULL
+--     UNION
+--     SELECT DISTINCT
+--         pool_token_c_account
+--     FROM
+--         base
+--     WHERE
+--         pool_token_c_account IS NOT NULL
+--     UNION
+--     SELECT DISTINCT
+--         pool_token_d_account
+--     FROM
+--         base
+--     WHERE
+--         pool_token_d_account IS NOT NULL
+-- ),
 
-get_pool_account_mints AS (
-    SELECT
-        pool_account,
-        live.udf_api(
-            'POST',
-            '{service}/{Authentication}',
-            OBJECT_CONSTRUCT(
-                'Content-Type',
-                'application/json',
-                'fsc-quantum-state',
-                'livequery'
-            ),
-            OBJECT_CONSTRUCT(
-                'id',
-                0,
-                'jsonrpc',
-                '2.0',
-                'method',
-                'getAccountInfo',
-                'params',
-                ARRAY_CONSTRUCT(
-                    pool_account,
-                    OBJECT_CONSTRUCT(
-                        'encoding',
-                        'jsonParsed'
-                    )
-                )
-            ),
-            'Vault/prod/solana/quicknode/mainnet'
-        ):data:result:value:data:parsed:info AS parsed_info,
-        parsed_info:mint::string AS mint,
-        parsed_info:tokenAmount:decimals::int AS decimals
-    FROM
-        distinct_pool_accounts
-),
+-- get_pool_account_mints AS (
+--     SELECT
+--         pool_account,
+--         live.udf_api(
+--             'POST',
+--             '{service}/{Authentication}',
+--             OBJECT_CONSTRUCT(
+--                 'Content-Type',
+--                 'application/json',
+--                 'fsc-quantum-state',
+--                 'livequery'
+--             ),
+--             OBJECT_CONSTRUCT(
+--                 'id',
+--                 0,
+--                 'jsonrpc',
+--                 '2.0',
+--                 'method',
+--                 'getAccountInfo',
+--                 'params',
+--                 ARRAY_CONSTRUCT(
+--                     pool_account,
+--                     OBJECT_CONSTRUCT(
+--                         'encoding',
+--                         'jsonParsed'
+--                     )
+--                 )
+--             ),
+--             'Vault/prod/solana/quicknode/mainnet'
+--         ):data:result:value:data:parsed:info AS parsed_info,
+--         parsed_info:mint::string AS mint,
+--         parsed_info:tokenAmount:decimals::int AS decimals
+--     FROM
+--         distinct_pool_accounts
+-- ),
 
 deposit_transfers AS (
     -- SELECT 
@@ -266,66 +282,89 @@ deposit_transfers AS (
         AND t2.dest_token_account = b.pool_token_b_account
     LEFT JOIN
         transfers AS t3
-        ON t.block_timestamp::date = b.block_timestamp::date
-        AND t.tx_id = b.tx_id
-        AND t.index = b.index
-        AND coalesce(t.inner_index,0) > coalesce(b.inner_index,-1)
-        AND coalesce(t.inner_index,0) < coalesce(b.next_lp_action_inner_index,9999)
+        ON t3.block_timestamp::date = b.block_timestamp::date
+        AND t3.tx_id = b.tx_id
+        AND t3.index = b.index
+        AND coalesce(t3.inner_index,0) > coalesce(b.inner_index,-1)
+        AND coalesce(t3.inner_index,0) < coalesce(b.next_lp_action_inner_index,9999)
         AND b.token_c_account IS NOT NULL
-        AND t.source_token_account = b.token_c_account
-        AND t.dest_token_account = b.pool_token_c_account
+        AND t3.source_token_account = b.token_c_account
+        AND t3.dest_token_account = b.pool_token_c_account
     LEFT JOIN
         transfers AS t4
-        ON t2.block_timestamp::date = b.block_timestamp::date
-        AND t2.tx_id = b.tx_id
-        AND t2.index = b.index
-        AND coalesce(t2.inner_index,0) > coalesce(b.inner_index,-1)
-        AND coalesce(t2.inner_index,0) < coalesce(b.next_lp_action_inner_index,9999)
+        ON t4.block_timestamp::date = b.block_timestamp::date
+        AND t4.tx_id = b.tx_id
+        AND t4.index = b.index
+        AND coalesce(t4.inner_index,0) > coalesce(b.inner_index,-1)
+        AND coalesce(t4.inner_index,0) < coalesce(b.next_lp_action_inner_index,9999)
         AND b.token_d_account IS NOT NULL
-        AND t2.source_token_account = b.token_d_account
-        AND t2.dest_token_account = b.pool_token_d_account
+        AND t4.source_token_account = b.token_d_account
+        AND t4.dest_token_account = b.pool_token_d_account
     WHERE
         b.event_type = 'addLiquidity'
     QUALIFY
         row_number() OVER (PARTITION BY b.tx_id, b.index, b.inner_index ORDER BY t.inner_index, t2.inner_index, t3.inner_index, t4.inner_index) = 1
 ),
 
--- withdraw_transfers AS (
---     SELECT 
---         b.*,
---         t.mint AS token_a_mint,
---         t.amount AS token_a_amount,
---         t2.mint AS token_b_mint,
---         t2.amount AS token_b_amount
---     FROM 
---         base AS b
---     LEFT JOIN
---         transfers AS t
---         ON t.block_timestamp::date = b.block_timestamp::date
---         AND t.tx_id = b.tx_id
---         AND t.index = b.index
---         AND coalesce(t.inner_index,0) > coalesce(b.inner_index,-1)
---         AND coalesce(t.inner_index,0) < coalesce(b.next_lp_action_inner_index,9999)
---         AND t.dest_token_account = b.token_a_account
---         AND t.source_token_account = b.pool_token_a_account
---     LEFT JOIN
---         transfers AS t2
---         ON t2.block_timestamp::date = b.block_timestamp::date
---         AND t2.tx_id = b.tx_id
---         AND t2.index = b.index
---         AND coalesce(t2.inner_index,0) > coalesce(b.inner_index,-1)
---         AND coalesce(t2.inner_index,0) < coalesce(b.next_lp_action_inner_index,9999)
---         AND t2.dest_token_account = b.token_b_account
---         AND t2.source_token_account = b.pool_token_b_account
---     WHERE
---         b.event_type IN (
---             'removeAllLiquidity',
---             'removeLiquidity',
---             'removeLiquidityByRange'
---         )
---     QUALIFY
---         row_number() OVER (PARTITION BY b.tx_id, b.index, b.inner_index ORDER BY t.inner_index, t2.inner_index) = 1
--- ),
+withdraw_transfers AS (
+    SELECT 
+        b.* exclude(args),
+        t.mint AS token_a_mint,
+        t.amount AS token_a_amount,
+        t2.mint AS token_b_mint,
+        t2.amount AS token_b_amount,
+        t3.mint AS token_c_mint,
+        t3.amount AS token_c_amount,
+        t4.mint AS token_d_mint,
+        t4.amount AS token_d_amount
+    FROM 
+        base AS b
+    LEFT JOIN
+        transfers AS t
+        ON t.block_timestamp::date = b.block_timestamp::date
+        AND t.tx_id = b.tx_id
+        AND t.index = b.index
+        AND coalesce(t.inner_index,0) > coalesce(b.inner_index,-1)
+        AND coalesce(t.inner_index,0) < coalesce(b.next_lp_action_inner_index,9999)
+        AND t.dest_token_account = b.token_a_account
+        AND t.source_token_account = b.pool_token_a_account
+    LEFT JOIN
+        transfers AS t2
+        ON t2.block_timestamp::date = b.block_timestamp::date
+        AND t2.tx_id = b.tx_id
+        AND t2.index = b.index
+        AND coalesce(t2.inner_index,0) > coalesce(b.inner_index,-1)
+        AND coalesce(t2.inner_index,0) < coalesce(b.next_lp_action_inner_index,9999)
+        AND t2.dest_token_account = b.token_b_account
+        AND t2.source_token_account = b.pool_token_b_account
+    LEFT JOIN
+        transfers AS t3
+        ON t3.block_timestamp::date = b.block_timestamp::date
+        AND t3.tx_id = b.tx_id
+        AND t3.index = b.index
+        AND coalesce(t3.inner_index,0) > coalesce(b.inner_index,-1)
+        AND coalesce(t3.inner_index,0) < coalesce(b.next_lp_action_inner_index,9999)
+        AND b.token_c_account IS NOT NULL
+        AND t3.dest_token_account = b.token_c_account
+        AND t3.source_token_account = b.pool_token_c_account
+    LEFT JOIN
+        transfers AS t4
+        ON t4.block_timestamp::date = b.block_timestamp::date
+        AND t4.tx_id = b.tx_id
+        AND t4.index = b.index
+        AND coalesce(t4.inner_index,0) > coalesce(b.inner_index,-1)
+        AND coalesce(t4.inner_index,0) < coalesce(b.next_lp_action_inner_index,9999)
+        AND b.token_d_account IS NOT NULL
+        AND t4.dest_token_account = b.token_d_account
+        AND t4.source_token_account = b.pool_token_d_account
+    WHERE
+        b.event_type IN (
+            'removeLiquidity',
+            'removeLiquidityOneToken'
+        )
+    QUALIFY
+        row_number() OVER (PARTITION BY b.tx_id, b.index, b.inner_index ORDER BY t.inner_index, t2.inner_index, t3.inner_index, t4.inner_index) = 1
+),
 
 pre_final AS (
     SELECT
@@ -351,26 +390,30 @@ pre_final AS (
     FROM 
         deposit_transfers
 
-    -- UNION ALL
+    UNION ALL
 
-    -- SELECT 
-    --     block_id,
-    --     block_timestamp,
-    --     tx_id,
-    --     index,
-    --     inner_index,
-    --     succeeded,
-    --     event_type,
-    --     pool_address,
-    --     provider_address,
-    --     token_a_mint,
-    --     token_a_amount,
-    --     token_b_mint,
-    --     token_b_amount,
-    --     program_id,
-    --     _inserted_timestamp
-    -- FROM 
-    --     withdraw_transfers
+    SELECT 
+        block_id,
+        block_timestamp,
+        tx_id,
+        index,
+        inner_index,
+        succeeded,
+        event_type,
+        pool_address,
+        provider_address,
+        token_a_mint,
+        token_a_amount,
+        token_b_mint,
+        token_b_amount,
+        token_c_mint,
+        token_c_amount,
+        token_d_mint,
+        token_d_amount,
+        program_id,
+        _inserted_timestamp
+    FROM 
+        withdraw_transfers
 
     -- UNION ALL
 
