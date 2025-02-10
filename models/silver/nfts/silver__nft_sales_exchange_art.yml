@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: silver__nft_sales_exchange_art
-    tests:
+    data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
@@ -30,45 +30,54 @@ models:
             - GkrUBY7EqHdvcosYkSuNhLHQ2bXwsMYTwVXuoJnoVxjDVfVCCifxGSxn8W9bB6PfibGEWVHzVG7oUvXLpBy4RF8
             - 2HBbrn21CdQYiJ9J74ZauBXYawjozbecqF7w3dFswp1SnzE5H8uFnqiU16LfQrY9DrkGsx9WQNkqW8vvZ4Q7tPeR
             - 296LwbWf4EPx9CjD1w2Dr7ibsjYMn2E2smyTLBMsKsHb8hCA4Mc4QUxgfXMiU8qAbnPvSLBwtgjEM8uxFBH7ym6W
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
-        tests:
-          - not_null
+        data_tests:
+          - not_null: *recent_date_filter
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
-        tests:
-          - not_null
+        data_tests:
+          - not_null: *recent_date_filter
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
-        tests:
-          - not_null
+        data_tests:
+          - not_null: *recent_date_filter
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
-        tests:
-          - not_null
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('event_index') }}"
+        data_tests:  
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
       - name: PROGRAM_ID 
         description: "{{ doc('program_id') }}"
-        tests: 
-          - not_null
+        data_tests: 
+          - not_null: *recent_date_filter
       - name: PURCHASER
         description: "{{ doc('purchaser') }}"
-        tests: 
-          - not_null
+        data_tests: 
+          - not_null: *recent_date_filter
       - name: SELLER
         description: "{{ doc('seller') }}"
-        tests: 
-          - not_null
+        data_tests: 
+          - not_null: *recent_date_filter
       - name: MINT
         description: "{{ doc('mint') }}"
-        tests: 
+        data_tests: 
           - not_null:
-              where: succeeded = TRUE
+              where: succeeded = TRUE and _inserted_timestamp >= current_date - 7
       - name: SALES_AMOUNT
         description: "{{ doc('sales_amount') }}"
-        tests: 
-          - not_null
+        data_tests: 
+          - not_null: *recent_date_filter
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
-        tests: 
+        data_tests: 
           - not_null
