@@ -71,14 +71,7 @@ transfers AS (
         nullif(split_part(a.index,'.',2),'')::int AS inner_index
     FROM 
         {{ ref('silver__transfers') }} a
-        INNER JOIN (
-            SELECT 
-                DISTINCT tx_id, block_timestamp::date as bt
-            FROM 
-                base
-            WHERE 
-                event_type = 'claim'
-        ) b 
+        INNER JOIN (SELECT DISTINCT tx_id, block_timestamp::date as bt FROM base WHERE event_type = 'claim') b 
         ON b.tx_id = a.tx_id and b.bt = a.block_timestamp::date
     WHERE
         a.succeeded
@@ -89,14 +82,7 @@ sol_balances as (
         a.*
     FROM 
         {{ ref('silver__sol_balances') }} a
-        INNER JOIN (
-            SELECT 
-                DISTINCT tx_id, block_timestamp::date as bt
-            FROM 
-                base
-            WHERE 
-                event_type = 'depositStakeAccount'
-        ) b 
+        INNER JOIN (SELECT DISTINCT tx_id, block_timestamp::date as bt FROM base WHERE event_type = 'depositStakeAccount') b 
         ON b.tx_id = a.tx_id and b.bt = a.block_timestamp::date
     WHERE
         a.succeeded
