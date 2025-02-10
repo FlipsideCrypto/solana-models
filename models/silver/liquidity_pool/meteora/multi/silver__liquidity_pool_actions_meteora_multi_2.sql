@@ -64,7 +64,7 @@
             {% set end_date = max_block_ts + modules.datetime.timedelta(days=batch_backfill_size) %}
             AND _inserted_timestamp::date BETWEEN '{{ max_block_ts }}' AND '{{ end_date }}'
         {% else %}
-        AND _inserted_timestamp::date BETWEEN '2025-01-01' AND '2025-02-01'
+        AND _inserted_timestamp::date BETWEEN '2024-12-01' AND '2025-03-01'
         {% endif %}
     {% endset %}
     {% do run_query(base_query) %}
@@ -91,11 +91,11 @@ WITH base AS (
                 iff(array_size(accounts) >= 14,silver.udf_get_account_pubkey_by_name('Remaining 3', accounts),NULL)
         END AS pool_token_d_account,
         CASE
-            WHEN array_size(accounts) = 10 OR (event_type = 'removeLiquidityOneToken' AND array_size(accounts) = 9) THEN
+            WHEN (array_size(accounts) = 10 AND event_type <> 'removeLiquidityOneToken') OR (event_type = 'removeLiquidityOneToken' AND array_size(accounts) = 9) THEN
                 silver.udf_get_account_pubkey_by_name('Remaining 3', accounts)
-            WHEN array_size(accounts) = 12 OR (event_type = 'removeLiquidityOneToken' AND array_size(accounts) = 10) THEN
+            WHEN (array_size(accounts) = 12 AND event_type <> 'removeLiquidityOneToken') OR (event_type = 'removeLiquidityOneToken' AND array_size(accounts) = 10) THEN
                 silver.udf_get_account_pubkey_by_name('Remaining 4', accounts)
-            WHEN array_size(accounts) = 14 OR (event_type = 'removeLiquidityOneToken' AND array_size(accounts) = 11) THEN
+            WHEN (array_size(accounts) = 14 AND event_type <> 'removeLiquidityOneToken') OR (event_type = 'removeLiquidityOneToken' AND array_size(accounts) = 11) THEN
                 silver.udf_get_account_pubkey_by_name('Remaining 5', accounts)
             ELSE
                 NULL
@@ -154,102 +154,7 @@ transfers AS (
         AND {{ between_stmts }}
 ),
 
--- distinct_pool_accounts AS (
---     SELECT DISTINCT
---         pool_token_a_account AS pool_account
---     FROM
---         base
---     WHERE
---         pool_token_a_account IS NOT NULL
---     UNION
---     SELECT DISTINCT
---         pool_token_b_account
---     FROM
---         base
---     WHERE
---         pool_token_b_account IS NOT NULL
---     UNION
---     SELECT DISTINCT
---         pool_token_c_account
---     FROM
---         base
---     WHERE
---         pool_token_c_account IS NOT NULL
---     UNION
---     SELECT DISTINCT
---         pool_token_d_account
---     FROM
---         base
---     WHERE
---         pool_token_d_account IS NOT NULL
--- ),
-
--- get_pool_account_mints AS (
---     SELECT
---         pool_account,
---         live.udf_api(
---             'POST',
---             '{service}/{Authentication}',
---             OBJECT_CONSTRUCT(
---                 'Content-Type',
---                 'application/json',
---                 'fsc-quantum-state',
---                 'livequery'
---             ),
---             OBJECT_CONSTRUCT(
---                 'id',
---                 0,
---                 'jsonrpc',
---                 '2.0',
---                 'method',
---                 'getAccountInfo',
---                 'params',
---                 ARRAY_CONSTRUCT(
---                     pool_account,
---                     OBJECT_CONSTRUCT(
---                         'encoding',
---                         'jsonParsed'
---                     )
---                 )
---             ),
---             'Vault/prod/solana/quicknode/mainnet'
---         ):data:result:value:data:parsed:info AS parsed_info,
---         parsed_info:mint::string AS mint,
---         parsed_info:tokenAmount:decimals::int AS decimals
---     FROM
---         distinct_pool_accounts
--- ),
-
 deposit_transfers AS (
-    -- SELECT 
-    --     b.* exclude(args),
-    --     token_a.mint AS token_a_mint,
-    --     b.args:depositAmounts:"0"::int / pow(10, token_a.decimals) AS token_a_amount,
-    --     token_b.mint AS token_b_mint,
-    --     b.args:depositAmounts:"1"::int / pow(10, token_b.decimals) AS token_b_amount,
-    --     token_c.mint AS token_c_mint,
-    --     b.args:depositAmounts:"2"::int / pow(10, token_c.decimals) AS token_c_amount,
-    --     token_d.mint AS token_d_mint,
-    --     b.args:depositAmounts:"3"::int / pow(10, token_d.decimals) AS token_d_amount
-    -- FROM 
-    --     base AS b
-    -- LEFT JOIN
-    --     get_pool_account_mints AS token_a
-    --     ON token_a.pool_account = b.pool_token_a_account
-    -- LEFT JOIN
-    --     get_pool_account_mints AS token_b
-    --     ON token_b.pool_account = b.pool_token_b_account
-    -- LEFT JOIN
-    --     get_pool_account_mints AS token_c
-    --     ON token_c.pool_account = b.pool_token_c_account
-    --     AND b.pool_token_c_account IS NOT NULL
-    -- LEFT JOIN
-    --     get_pool_account_mints AS token_d
-    --     ON token_d.pool_account = b.pool_token_d_account
-    --     AND b.pool_token_d_account IS NOT NULL
-
-
-
     SELECT 
         b.* exclude(args),
         t.mint AS token_a_mint,
@@ -358,12 +263,35 @@ withdraw_transfers AS (
         AND t4.dest_token_account = b.token_d_account
         AND t4.source_token_account = b.pool_token_d_account
     WHERE
-        b.event_type IN (
-            'removeLiquidity',
-            'removeLiquidityOneToken'
-        )
+        b.event_type = 'removeLiquidity'
     QUALIFY
         row_number() OVER (PARTITION BY b.tx_id, b.index, b.inner_index ORDER BY t.inner_index, t2.inner_index, t3.inner_index, t4.inner_index) = 1
+),
+
+single_withdraw_transfers AS (
+    SELECT 
+        b.*,
+        t.mint AS token_a_mint,
+        t.amount AS token_a_amount,
+        NULL AS token_b_mint,
+        NULL AS token_b_amount,
+        NULL AS token_c_mint,
+        NULL AS token_c_amount,
+        NULL AS token_d_mint,
+        NULL AS token_d_amount
+    FROM 
+        base AS b
+    LEFT JOIN
+        transfers AS t
+        ON t.block_timestamp::date = b.block_timestamp::date
+        AND t.tx_id = b.tx_id
+        AND t.index = b.index
+        AND coalesce(t.inner_index,0) > coalesce(b.inner_index,-1)
+        AND coalesce(t.inner_index,0) < coalesce(b.next_lp_action_inner_index,9999)
+        AND t.dest_token_account = b.token_a_account
+        AND t.source_token_account IN (b.pool_token_a_account, b.pool_token_b_account, b.pool_token_c_account, b.pool_token_d_account)
+    WHERE
+        b.event_type = 'removeLiquidityOneToken'
 ),
 
 pre_final AS (
@@ -415,27 +343,32 @@ pre_final AS (
     FROM 
         withdraw_transfers
 
-    -- UNION ALL
+    UNION ALL
 
-    -- SELECT 
-    --     block_id,
-    --     block_timestamp,
-    --     tx_id,
-    --     index,
-    --     inner_index,
-    --     succeeded,
-    --     event_type,
-    --     pool_address,
-    --     provider_address,
-    --     token_a_mint,
-    --     token_a_amount,
-    --     token_b_mint,
-    --     token_b_amount,
-    --     program_id,
-    --     _inserted_timestamp
-    -- FROM 
-    --     single_deposit_transfers
+    SELECT 
+        block_id,
+        block_timestamp,
+        tx_id,
+        index,
+        inner_index,
+        succeeded,
+        event_type,
+        pool_address,
+        provider_address,
+        token_a_mint,
+        token_a_amount,
+        token_b_mint,
+        token_b_amount,
+        token_c_mint,
+        token_c_amount,
+        token_d_mint,
+        token_d_amount,
+        program_id,
+        _inserted_timestamp
+    FROM 
+        single_withdraw_transfers
 )
+
 SELECT
     block_id,
     block_timestamp,
@@ -454,14 +387,6 @@ SELECT
     token_c_amount,
     token_d_mint,
     token_d_amount,
-    /* 
-    mimic behavior of our other liquidity pool action models that support single token withdraws/deposits.
-    Represent the single token action as token A
-    */
-    -- iff(token_a_mint IS NULL AND token_a_amount IS NULL, token_b_mint, token_a_mint) AS token_a_mint,
-    -- iff(token_a_mint IS NULL AND token_a_amount IS NULL, token_b_amount, token_a_amount) AS token_a_amount,
-    -- iff(token_a_mint IS NOT NULL OR token_a_amount IS NOT NULL, token_b_mint, NULL) AS token_b_mint,
-    -- iff(token_a_mint IS NOT NULL OR token_a_amount IS NOT NULL, token_b_amount, NULL) AS token_b_amount,
     program_id,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['block_id', 'tx_id', 'index', 'inner_index']) }} AS liquidity_pool_actions_meteora_multi_2_id,
