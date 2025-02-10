@@ -91,9 +91,9 @@ transfers AS (
     FROM
         {{ ref('silver__transfers') }} A
     INNER JOIN (
-        SELECT DISTINCT tx_id
-        FROM decoded
-    ) d ON d.tx_id = A.tx_id
+        SELECT DISTINCT tx_id, block_timestamp::date as bt FROM decoded) d
+        ON d.tx_id = A.tx_id
+        AND d.bt = A.block_timestamp::date
     WHERE
         A.succeeded
         AND {{ between_stmts }}

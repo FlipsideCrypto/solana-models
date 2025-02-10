@@ -151,14 +151,18 @@ WITH decoded AS (
 ),
 base_transfers AS (
     SELECT 
-        block_timestamp,
-        tx_id,
-        index,
-        tx_from,
-        mint,
-        amount
+        t.block_timestamp,
+        t.tx_id,
+        t.index,
+        t.tx_from,
+        t.mint,
+        t.amount
     FROM
         {{ ref('silver__transfers') }} t
+    INNER JOIN
+        (SELECT DISTINCT block_timestamp::date AS bt, tx_id FROM decoded) AS d
+        ON d.bt = t.block_timestamp::date
+        AND d.tx_id = t.tx_id
     WHERE
         {{ between_stmts }}
 ),
