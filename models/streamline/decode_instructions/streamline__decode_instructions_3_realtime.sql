@@ -1,3 +1,5 @@
+-- depends_on: {{ ref('silver__verified_idls') }}
+
 {{ config (
     materialized = "table",
     post_hook = if_data_call_function(
@@ -17,17 +19,20 @@
             block_timestamp >= CURRENT_DATE - 2
     {% endset %}
     {% set min_event_block_id = run_query(min_event_block_id_query).columns[0].values()[0] %}
+
+
+    {% set idls_to_decode_query %}
+        SELECT
+            concat('\'', listagg(program_id, '\',\'') , '\'')
+        FROM
+            {{ ref('silver__verified_idls') }}
+        WHERE   
+            program_id <> 'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH'
+    {% endset %}
+    {% set idls_to_decode = run_query(idls_to_decode_query)[0][0] %}
 {% endif %}
 
-WITH idl_in_play AS (
-    SELECT
-        program_id
-    FROM
-        {{ ref('silver__verified_idls') }}
-    WHERE   
-        program_id <> 'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH'
-),
-event_subset AS (
+WITH event_subset AS (
     SELECT
         e.program_id,
         e.tx_id,
@@ -39,12 +44,10 @@ event_subset AS (
         {{ dbt_utils.generate_surrogate_key(['e.block_id','e.tx_id','e.index','inner_index','e.program_id']) }} as id
     FROM
         {{ ref('silver__events') }} AS e
-    JOIN 
-        idl_in_play AS b
-        ON e.program_id = b.program_id
     WHERE
         e.block_timestamp >= CURRENT_DATE - 2
         AND e.succeeded
+        AND e.program_id IN ({{ idls_to_decode }})
     UNION ALL
     SELECT
         e.program_id AS inner_program_id,
@@ -57,12 +60,10 @@ event_subset AS (
         {{ dbt_utils.generate_surrogate_key(['e.block_id','e.tx_id','e.instruction_index','inner_index','inner_program_id']) }} as id
     FROM
         {{ ref('silver__events_inner') }} AS e
-    JOIN 
-        idl_in_play AS b
-        ON e.program_id = b.program_id
     WHERE
         e.block_timestamp >= CURRENT_DATE - 2
         AND e.succeeded
+        AND e.program_id IN ({{ idls_to_decode }})
         AND (
             (
                 inner_program_id IN ('FLASH6Lo6h3iasJKWDs2F8TkW2UKf3s15C8PMGuVfgBn','SNPRohhBurQwrpwAptw1QYtpFdfEKitr4WSJ125cN1g','GovaE4iu227srtG2s3tZzB4RmWBzw8sTwrCLZz7kN7rY','JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4','DCA265Vj8a9CEuX1eb1LWRnDT7uK6q1xMipnNyatn23M','PERPHjGBqRHArX4DySjwM6UJHiR3sWAatqfdBS2qQJu','LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo','PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY','6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P')
