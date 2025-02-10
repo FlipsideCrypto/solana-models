@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: silver__nft_sales_magic_eden_cnft
-    tests:
+    data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
@@ -12,22 +12,22 @@ models:
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
-        tests:
+        data_tests:
           - not_null: *recent_date_filter
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 2
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
-        tests:
+        data_tests:
           - not_null: *recent_date_filter
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
-        tests:
+        data_tests:
           - not_null: *recent_date_filter
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
-        tests:
+        data_tests:
           - not_null: *recent_date_filter
       - name: INDEX
         description: "{{ doc('event_index') }}"
@@ -37,37 +37,37 @@ models:
         description: "{{ doc('inner_index') }}"
       - name: PROGRAM_ID 
         description: "{{ doc('program_id') }}"
-        tests: 
+        data_tests: 
           - not_null: *recent_date_filter
       - name: PURCHASER
         description: "{{ doc('purchaser') }}"
-        tests: 
+        data_tests: 
           - not_null: *recent_date_filter
       - name: SELLER
         description: "{{ doc('seller') }}"
-        tests: 
+        data_tests: 
           - not_null: *recent_date_filter
       - name: SALES_AMOUNT
         description: "{{ doc('sales_amount') }}"
-        tests: 
+        data_tests: 
           - not_null: *recent_date_filter
       - name: TREE_AUTHORITY
         description: "{{ doc('tree_authority') }}"
-        tests: 
+        data_tests: 
           - not_null: *recent_date_filter
       - name: MERKLE_TREE
         description: "{{ doc('merkle_tree') }}"
-        tests: 
+        data_tests: 
           - not_null: *recent_date_filter
       - name: LEAF_INDEX
         description: "{{ doc('leaf_index') }}"
-        tests: 
+        data_tests: 
           - not_null: *recent_date_filter
       - name: MINT
         description: "{{ doc('mint') }}"
-        tests: 
+        data_tests: 
           - not_null: *recent_date_filter
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
-        tests: 
+        data_tests: 
           - not_null
