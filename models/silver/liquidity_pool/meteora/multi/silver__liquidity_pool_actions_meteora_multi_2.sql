@@ -146,8 +146,8 @@ transfers AS (
     FROM
         {{ ref('silver__transfers') }} AS t
     INNER JOIN
-        (SELECT DISTINCT block_timestamp AS bt, tx_id FROM base) AS b
-        ON b.bt::date = t.block_timestamp::date
+        (SELECT DISTINCT block_timestamp::date AS bt, tx_id FROM base) AS b
+        ON b.bt = t.block_timestamp::date
         AND b.tx_id = t.tx_id
     WHERE
         t.succeeded

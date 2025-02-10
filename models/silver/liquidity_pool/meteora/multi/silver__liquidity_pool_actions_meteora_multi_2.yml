@@ -73,15 +73,39 @@ models:
       - name: TOKEN_C_MINT
         description:  >
           Address of the mint representing the third token in a multi-token liquidity pool
+        data_tests: 
+          - not_null:
+              config:
+                where: >
+                  _inserted_timestamp > current_date - 7
+                  AND token_c_amount IS NOT NULL
       - name: TOKEN_C_AMOUNT
         description:  >
           Amount of the third token in a multi-token liquidity pool transferred during a liquidity pool action
+        data_tests: 
+          - not_null:
+              config:
+                where: >
+                  _inserted_timestamp > current_date - 7
+                  AND token_c_mint IS NOT NULL
       - name: TOKEN_D_MINT
         description:  >
           Address of the mint representing the fourth token in a multi-token liquidity pool
+        data_tests: 
+          - not_null:
+              config:
+                where: >
+                  _inserted_timestamp > current_date - 7
+                  AND token_d_amount IS NOT NULL
       - name: TOKEN_D_AMOUNT
         description:  >
           Amount of the fourth token in a multi-token liquidity pool transferred during a liquidity pool action
+        data_tests: 
+          - not_null:
+              config:
+                where: >
+                  _inserted_timestamp > current_date - 7
+                  AND token_d_mint IS NOT NULL
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
         data_tests: 
