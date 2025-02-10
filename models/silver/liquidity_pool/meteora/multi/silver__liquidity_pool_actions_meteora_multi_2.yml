@@ -4,7 +4,7 @@ models:
     recent_date_filter: &recent_date_filter
       config:
         where: >
-          _inserted_timestamp > current_date - 1000
+          _inserted_timestamp > current_date - 7
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -60,7 +60,7 @@ models:
           - not_null:
               config:
                 where: >
-                  _inserted_timestamp > current_date - 1000
+                  _inserted_timestamp > current_date - 7
                   AND event_type <> 'removeLiquidityOneToken'
       - name: TOKEN_B_AMOUNT
         description:  "{{ doc('token_b_amount') }}"
@@ -68,7 +68,7 @@ models:
           - not_null:
               config:
                 where: >
-                  _inserted_timestamp > current_date - 1000
+                  _inserted_timestamp > current_date - 7
                   AND event_type <> 'removeLiquidityOneToken'
       - name: TOKEN_C_MINT
         description:  >
