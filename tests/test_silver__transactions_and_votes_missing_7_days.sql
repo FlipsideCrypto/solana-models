@@ -21,21 +21,28 @@ silver_counts AS (
         count(tx_id) AS transaction_count
     FROM
         (
-            SELECT
-                block_id,
-                tx_id
-            FROM
-                {{ ref('silver__transactions') }} t
-            WHERE
-                block_timestamp BETWEEN current_date - 8 AND current_timestamp - INTERVAL '12 HOUR'
-            UNION
-            SELECT
-                block_id,
-                tx_id
-            FROM
-                solana.silver.votes t
-            WHERE
-                block_timestamp BETWEEN current_date - 8 AND current_timestamp - INTERVAL '12 HOUR'
+            -- Deduplicate using row_number() instead of `UNION` or `count(DISTINCT)` since it is faster for large datasets
+            SELECT 
+                *
+            FROM (
+                SELECT
+                    block_id,
+                    tx_id
+                FROM
+                    {{ ref('silver__transactions') }} t
+                WHERE
+                    block_timestamp BETWEEN current_date - 8 AND current_timestamp - INTERVAL '12 HOUR'
+                UNION ALL
+                SELECT
+                    block_id,
+                    tx_id
+                FROM
+                    solana.silver.votes t
+                WHERE
+                    block_timestamp BETWEEN current_date - 8 AND current_timestamp - INTERVAL '12 HOUR'
+            )
+            QUALIFY
+                row_number() OVER (PARTITION BY tx_id ORDER BY block_id) = 1
         )
     GROUP BY
         1
