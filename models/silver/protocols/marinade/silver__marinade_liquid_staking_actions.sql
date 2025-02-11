@@ -55,16 +55,12 @@ WITH base AS (
 mints AS (
     SELECT 
         a.*
-    FROM {{ ref('silver__token_mint_actions') }} a
-        INNER JOIN (
-            SELECT 
-                DISTINCT tx_id
-            FROM 
-                base
-            WHERE 
-                event_type IN ('deposit', 'depositStakeAccount')
-        ) b 
-        ON b.tx_id = a.tx_id
+    FROM 
+        {{ ref('silver__token_mint_actions') }} a
+    INNER JOIN 
+        (SELECT DISTINCT tx_id, block_timestamp::date as bt FROM base WHERE event_type IN ('deposit', 'depositStakeAccount')) b 
+        ON b.tx_id = a.tx_id 
+        AND b.bt = a.block_timestamp::date
     WHERE
         a.succeeded
         AND {{ between_stmts }}
@@ -76,15 +72,10 @@ transfers AS (
         nullif(split_part(a.index,'.',2),'')::int AS inner_index
     FROM 
         {{ ref('silver__transfers') }} a
-        INNER JOIN (
-            SELECT 
-                DISTINCT tx_id
-            FROM 
-                base
-            WHERE 
-                event_type = 'claim'
-        ) b 
-        ON b.tx_id = a.tx_id
+    INNER JOIN 
+        (SELECT DISTINCT tx_id, block_timestamp::date as bt FROM base WHERE event_type = 'claim') b 
+        ON b.tx_id = a.tx_id 
+        AND b.bt = a.block_timestamp::date
     WHERE
         a.succeeded
         AND {{ between_stmts }}
@@ -94,15 +85,10 @@ sol_balances as (
         a.*
     FROM 
         {{ ref('silver__sol_balances') }} a
-        INNER JOIN (
-            SELECT 
-                DISTINCT tx_id
-            FROM 
-                base
-            WHERE 
-                event_type = 'depositStakeAccount'
-        ) b 
-        ON b.tx_id = a.tx_id
+    INNER JOIN 
+        (SELECT DISTINCT tx_id, block_timestamp::date as bt FROM base WHERE event_type = 'depositStakeAccount') b 
+        ON b.tx_id = a.tx_id 
+        AND b.bt = a.block_timestamp::date
     WHERE
         a.succeeded
         AND {{ between_stmts }}

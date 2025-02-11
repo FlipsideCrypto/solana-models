@@ -131,9 +131,9 @@ transfers AS (
     FROM
         {{ ref('silver__transfers') }} a
     INNER JOIN (
-        SELECT DISTINCT tx_id
-        FROM bridge_to
-    ) d ON d.tx_id = a.tx_id
+        SELECT DISTINCT tx_id, block_timestamp::date as bt FROM bridge_to) d 
+        ON d.tx_id = a.tx_id 
+        AND d.bt = a.block_timestamp::date
     WHERE
         a.succeeded
         AND {{ between_stmts }}

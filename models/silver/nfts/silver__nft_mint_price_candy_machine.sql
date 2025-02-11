@@ -40,11 +40,15 @@ AND _inserted_timestamp >= (
 ),
 base_ptb AS (
     SELECT
-        DISTINCT mint AS mint_paid,
-        account,
-        DECIMAL
+        DISTINCT p.mint AS mint_paid,
+        p.account,
+        p.DECIMAL
     FROM
-        {{ ref('silver___post_token_balances') }}
+        {{ ref('silver___post_token_balances') }} AS p
+    INNER JOIN
+        (SELECT DISTINCT block_timestamp::date AS bt, tx_id FROM base_candy_machine_events) AS b
+        ON b.bt = p.block_timestamp::date
+        AND b.tx_id = p.tx_id
 
 {% if is_incremental() %}
 WHERE
