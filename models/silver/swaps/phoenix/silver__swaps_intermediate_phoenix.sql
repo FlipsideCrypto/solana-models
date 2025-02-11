@@ -116,7 +116,8 @@ transfers AS (
         NULLIF(SPLIT_PART(INDEX :: text, '.', 2), '') :: INT AS inner_index_1
     FROM
         {{ ref('silver__transfers') }} A
-        INNER JOIN (SELECT DISTINCT tx_id, block_timestamp::date as bt FROM decoded) d
+    INNER JOIN 
+    (SELECT DISTINCT tx_id, block_timestamp::date as bt FROM decoded) d
         ON d.tx_id = A.tx_id
         AND d.bt = A.block_timestamp::date
     WHERE   
