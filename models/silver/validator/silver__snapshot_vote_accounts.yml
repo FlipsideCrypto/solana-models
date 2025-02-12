@@ -6,6 +6,8 @@ models:
           combination_of_columns:
             - EPOCH_RECORDED
             - VOTE_PUBKEY
+      - dbt_utils.expression_is_true:
+          expression: "last_timestamp < _inserted_timestamp + INTERVAL '1 HOUR'"
     columns:
       - name: epoch_recorded
         description: "The epoch when data was recorded"
