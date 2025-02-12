@@ -16,13 +16,18 @@
 ) }}
 
 WITH block_ids AS (
-    SELECT 
-        b.block_id
-    FROM 
-        {{ ref('silver__blocks') }} b
-    WHERE 
-        -- all blocks after this should have tx id filled in already so start the backfill here
-        b.block_id <= 307868470 
+    -- SELECT 
+    --     b.block_id
+    -- FROM 
+    --     {{ ref('silver__blocks') }} b
+    -- WHERE 
+    --     -- all blocks after this should have tx id filled in already so start the backfill here
+    --     b.block_id <= 307868470 
+    -- EXCEPT
+    SELECT
+        block_id
+    FROM
+        solana_dev.silver.backfill_tx_index_errors
     EXCEPT
     SELECT DISTINCT
         block_id
@@ -65,7 +70,7 @@ SELECT
                 )
             )
         ),
-        'Vault/prod/solana/ankr/mainnet'
+        'Vault/prod/solana/quicknode/mainnet'
     ) AS request
 FROM
     block_ids
