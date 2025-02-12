@@ -15,19 +15,27 @@
     )
 ) }}
 
+{% if execute %}
+    {% set min_block_id_buffer_query %}
+    SELECT min(block_id) + 100000 FROM {{ ref('silver__backfill_transactions_index') }}
+    {% endset %}
+    {% set min_block_id_buffer = run_query(min_block_id_buffer_query)[0][0] %}
+{% endif %}
+
 WITH block_ids AS (
     SELECT 
         b.block_id
     FROM 
         {{ ref('silver__blocks') }} b
     WHERE 
-        -- all blocks after this should have tx id filled in already so start the backfill here
-        b.block_id <= 307868470 
+        b.block_id <= {{ min_block_id_buffer }} 
     EXCEPT
     SELECT DISTINCT
         block_id
     FROM
         {{ ref('silver__backfill_transactions_index') }}
+    WHERE 
+        block_id <= {{ min_block_id_buffer }} 
 )
 SELECT
     block_id,
