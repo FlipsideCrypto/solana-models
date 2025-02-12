@@ -18,47 +18,30 @@
             block_timestamp >= CURRENT_DATE - 2
     {% endset %}
     {% set min_event_block_id = run_query(min_event_block_id_query).columns[0].values()[0] %}
+    {% set idls_to_decode = "'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4','PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY','6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P','DCA265Vj8a9CEuX1eb1LWRnDT7uK6q1xMipnNyatn23M','7a4WjyR8VZ7yZz5XJAKm39BUGn5iT9CKcv2pmG9tdXVH'" %}
+    {% set programs_from_tx_logs_to_decode = "'TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN','JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'" %}
 {% endif %}
 
-WITH idl_in_play AS (
+WITH event_subset AS (
     SELECT
-        program_id
-    FROM
-        {{ ref('silver__verified_idls') }}
-    WHERE   
-        program_id IN (
-            'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4',
-            'PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHGqdXY',
-            '6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P',
-            'DCA265Vj8a9CEuX1eb1LWRnDT7uK6q1xMipnNyatn23M',
-            '7a4WjyR8VZ7yZz5XJAKm39BUGn5iT9CKcv2pmG9tdXVH'
-        )
-),
-event_subset AS (
-    SELECT
-        i.value :programId :: STRING AS inner_program_id,
+        e.program_id AS inner_program_id,
         e.tx_id,
-        e.index,
-        i.index AS inner_index,
+        e.instruction_index AS index,
+        e.inner_index,
         NULL AS log_index,
-        i.value AS instruction,
+        e.instruction,
         e.block_id,
         e.block_timestamp,
         e.signers,
         e.succeeded,
-        {{ dbt_utils.generate_surrogate_key(['e.block_id','e.tx_id','e.index','inner_index','log_index','inner_program_id']) }} as id
+        {{ dbt_utils.generate_surrogate_key(['e.block_id','e.tx_id','e.instruction_index','inner_index','log_index','inner_program_id']) }} as id
     FROM
-        {{ ref('silver__events') }} e
-    JOIN
-        table(flatten(e.inner_instruction:instructions)) i 
-    JOIN
-        idl_in_play b
-        ON array_contains(b.program_id::variant, e.inner_instruction_program_ids)
-        AND b.program_id = inner_program_id
+        {{ ref('silver__events_inner') }} AS e
     WHERE
         e.block_timestamp >= CURRENT_DATE - 2
         AND e.succeeded
-        AND array_size(i.value:accounts::array) = 1
+        AND e.program_id IN ({{ idls_to_decode }})
+        AND array_size(e.instruction:accounts::array) = 1
     UNION ALL
     SELECT 
         l.program_id,
@@ -79,7 +62,7 @@ event_subset AS (
         USING(block_timestamp, tx_id)
     WHERE 
         l.block_timestamp >= CURRENT_DATE - 2
-        AND l.program_id in ('TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN','JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB')
+        AND l.program_id IN ({{ programs_from_tx_logs_to_decode }})
 ),
 completed_subset AS (
     SELECT
@@ -90,11 +73,11 @@ completed_subset AS (
     WHERE
         block_id >= {{ min_event_block_id }} --ensure we at least prune to last 2 days worth of blocks since the dynamic below will scan everything
         AND block_id >= (
-                SELECT
-                    MIN(block_id)
-                FROM
-                    event_subset
-            )
+            SELECT
+                MIN(block_id)
+            FROM
+                event_subset
+        )
 )
 SELECT
     e.inner_program_id as program_id,
@@ -108,10 +91,10 @@ SELECT
     e.signers,
     e.succeeded
 FROM
-    event_subset e
+    event_subset AS e
 LEFT OUTER JOIN 
-    completed_subset C
-    ON C.block_id = e.block_id
-    AND e.id = C.id
+    completed_subset AS c
+    ON c.block_id = e.block_id
+    AND e.id = c.id
 WHERE
-    C.block_id IS NULL
+    c.block_id IS NULL
