@@ -33,6 +33,8 @@ WITH block_ids AS (
         block_id
     FROM
         {{ ref('silver__backfill_transactions_index') }}
+    WHERE
+        _partition_by_created_timestamp > '2025-02-13'
 )
 SELECT
     block_id,
