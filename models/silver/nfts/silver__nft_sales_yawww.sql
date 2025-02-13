@@ -13,6 +13,8 @@ WITH base_table AS (
         e.block_timestamp,
         e.block_id,
         e.tx_id,
+        e.index,
+        null as inner_index,
         t.succeeded,
         e.program_id,
         CASE
@@ -124,6 +126,8 @@ SELECT
     b.block_id,
     b.tx_id,
     b.succeeded,
+    b.index,
+    b.inner_index,
     b.program_id,
     b.mint,
     b.purchaser,

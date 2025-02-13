@@ -52,8 +52,7 @@ base_transfers AS (
     FROM
         {{ ref('silver__transfers') }}
     WHERE
-        mint = 'So11111111111111111111111111111111111111112'
-
+        mint in ('So11111111111111111111111111111111111111112','So11111111111111111111111111111111111111111')
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -203,6 +202,8 @@ SELECT
     A.block_id,
     A.tx_id,
     A.succeeded,
+    a.index,
+    null as inner_index,
     A.program_id,
     A.mint,
     A.purchaser,
@@ -228,6 +229,8 @@ SELECT
     A.block_id,
     A.tx_id,
     A.succeeded,
+    a.index,
+    null as inner_index,
     A.program_id,
     A.mint,
     A.purchaser,

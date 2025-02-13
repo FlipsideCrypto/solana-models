@@ -16,6 +16,7 @@ WITH sales_inner_instructions AS (
         succeeded,
         program_id,
         e.index,
+        null as inner_index,
         COALESCE(
             i.value :parsed :info :lamports :: NUMBER,
             0
@@ -83,6 +84,8 @@ pre_final AS (
         s.block_id,
         s.tx_id,
         s.succeeded,
+        s.index,
+        s.inner_index,
         s.program_id,
         COALESCE(
             p.mint,
@@ -107,6 +110,8 @@ pre_final AS (
         s.block_id,
         s.tx_id,
         s.succeeded,
+        s.index,
+        s.inner_index,
         s.program_id,
         COALESCE(
             p.mint,
