@@ -50,7 +50,11 @@ WITH base AS (
         data :account :data :parsed :info :commission :: NUMBER AS commission,
         data :account :data :parsed :info :epochCredits :: ARRAY AS epoch_credits,
         data :account :data :parsed :info :lastTimestamp :slot :: NUMBER AS last_timestamp_slot,
-        data :account :data :parsed :info :lastTimestamp :timestamp :: timestamp_tz AS last_timestamp,
+        CASE 
+            WHEN LENGTH(data :account :data :parsed :info :lastTimestamp :timestamp) > 10
+            THEN LEFT(data :account :data :parsed :info :lastTimestamp :timestamp, LENGTH(data :account :data :parsed :info :lastTimestamp :timestamp) - 3)  
+            ELSE data :account :data :parsed :info :lastTimestamp :timestamp
+        END :: timestamp_tz AS last_timestamp,
         data :account :data :parsed :info :nodePubkey :: STRING AS node_pubkey,
         data :account :data :parsed :info :priorVoters :: ARRAY AS prior_voters,
         data :account :data :parsed :info :rootSlot :: NUMBER AS root_slot,
