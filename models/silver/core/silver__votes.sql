@@ -7,7 +7,7 @@
     cluster_by = ['block_timestamp::DATE','block_id','_inserted_timestamp::DATE'],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id)'),
     full_refresh = false,
-    tags = ['scheduled_non_core']
+    tags = ['scheduled_core']
 ) }}
 
 {% set cutover_block_id = 307103862 %}
