@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = ['block_id', 'tx_id', 'instruction_index', 'inner_index'],
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
-    cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE','ROUND(block_id, -3)','program_id','instruction_program_id'],
+    cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE','ROUND(block_id, -3)'],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, program_id, instruction_program_id, instruction_index, inner_index, event_type)'),
     merge_exclude_columns = ["inserted_timestamp"],
     full_refresh = false,
