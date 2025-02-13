@@ -43,7 +43,7 @@ SELECT
     ), 'YYYY_MM_DD_HH24_MI') AS partition_key, -- Issue with streamline handling `-` in partition key so changing to `_`
     {{ target.database }}.live.udf_api(
         'POST',
-        '{Service}?apikey={Authentication}',
+        '{service}/{Authentication}',
         OBJECT_CONSTRUCT(
             'Content-Type',
             'application/json'
