@@ -119,6 +119,8 @@ pre_final AS (
         A.program_id,
         A.tx_id,
         b.succeeded,
+        A.index,
+        A.inner_index,
         A.buyer AS purchaser,
         A.seller,
         A.mint,
@@ -142,6 +144,8 @@ pre_final AS (
         A.program_id,
         A.tx_id,
         b.succeeded,
+        A.index,
+        A.inner_index,
         A.buyer AS purchaser,
         A.seller,
         A.mint,
@@ -173,12 +177,16 @@ pre_final AS (
         6,
         7,
         8,
-        9
+        9,
+        10,
+        11
 )
 SELECT
     block_timestamp,
     block_id,
     tx_id,
+    index,
+    inner_index,
     succeeded,
     program_id,
     purchaser,

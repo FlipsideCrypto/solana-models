@@ -178,6 +178,8 @@ SELECT
     b.block_id,
     b.tx_id,
     b.succeeded,
+    b.event_index as index,
+    null as inner_index,
     b.program_id,
     COALESCE(
         b.nft_account_mint,
@@ -211,6 +213,7 @@ GROUP BY
     b.block_id,
     b.tx_id,
     b.succeeded,
+    b.event_index,
     b.program_id,
     COALESCE(
         b.nft_account_mint,
