@@ -4,7 +4,9 @@
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE','event_type'],
     post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(tx_id,stake_authority,withdraw_authority,stake_account)'),
-    tags = ['scheduled_non_core']
+    tags = ['deprecated'],
+    enabled = false,
+    full_refresh = false,
 ) }}
 
 WITH base_staking_lp_actions AS (

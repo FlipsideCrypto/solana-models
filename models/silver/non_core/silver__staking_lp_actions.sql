@@ -5,7 +5,8 @@
     cluster_by = ['block_timestamp::DATE','event_type'],
     full_refresh = false,
     post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(tx_id)'),
-    tags = ['scheduled_non_core']
+    tags = ['deprecated'],
+    enabled = false,
 ) }}
 
 WITH base_e AS (
