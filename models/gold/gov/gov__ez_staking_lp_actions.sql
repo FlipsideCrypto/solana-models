@@ -1,7 +1,13 @@
 {{ config(
     materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }}},
-    tags = ["scheduled_non_core"],
+    meta = {
+        'database_tags': {
+            'table': {
+                'PURPOSE': 'STAKING'
+            }
+        }
+    },
+    tags = ['scheduled_non_core']
 ) }}
 
 SELECT
@@ -9,7 +15,8 @@ SELECT
     block_timestamp,
     tx_id,
     succeeded,
-    INDEX,
+    index,
+    inner_index,
     event_type,
     signers,
     stake_authority,
@@ -25,19 +32,13 @@ SELECT
     validator_rank,
     commission,
     validator_name,
-    COALESCE (
-        staking_lp_actions_labeled_id,
+    coalesce(
+        staking_lp_actions_labeled_2_id,
         {{ dbt_utils.generate_surrogate_key(
-            ['block_id','tx_id','index']
+            ['block_id', 'tx_id', 'index']
         ) }}
     ) AS ez_staking_lp_actions_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
+    coalesce(inserted_timestamp, '2000-01-01') AS inserted_timestamp,
+    coalesce(modified_timestamp, '2000-01-01') AS modified_timestamp
 FROM
-    {{ ref('silver__staking_lp_actions_labeled') }}
+    {{ ref('silver__staking_lp_actions_labeled_2') }}
