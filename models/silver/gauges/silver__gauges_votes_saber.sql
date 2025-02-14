@@ -4,8 +4,10 @@
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
     merge_exclude_columns = ["inserted_timestamp"],
-    tags = ['scheduled_non_core']
+    tags = ['deprecated'],
 ) }}
+
+-- no longer running this model because gauges is not a thing anymore and neither is saber
 
 WITH all_saber_gauges_events AS (
 
