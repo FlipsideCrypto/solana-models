@@ -109,6 +109,7 @@ models:
                   swapper IN ('DCAKuApAuZtVNYLk3KTAVW9GLWVvPbnb5CxxRRmVgcTr','DCAKxn5PFNN1mBREPWGdk1RXg5aVH9rPErLfBFEi2Emb','DCAK36VfExkPdAkYUQg6ewgxyinvcEyPLyHjRbmveKFw','BFQ2te7ERN319HA87mn6NJ9oxMUvNxyifqEhUWHFTie9','JD1dHSqYkrXvqUVL8s6gzL1yB7kpYymsHfwsGxgwp55h','JD38n7ynKYcgPpF7k1BhXEeREu1KqptU93fVGy3S624k','JD25qVdtd65FoiXNmR89JjmoJdYk9sjYQeSTZAALFiMy')
                   AND _inserted_timestamp >= current_date - 7
                   AND block_timestamp >= '2024-05-12' /* last recorded date where some txs used the Beta DCA program (Betam4GuxvAes2uQ5vX8SackcxL5pxRuHowM5m2Ykmcq) */
+                  AND dca_requester IS NOT NULL
       - name: DCA_REQUESTER
         description: "Original address that requested the DCA swap"
         tests:
@@ -127,7 +128,8 @@ models:
                 where: >
                   swapper IN ('j1oAbxxiDUWvoHxEDhWE7THLjEkDQW2cSHYn2vttxTF','Gw9QoW4y72hFDVt3RRzyqcD4qrV4pSqjhMMzwdGunz6H','LoAFmGjxUL84rWHk4X6k8jzrw12Hmb5yyReUXfkFRY6','71WDyyCsZwyEYDV91Qrb212rdg6woCHYQhFnmZUBxiJ6','EccxYg7rViwYfn9EMoNu7sUaV82QGyFt6ewiQaH1GYjv','j1oeQoPeuEDmjvyMwBmCWexzCQup77kbKKxV59CnYbd','JTJ9Cz7i43DBeps5PZdX1QVKbEkbWegBzKPxhWgkAf1','j1opmdubY84LUeidrPCsSGskTCYmeJVzds1UWm6nngb','AfQ1oaudsGjvznX4JNEw671hi57JfWo4CWqhtkdgoVHU')
                   AND _inserted_timestamp >= current_date - 7
-                  AND block_timestamp >= '2023-10-01' 
+                  AND block_timestamp >= '2023-10-01'
+                  AND limit_requester IS NOT NULL
       - name: LIMIT_REQUESTER
         description: "Original address that requested the limit order swap"
         tests:
@@ -136,7 +138,7 @@ models:
                 where: >
                   is_limit_swap
                   AND _inserted_timestamp >= current_date - 7
-                  AND block_timestamp >= '2023-10-01' 
+                  AND block_timestamp >= '2023-10-01'
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
