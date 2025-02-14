@@ -51,10 +51,11 @@ WITH base AS (
         data :account :data :parsed :info :epochCredits :: ARRAY AS epoch_credits,
         data :account :data :parsed :info :lastTimestamp :slot :: NUMBER AS last_timestamp_slot,
         CASE 
-            WHEN LENGTH(data :account :data :parsed :info :lastTimestamp :timestamp) > 10
-            THEN LEFT(data :account :data :parsed :info :lastTimestamp :timestamp, LENGTH(data :account :data :parsed :info :lastTimestamp :timestamp) - 3)  
-            ELSE data :account :data :parsed :info :lastTimestamp :timestamp
-        END :: timestamp_tz AS last_timestamp,
+            WHEN length(data :account :data :parsed :info :lastTimestamp :timestamp) > 10 THEN 
+                to_timestamp(data :account :data :parsed :info :lastTimestamp :timestamp::int, 3)::timestamp_ntz -- some are being recorded in unix timestamp milliseconds scale 
+            ELSE 
+                to_timestamp(data :account :data :parsed :info :lastTimestamp :timestamp)::timestamp_ntz -- assume rest are unix timestamp seconds scale
+        END AS last_timestamp,
         data :account :data :parsed :info :nodePubkey :: STRING AS node_pubkey,
         data :account :data :parsed :info :priorVoters :: ARRAY AS prior_voters,
         data :account :data :parsed :info :rootSlot :: NUMBER AS root_slot,
