@@ -16,7 +16,11 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: INDEX
-        description: Location of the event within the instructions of a transaction
+        description: "{{ doc('index') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: SUCCEEDED
