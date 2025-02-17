@@ -172,6 +172,8 @@ SELECT
   s.block_timestamp,
   s.block_id,
   s.tx_id,
+  s.index,
+  null as inner_index,
   s.succeeded,
   s.program_id,
   COALESCE(
@@ -203,6 +205,7 @@ GROUP BY
   s.block_id,
   s.tx_id,
   s.succeeded,
+  s.index,
   s.program_id,
   COALESCE(
     p.mint,

@@ -7,6 +7,8 @@ SELECT
     block_id,
     tx_id,
     succeeded,
+    index,
+    inner_index,
     program_id,
     purchaser,
     seller,

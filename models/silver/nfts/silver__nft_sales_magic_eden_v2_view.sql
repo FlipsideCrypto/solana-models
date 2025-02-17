@@ -10,6 +10,8 @@ WITH base AS (
         COALESCE(d.block_id, v.block_id) AS block_id,
         COALESCE(d.tx_id, v.tx_id) AS tx_id,
         COALESCE(d.succeeded, v.succeeded) AS succeeded,
+        COALESCE(d.index, v.index) AS index,
+        COALESCE(d.inner_index, v.inner_index) AS inner_index,
         COALESCE(d.program_id, v.program_id) AS program_id,
         COALESCE(d.mint, v.mint) AS mint,
         COALESCE(d.purchaser, v.purchaser) AS purchaser,
