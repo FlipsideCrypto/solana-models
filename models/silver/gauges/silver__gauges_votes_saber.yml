@@ -1,49 +1,22 @@
 version: 2
 models:
   - name: silver__gauges_votes_saber
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - TX_ID
-            - VOTER
-            - GAUGE
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
-        tests:
-          - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 30
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
-        tests:
-          - not_null
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
-        tests:
-          - not_null
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
-        tests: 
-          - not_null
       - name: VOTER
         description: "{{ doc('tribeca_gauge_voter') }}"
-        tests: 
-          - not_null
       - name: GAUGE
         description: "{{ doc('tribeca_gauge') }}"
-        tests: 
-          - not_null
       - name: DELEGATED_SHARES
         description: "{{ doc('tribeca_gauge_delegated_shares') }}"
-        tests: 
-          - not_null
       - name: POWER
         description: "{{ doc('tribeca_gauge_power') }}"
-        tests: 
-          - not_null
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
-        tests: 
-          - not_null

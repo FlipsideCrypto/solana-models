@@ -74,6 +74,14 @@ WITH base AS (
         ), 9999) AS next_lp_action_inner_index
     FROM 
         silver.liquidity_pool_actions_raydium_cpmm__intermediate_tmp
+    WHERE
+        (
+            event_type = 'deposit'
+            OR (
+                event_type = 'withdraw' 
+                AND args:lpTokenAmount::int > 0
+            )
+        )
 ),
 
 transfers AS (
