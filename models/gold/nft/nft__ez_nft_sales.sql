@@ -176,7 +176,7 @@ UNION ALL
     {% endfor %}
 )
 
-select 
+SELECT
     a.marketplace,
     a.marketplace_version,
     a.block_timestamp,
@@ -186,14 +186,14 @@ select
     a.index,
     a.inner_index,
     a.program_id,
-    a.purchaser as buyer_address,
-    a.seller as seller_address,
+    a.purchaser AS buyer_address,
+    a.seller AS seller_address,
     a.mint,
     b.nft_name,
-    a.sales_amount as price,
+    a.sales_amount AS price,
     a.currency_address,
-    c.symbol as currency_symbol,
-    (c.price * a.sales_amount) as price_usd,
+    c.symbol AS currency_symbol,
+    (c.price * a.sales_amount) AS price_usd,
     a.tree_authority,
     a.merkle_tree,
     a.leaf_index,
@@ -208,14 +208,12 @@ select
     a.ez_nft_sales_id,
     a.inserted_timestamp,
     a.modified_timestamp
-from base_nft_sales a
-left join 
+FROM
+    base_nft_sales a
+LEFT JOIN
     {{ ref('nft__dim_nft_metadata') }} b
-on a.mint = b.mint
-
-    LEFT JOIN {{ ref('price__ez_prices_hourly') }} c
+    ON a.mint = b.mint
+LEFT JOIN
+    {{ ref('price__ez_prices_hourly') }} c
     ON currency_address = c.token_address
-    AND DATE_TRUNC(
-        'hour',
-        a.block_timestamp
-    ) = c.hour
+    AND DATE_TRUNC('hour', a.block_timestamp) = c.hour
