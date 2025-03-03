@@ -1,0 +1,167 @@
+version: 2
+models:
+  - name: nft__ez_nft_sales
+    description: A convenience table containing NFT sales across multiple marketplaces.
+    recent_date_filter: &recent_date_filter
+      config:
+        where: modified_timestamp >= current_date - 7
+    tests:
+      - reference_tx_missing:
+          reference_tables:
+            - 'silver__nft_sales_magic_eden_v2_decoded'
+            - 'silver__nft_sales_solanart'
+            - 'silver__nft_sales_hadeswap_decoded'
+            - 'silver__nft_sales_exchange_art'
+            - 'silver__nft_sales_amm_sell_decoded'
+            - 'silver__nft_sales_tensorswap'
+            - 'silver__nft_sales_solsniper'
+            - 'silver__nft_sales_tensorswap_cnft'
+            - 'silver__nft_sales_magic_eden_cnft'
+            - 'silver__nft_sales_solsniper_cnft'
+          id_column: 'tx_id'
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: INDEX
+        description: Location of the event within the instructions of a transaction
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: Location of the event within the inner instructions of a transaction
+      - name: PROGRAM_ID 
+        description: "{{ doc('program_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: BUYER_ADDRESS
+        description: "{{ doc('purchaser') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: SELLER_ADDRESS
+        description: "{{ doc('seller') }}"
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: MINT
+        description: "{{ doc('mint') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: NFT_NAME
+        description: "The name of the NFT"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: PRICE
+        description: "{{ doc('sales_amount') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: CURRENCY_ADDRESS
+        description: "Address of token used to pay for the NFT"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: CURRENCY_SYMBOL
+        description: "Symbol of token used to pay for the NFT"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: PRICE_USD
+        description: "Amount paid for NFT in USD"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: MARKETPLACE
+        description: "{{ doc('marketplace') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: MARKETPLACE_VERSION
+        description: "The version of the NFT marketplace used for the transaction."
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: TREE_AUTHORITY
+        description: "{{ doc('tree_authority') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null:
+              where: (modified_timestamp >= current_date - 7) and IS_COMPRESSED
+      - name: MERKLE_TREE
+        description: "{{ doc('merkle_tree') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null:
+              where: (modified_timestamp >= current_date - 7) and IS_COMPRESSED
+      - name: LEAF_INDEX
+        description: "{{ doc('leaf_index') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null:
+              where: (modified_timestamp >= current_date - 7) and IS_COMPRESSED
+      - name: IS_COMPRESSED
+        description: "{{ doc('is_compressed') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+      - name: NFT_COLLECTION_NAME
+        description: "The name of the collection provided by Solscan"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: COLLECTION_ID
+        description: "The address of the NFT collection"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: METADATA
+        description: "{{ doc('token_metadata') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: METADATA_URI
+        description: "{{ doc('token_metadata_uri') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: CREATORS
+        description:  "Creators of the NFT and what percentage of royalties they receive"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: AUTHORITY
+        description: "Authority address for the mint. When editions are minted, the authority remains the one from the master NFT"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: IMAGE_URL
+        description: "{{ doc('image_url') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: FACT_NFT_SALES_ID
+        description: '{{ doc("pk") }}'
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter
+          - unique: *recent_date_filter 
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'  
+        tests:
+          - dbt_expectations.expect_column_to_exist
+          - not_null: *recent_date_filter 
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
