@@ -314,7 +314,7 @@ SELECT
     seller,
     mint,
     sales_amount,
-    currency_address,
+    '{{ SOL_MINT }}' as currency_address,
     NULL as tree_authority,
     NULL as merkle_tree,
     NULL as leaf_index,

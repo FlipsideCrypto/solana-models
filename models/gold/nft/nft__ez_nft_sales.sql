@@ -215,5 +215,10 @@ LEFT JOIN
     ON a.mint = b.mint
 LEFT JOIN
     {{ ref('price__ez_prices_hourly') }} c
-    ON currency_address = c.token_address
+    ON (
+        CASE 
+            WHEN a.currency_address = 'So11111111111111111111111111111111111111111' THEN 'So11111111111111111111111111111111111111112'
+            ELSE a.currency_address
+        END
+    ) = c.token_address
     AND DATE_TRUNC('hour', a.block_timestamp) = c.hour
