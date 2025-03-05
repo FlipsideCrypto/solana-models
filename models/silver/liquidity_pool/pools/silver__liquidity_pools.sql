@@ -53,9 +53,11 @@ WITH base AS (
         {{ ref('price__ez_asset_metadata') }} AS m2
         ON p.token_b_mint = m2.token_address
         -- where p.modified_timestamp::Date between '2025-01-01' and '2025-01-20'
-        -- where block_timestamp::Date < '2024-06-01'
+        -- where block_timestamp::Date < '2024-01-01'
         {% if is_incremental() %}
-            WHERE p._inserted_timestamp > (SELECT max(_inserted_timestamp) FROM {{ this }})
+        WHERE p.block_timestamp::date between '2024-09-01' and '2025-01-01'
+
+            -- WHERE p._inserted_timestamp > (SELECT max(_inserted_timestamp) FROM {{ this }})
         {% endif %}
     {% if not loop.last %}
     UNION ALL
@@ -101,7 +103,6 @@ fill_null_symbols AS (
     WHERE
         (token_a_symbol IS NULL
         OR token_b_symbol IS NULL)
-    limit 1000
 ),
 
 pre_final AS (
