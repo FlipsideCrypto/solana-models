@@ -53,7 +53,7 @@ WITH base AS (
         {{ ref('price__ez_asset_metadata') }} AS m2
         ON p.token_b_mint = m2.token_address
         {% if is_incremental() %}
-        WHERE p._inserted_timestamp > (SELECT max(_inserted_timestamp) FROM {{ this }})
+        WHERE p._inserted_timestamp >= (SELECT max(_inserted_timestamp) FROM {{ this }})
         {% endif %}
     {% if not loop.last %}
     UNION ALL
