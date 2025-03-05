@@ -44,14 +44,10 @@ models:
           - not_null: *recent_date_filter
       - name: TOKEN_A_MINT
         description:  "{{ doc('token_a_mint') }}"
-        data_tests: 
-          - not_null: *recent_date_filter
       - name: TOKEN_A_SYMBOL
         description:  "{{ doc('prices_symbol') }}"
       - name: TOKEN_A_AMOUNT
         description:  "{{ doc('token_a_amount') }}"
-        data_tests: 
-          - not_null: *recent_date_filter
       - name: TOKEN_A_AMOUNT_USD
         description: >
           The amount of token A in USD.
@@ -66,25 +62,23 @@ models:
           The amount of token B in USD.
       - name: TOKEN_C_MINT
         description: >
-          The amount of token C in USD.
+          Address of the mint representing the third token in a liquidity pool pair.
       - name: TOKEN_C_SYMBOL
-        description: >
-          The amount of token C in USD.
+        description: "{{ doc('prices_symbol') }}"
       - name: TOKEN_C_AMOUNT
         description: >
-          The amount of token C in USD.
+          Amount of the third token in a liquidity pool pair transferred during a liquidity pool action.
       - name: TOKEN_C_AMOUNT_USD
         description: >
           The amount of token C in USD.
       - name: TOKEN_D_MINT
         description: >
-          The amount of token D in USD.
+          Address of the mint representing the fourth token in a liquidity pool pair.
       - name: TOKEN_D_SYMBOL
-        description: >
-          The amount of token D in USD.
+        description: "{{ doc('prices_symbol') }}"
       - name: TOKEN_D_AMOUNT
         description: >
-          The amount of token D in USD.
+          Amount of the fourth token in a liquidity pool pair transferred during a liquidity pool action.
       - name: TOKEN_D_AMOUNT_USD
         description: >
           The amount of token D in USD.

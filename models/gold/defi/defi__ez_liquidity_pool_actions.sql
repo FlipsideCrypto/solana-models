@@ -107,11 +107,10 @@ base AS (
             lp.pool_address,
             NULL AS pool_name,
             lp.program_id,
-            NULL AS platform,
+            'meteora_multi' AS platform,
             lp.liquidity_pool_actions_meteora_multi_2_id AS ez_liquidity_pool_actions_id
         FROM 
             {{ ref('silver__liquidity_pool_actions_meteora_multi_2') }} AS lp
-        where lp.modified_timestamp::date = '2025-03-01'
         {% if is_incremental() %}
             where lp.modified_timestamp > (select max(modified_timestamp) from {{ this }})
         {% endif %}
@@ -142,19 +141,19 @@ SELECT
     token_a_mint,
     token_a_symbol,
     token_a_amount,
-    (token_a_amount * tp_a.price)::numeric(20,8) AS token_a_amount_usd,
+    (token_a_amount * tp_a.price)::numeric(22,8) AS token_a_amount_usd,
     token_b_mint,
     token_b_symbol,
     token_b_amount,
-    (token_b_amount * tp_b.price)::numeric(20,8) AS token_b_amount_usd,
+    (token_b_amount * tp_b.price)::numeric(22,8) AS token_b_amount_usd,
     token_c_mint,
     token_c_symbol,
     token_c_amount,
-    (token_c_amount * tp_c.price)::numeric(20,8) AS token_c_amount_usd,
+    (token_c_amount * tp_c.price)::numeric(22,8) AS token_c_amount_usd,
     token_d_mint,
     token_d_symbol,
     token_d_amount,
-    (token_d_amount * tp_d.price)::numeric(20,8) AS token_d_amount_usd,
+    (token_d_amount * tp_d.price)::numeric(22,8) AS token_d_amount_usd,
     pool_address,
     pool_name,
     program_id,
