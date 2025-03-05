@@ -73,6 +73,8 @@ FROM
     {{ ref(
         'silver__nft_sales_legacy_combined_view'
     ) }}
+    WHERE 
+        succeeded
 UNION ALL
 {% endif %}
 -- Only select from active models during incremental
@@ -101,8 +103,10 @@ UNION ALL
             COALESCE(modified_timestamp, '2000-01-01') AS modified_timestamp
         FROM
             {{ ref('silver__nft_sales_' ~ platform.name) }}
+        WHERE 
+            succeeded
         {% if is_incremental() %}
-        WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
+        AND modified_timestamp >= '{{ max_modified_timestamp }}'
         {% endif %}
 
         union all
@@ -132,8 +136,10 @@ UNION ALL
             modified_timestamp
         FROM
             {{ ref('silver__nft_sales_' ~ platform.name) }}
+        WHERE 
+            succeeded
         {% if is_incremental() %}
-        where modified_timestamp >= '{{ max_modified_timestamp }}'
+        AND modified_timestamp >= '{{ max_modified_timestamp }}'
         {% endif %}
         union all
     {% endfor %}
@@ -163,11 +169,13 @@ UNION ALL
             modified_timestamp
         FROM
             {{ ref('silver__nft_sales_' ~ platform.name) }}
+        WHERE 
+            succeeded
         {% if is_incremental() %}
-        WHERE
+        AND
             modified_timestamp >= '{{ max_modified_timestamp }}'
         {% else %}
-        WHERE
+        AND
             block_timestamp::date >= '{{magic_eden_switchover_block_timestamp}}'
         {% endif %}
         {% if not loop.last %}
