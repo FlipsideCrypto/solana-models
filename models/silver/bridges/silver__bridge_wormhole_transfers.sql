@@ -256,7 +256,9 @@ outbound AS (
                 b.inner_index IS NOT NULL
                 AND b.program_id = 'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb'
             )
-        ) qualify ROW_NUMBER() over (
+        ) 
+        AND b.instruction:accounts[5]::string = A.mint
+        qualify ROW_NUMBER() over (
             PARTITION BY A.tx_id
             ORDER BY
                 A.index,
