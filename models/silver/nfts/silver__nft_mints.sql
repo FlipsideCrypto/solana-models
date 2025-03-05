@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "CONCAT_WS('-', initialization_tx_id, mint, purchaser, mint_currency)",
+    unique_key = 'nft_mints_id',
     incremental_strategy = 'delete+insert',
     cluster_by = ['block_timestamp::DATE'],
     post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(initialization_tx_id,purchaser,mint)'),
