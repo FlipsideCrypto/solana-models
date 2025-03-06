@@ -77,4 +77,4 @@ models:
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('tx_id') }}"
         tests: 
-          - not_null: *recent_date_filter
+          - not_null
