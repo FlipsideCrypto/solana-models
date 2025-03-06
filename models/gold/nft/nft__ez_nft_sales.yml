@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: nft__ez_nft_sales
-    description: A convenience table containing NFT sales across multiple marketplaces.
+    description: A convenience table containing NFT sales across multiple marketplaces, included information on metadata, USD prices and marketplace. Note that USD prices are not available prior to 2021-12-16.
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7
