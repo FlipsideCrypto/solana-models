@@ -256,7 +256,12 @@ SELECT
     NULL as merkle_tree,
     NULL as leaf_index,
     FALSE as is_compressed,
-    nft_sales_hyperspace_id AS nft_sales_legacy_combined_id,
+    COALESCE (
+         nft_sales_hyperspace_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_id', 'mint']
+        ) }}
+    ) AS nft_sales_legacy_combined_id,
     inserted_timestamp,
     modified_timestamp
 FROM
@@ -319,7 +324,12 @@ SELECT
     NULL as merkle_tree,
     NULL as leaf_index,
     FALSE as is_compressed,
-    nft_sales_magic_eden_v2_id as nft_sales_legacy_combined_id,
+    COALESCE (
+        nft_sales_magic_eden_v2_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_id', 'mint']
+        ) }}
+    ) AS nft_sales_legacy_combined_id,
     inserted_timestamp,
     modified_timestamp
 FROM
