@@ -6,7 +6,7 @@
     cluster_by = ['block_timestamp::DATE','program_id'],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, swapper, swap_from_mint, swap_to_mint, program_id, fact_swaps_jupiter_summary_id)'),
-    tags = ['scheduled_non_core']
+    tags = ['scheduled_non_core','scheduled_non_core_hourly']
 ) }}
 
 {% if execute %}
