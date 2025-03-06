@@ -10,7 +10,7 @@
         '{{this.identifier}}',
         'ON EQUALITY(tx_id, swapper, from_mint, to_mint)'
     ),
-    tags = ['scheduled_non_core'],
+    tags = ['scheduled_non_core','scheduled_non_core_hourly'],
 ) }}
 
 {% if execute %}
