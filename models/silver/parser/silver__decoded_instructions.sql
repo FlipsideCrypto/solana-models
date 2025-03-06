@@ -8,7 +8,7 @@
     unique_key = "decoded_instructions_id",
     cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE', 'program_id'],
     merge_exclude_columns = ["inserted_timestamp"],
-    tags = ['scheduled_non_core'],
+    tags = ['scheduled_non_core','scheduled_non_core_hourly'],
     full_refresh = false,
 ) }}
 

@@ -9,7 +9,7 @@
         'ON EQUALITY(tx_id, event_type, decoded_instructions_combined_id)'
     ),
     merge_exclude_columns = ["inserted_timestamp"],
-    tags = ['scheduled_non_core']
+    tags = ['scheduled_non_core','scheduled_non_core_hourly']
 ) }}
 -- depends_on: {{ ref('silver__decoded_instructions') }}
 /* run incremental timestamp value first then use it as a static value */

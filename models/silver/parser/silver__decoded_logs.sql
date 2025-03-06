@@ -16,7 +16,7 @@
         'ON EQUALITY(tx_id, event_type, decoded_logs_id)'
     ),
     full_refresh = false,
-    tags = ['scheduled_non_core']
+    tags = ['scheduled_non_core','scheduled_non_core_hourly']
 ) }}
 
 {% set CUTOVER_DATETIME = modules.datetime.datetime.strptime("2024-07-16 17:00:00", "%Y-%m-%d %H:%M:%S") %}
