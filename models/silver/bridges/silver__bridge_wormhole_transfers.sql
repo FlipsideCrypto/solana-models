@@ -257,7 +257,15 @@ outbound AS (
                 AND b.program_id = 'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb'
             )
         ) 
-        AND b.instruction:accounts[5]::string = A.mint
+        AND EXISTS (
+            SELECT 1
+            FROM base_events e,
+            TABLE(FLATTEN(e.inner_instruction:instructions)) i
+            WHERE e.tx_id = A.tx_id
+            AND e.program_id = 'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb'
+            AND i.value:programId::string = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+            AND i.value:parsed:type::string = 'burn'
+            AND i.value:parsed:info:mint::string = A.mint)
         qualify ROW_NUMBER() over (
             PARTITION BY A.tx_id
             ORDER BY
