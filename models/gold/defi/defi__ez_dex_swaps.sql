@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'view',
     meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'SWAPS' }} },
-    tags = ['scheduled_non_core','exclude_change_tracking']
+    tags = ['scheduled_non_core_hourly','exclude_change_tracking']
 ) }}
 
 WITH swaps AS (
