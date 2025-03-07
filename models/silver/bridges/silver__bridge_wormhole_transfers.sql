@@ -216,7 +216,8 @@ inbound AS (
                 AND b.program_id = 'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb'
             )
         )
-        AND b.instruction :accounts [5] = A.token_account
+        AND (b.instruction:accounts[5]::string = A.mint
+        OR b.instruction:accounts[7]::string = A.mint)
         qualify ROW_NUMBER() over (
             PARTITION BY A.tx_id
             ORDER BY
@@ -266,6 +267,8 @@ outbound AS (
             AND i.value:programId::string = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
             AND i.value:parsed:type::string = 'burn'
             AND i.value:parsed:info:mint::string = A.mint)
+        OR
+        A.burn_authority = '7oPa2PHQdZmjSPqvpZN7MQxnC7Dcf3uL4oLqknGLk2S3' --Wormhole Transfer Authority
         qualify ROW_NUMBER() over (
             PARTITION BY A.tx_id
             ORDER BY
