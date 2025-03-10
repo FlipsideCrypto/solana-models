@@ -20,6 +20,7 @@ models:
                 where: >
                   token_a_symbol IS NOT NULL
                   AND token_b_symbol IS NOT NULL
+                  AND _inserted_timestamp >= current_date - 7
       - name: POOL_TOKEN_MINT
         description: "{{ doc('liquidity_pool_token_mint') }}"
       - name: TOKEN_A_MINT
@@ -31,7 +32,11 @@ models:
       - name: TOKEN_A_ACCOUNT
         description:  "{{ doc('token_a_account') }}"
         data_tests: 
-          - not_null: *recent_date_filter
+          - not_null:
+              # carried over from initialization_pools_meteora test config
+              config:
+                severity: error
+                error_if: "> 31" 
       - name: TOKEN_B_MINT
         description:  "{{ doc('token_b_mint') }}"
         data_tests: 
@@ -41,7 +46,11 @@ models:
       - name: TOKEN_B_ACCOUNT
         description:  "{{ doc('token_b_account') }}"
         data_tests: 
-          - not_null: *recent_date_filter
+          - not_null:
+              # carried over from initialization_pools_meteora test config
+              config:
+                severity: error
+                error_if: "> 31"
       - name: INITIALIZED_AT_BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         data_tests:

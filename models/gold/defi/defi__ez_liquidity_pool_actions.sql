@@ -24,8 +24,6 @@
     'meteora_dlmm_2',
     'orca_whirlpool',
 ] %}
--- tod0: figure out issue with meteora_mulit above
--- todo - also need ot include the 3rd token for multi ones
 
 WITH 
 base AS (
