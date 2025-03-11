@@ -17,7 +17,8 @@
 {% set pool_platforms = [
     'raydiumv4', 
     'raydium_cpmm', 
-    'raydium_clmm', 
+    'raydium_clmm',
+    'raydiumstable',
     'orcav1', 
     'orcav2',
     'meteora_2',

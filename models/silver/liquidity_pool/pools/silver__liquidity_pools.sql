@@ -13,6 +13,7 @@
     'raydiumv4', 
     'raydium_cpmm', 
     'raydium_clmm', 
+    'raydiumstable',
     'orcav1', 
     'orcav2', 
     'orca_whirlpool', 
