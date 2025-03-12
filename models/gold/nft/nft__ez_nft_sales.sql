@@ -200,7 +200,7 @@ SELECT
     b.nft_name,
     a.sales_amount AS price,
     a.currency_address,
-    c.symbol AS currency_symbol,
+    d.symbol AS currency_symbol,
     (c.price * a.sales_amount) AS price_usd,
     a.tree_authority,
     a.merkle_tree,
@@ -225,8 +225,16 @@ LEFT JOIN
     {{ ref('price__ez_prices_hourly') }} c
     ON (
         CASE 
-            WHEN a.currency_address = 'So11111111111111111111111111111111111111111' THEN 'So11111111111111111111111111111111111111112'
+            WHEN a.currency_address = '{{ SOL_MINT }}' THEN 'So11111111111111111111111111111111111111112'
             ELSE a.currency_address
         END
     ) = c.token_address
     AND DATE_TRUNC('hour', a.block_timestamp) = c.hour
+LEFT JOIN
+    {{ ref('price__ez_asset_metadata') }} d
+    ON (
+        CASE 
+            WHEN a.currency_address = '{{ SOL_MINT }}' THEN 'So11111111111111111111111111111111111111112'
+            ELSE a.currency_address
+        END
+    ) = d.token_address
