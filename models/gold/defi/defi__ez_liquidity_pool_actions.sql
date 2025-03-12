@@ -9,7 +9,7 @@
             '{{this.schema}}',
             '{{this.identifier}}',
             'ON EQUALITY(ez_liquidity_pool_actions_id, pool_address, provider_address, tx_id, action_type, token_a_mint, token_b_mint)'),
-                cluster_by = ['block_timestamp::DATE','action_type','program_id'],
+        cluster_by = ['block_timestamp::DATE','action_type','program_id'],
         tags = ['scheduled_non_core'],
     )
 }}
@@ -106,7 +106,7 @@ base AS (
             lp.pool_address,
             NULL AS pool_name,
             lp.program_id,
-            'meteora_multi' AS platform,
+            'meteora' AS platform,
             lp.liquidity_pool_actions_meteora_multi_2_id AS ez_liquidity_pool_actions_id
         FROM 
             {{ ref('silver__liquidity_pool_actions_meteora_multi_2') }} AS lp
