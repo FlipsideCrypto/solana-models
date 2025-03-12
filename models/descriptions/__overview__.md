@@ -37,6 +37,7 @@ There is more information on how to use dbt docs in the last section of this doc
 
 ### DeFi Tables (`Solana`.`DEFI`.`<table_name>`)
 - [ez_dex_swaps](#!/model/model.solana_models.defi__ez_dex_swaps)
+- [ez_liquidity_pool_actions](#!/model/model.solana_models.defi__ez_liquidity_pool_actions)
 - [fact_liquidity_pool_actions](#!/model/model.solana_models.defi__fact_liquidity_pool_actions)
 - [fact_stake_pool_actions](#!/model/model.solana_models.defi__fact_stake_pool_actions)
 - [fact_swaps](#!/model/model.solana_models.defi__fact_swaps)

@@ -1,0 +1,112 @@
+version: 2
+models:
+  - name: defi__ez_liquidity_pool_actions
+    description: Convenience table capturing actions for liquidity pools in Raydium, Orca, and Meteora. This includes deposit and withdrawal events.
+    recent_date_filter: &recent_date_filter
+      config:
+        where: >
+          modified_timestamp > current_date - 7
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - INDEX
+            - INNER_INDEX
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('event_index') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
+      - name: ACTION_TYPE
+        description: "{{ doc('event_type') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+          - accepted_values:
+              values: ["deposit", "withdraw"]
+              <<: *recent_date_filter
+      - name: PROVIDER_ADDRESS
+        description:  "{{ doc('liquidity_provider') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: TOKEN_A_MINT
+        description:  "{{ doc('token_a_mint') }}"
+      - name: TOKEN_A_SYMBOL
+        description:  "{{ doc('prices_symbol') }}"
+      - name: TOKEN_A_AMOUNT
+        description:  "{{ doc('token_a_amount') }}"
+      - name: TOKEN_A_AMOUNT_USD
+        description: >
+          The amount of token A in USD.
+      - name: TOKEN_B_MINT
+        description:  "{{ doc('token_b_mint') }}"
+      - name: TOKEN_B_SYMBOL
+        description:  "{{ doc('prices_symbol') }}"
+      - name: TOKEN_B_AMOUNT
+        description:  "{{ doc('token_b_amount') }}"
+      - name: TOKEN_B_AMOUNT_USD
+        description: >
+          The amount of token B in USD.
+      - name: TOKEN_C_MINT
+        description: >
+          Address of the mint representing the third token in a liquidity pool pair.
+      - name: TOKEN_C_SYMBOL
+        description: "{{ doc('prices_symbol') }}"
+      - name: TOKEN_C_AMOUNT
+        description: >
+          Amount of the third token in a liquidity pool pair transferred during a liquidity pool action.
+      - name: TOKEN_C_AMOUNT_USD
+        description: >
+          The amount of token C in USD.
+      - name: TOKEN_D_MINT
+        description: >
+          Address of the mint representing the fourth token in a liquidity pool pair.
+      - name: TOKEN_D_SYMBOL
+        description: "{{ doc('prices_symbol') }}"
+      - name: TOKEN_D_AMOUNT
+        description: >
+          Amount of the fourth token in a liquidity pool pair transferred during a liquidity pool action.
+      - name: TOKEN_D_AMOUNT_USD
+        description: >
+          The amount of token D in USD.
+      - name: POOL_ADDRESS
+        description: "{{ doc('liquidity_pool_address') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: POOL_NAME
+        description: >
+          Name of the liquidity pool
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: PLATFORM
+        description: >
+          Name of the liquidity pool protocol
+        data_tests: 
+          - not_null
+      - name: EZ_LIQUIDITY_POOL_ACTIONS_ID
+        description: '{{ doc("pk") }}'   
+        data_tests: 
+          - unique
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        data_tests: 
+          - not_null: *recent_date_filter
