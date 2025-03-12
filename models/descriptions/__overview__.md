@@ -69,6 +69,7 @@ There is more information on how to use dbt docs in the last section of this doc
 - [dim_nft_metadata](#!/model/model.solana_models.nft__dim_nft_metadata)
 - [fact_nft_mints](#!/model/model.solana_models.nft__fact_nft_mints)
 - [fact_nft_sales](#!/model/model.solana_models.nft__fact_nft_sales)
+- [ez_nft_sales](#!/model/model.solana_models.nft__ez_nft_sales)
 - [fact_nft_burn_actions](#!/model/model.solana_models.nft__fact_nft_burn_actions)
 - [fact_nft_mint_actions](#!/model/model.solana_models.nft__fact_nft_mint_actions)
 
