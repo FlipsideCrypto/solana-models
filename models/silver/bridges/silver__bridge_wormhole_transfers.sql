@@ -216,7 +216,7 @@ inbound AS (
                 AND b.program_id = 'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb'
             )
         )
-        AND AND b.instruction :accounts [5] = A.token_account
+        AND b.instruction :accounts [5] = A.token_account
         qualify ROW_NUMBER() over (
             PARTITION BY A.tx_id
             ORDER BY
