@@ -107,15 +107,87 @@ decoded AS (
         --         signers[0]
         --     ELSE temp_user_source_owner
         -- END AS swapper,
-        silver.udf_get_account_pubkey_by_name('tokenOwnerAccountA', decoded_instruction:accounts) AS source_token_account,
+        /* don't know if token A or B is the source or destination */
+        CASE
+            WHEN event_type = 'twoHopSwapV2' THEN
+                silver.udf_get_account_pubkey_by_name('tokenOwnerAccountInput', decoded_instruction:accounts)
+            ELSE
+                silver.udf_get_account_pubkey_by_name('tokenOwnerAccountA', decoded_instruction:accounts)
+        END AS token_a_account,
         NULL AS source_mint,
         NULL AS destination_mint,
-        silver.udf_get_account_pubkey_by_name('tokenOwnerAccountB', decoded_instruction:accounts) AS destination_token_account,
-        silver.udf_get_account_pubkey_by_name('tokenVaultA', decoded_instruction:accounts) AS program_destination_token_account,
-        silver.udf_get_account_pubkey_by_name('tokenVaultB', decoded_instruction:accounts) AS program_source_token_account,
+        CASE
+            WHEN event_type = 'twoHopSwapV2' THEN
+                silver.udf_get_account_pubkey_by_name('tokenOwnerAccountOutput', decoded_instruction:accounts)
+            ELSE
+                silver.udf_get_account_pubkey_by_name('tokenOwnerAccountB', decoded_instruction:accounts)
+        END AS token_b_account,
+        CASE
+            WHEN event_type = 'twoHopSwapV2' THEN
+                silver.udf_get_account_pubkey_by_name('tokenVaultOneInput', decoded_instruction:accounts)
+            ELSE
+                silver.udf_get_account_pubkey_by_name('tokenVaultA', decoded_instruction:accounts)
+        END AS program_token_a_account,
+        CASE
+            WHEN event_type = 'twoHopSwapV2' THEN
+                silver.udf_get_account_pubkey_by_name('tokenVaultTwoOutput', decoded_instruction:accounts)
+            ELSE
+                silver.udf_get_account_pubkey_by_name('tokenVaultB', decoded_instruction:accounts)
+        END AS program_token_b_account,
+        0 AS swap_index,
         _inserted_timestamp
     FROM
         base
+    WHERE
+        event_type IN ('swap', 'swapV2', 'twoHopSwapV2')
+    UNION ALL
+    SELECT
+        block_timestamp,
+        block_id,
+        tx_id,
+        index,
+        inner_index,
+        succeeded,
+        coalesce(lead(inner_index) over (PARTITION BY tx_id, INDEX ORDER BY inner_index) -1, 999999) AS inner_index_end,
+        program_id,
+        silver.udf_get_account_pubkey_by_name('tokenAuthority', decoded_instruction:accounts) AS swapper,
+        /* don't know if token A or B is the source or destination */
+        silver.udf_get_account_pubkey_by_name('tokenOwnerAccountOneA', decoded_instruction:accounts) AS token_a_account,
+        NULL AS source_mint,
+        NULL AS destination_mint,
+        silver.udf_get_account_pubkey_by_name('tokenOwnerAccountOneB', decoded_instruction:accounts) AS token_b_account,
+        silver.udf_get_account_pubkey_by_name('tokenVaultOneA', decoded_instruction:accounts) AS program_token_a_account,
+        silver.udf_get_account_pubkey_by_name('tokenVaultOneB', decoded_instruction:accounts) AS program_token_b_account,
+        1 AS swap_index,
+        _inserted_timestamp
+    FROM
+        base
+    WHERE
+        event_type IN ('twoHopSwap')
+    UNION ALL
+    SELECT
+        block_timestamp,
+        block_id,
+        tx_id,
+        index,
+        inner_index,
+        succeeded,
+        coalesce(lead(inner_index) over (PARTITION BY tx_id, INDEX ORDER BY inner_index) -1, 999999) AS inner_index_end,
+        program_id,
+        silver.udf_get_account_pubkey_by_name('tokenAuthority', decoded_instruction:accounts) AS swapper,
+        /* don't know if token A or B is the source or destination */
+        silver.udf_get_account_pubkey_by_name('tokenOwnerAccountTwoA', decoded_instruction:accounts) AS token_a_account,
+        NULL AS source_mint,
+        NULL AS destination_mint,
+        silver.udf_get_account_pubkey_by_name('tokenOwnerAccountTwoB', decoded_instruction:accounts) AS token_b_account,
+        silver.udf_get_account_pubkey_by_name('tokenVaultTwoA', decoded_instruction:accounts) AS program_token_a_account,
+        silver.udf_get_account_pubkey_by_name('tokenVaultTwoB', decoded_instruction:accounts) AS program_token_b_account,
+        2 AS swap_index,
+        _inserted_timestamp
+    FROM
+        base
+    WHERE
+        event_type IN ('twoHopSwap')
 ),
 
 transfers AS (
@@ -139,7 +211,7 @@ transfers AS (
         AND {{ between_stmts }}
 ),
 
-pre_final AS (
+swaps_with_amounts AS (
     SELECT
         d.block_id,
         d.block_timestamp,
@@ -150,57 +222,89 @@ pre_final AS (
         d.inner_index_end,
         d.succeeded,
         d.swapper,
-        coalesce(t1.amount, t3.amount) AS from_amt,
-        coalesce(t1.mint, t3.mint) AS from_mint,
-        coalesce(t2.amount, t4.amount) AS to_amt,
-        coalesce(t2.mint, t4.mint) AS to_mint,
+        coalesce(t1.amount, t2.amount) AS from_amt,
+        coalesce(t1.mint, t2.mint) AS from_mint,
+        coalesce(t3.amount, t4.amount) AS to_amt,
+        coalesce(t3.mint, t4.mint) AS to_mint,
+        d.swap_index,
         d._inserted_timestamp
     FROM
         decoded AS d
-        -- join with transfers table to get details for source and destination tokens
     LEFT JOIN 
+        -- token a is the source
         transfers AS t1
         ON d.tx_id = t1.tx_id
-        AND d.source_token_account = t1.source_token_account
-        AND d.program_source_token_account = t1.dest_token_account
+        AND d.token_a_account = t1.source_token_account
+        AND d.program_token_a_account = t1.dest_token_account
         AND d.index = t1.index_1
         AND (
             (t1.inner_index_1 BETWEEN d.inner_index AND d.inner_index_end)
             OR d.inner_index IS NULL
         )
     LEFT JOIN 
+        -- token b is the source
         transfers AS t2
         ON d.tx_id = t2.tx_id
-        AND d.destination_token_account = t2.dest_token_account
-        AND d.program_destination_token_account = t2.source_token_account
+        AND d.token_b_account = t2.source_token_account
+        AND d.program_token_b_account = t2.dest_token_account
         AND d.index = t2.index_1
         AND (
             (t2.inner_index_1 BETWEEN d.inner_index AND d.inner_index_end)
             OR d.inner_index IS NULL
         ) 
-        -- do a separate set of joins mirroring above because destination/source accounts are occasionaly flipped in a swap tx
     LEFT JOIN 
+        -- token a is the destination
         transfers AS t3
         ON d.tx_id = t3.tx_id
-        AND d.source_token_account = t3.source_token_account
-        AND d.program_destination_token_account = t3.dest_token_account
+        AND d.token_a_account = t3.dest_token_account
+        AND d.program_token_a_account = t3.source_token_account
         AND d.index = t3.index_1
         AND (
             (t3.inner_index_1 BETWEEN d.inner_index AND d.inner_index_end)
             OR d.inner_index IS NULL
         )
     LEFT JOIN 
+        -- token b is the destination
         transfers AS t4
         ON d.tx_id = t4.tx_id
-        AND d.destination_token_account = t4.dest_token_account
-        AND d.program_source_token_account = t4.source_token_account
+        AND d.token_b_account = t4.dest_token_account
+        AND d.program_token_b_account = t4.source_token_account
         AND d.index = t4.index_1
         AND (
             (t4.inner_index_1 BETWEEN d.inner_index AND d.inner_index_end)
             OR d.inner_index IS NULL
         )  
+),
+
+pre_final AS (
+    SELECT
+        s1.block_id,
+        s1.block_timestamp,
+        s1.program_id,
+        s1.tx_id,
+        s1.index,
+        s1.inner_index,
+        s1.inner_index_end,
+        s1.succeeded,
+        s1.swapper,
+        s1.from_amt,
+        s1.from_mint,
+        iff(s1.swap_index = 1, s2.to_amt, s1.to_amt) AS to_amt, -- handle two hop swaps
+        iff(s1.swap_index = 1, s2.to_mint, s1.to_mint) AS to_mint, -- handle two hop swaps
+        s1._inserted_timestamp
+    FROM
+        swaps_with_amounts AS s1
+    LEFT JOIN
+        swaps_with_amounts AS s2
+        ON s1.tx_id = s2.tx_id
+        AND s1.index = s2.index
+        AND s1.inner_index IS NOT DISTINCT FROM s2.inner_index
+        AND s1.swap_index = 1
+        AND s2.swap_index = 2
+    WHERE
+        s1.swap_index IN (0,1)
     QUALIFY
-        row_number() OVER (PARTITION BY d.tx_id, d.index, d.inner_index ORDER BY d.inner_index) = 1
+        row_number() OVER (PARTITION BY s1.tx_id, s1.index, s1.inner_index ORDER BY s1.inner_index) = 1
 )
 
 SELECT
