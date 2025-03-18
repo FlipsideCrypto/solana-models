@@ -1,9 +1,10 @@
 {{ config(
     materialized = 'incremental',
+    incremental_strategy = 'merge',
     meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'PRICE' }}},
-    incremental_strategy = 'delete+insert',
-    unique_key = 'ez_asset_metadata_id',
-    post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(asset_id,token_address,name,symbol)'),
+    unique_key = ['ez_asset_metadata_id'],
+    merge_exclude_columns = ["inserted_timestamp"],
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(token_address,symbol,NAME)'),
     tags = ['scheduled_non_core']
 ) }}
 
