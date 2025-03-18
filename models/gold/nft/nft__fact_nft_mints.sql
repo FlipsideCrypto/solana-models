@@ -1,8 +1,25 @@
 {{ config(
-    materialized = 'view',
+    materialized = 'incremental',
     meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }}},
+    unique_key = ['fact_nft_mints_id'],
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
+    cluster_by = ['block_timestamp::DATE', 'program_id'],
+    merge_exclude_columns = ["inserted_timestamp"],
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, purchaser, mint)'),
     tags = ['scheduled_non_core']
 ) }}
+
+{% if execute %}
+
+    {% if is_incremental() %}
+        {% set query %}
+            SELECT MAX(modified_timestamp) AS max_modified_timestamp
+            FROM {{ this }}
+        {% endset %}
+
+        {% set max_modified_timestamp = run_query(query).columns[0].values()[0] %}
+    {% endif %}
+{% endif %}
 
 SELECT
     block_timestamp,
@@ -31,6 +48,10 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_mints') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
 UNION ALL
 SELECT
     block_timestamp,
@@ -59,3 +80,7 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_compressed_mints') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
