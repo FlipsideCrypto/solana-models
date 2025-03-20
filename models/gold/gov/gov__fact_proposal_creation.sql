@@ -1,6 +1,11 @@
 {{ config(
-    materialized = 'view',
+    materialized = 'incremental',
     meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'GOVERNANCE' }}},
+    unique_key = ['fact_proposal_creation_id'],
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
+    cluster_by = ['block_timestamp::DATE'],
+    merge_exclude_columns = ["inserted_timestamp"],
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id)'),
     tags = ['scheduled_non_core']
 ) }}
 
@@ -33,3 +38,11 @@ SELECT
     ) AS modified_timestamp
 FROM
     {{ ref('silver__proposal_creation_realms') }}
+{% if is_incremental() %}
+WHERE modified_timestamp >= (
+    SELECT
+        MAX(modified_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
