@@ -57,7 +57,11 @@ models:
       - name: INNER_INSTRUCTIONS
         description: "{{ doc('inner_instruction') }}"
         data_tests: 
-          - not_null: *recent_date_filter
+          - not_null:
+              config:
+                where: >
+                  _inserted_timestamp >= current_date - 7
+                  AND succeeded
       - name: LOG_MESSAGES
         description: Array of log messages written by the program for this transaction
       - name: ADDRESS_TABLE_LOOKUPS
