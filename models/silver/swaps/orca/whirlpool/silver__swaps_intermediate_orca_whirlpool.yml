@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: silver__swaps_intermediate_orca_whirlpool
-    tests:
+    data_tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
@@ -33,77 +33,76 @@ models:
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
-        tests:
+        data_tests:
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 2
           - not_null: *recent_date_filter
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
-        tests:
+        data_tests:
           - not_null: *recent_date_filter
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
-        tests:
+        data_tests:
           - not_null: *recent_date_filter
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
-        tests: 
+        data_tests: 
           - not_null: *recent_date_filter
       - name: INDEX
         description: "{{ doc('index') }}"
-        tests: 
+        data_tests: 
           - not_null: *recent_date_filter
       - name: INNER_INDEX
         description: "{{ doc('inner_index') }}"
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
-        tests: 
+        data_tests: 
           - not_null: *recent_date_filter
       - name: SWAPPER
         description: "{{ doc('swaps_swapper') }}"
-        tests: 
-          - not_null:
-              where: succeeded = TRUE
+        data_tests: 
+          - not_null: *recent_date_filter
       - name: FROM_AMT
         description:  "{{ doc('swaps_from_amt') }}"
-        tests: 
+        data_tests: 
           - not_null: *recent_date_filter
       - name: FROM_MINT
         description:  "{{ doc('swaps_from_mint') }}"
-        tests: 
+        data_tests: 
           - not_null: *recent_date_filter
       - name: TO_AMT
         description:  "{{ doc('swaps_to_amt') }}"
-        tests: 
+        data_tests: 
           - not_null: *recent_date_filter
       - name: TO_MINT
         description:  "{{ doc('swaps_to_mint') }}"
-        tests: 
+        data_tests: 
           - not_null: *recent_date_filter
       - name: SWAP_INDEX
         description: "{{ doc('swaps_swap_index') }}"
-        tests: 
+        data_tests: 
           - not_null: *recent_date_filter
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
-        tests: 
-          - not_null: *recent_date_filter
+        data_tests: 
+          - not_null
       - name: SWAPS_INTERMEDIATE_ORCA_WHIRLPOOL_ID
         description: '{{ doc("pk") }}'   
-        tests: 
+        data_tests: 
           - unique: *recent_date_filter
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   
-        tests: 
+        data_tests: 
           - not_null: *recent_date_filter
       - name: MODIFIED_TIMESTAMP
         description: '{{ doc("modified_timestamp") }}' 
-        tests: 
+        data_tests: 
           - not_null: *recent_date_filter
       - name: _INVOCATION_ID
         description: '{{ doc("_invocation_id") }}' 
-        tests: 
+        data_tests: 
           - not_null: 
               name: test_silver__not_null_swaps_intermediate_orca_whirlpool__invocation_id
               <<: *recent_date_filter
