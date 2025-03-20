@@ -6,7 +6,7 @@
     cluster_by = ['HOUR::DATE'],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(token_address,symbol,NAME)'),
-    tags = ['scheduled_non_core']
+    tags = ['scheduled_non_core','scheduled_non_core_hourly']
 ) }}
 
 {% if execute %}
