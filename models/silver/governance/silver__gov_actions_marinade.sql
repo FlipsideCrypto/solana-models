@@ -34,7 +34,7 @@ more_locks AS (
     AND
         _inserted_timestamp >= (
             SELECT
-                MAX(_inserted_timestamp)
+                GREATEST(MAX(_inserted_timestamp),current_date-3)
             FROM
                 {{ this }}
         )
@@ -51,7 +51,7 @@ more_locks AS (
     WHERE
         _inserted_timestamp >= (
             SELECT
-                MAX(_inserted_timestamp)
+                GREATEST(MAX(_inserted_timestamp),current_date-3)
             FROM
                 {{ this }}
         )
@@ -84,7 +84,7 @@ WHERE
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp)
+        GREATEST(MAX(_inserted_timestamp),current_date-3)
     FROM
         {{ this }}
 )
@@ -129,13 +129,13 @@ FROM
 WHERE
     e._inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp)
+            GREATEST(MAX(_inserted_timestamp),current_date-3)
         FROM
             {{ this }}
     )
     AND t._inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp)
+            GREATEST(MAX(_inserted_timestamp),current_date-3)
         FROM
             {{ this }}
     )
