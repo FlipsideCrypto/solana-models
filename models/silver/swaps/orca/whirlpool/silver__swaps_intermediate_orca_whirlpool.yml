@@ -1,0 +1,108 @@
+version: 2
+models:
+  - name: silver__swaps_intermediate_orca_whirlpool
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - SWAP_INDEX
+            - PROGRAM_ID
+          where: block_timestamp::date > current_date - 30
+      - compare_model_subset:
+          name: silver__swaps_intermediate_orca_whirlpool_business_logic_test
+          compare_model: ref('testing__swaps_intermediate_orca_whirlpool')
+          compare_columns: 
+            - tx_id
+            - swapper
+            - round(from_amt,8)
+            - from_mint
+            - round(to_amt,8)
+            - to_mint
+            - swap_index
+          model_condition: "where tx_id in (
+            '4qwTjgjvbUizLZqTzA3g8puXFWLdHWxs4wWyAZSVDtJjPJHCZf4hJoZqpDJdVgVs25JL9YUBCwLNH19jnbVV3XZ7',
+            '3GhLiZZGzdjqiMtafVTGF6mnGdnM5fc913oerKzkivxiWcrX5NQtFJHLdEhFjvc35ZdNgHAGmEwxBqLKeFwHrNWM',
+            '4MuMSu9jE1nMrkTDeTd5VEtG4Mkh5DCANQfHogqeTHUPLCre4NLQk8npF3nAWE7cbo4iKabXanyh2kGJiZvR3m2k',
+            'sXY2vRjb61CTPqTcyTKpXD5kgj7hvpAxbtpTYsYUqrnEZ9GWyhKj5a674f2YHNMbpDLxRhrQDeFKTVQP4KTsoPX',
+            '4wcToXyTGmpi8MSugkZBhb3d8e6pomX2aKAEHFzWzAxRyb83hGjGd2n1J9fYnNRXAW9uQ98hahjM2Ud8XAeR5jtH',
+            '4aKXH2s3Le1qq5bdn5MzgPe1iTes3fW4KL563sAt7huNH2CXrZPrDSbFAW1cfXfVZNWCd5twAKuUeZS95rh6PiKm'
+          )" 
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        data_tests:
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+          - not_null: *recent_date_filter
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        data_tests:
+          - not_null: *recent_date_filter
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('index') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: SWAPPER
+        description: "{{ doc('swaps_swapper') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: FROM_AMT
+        description:  "{{ doc('swaps_from_amt') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: FROM_MINT
+        description:  "{{ doc('swaps_from_mint') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: TO_AMT
+        description:  "{{ doc('swaps_to_amt') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: TO_MINT
+        description:  "{{ doc('swaps_to_mint') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: SWAP_INDEX
+        description: "{{ doc('swaps_swap_index') }}"
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        data_tests: 
+          - not_null
+      - name: SWAPS_INTERMEDIATE_ORCA_WHIRLPOOL_ID
+        description: '{{ doc("pk") }}'   
+        data_tests: 
+          - unique: *recent_date_filter
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+        data_tests: 
+          - not_null: *recent_date_filter
+      - name: _INVOCATION_ID
+        description: '{{ doc("_invocation_id") }}' 
+        data_tests: 
+          - not_null: 
+              name: test_silver__not_null_swaps_intermediate_orca_whirlpool__invocation_id
+              <<: *recent_date_filter
