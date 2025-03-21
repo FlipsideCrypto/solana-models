@@ -7,106 +7,88 @@
     tags = ['scheduled_non_core','scheduled_non_core_hourly']
 ) }}
 
-WITH base_events AS (
-
+WITH prefinal as (
     SELECT
-        *
+        block_id,
+        block_timestamp,
+        tx_id,
+        succeeded,
+        index,
+        null as inner_index,
+        event_type,
+        instruction :parsed :info :mint :: STRING AS mint,
+        instruction :parsed :info :account :: STRING as token_account, 
+        instruction :parsed :info :decimals :: INTEGER AS DECIMAL,
+        COALESCE(
+            instruction :parsed :info :amount :: INTEGER,
+            instruction :parsed :info :tokenAmount: amount :: INTEGER
+        ) AS mint_amount,
+        COALESCE(
+            instruction :parsed :info :mintAuthority :: string,
+            instruction :parsed :info :multisigMintAuthority :: string,
+            instruction :parsed :info :authority :: string
+        ) AS mint_authority,
+        instruction :parsed :info :signers :: string AS signers,
+        _inserted_timestamp
     FROM
         {{ ref('silver__events') }}
-    WHERE 
-        1 = 1
-    {% if is_incremental() %}
-        {% if execute %}
-        {{ get_batch_load_logic(this,30,'2023-02-14') }}
+    WHERE
+        event_type IN (
+            'mintTo',
+            'initializeMint',
+            'mintToChecked',
+            'initializeMint2',
+            'initializeConfidentialTransferMint',
+            'initializeNonTransferableMint'
+        )
+        {% if is_incremental() %}
+            {% if execute %}
+            {{ get_batch_load_logic(this,30,'2023-02-14') }}
+            {% endif %}
+        {% else %}
+            AND _inserted_timestamp::date between '2022-08-12' and '2022-09-05'
         {% endif %}
-    {% else %}
-        AND _inserted_timestamp::date between '2022-08-12' and '2022-09-05'
-    {% endif %}
-),
-base_events_inner AS (
-
+    UNION
     SELECT
-        *
+        block_id,
+        block_timestamp,
+        tx_id,
+        succeeded,
+        instruction_index as index,
+        inner_index,
+        event_type,
+        instruction :parsed :info :mint :: STRING AS mint,
+        instruction :parsed :info :account :: STRING as token_account, 
+        instruction :parsed :info :decimals :: INTEGER AS DECIMAL,
+        COALESCE(
+            instruction :parsed :info :amount :: INTEGER,
+            instruction :parsed :info :tokenAmount: amount :: INTEGER
+        ) AS mint_amount,
+        COALESCE(
+            instruction :parsed :info :mintAuthority :: string,
+            instruction:parsed :info :multisigMintAuthority :: string,
+            instruction :parsed :info :authority :: string
+        ) AS mint_authority,
+        instruction :parsed :info :signers :: string AS signers,
+        _inserted_timestamp
     FROM
         {{ ref('silver__events_inner') }}
-    WHERE 
-        1 = 1
-    {% if is_incremental() %}
-        {% if execute %}
-        {{ get_batch_load_logic(this,30,'2023-02-14') }}
+    WHERE
+        instruction :parsed :type :: STRING IN (
+            'mintTo',
+            'initializeMint',
+            'mintToChecked',
+            'initializeMint2',
+            'initializeConfidentialTransferMint',
+            'initializeNonTransferableMint'
+        )
+        {% if is_incremental() %}
+            {% if execute %}
+            {{ get_batch_load_logic(this,30,'2023-02-14') }}
+            {% endif %}
+        {% else %}
+            AND _inserted_timestamp::date between '2022-08-12' and '2022-09-05'
         {% endif %}
-    {% else %}
-        AND _inserted_timestamp::date between '2022-08-12' and '2022-09-05'
-    {% endif %}
-),
-prefinal as (
-SELECT
-    block_id,
-    block_timestamp,
-    tx_id,
-    succeeded,
-    index,
-    null as inner_index,
-    event_type,
-    instruction :parsed :info :mint :: STRING AS mint,
-    instruction :parsed :info :account :: STRING as token_account, 
-    instruction :parsed :info :decimals :: INTEGER AS DECIMAL,
-    COALESCE(
-        instruction :parsed :info :amount :: INTEGER,
-        instruction :parsed :info :tokenAmount: amount :: INTEGER
-    ) AS mint_amount,
-    COALESCE(
-        instruction :parsed :info :mintAuthority :: string,
-        instruction :parsed :info :multisigMintAuthority :: string,
-        instruction :parsed :info :authority :: string
-    ) AS mint_authority,
-    instruction :parsed :info :signers :: string AS signers,
-    _inserted_timestamp
-FROM
-    base_events
-WHERE
-    event_type IN (
-        'mintTo',
-        'initializeMint',
-        'mintToChecked',
-        'initializeMint2',
-        'initializeConfidentialTransferMint',
-        'initializeNonTransferableMint'
-    )
-UNION
-SELECT
-    block_id,
-    block_timestamp,
-    tx_id,
-    succeeded,
-    instruction_index as index,
-    inner_index,
-    event_type,
-    instruction :parsed :info :mint :: STRING AS mint,
-    instruction :parsed :info :account :: STRING as token_account, 
-    instruction :parsed :info :decimals :: INTEGER AS DECIMAL,
-    COALESCE(
-        instruction :parsed :info :amount :: INTEGER,
-        instruction :parsed :info :tokenAmount: amount :: INTEGER
-    ) AS mint_amount,
-    COALESCE(
-        instruction :parsed :info :mintAuthority :: string,
-        instruction:parsed :info :multisigMintAuthority :: string,
-        instruction :parsed :info :authority :: string
-    ) AS mint_authority,
-    instruction :parsed :info :signers :: string AS signers,
-    _inserted_timestamp
-FROM
-    base_events_inner
-WHERE
-    instruction :parsed :type :: STRING IN (
-        'mintTo',
-        'initializeMint',
-        'mintToChecked',
-        'initializeMint2',
-        'initializeConfidentialTransferMint',
-        'initializeNonTransferableMint'
-    )
 )
 
 SELECT
