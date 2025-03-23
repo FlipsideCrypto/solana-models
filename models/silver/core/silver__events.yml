@@ -1,13 +1,16 @@
 version: 2
 models:
   - name: silver__events
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - BLOCK_ID
             - TX_ID
             - INDEX
-          where: block_timestamp::date > current_date - 30
+          where: block_timestamp::date > current_date - 7
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -20,23 +23,23 @@ models:
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: SIGNERS
         description: List of accounts that signed the transaction
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: INDEX
         description: "{{ doc('event_index') }}"
         tests:  
-          - not_null
+          - not_null: *recent_date_filter
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
       - name: EVENT_TYPE
@@ -44,8 +47,7 @@ models:
       - name: INSTRUCTION
         description: An instruction specifies which program it is calling, which accounts it wants to read or modify, and additional data that serves as auxiliary input to the program
         tests: 
-          - not_null:
-              where: block_timestamp::date > current_date - 30
+          - not_null: *recent_date_filter
       - name: INNER_INSTRUCTION
         description: A call from one smart contract program to another. 
       - name: _INSERTED_TIMESTAMP

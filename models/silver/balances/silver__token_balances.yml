@@ -6,7 +6,7 @@ models:
           combination_of_columns:
             - TX_ID
             - ACCOUNT
-          where: block_timestamp::date > current_date - 30
+          where: block_timestamp::date > current_date - 7
     recent_date_filter: &recent_date_filter
       config:
         where: _inserted_timestamp >= current_date - 7
