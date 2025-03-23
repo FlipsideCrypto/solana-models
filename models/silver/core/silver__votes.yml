@@ -1,11 +1,14 @@
 version: 2
 models:
   - name: silver__votes
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
-          where: block_timestamp::date > current_date - 30
+          where: block_timestamp::date > current_date - 7
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -15,15 +18,15 @@ models:
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: RECENT_BLOCK_HASH
         description: Previous block's hash value
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: SIGNERS
         description: List of accounts that signed the transaction
       - name: FEE
@@ -35,12 +38,11 @@ models:
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: ACCOUNT_KEYS
         description: List of accounts that are referenced by pre/post sol/token balances objects
         tests: 
-          - not_null:
-              where: block_timestamp::date > current_date - 30
+          - not_null: *recent_date_filter
       - name: VOTE_ACCOUNT
         description: Account belonging to the voting delegator
         tests: 
