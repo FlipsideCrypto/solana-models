@@ -9,6 +9,18 @@
     tags = ['scheduled_core']
 ) }}
 
+{% if execute %}
+
+    {% if is_incremental() %}
+        {% set query %}
+            SELECT MAX(_inserted_timestamp) AS max_inserted_timestamp
+            FROM {{ this }}
+        {% endset %}
+
+        {% set max_inserted_timestamp = run_query(query).columns[0].values()[0] %}
+    {% endif %}
+{% endif %}
+
 WITH base_transfers_i AS (
     SELECT
         block_id,
@@ -49,12 +61,7 @@ AND
             {{ this }}
         ) 
 {% elif is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-    )
+AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
 {% else %}
 AND
     block_id between 4260184 and 5260184
@@ -62,26 +69,24 @@ AND
 
     UNION
     SELECT
-        e.block_id,
-        e.block_timestamp,
-        e.tx_id,
+        block_id,
+        block_timestamp,
+        tx_id,
         CONCAT(
-            e.inner_instruction :index :: NUMBER,
+            instruction_index,
             '.',
-            ii.index
+            inner_index
         ) AS INDEX,
-        ii.value :parsed :type :: STRING AS event_type,
-        ii.value :programId :: STRING AS program_id,
-        ii.value as instruction,
+        event_type,
+        program_id,
+        instruction,
         NULL AS inner_instruction,
-        e.succeeded,
+        succeeded,
         _inserted_timestamp
     FROM
-        {{ ref('silver__events') }}
-        e,
-        TABLE(FLATTEN(e.inner_instruction :instructions)) ii
+        {{ ref('silver__events_inner') }}
     WHERE
-        ii.value :parsed :type :: STRING IN (
+        event_type IN (
         'transfer',
         'transferChecked',
         'transferWithSeed',
@@ -106,12 +111,7 @@ AND
             {{ this }}
         ) 
 {% elif is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-    )
+AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
 {% else %}
 AND
     block_id between 4260184 and 5260184
@@ -146,13 +146,7 @@ WHERE
             {{ this }}
         ) 
 {% elif is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
+WHERE _inserted_timestamp >= '{{ max_inserted_timestamp }}'
 {% else %}
 WHERE
     block_id between 4260184 and 5260184
@@ -186,13 +180,7 @@ WHERE
             {{ this }}
         ) 
 {% elif is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
+WHERE _inserted_timestamp >= '{{ max_inserted_timestamp }}'
 {% else %}
 WHERE
     block_id between 4260184 and 5260184
@@ -222,13 +210,7 @@ base_sol_account_keys AS (
                 {{ this }}
         ) 
     {% elif is_incremental() %}
-    WHERE
-        _inserted_timestamp >= (
-            SELECT
-                MAX(_inserted_timestamp)
-            FROM
-                {{ this }}
-        )
+    WHERE _inserted_timestamp >= '{{ max_inserted_timestamp }}'
     {% else %}
     WHERE
         block_id between 4260184 and 5260184
