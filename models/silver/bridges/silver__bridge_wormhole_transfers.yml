@@ -27,49 +27,53 @@ models:
           '3g7GGbBJpGDfCaa1MQVQGpieqYi6j9XWUtsUKXh6ogUi1ss7asthzd81irNrpx1WGW5h7B75FN7jhN4UCyicxgCe',
           '2AzNhDD9GWUrJvhhrdCcaVnuU4Mb3aZKNozhCMJZJ52b9SwrQNg42JVmcx2GvfCxk6cKaPGdSz8gUWqqpaznRg3f',
           '51bkYq62kFw9zX88KbbwBMGKeWgoNz7DXo8wU2aD6qbtL3LvvX2m58n6JS2HdYoUHmckHQkZMvnWA98aLQ1TAS29')"
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
+          - not_null: *recent_date_filter
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 2
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests:
-          - not_null
+          - not_null: *recent_date_filter
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: PLATFORM
         description: Name of the bridge
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: DIRECTION
         description: Direction of the bridge - either inbound to Solana or outbound from Solana
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: USER_ADDRESS
         description: The address receiving or sending bridged tokens
         tests: 
-          - not_null 
+          - not_null: *recent_date_filter
       - name: AMOUNT
         description: "{{ doc('amount') }}"
         tests: 
-          - not_null 
+          - not_null: *recent_date_filter
       - name: MINT
         description:  "{{ doc('mint') }}"
         tests: 
-          - not_null
+          - not_null: *recent_date_filter
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('tx_id') }}"
         tests: 

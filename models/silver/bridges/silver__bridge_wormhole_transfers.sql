@@ -256,7 +256,19 @@ outbound AS (
                 b.inner_index IS NOT NULL
                 AND b.program_id = 'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb'
             )
-        ) qualify ROW_NUMBER() over (
+        ) 
+        AND EXISTS (
+            SELECT 1
+            FROM base_events e,
+            TABLE(FLATTEN(e.inner_instruction:instructions)) i
+            WHERE e.tx_id = A.tx_id
+            AND e.program_id = 'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb'
+            AND i.value:programId::string = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+            AND i.value:parsed:type::string = 'burn'
+            AND i.value:parsed:info:mint::string = A.mint)
+        OR
+        A.burn_authority = '7oPa2PHQdZmjSPqvpZN7MQxnC7Dcf3uL4oLqknGLk2S3' --Wormhole Transfer Authority
+        qualify ROW_NUMBER() over (
             PARTITION BY A.tx_id
             ORDER BY
                 A.index,
