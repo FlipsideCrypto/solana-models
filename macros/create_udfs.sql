@@ -2,7 +2,6 @@
     {% if var("UPDATE_UDFS_AND_SPS") %}
         {% set sql %}
         {% if target.database != "SOLANA_COMMUNITY_DEV" %}
-            {{ udf_bulk_get_decoded_instructions_data() }};
             {{ udf_snapshot_get_stake_accounts() }};
             {{ udf_bulk_program_parser() }};
             {{ udf_decode_instructions() }};
