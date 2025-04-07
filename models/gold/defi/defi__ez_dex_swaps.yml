@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: defi__ez_dex_swaps
-    description: A convenience table containing swaps performed on Jupiter, Orca, Raydium, Saber, Bonkswap, Dooar, Phoenix and Meteora swap programs. Intermediate swaps are aggregated over the DEX programs, so the values showcase the final mint/amount swap values. Ie. a swap on Jupiter that swaps SOL->USDC->mSOL->ETH would show the initial amount in and the final amount out of SOL->ETH. For Phoenix, we are not capturing swaps where there are separate transactions for placing the order and filling the order. 
+    description: A convenience table containing swaps performed on Jupiter (V2, V3), Orca, Raydium, Saber, Bonkswap, Dooar, Phoenix, Meteora, Pumpswap, and Pumpfun swap programs. For Phoenix, we are not capturing swaps where there are separate transactions for placing the order and filling the order. NOTE - Jupiter (V4, V5, V6) aggregator swaps exist in defi.fact_swaps_jupiter_summary, and individual routes are present in defi.fact_swaps_jupiter_inner. 
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

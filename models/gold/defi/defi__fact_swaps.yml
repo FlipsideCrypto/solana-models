@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: defi__fact_swaps
-    description: This table contains swaps performed on Jupiter (V3, V4), Orca, Raydium, Saber, Bonkswap, Dooar, Phoenix, Meteora, Pumpswap, and Pumpfun swap programs. For Phoenix, we are not capturing swaps where there are separate transactions for placing the order and filling the order. NOTE - Jupiter (V4, V5, V6) aggregator swaps exist in defi.fact_swaps_jupiter_summary, and individual routes are present in defi.fact_swaps_jupiter_inner. 
+    description: This table contains swaps performed on Jupiter (V2, V3), Orca, Raydium, Saber, Bonkswap, Dooar, Phoenix, Meteora, Pumpswap, and Pumpfun swap programs. For Phoenix, we are not capturing swaps where there are separate transactions for placing the order and filling the order. NOTE - Jupiter (V4, V5, V6) aggregator swaps exist in defi.fact_swaps_jupiter_summary, and individual routes are present in defi.fact_swaps_jupiter_inner. 
     recent_date_filter: &recent_date_filter
       config:
         where: block_timestamp >= current_date - 7
@@ -20,6 +20,7 @@ models:
             - 'silver__swaps_intermediate_raydium_v4_amm'
             - 'silver__swaps_pumpfun'
             - 'silver__swaps_intermediate_raydium_cpmm'
+            - 'silver__swaps_pumpswap'
           id_column: 'tx_id'
     columns:
       - name: BLOCK_TIMESTAMP
