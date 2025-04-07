@@ -55,7 +55,7 @@ run_model AS (
         table_epoch,
         sol_epoch
     WHERE
-        sol_epoch.current_sol_epoch = table_epoch.current_table_epoch
+        sol_epoch.current_sol_epoch > table_epoch.current_table_epoch
 )
 
 
