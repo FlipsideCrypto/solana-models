@@ -15,7 +15,7 @@ epoch_range AS (
         e.start_block,
         e.end_block
     FROM
-        solana.silver.epoch e
+        {{ ref('silver__epoch') }} e
     JOIN
         max_block mb
     ON
@@ -30,7 +30,7 @@ closest_block AS (
     FROM
         epoch_range e
     LEFT JOIN
-        solana.silver.blocks b
+        {{ ref('silver__blocks') }} b
     ON
         b.block_id >= e.start_block
         AND b.block_id <= e.end_block
