@@ -44,7 +44,7 @@ recent_epoch_stake_account AS (
     FROM
         {{ ref('silver__snapshot_stake_accounts_2') }}
 )
-
+-- Will alert (return records) if Solanas current epoch is older then 24 hours AND the stake_accounts_snapshot table doesnt have records yet for that epoch
 SELECT
     *
 FROM
