@@ -3,7 +3,7 @@ run-name: dbt_run_streamline_stake_accounts_snapshot
 
 on:
   workflow_dispatch:
-  schedule:
+    branches:
       - "main"
     
 env:
