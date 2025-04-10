@@ -47,7 +47,7 @@ run_model AS (
         sol_epoch.current_sol_epoch,
         github_actions.workflow_dispatches(
             'FlipsideCrypto',
-            'solana_models',
+            'solana-models',
             'dbt_run_streamline_stake_accounts_snapshot.yml',
             NULL
         ) AS run_stake_accounts_snapshot
