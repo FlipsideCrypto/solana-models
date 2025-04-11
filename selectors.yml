@@ -1,0 +1,7 @@
+selectors:
+  - name: integration_tests
+    description: "Selector for integration tests"
+    definition:
+      union:
+        - method: fqn
+          value: "livequery_models.deploy.core._utils"
