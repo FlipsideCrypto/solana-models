@@ -73,8 +73,7 @@ models:
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
-          - not_null:
-              name: test_lifinity_inserted_timestamp_not_null
+          - not_null
       - name: SWAPS_INTERMEDIATE_LIFINITY_ID
         description: '{{ doc("pk") }}'   
         tests: 
@@ -91,5 +90,5 @@ models:
         description: '{{ doc("_invocation_id") }}' 
         tests: 
           - not_null:
-              name: test_lifinity_invocation_id_not_null
+              name: test_silver__not_null_swaps_intermediate_lifinity__invocation_id
               <<: *recent_date_filter
