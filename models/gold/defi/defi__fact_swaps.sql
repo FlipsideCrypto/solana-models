@@ -306,9 +306,6 @@ FROM
     {{ ref('silver__swaps_intermediate_lifinity') }}
 {% if is_incremental() %}
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
-{% else %}
-WHERE
-    modified_timestamp::date < '{{ backfill_to_date }}'
 {% endif %}
 )
 

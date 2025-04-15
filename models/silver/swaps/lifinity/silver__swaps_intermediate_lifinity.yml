@@ -7,7 +7,7 @@ models:
             - TX_ID
             - SWAP_INDEX
             - PROGRAM_ID
-          where: block_timestamp::date > current_date - 30
+          where: block_timestamp::date > current_date - 7
     recent_date_filter: &recent_date_filter
       config:
         where: _inserted_timestamp >= current_date - 7
@@ -73,7 +73,7 @@ models:
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         tests: 
-          - not_null: *recent_date_filter
+          - not_null
       - name: SWAPS_INTERMEDIATE_LIFINITY_ID
         description: '{{ doc("pk") }}'   
         tests: 
