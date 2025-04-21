@@ -137,6 +137,29 @@ merges_and_splits AS (
         base_staking_lp_actions
     WHERE
         event_type = 'merge'
+
+    UNION ALL
+
+    SELECT
+        block_id,
+        block_timestamp,
+        tx_id,
+        succeeded,
+        index,
+        inner_index,
+        signers,
+        instruction:parsed:info:source::string AS stake_account,
+        NULL AS parent_stake_account,
+        event_type,
+        account_keys,
+        pre_balances,
+        post_balances,
+        instruction,
+        _inserted_timestamp
+    FROM
+        base_staking_lp_actions
+    WHERE
+        event_type in ('moveLamports','moveStake')
 ),
 
 all_actions AS (
@@ -159,7 +182,7 @@ all_actions AS (
     FROM
         base_staking_lp_actions
     WHERE
-        event_type NOT IN ('merge', 'split')
+        event_type NOT IN ('merge', 'split',  'moveLamports','moveStake')
     
     UNION ALL
     
@@ -199,7 +222,7 @@ tx_base AS (
         stake_account,
         parent_stake_account,
         CASE
-            WHEN event_type = 'delegate' THEN TRUE
+            WHEN event_type in ('delegate', 'moveStake', 'moveLamports') THEN TRUE
             WHEN next_event_type = 'delegate' THEN FALSE
             WHEN next_event_type = 'deactivate' THEN TRUE
             WHEN event_type IN ('deactivate', 'merge_source') THEN FALSE
@@ -217,6 +240,14 @@ tx_base AS (
             WHEN event_type = 'withdraw' THEN instruction:parsed:info:destination::string
             ELSE NULL
         END AS withdraw_destination,
+        CASE
+            WHEN event_type in ('moveStake','moveLamports') THEN instruction:parsed:info:lamports::number
+            ELSE NULL
+        END AS move_amount,
+        CASE
+            WHEN event_type in ('moveStake','moveLamports') THEN instruction:parsed:info:destination::string
+            ELSE NULL
+        END AS move_destination,
         _inserted_timestamp
     FROM
         all_actions
@@ -279,6 +310,8 @@ fill_vote_acct AS (
         post_tx_staked_balance,
         withdraw_amount,
         withdraw_destination,
+        move_amount,
+        move_destination,
         coalesce(
             tx_base.vote_acct,
             last_value(tx_base.vote_acct) IGNORE NULLS OVER (
@@ -315,6 +348,8 @@ temp AS (
         b.post_tx_staked_balance,
         b.withdraw_amount,
         b.withdraw_destination,
+        b.move_amount,
+        b.move_destination,
         coalesce(b.vote_account, A.vote_account) AS vote_account,
         b._inserted_timestamp
     FROM
@@ -347,6 +382,8 @@ temp2 AS (
         post_tx_staked_balance,
         withdraw_amount,
         withdraw_destination,
+        move_amount,
+        move_destination,
         CASE
             WHEN vote_account IS NULL 
             THEN last_value(vote_account) IGNORE NULLS OVER (
@@ -379,6 +416,8 @@ SELECT
     post_tx_staked_balance,
     withdraw_amount,
     withdraw_destination,
+    move_amount,
+    move_destination,
     vote_account,
     node_pubkey,
     validator_rank,

@@ -95,6 +95,10 @@ models:
         description: The amount of SOL being withdrawn from the stake account.
       - name: WITHDRAW_DESTINATION
         description: The destination wallet address of the withdrawn SOL.
+      - name: MOVE_AMOUNT
+        description: The amount of SOL being moved from the stake account.
+      - name: MOVE_DESTINATION
+        description: The destination wallet address of the moved SOL.
       - name: PRE_TX_STAKED_BALANCE
         description: The amount of Solana belonging to the stake account before the transaction.
       - name: POST_TX_STAKED_BALANCE
