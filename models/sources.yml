@@ -115,6 +115,9 @@ sources:
       - name: nft_sales_magic_eden_v2
       - name: snapshot_block_production
       - name: bridge_mayan_transfers
+      - name: nft_sales_solsniper_cnft
+      - name: nft_sales_solsniper
+      - name: nft_sales_solanart
   - name: solana_streamline
     database: solana
     schema: streamline
