@@ -27,6 +27,8 @@ SELECT
     post_tx_staked_balance,
     withdraw_amount,
     withdraw_destination,
+    move_amount,
+    move_destination,
     vote_account,
     node_pubkey,
     validator_rank,
