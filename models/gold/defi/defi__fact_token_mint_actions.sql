@@ -43,14 +43,8 @@ SELECT
             ['tx_id', 'index', 'inner_index', 'mint']
         ) }}
     ) AS fact_token_mint_actions_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
+    sysdate() AS inserted_timestamp,
+    sysdate() AS modified_timestamp
 FROM
     {{ ref('silver__token_mint_actions') }}
 {% if is_incremental() %}

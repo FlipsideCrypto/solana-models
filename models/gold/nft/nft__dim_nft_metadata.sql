@@ -32,8 +32,8 @@ SELECT
   A.metadata_uri,
   A.nft_name,
   A.helius_nft_metadata_id AS dim_nft_metadata_id,
-  A.inserted_timestamp,
-  A.modified_timestamp
+  sysdate() AS inserted_timestamp,
+  sysdate() AS modified_timestamp
 FROM
   {{ ref('silver__helius_nft_metadata') }} A
 LEFT JOIN 
@@ -55,8 +55,8 @@ SELECT
   metadata_uri,
   nft_name,
   helius_cnft_metadata_id AS dim_nft_metadata_id,
-  inserted_timestamp,
-  modified_timestamp
+  sysdate() AS inserted_timestamp,
+  sysdate() AS modified_timestamp
 FROM
   {{ ref('silver__helius_cnft_metadata') }}
 {% if is_incremental() %}

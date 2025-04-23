@@ -1,17 +1,11 @@
 {{ config(
-    materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'SWAPS' }} },
-    tags = ['scheduled_non_core','scheduled_non_core_hourly','exclude_change_tracking']
-) }}
-
-{{ config(
     materialized = 'incremental',
     unique_key = ['ez_swaps_id'],
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     cluster_by = ['block_timestamp::DATE','ROUND(block_id, -3)', 'program_id'],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, swapper, swap_from_mint, swap_to_mint, program_id, ez_swaps_id)'),
-    full_refresh = false,
+
     meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'SWAPS' }}},
     tags = ['scheduled_non_core','scheduled_non_core_hourly','exclude_change_tracking']
 ) }}
@@ -52,8 +46,6 @@ WITH swaps AS (
 {% if is_incremental() %}
 AND
     modified_timestamp >= '{{ max_modified_timestamp }}'
-{% else %}
-    AND modified_timestamp :: DATE < '2024-09-01'
 {% endif %}
 ),
 prices AS (
@@ -64,7 +56,14 @@ prices AS (
         price
     FROM
         {{ ref('price__ez_prices_hourly') }}
-    where hour::date between (select min(block_timestamp::date) from swaps) and current_date
+    WHERE
+        hour >= (
+            SELECT
+                MIN(DATE_TRUNC('hour', block_timestamp))
+            FROM
+                swaps
+        )
+
 )
 SELECT
     d.swap_program,
@@ -88,8 +87,8 @@ SELECT
         2
     ) AS swap_to_amount_usd,
     d._log_id,
-    d.inserted_timestamp,
-    d.modified_timestamp,
+    sysdate() AS inserted_timestamp,
+    sysdate() AS modified_timestamp,
     d.ez_swaps_id,
 FROM
     swaps d
