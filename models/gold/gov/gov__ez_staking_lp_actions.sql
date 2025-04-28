@@ -1,14 +1,26 @@
 {{ config(
-    materialized = 'view',
-    meta = {
-        'database_tags': {
-            'table': {
-                'PURPOSE': 'STAKING'
-            }
-        }
-    },
+    materialized = 'incremental',
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'STAKING' }} },
+    unique_key = ['ez_staking_lp_actions_id'],
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
+    cluster_by = ['block_timestamp::DATE','ROUND(block_id, -3)','event_type'],
+    merge_exclude_columns = ["inserted_timestamp"],
+    post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(tx_id, stake_account, vote_account, node_pubkey)'),
+    full_refresh = false,
     tags = ['scheduled_non_core']
 ) }}
+
+{% if execute %}
+    {% if is_incremental() %}
+        {% set query %}
+            SELECT 
+              max(modified_timestamp) AS max_modified_timestamp
+            FROM 
+              {{ this }}
+        {% endset %}
+        {% set max_modified_timestamp = run_query(query).columns[0].values()[0] %}
+    {% endif %}
+{% endif %}
 
 SELECT
     block_id,
@@ -40,7 +52,10 @@ SELECT
             ['block_id', 'tx_id', 'index']
         ) }}
     ) AS ez_staking_lp_actions_id,
-    coalesce(inserted_timestamp, '2000-01-01') AS inserted_timestamp,
-    coalesce(modified_timestamp, '2000-01-01') AS modified_timestamp
+    SYSDATE() AS modified_timestamp,
+    SYSDATE() AS inserted_timestamp
 FROM
     {{ ref('silver__staking_lp_actions_labeled_2') }}
+{% if is_incremental() %}
+WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
