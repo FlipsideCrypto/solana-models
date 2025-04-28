@@ -4,7 +4,8 @@
     incremental_strategy = 'delete+insert',
     merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
-    tags = ['scheduled_non_core']
+    full_refresh = false,
+    enabled = false,
 ) }}
 
 WITH mint_addresses AS (

@@ -4,7 +4,8 @@
     unique_key = ['nft_sales_solsniper_cnft_onchain_id'],
     cluster_by = ['block_timestamp::DATE'],
     merge_exclude_columns = ["inserted_timestamp"],
-    tags = ['scheduled_non_core']
+    full_refresh = false,
+    enabled = false,
 ) }}
 
 -- depends_on: {{ ref('silver__decoded_instructions_combined') }}

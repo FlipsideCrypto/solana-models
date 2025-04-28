@@ -25,17 +25,14 @@
 {% endif %}
 
 {% set standard_platforms = [
-    {'name': 'solanart', 'marketplace': 'solanart','marketplace_version': 'v1'},
     {'name': 'hadeswap_decoded', 'marketplace': 'hadeswap','marketplace_version': 'v1'},
     {'name': 'exchange_art', 'marketplace': 'exchange art', 'marketplace_version': 'v1'},
     {'name': 'amm_sell_decoded', 'marketplace': 'magic eden v2', 'marketplace_version': 'v2'},
     {'name': 'tensorswap', 'marketplace': 'tensorswap', 'marketplace_version': 'v1'},
-    {'name': 'solsniper', 'marketplace': 'solsniper', 'marketplace_version': 'v1'},
     {'name': 'tensor_bid', 'marketplace': 'tensorswap', 'marketplace_version': 'v1'},
 ] %}
 
 {% set cnft_platforms = [
-    {'name': 'solsniper_cnft', 'marketplace': 'solsniper','marketplace_version': 'v1'},
     {'name': 'tensorswap_cnft', 'marketplace': 'tensorswap', 'marketplace_version': 'v1'},
     {'name': 'magic_eden_cnft', 'marketplace': 'magic eden v3', 'marketplace_version': 'v3'},
 ] %}

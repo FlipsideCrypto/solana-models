@@ -3,8 +3,8 @@
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     unique_key = ['nft_sales_solsniper_id'],
     cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
-    merge_exclude_columns = ["inserted_timestamp"],
-    tags = ['scheduled_non_core']
+    full_refresh = false,
+    enabled = false,
 ) }}
 -- depends_on: {{ ref('silver__decoded_instructions_combined') }}
 /* run incremental timestamp value first then use it as a static value */

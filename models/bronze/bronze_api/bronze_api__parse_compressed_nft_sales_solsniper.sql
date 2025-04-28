@@ -1,8 +1,9 @@
 -- depends_on: {{ ref('silver__nft_sales_solsniper_cnft_onchain') }}
 {{ config(
     materialized = 'incremental',
-    tags = ['bronze_api'],
-    cluster_by = ['end_inserted_timestamp::date']
+    cluster_by = ['end_inserted_timestamp::date'],
+    full_refresh = false,
+    enabled = false,
 ) }}
 
 {% if execute %}
@@ -14,7 +15,7 @@
             tx_id,
             _inserted_timestamp
         FROM
-            {{ ref('silver__nft_sales_solsniper_cnft_onchain') }}
+            {{ ref('silver__nft_sales_solsniper_cnft_onchain_view') }}
         {% if is_incremental() %}
         WHERE
             _inserted_timestamp >= (

@@ -306,8 +306,8 @@ WHERE
     block_timestamp::date <= '2023-02-08' -- use new model after this date
 UNION ALL
 SELECT
-    'magic eden v2',
-    'v2' AS marketplace_version,
+    'solanart',
+    'v1' AS marketplace_version,
     block_timestamp,
     block_id,
     tx_id,
@@ -324,15 +324,59 @@ SELECT
     NULL as merkle_tree,
     NULL as leaf_index,
     FALSE as is_compressed,
-    COALESCE (
-        nft_sales_magic_eden_v2_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_id', 'mint']
-        ) }}
-    ) AS nft_sales_legacy_combined_id,
+    nft_sales_solanart_id AS nft_sales_legacy_combined_id,
     inserted_timestamp,
     modified_timestamp
 FROM
-    {{ ref('silver__nft_sales_magic_eden_v2_view') }}
-WHERE
-    block_timestamp::date < '2024-03-16' -- use new model after this date
+    {{ ref('silver__nft_sales_solanart_view') }}
+UNION ALL
+SELECT
+    'solsniper',
+    'v1' AS marketplace_version,
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    index,
+    inner_index,
+    program_id,
+    purchaser,
+    seller,
+    mint,
+    sales_amount,
+    '{{ SOL_MINT }}' as currency_address,
+    NULL as tree_authority,
+    NULL as merkle_tree,
+    NULL as leaf_index,
+    FALSE as is_compressed,
+    nft_sales_solsniper_id AS nft_sales_legacy_combined_id,
+    inserted_timestamp,
+    modified_timestamp
+FROM
+    {{ ref('silver__nft_sales_solsniper_view') }}
+UNION ALL
+SELECT
+    'solsniper',
+    'v1' AS marketplace_version,
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    index,
+    inner_index,
+    program_id,
+    purchaser,
+    seller,
+    mint,
+    sales_amount,
+    '{{ SOL_MINT }}' AS currency_address,
+    tree_authority,
+    merkle_tree,
+    leaf_index,
+    TRUE as is_compressed,
+    nft_sales_solsniper_cnft_id AS nft_sales_legacy_combined_id,
+    inserted_timestamp,
+    modified_timestamp
+FROM
+    {{ ref('silver__nft_sales_solsniper_cnft_view') }}
+
