@@ -5,7 +5,6 @@
     unique_key = ["stake_pubkey", "epoch_earned", "block_id"],
     merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_timestamp::DATE', 'floor(block_id,-6)', '_inserted_timestamp::DATE'],
-    post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(stake_pubkey, epoch_earned)'),
     tags = ['rewards', 'scheduled_non_core']
 ) }}
 

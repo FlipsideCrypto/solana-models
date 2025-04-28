@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'REWARDS' }}},
-    unique_key = ['fact_rewards_fee_id'],
+    unique_key = ['fact_rewards_voting_id'],
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     cluster_by = ['block_timestamp::DATE'],
     merge_exclude_columns = ["inserted_timestamp"],
