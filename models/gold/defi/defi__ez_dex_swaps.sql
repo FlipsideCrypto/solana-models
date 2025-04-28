@@ -1,8 +1,26 @@
 {{ config(
-    materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'SWAPS' }} },
+    materialized = 'incremental',
+    unique_key = ['ez_swaps_id'],
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
+    cluster_by = ['block_timestamp::DATE','ROUND(block_id, -3)', 'program_id'],
+    merge_exclude_columns = ["inserted_timestamp"],
+    post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, swapper, swap_from_mint, swap_to_mint, program_id, ez_swaps_id)'),
+
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'SWAPS' }}},
     tags = ['scheduled_non_core','scheduled_non_core_hourly','exclude_change_tracking']
 ) }}
+
+{% if execute %}
+    {% if is_incremental() %}
+    {% set max_modified_query %}
+    SELECT
+        MAX(modified_timestamp) AS modified_timestamp
+    FROM
+        {{ this }}
+    {% endset %}
+    {% set max_modified_timestamp = run_query(max_modified_query)[0][0] %}
+    {% endif %}
+{% endif %}
 
 WITH swaps AS (
 
@@ -25,6 +43,10 @@ WITH swaps AS (
         {{ ref('defi__fact_swaps') }}
     WHERE
         succeeded
+{% if is_incremental() %}
+AND
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
 ),
 prices AS (
     SELECT
@@ -34,6 +56,14 @@ prices AS (
         price
     FROM
         {{ ref('price__ez_prices_hourly') }}
+    WHERE
+        hour >= (
+            SELECT
+                MIN(DATE_TRUNC('hour', block_timestamp))
+            FROM
+                swaps
+        )
+
 )
 SELECT
     d.swap_program,
@@ -57,8 +87,8 @@ SELECT
         2
     ) AS swap_to_amount_usd,
     d._log_id,
-    d.inserted_timestamp,
-    d.modified_timestamp,
+    sysdate() AS inserted_timestamp,
+    sysdate() AS modified_timestamp,
     d.ez_swaps_id,
 FROM
     swaps d
