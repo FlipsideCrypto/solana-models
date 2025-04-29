@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'test_timestamp',
-    tags = ['scheduled_non_core']
+    tags = ['scheduled_non_core_hourly']
 ) }}
 
 WITH table_epoch AS (
