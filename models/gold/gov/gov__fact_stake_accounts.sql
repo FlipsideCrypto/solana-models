@@ -6,7 +6,7 @@
     cluster_by = ['epoch', 'activation_epoch', 'deactivation_epoch'],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(stake_pubkey, vote_pubkey)'),
-    tags = ['scheduled_stake_accounts_snapshot']
+    tags = ['scheduled_non_core_hourly']
   ) 
 }}
 

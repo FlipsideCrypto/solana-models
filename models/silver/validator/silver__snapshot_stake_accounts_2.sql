@@ -4,7 +4,7 @@
     unique_key = ["epoch_recorded", "stake_pubkey"],
     cluster_by = ['modified_timestamp::DATE', '_inserted_timestamp::DATE'],
     full_refresh = false,
-    tags = ['scheduled_stake_accounts_snapshot']
+    tags = ['scheduled_non_core_hourly']
 ) }}
 
 WITH base AS (
