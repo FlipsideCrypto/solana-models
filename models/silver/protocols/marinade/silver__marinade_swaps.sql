@@ -68,7 +68,7 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS invocation_id
 FROM
-    {{ ref('silver__swaps_intermediate_orca') }}
+    {{ ref('silver__swaps_intermediate_orca_view') }}
 WHERE 
     (swap_from_mint IN ('{{ MNDE_MINT }}', '{{ MSOL_MINT }}') OR swap_to_mint IN ('{{ MNDE_MINT }}', '{{ MSOL_MINT }}'))
     AND succeeded
