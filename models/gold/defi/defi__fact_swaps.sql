@@ -42,7 +42,7 @@ SELECT
 FROM
     {{ ref('silver__swaps') }}
 WHERE
-    program_id != 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
+    program_id not in ('JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB','9W959DqEETiGZocYWCQPaJ6sBmUzgfxXfqGeTEdp3aQP', 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1', 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc')
 {% if is_incremental() %}
 AND
     modified_timestamp >= '{{ max_modified_timestamp }}'
@@ -304,6 +304,48 @@ SELECT
     modified_timestamp
 FROM
     {{ ref('silver__swaps_intermediate_lifinity') }}
+{% if is_incremental() %}
+WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
+UNION ALL
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    swapper,
+    from_amt AS swap_from_amount,
+    from_mint AS swap_from_mint,
+    to_amt AS swap_to_amount,
+    to_mint AS swap_to_mint,
+    program_id,
+    swap_index,
+    swaps_intermediate_orca_whirlpool_id as fact_swaps_id,
+    inserted_timestamp,
+    modified_timestamp
+FROM
+    {{ ref('silver__swaps_intermediate_orca_whirlpool') }}
+{% if is_incremental() %}
+WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
+UNION ALL
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    swapper,
+    from_amt AS swap_from_amount,
+    from_mint AS swap_from_mint,
+    to_amt AS swap_to_amount,
+    to_mint AS swap_to_mint,
+    program_id,
+    swap_index,
+    swaps_intermediate_orca_token_swap_id as fact_swaps_id,
+    inserted_timestamp,
+    modified_timestamp
+FROM
+    {{ ref('silver__swaps_intermediate_orca_token_swap') }}
 {% if is_incremental() %}
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}

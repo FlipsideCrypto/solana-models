@@ -57,7 +57,7 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    {{ ref('silver__swaps_intermediate_orca') }}
+    {{ ref('silver__swaps_intermediate_orca_view') }}
 
 {% if is_incremental() %}
 WHERE

@@ -118,6 +118,7 @@ sources:
       - name: nft_sales_solsniper_cnft
       - name: nft_sales_solsniper
       - name: nft_sales_solanart
+      - name: swaps_intermediate_orca
   - name: solana_streamline
     database: solana
     schema: streamline
