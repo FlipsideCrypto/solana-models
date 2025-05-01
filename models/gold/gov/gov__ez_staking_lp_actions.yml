@@ -2,11 +2,17 @@ version: 2
 models:
   - name: gov__ez_staking_lp_actions
     description: EZ table for staking & LP actions that contains additional information about the validator. 
+    recent_date_filter: &recent_date_filter
+      config:
+        where: modified_timestamp >= current_date - 7
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:

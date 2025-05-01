@@ -1,8 +1,24 @@
 {{ config(
-  materialized = 'view',
-  meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'VALIDATOR' }} },
-  tags = ['scheduled_non_core','exclude_change_tracking']
+    materialized = 'incremental',
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'VALIDATOR' }} },
+    unique_key = ['fact_block_production_id'],
+    cluster_by = ['epoch'],
+    merge_exclude_columns = ["inserted_timestamp"],
+    post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(node_pubkey)'),
+    tags = ['scheduled_non_core']
 ) }}
+
+{% if execute %}
+    {% if is_incremental() %}
+        {% set query %}
+            SELECT 
+              max(modified_timestamp) AS max_modified_timestamp
+            FROM 
+              {{ this }}
+        {% endset %}
+        {% set max_modified_timestamp = run_query(query).columns[0].values()[0] %}
+    {% endif %}
+{% endif %}
 
 WITH base_block_production AS (
   SELECT
@@ -14,6 +30,10 @@ WITH base_block_production AS (
     max(modified_timestamp) AS modified_timestamp
   FROM
     {{ ref('silver__snapshot_block_production_2') }}
+{% if is_incremental() %}
+WHERE
+    modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
   GROUP BY 1,2
 )
 SELECT
@@ -26,21 +46,17 @@ SELECT
   {{ dbt_utils.generate_surrogate_key(
     ['bp.epoch', 'node_pubkey']
   ) }} AS fact_block_production_id,
-  COALESCE(bp.inserted_timestamp,
-    '2000-01-01'
-  ) AS inserted_timestamp,
-  COALESCE(
-    bp.modified_timestamp,
-    '2000-01-01'
-  ) AS modified_timestamp
+  SYSDATE() AS inserted_timestamp,
+  SYSDATE() AS modified_timestamp
 FROM
   base_block_production AS bp
 LEFT JOIN
   {{ ref('silver__epoch') }} AS e
   ON bp.epoch = e.epoch
+{% if not is_incremental() %}
 UNION ALL
 SELECT
-  epoch,
+  epoch::int as epoch,
   node_pubkey,
   num_leader_slots,
   num_blocks_produced,
@@ -49,7 +65,8 @@ SELECT
   {{ dbt_utils.generate_surrogate_key(
     ['epoch', 'node_pubkey']
   ) }} AS fact_block_production_id,
-  '2000-01-01' AS inserted_timestamp,
-  '2000-01-01' AS modified_timestamp
+  SYSDATE() AS inserted_timestamp,
+  SYSDATE() AS modified_timestamp
 FROM
   {{ ref('silver__historical_block_production') }}
+{% endif %}

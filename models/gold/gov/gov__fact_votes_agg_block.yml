@@ -7,6 +7,9 @@ models:
         description: "{{ doc('block_timestamp') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:

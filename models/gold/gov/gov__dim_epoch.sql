@@ -1,6 +1,6 @@
 {{ config(
-    materialized = 'view',
-    tags = ['scheduled_non_core']
+    materialized = 'table',
+    unique_key = ['dim_epoch_id']
 ) }}
 
 SELECT
@@ -8,7 +8,7 @@ SELECT
     start_block,
     end_block,
     epoch_id as dim_epoch_id,
-    modified_timestamp,
-    inserted_timestamp
+    SYSDATE() AS modified_timestamp,
+    SYSDATE() AS inserted_timestamp
 from
   {{ ref('silver__epoch') }}
