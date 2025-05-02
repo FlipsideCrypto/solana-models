@@ -29,7 +29,7 @@ SELECT
     tx_id,
     succeeded,
     voter,
-    voter_account,
+    vote_account as voter_account,
     NULL AS voter_nft,
     proposal,
     realms_id,
