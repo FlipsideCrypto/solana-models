@@ -24,6 +24,7 @@ WITH pre AS (
             WHEN amount = 0 THEN 0
             ELSE uiamount :: FLOAT
         END AS pre_token_amount,
+        tx_index,
         _inserted_timestamp
     FROM
         {{ ref('silver___pre_token_balances') }}
@@ -53,6 +54,7 @@ post AS (
             WHEN amount = 0 THEN 0
             ELSE uiamount :: FLOAT
         END AS post_token_amount,
+        tx_index,
         _inserted_timestamp
     FROM
         {{ ref('silver___post_token_balances') }}
@@ -81,6 +83,10 @@ pre_final AS (
             A.tx_id,
             b.tx_id
         ) tx_id,
+        COALESCE(
+            A.tx_index,
+            b.tx_index
+        ) tx_index,
         TRUE AS succeeded,
         COALESCE(
             A.index,
@@ -123,6 +129,7 @@ SELECT
     block_timestamp,
     block_id,
     tx_id,
+    tx_index,
     succeeded,
     INDEX,
     account_index,

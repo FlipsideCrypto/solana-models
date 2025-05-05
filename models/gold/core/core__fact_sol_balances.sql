@@ -12,6 +12,7 @@ SELECT
     block_timestamp,
     block_id,
     tx_id,
+    tx_index,
     succeeded,
     account AS account_address,
     mint,
