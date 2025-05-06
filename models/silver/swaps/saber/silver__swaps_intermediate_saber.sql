@@ -66,13 +66,13 @@ decoded AS (
             ORDER BY inner_index) -1, 999999
         ) AS inner_index_end,
         program_id,
-        solana.silver.udf_get_account_pubkey_by_name('userAuthority', decoded_instruction:accounts) as swapper,
-        solana.silver.udf_get_account_pubkey_by_name('inputUser', decoded_instruction:accounts) as source_token_account,
+        silver.udf_get_account_pubkey_by_name('userAuthority', decoded_instruction:accounts) as swapper,
+        silver.udf_get_account_pubkey_by_name('inputUser', decoded_instruction:accounts) as source_token_account,
         null as source_mint,
         null as destination_mint,
-        solana.silver.udf_get_account_pubkey_by_name('outputUserTokenUser', decoded_instruction:accounts) as destination_token_account,  
-        solana.silver.udf_get_account_pubkey_by_name('outputUserTokenReserve', decoded_instruction:accounts) as program_destination_token_account, 
-        solana.silver.udf_get_account_pubkey_by_name('inputReserve', decoded_instruction:accounts) as program_source_token_account,
+        silver.udf_get_account_pubkey_by_name('outputUserTokenUser', decoded_instruction:accounts) as destination_token_account,  
+        silver.udf_get_account_pubkey_by_name('outputUserTokenReserve', decoded_instruction:accounts) as program_destination_token_account, 
+        silver.udf_get_account_pubkey_by_name('inputReserve', decoded_instruction:accounts) as program_source_token_account,
         _inserted_timestamp
     FROM
         base
