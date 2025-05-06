@@ -44,3 +44,10 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run-operation nft_compressed_mints_backfill_make_call
+
+  notify-failure:
+    needs: [run_dbt_jobs]
+    if: failure()
+    uses: ./.github/workflows/slack_notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
