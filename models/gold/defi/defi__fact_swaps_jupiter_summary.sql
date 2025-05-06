@@ -121,7 +121,7 @@ SELECT
     inserted_timestamp,
     modified_timestamp
 FROM
-    {{ ref('silver__swaps') }}
+    {{ ref('silver__swaps_view') }}
 WHERE
     program_id = 'JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB'
     and block_timestamp::date <= '2023-10-31'
