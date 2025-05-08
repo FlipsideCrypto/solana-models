@@ -5,8 +5,8 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_ID
-            - SWAP_INDEX
-            - PROGRAM_ID
+            - INDEX
+            - INNER_INDEX
           where: block_timestamp::date > current_date - 7
     recent_date_filter: &recent_date_filter
       config:
