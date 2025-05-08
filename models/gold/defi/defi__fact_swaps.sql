@@ -34,6 +34,7 @@ SELECT
     to_amt AS swap_to_amount,
     to_mint AS swap_to_mint,
     program_id,
+    'bonkswap' as swap_program,
     swap_index,
     swaps_intermediate_bonkswap_id as fact_swaps_id,
     inserted_timestamp,
@@ -58,6 +59,9 @@ SELECT
     to_amt AS swap_to_amount,
     to_mint AS swap_to_mint,
     program_id,
+    case when program_id = 'LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo' then 'meteora dlmm pools program'
+        else 'meteora pools program' 
+    end as swap_program,
     swap_index,
     swaps_intermediate_meteora_id as fact_swaps_id,
     inserted_timestamp,
@@ -82,6 +86,7 @@ SELECT
     to_amt AS swap_to_amount,
     to_mint AS swap_to_mint,
     program_id,
+    'stepn swap' as swap_program,
     swap_index,
     swaps_intermediate_dooar_id as fact_swaps_id,
     inserted_timestamp,
@@ -106,6 +111,7 @@ SELECT
     to_amt AS swap_to_amount,
     to_mint AS swap_to_mint,
     program_id,
+    'phoenix' as swap_program,
     swap_index,
     swaps_intermediate_phoenix_id as fact_swaps_id,
     inserted_timestamp,
@@ -130,6 +136,7 @@ SELECT
     to_amt AS swap_to_amount,
     to_mint AS swap_to_mint,
     program_id,
+    'raydium concentrated liquidity' as swap_program,
     swap_index,
     swaps_intermediate_raydium_clmm_id as fact_swaps_id,
     inserted_timestamp,
@@ -154,6 +161,7 @@ SELECT
     to_amt AS swap_to_amount,
     to_mint AS swap_to_mint,
     program_id,
+    'raydium liquidity pool program id v5' as swap_program,
     swap_index,
     swaps_intermediate_raydium_stable_id as fact_swaps_id,
     inserted_timestamp,
@@ -178,6 +186,7 @@ SELECT
     to_amt AS swap_to_amount,
     to_mint AS swap_to_mint,
     program_id,
+    'Raydium Liquidity Pool V4' as swap_program,
     swap_index,
     swaps_intermediate_raydium_v4_amm_id as fact_swaps_id,
     inserted_timestamp,
@@ -202,6 +211,7 @@ SELECT
     to_amount AS swap_to_amount,
     to_mint AS swap_to_mint,
     program_id,
+    'pump.fun' as swap_program,
     swap_index,
     swaps_pumpfun_id as fact_swaps_id,
     inserted_timestamp,
@@ -224,6 +234,7 @@ SELECT
     swap_to_amount,
     swap_to_mint,
     program_id,
+    'raydium constant product market maker' as swap_program,
     swap_index,
     swaps_intermediate_raydium_cpmm_id as fact_swaps_id,
     inserted_timestamp,
@@ -246,6 +257,7 @@ SELECT
     swap_to_amount,
     swap_to_mint,
     program_id,
+    'pumpswap' as swap_program,
     swap_index,
     swaps_pumpswap_id as fact_swaps_id,
     inserted_timestamp,
@@ -268,6 +280,7 @@ SELECT
     to_amt AS swap_to_amount,
     to_mint AS swap_to_mint,
     program_id,
+    'lifinity swap v2' as swap_program,
     swap_index,
     swaps_intermediate_lifinity_id as fact_swaps_id,
     inserted_timestamp,
@@ -289,6 +302,7 @@ SELECT
     to_amt AS swap_to_amount,
     to_mint AS swap_to_mint,
     program_id,
+    'orca whirlpool program' as swap_program,
     swap_index,
     swaps_intermediate_orca_whirlpool_id as fact_swaps_id,
     inserted_timestamp,
@@ -310,6 +324,9 @@ SELECT
     to_amt AS swap_to_amount,
     to_mint AS swap_to_mint,
     program_id,
+    case when program_id = 'DjVE6JNiYqPL2QXyCUUh8rNjHrbz9hXHNYt99MQ59qw1' then 'orca token swap'
+        else 'ORCA Token Swap V2' 
+    end as swap_program,
     swap_index,
     swaps_intermediate_orca_token_swap_id as fact_swaps_id,
     inserted_timestamp,
@@ -331,6 +348,7 @@ SELECT
     swap_to_amount,
     swap_to_mint,
     program_id,
+    'Saber Stable Swap' as swap_program,
     swap_index,
     swaps_intermediate_saber_id as fact_swaps_id,
     inserted_timestamp,
@@ -352,6 +370,7 @@ SELECT
     swap_to_amount,
     swap_to_mint,
     program_id,
+    'meteora bonding' as swap_program,
     swap_index,
     swaps_intermediate_meteora_bonding_id as fact_swaps_id,
     inserted_timestamp,
@@ -424,14 +443,10 @@ select
     swap_to_amount,
     swap_to_mint,
     program_id,
-    l.address_name AS swap_program,
+    swap_program,
     concat_ws('-',tx_id,swap_index,swap_program) as _log_id,
     fact_swaps_id,
-    s.inserted_timestamp,
-    s.modified_timestamp
+    inserted_timestamp,
+    modified_timestamp
 FROM
     swaps_individual
-    s
-    LEFT OUTER JOIN {{ ref('core__dim_labels') }}
-    l
-    ON s.program_id = l.address
