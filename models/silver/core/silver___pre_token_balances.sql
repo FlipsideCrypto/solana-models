@@ -11,6 +11,7 @@ SELECT
     block_timestamp,
     block_id,
     tx_id,
+    tx_index,
     succeeded,
     b.index,
     b.value :accountIndex :: INTEGER AS account_index,

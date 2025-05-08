@@ -12,6 +12,7 @@ SELECT
     A.block_timestamp,
     A.block_id,
     A.tx_id,
+    A.tx_index,
     A.succeeded,
     A.account AS account_address,
     A.mint,
