@@ -1,0 +1,71 @@
+version: 2
+models:
+  - name: silver__swaps_intermediate_meteora_bonding
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_ID
+            - SWAP_INDEX
+            - PROGRAM_ID
+          where: block_timestamp::date > current_date - 30
+    recent_date_filter: &recent_date_filter
+      config:
+        where: _inserted_timestamp >= current_date - 7
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null: *recent_date_filter
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('index') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: SWAPPER
+        description: "{{ doc('swaps_swapper') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: SWAP_FROM_AMOUNT
+        description:  "{{ doc('swaps_from_amt') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: SWAP_FROM_MINT
+        description:  "{{ doc('swaps_from_mint') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: SWAP_TO_AMOUNT
+        description:  "{{ doc('swaps_to_amt') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: SWAP_TO_MINT
+        description:  "{{ doc('swaps_to_mint') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: SWAP_INDEX
+        description: "{{ doc('swaps_swap_index') }}"
+        tests: 
+          - not_null: *recent_date_filter
+      - name: _INSERTED_TIMESTAMP
+        description: "{{ doc('_inserted_timestamp') }}"
+        tests: 
+          - not_null

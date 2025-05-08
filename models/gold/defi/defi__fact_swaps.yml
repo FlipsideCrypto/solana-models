@@ -21,6 +21,12 @@ models:
             - 'silver__swaps_pumpfun'
             - 'silver__swaps_intermediate_raydium_cpmm'
             - 'silver__swaps_pumpswap'
+            - 'silver__swaps_intermediate_saber'
+            - 'silver__swaps_intermediate_lifinity'
+            - 'silver__swaps_intermediate_orca_whirlpool'
+            - 'silver__swaps_intermediate_orca_token_swap'
+            - 'silver__swaps_intermediate_meteora_bonding'
+
           id_column: 'tx_id'
     columns:
       - name: BLOCK_TIMESTAMP
