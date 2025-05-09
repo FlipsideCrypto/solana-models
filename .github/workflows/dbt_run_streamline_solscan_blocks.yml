@@ -43,3 +43,10 @@ jobs:
         run: |
           dbt run -s silver___blocks_tx_count
           dbt run --vars '{"STREAMLINE_INVOKE_STREAMS": True}' -s streamline__solscan_blocks
+
+  notify-failure:
+    needs: [run_dbt_jobs]
+    if: failure()
+    uses: ./.github/workflows/slack_notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

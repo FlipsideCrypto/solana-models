@@ -44,3 +44,10 @@ jobs:
           dbt build -s "solana_models,tag:streamline_stake_accounts"
           dbt run -s "solana_models,streamline__stake_program_accounts_2" --vars '{"STREAMLINE_INVOKE_STREAMS": True}'
 
+  notify-failure:
+    needs: [run_dbt_jobs]
+    if: failure()
+    uses: ./.github/workflows/slack_notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+

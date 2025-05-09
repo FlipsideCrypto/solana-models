@@ -43,3 +43,10 @@ jobs:
         run: |
           dbt run-operation decoded_instructions_backill_cleanup_views 
           dbt run-operation decoded_instructions_backfill_calls --vars '{"STREAMLINE_INVOKE_STREAMS": True}' 
+
+  notify-failure:
+    needs: [run_dbt_jobs]
+    if: failure()
+    uses: ./.github/workflows/slack_notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

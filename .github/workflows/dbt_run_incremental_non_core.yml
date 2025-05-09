@@ -44,4 +44,10 @@ jobs:
         run: |
           dbt run-operation run_sp_refresh_external_tables_full
           dbt run -s "solana_models,tag:scheduled_core" "solana_models,tag:scheduled_non_core" 
-          
+
+  notify-failure:
+    needs: [run_dbt_jobs]
+    if: failure()
+    uses: ./.github/workflows/slack_notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}     

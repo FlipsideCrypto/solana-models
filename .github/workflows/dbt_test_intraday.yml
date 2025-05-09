@@ -43,3 +43,10 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run -m "solana_models,models/silver/_observability"
+
+  notify-failure:
+    needs: [run_dbt_jobs]
+    if: failure()
+    uses: ./.github/workflows/slack_notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
