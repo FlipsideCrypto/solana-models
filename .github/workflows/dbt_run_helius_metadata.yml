@@ -43,5 +43,12 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run -s models/silver/metadata/helius/silver__helius_nft_requests.sql models/bronze/bronze_api/bronze_api__helius_nft_metadata.sql
+
+  notify-failure:
+    needs: [run_dbt_jobs]
+    if: failure()
+    uses: ./.github/workflows/slack_notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           
           

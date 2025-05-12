@@ -52,3 +52,10 @@ jobs:
         if: success() || failure()
         run: |
           dbt run -s streamline__transactions_and_votes_missing_7_days
+
+  notify-failure:
+    needs: [run_dbt_jobs]
+    if: failure()
+    uses: ./.github/workflows/slack_notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
