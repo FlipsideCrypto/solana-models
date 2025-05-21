@@ -47,6 +47,8 @@ There is more information on how to use dbt docs in the last section of this doc
 - [fact_token_burn_actions](#!/model/model.solana_models.defi__fact_token_burn_actions)
 - [fact_token_mint_actions](#!/model/model.solana_models.defi__fact_token_mint_actions)
 
+Solana’s heavy use of aggregators like Jupiter means swap data isn’t always straightforward — this guide [documentation guide](https://docs.google.com/document/d/1gxU7Q8BNf2w6xsDIczfxxOFMPM0ujQSJTzwGPDkZTVU/edit?tab=t.0) and [video](https://www.loom.com/share/f20d1f54b63342eea6457381be7175a1?sid=589f65ec-505a-446c-b249-19e6a9b9a6fb) explain Flipside’s multi-table design and how to extract meaningful insights from it."
+
 ### Governance Tables (`Solana`.`GOV`.`<table_name>`)
 - [dim_epoch](#!/model/model.solana_models.gov__dim_epoch)
 - [ez_staking_lp_actions](#!/model/model.solana_models.gov__ez_staking_lp_actions)
