@@ -27,7 +27,7 @@ jobs:
     secrets: inherit
 
   notify-failure:
-    needs: [run_dbt_jobs]
+    needs: [called_workflow_template]
     if: failure()
     uses: ./.github/workflows/slack_notify.yml
     secrets:
