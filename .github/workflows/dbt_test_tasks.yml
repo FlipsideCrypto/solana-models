@@ -25,3 +25,10 @@ jobs:
   called_workflow_template:
     uses: FlipsideCrypto/analytics-workflow-templates/.github/workflows/dbt_test_tasks.yml@AN-4374/upgrade-dbt-1.7
     secrets: inherit
+
+  notify-failure:
+    needs: [called_workflow_template]
+    if: failure()
+    uses: ./.github/workflows/slack_notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
