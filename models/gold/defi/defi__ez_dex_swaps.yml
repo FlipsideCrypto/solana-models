@@ -2,9 +2,21 @@ version: 2
 models:
   - name: defi__ez_dex_swaps
     description: A convenience table containing swaps performed on Jupiter (V2, V3), Orca, Raydium, Saber, Bonkswap, Dooar, Phoenix, Meteora, Pumpswap, and Pumpfun swap programs. For Phoenix, we are not capturing swaps where there are separate transactions for placing the order and filling the order. NOTE - Jupiter (V4, V5, V6) aggregator swaps exist in defi.fact_swaps_jupiter_summary, and individual routes are present in defi.fact_swaps_jupiter_inner. This documentation [guide](https://docs.google.com/document/d/1gxU7Q8BNf2w6xsDIczfxxOFMPM0ujQSJTzwGPDkZTVU/edit?tab=t.0) and [video](https://www.loom.com/share/f20d1f54b63342eea6457381be7175a1?sid=589f65ec-505a-446c-b249-19e6a9b9a6fb) explain how Flipside models Solana swaps, why we split the data, and how to use each table effectively.
+    recent_modified_date_filter: &recent_modified_date_filter
+      config:
+        where: modified_timestamp >= current_date - 7
+    tests:
+      - reference_tx_count_comparison:
+          reference_table: 'defi__fact_swaps'
+          id_column: 'tx_id'
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
+        data_tests:
+          - not_null: *recent_modified_date_filter
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
       - name: TX_ID
@@ -34,7 +46,10 @@ models:
       - name: _LOG_ID
         description: "Combination of TX_ID and event index"
       - name: EZ_SWAPS_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("pk") }}'
+        data_tests:
+          - not_null: *recent_modified_date_filter
+          - unique: *recent_modified_date_filter  
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
