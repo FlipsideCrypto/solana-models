@@ -15,12 +15,12 @@
                                       AND current_timestamp() - INTERVAL '2 HOUR'
         )
         SELECT
-            r.reference_count,
-            m.model_count,
-            r.reference_count - m.model_count AS count_difference
+            COALESCE(r.reference_count, 0) AS reference_count,
+            COALESCE(m.model_count, 0) AS model_count,
+            reference_count - model_count AS count_difference
         FROM reference_count r
-        LEFT JOIN model_count m
-        WHERE r.reference_count <> m.model_count
+        FULL OUTER JOIN model_count m
+        WHERE reference_count <> model_count
     {% endset %}
 
     SELECT *
