@@ -2,7 +2,8 @@
     materialized = 'incremental',
     unique_key = "tx_id",
     incremental_strategy = 'delete+insert',
-    tags = ['daily']
+    full_refresh = false,
+    enabled = false
 ) }}
 
 WITH post_token_balances AS (
