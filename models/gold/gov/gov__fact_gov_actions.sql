@@ -21,6 +21,8 @@
     {% endif %}
 {% endif %}
 
+-- Only select from the deprecated model during the initial FR
+{% if not is_incremental() %}
 SELECT 
     'saber' as program_name,
     block_timestamp,
@@ -48,12 +50,10 @@ SELECT
         '2000-01-01'
     ) AS modified_timestamp
 FROM
-    {{ ref('silver__gov_actions_saber') }}
-{% if is_incremental() %}
-WHERE
-    modified_timestamp >= '{{ max_modified_timestamp }}'
-{% endif %}
+    {{ ref('silver__gov_actions_saber_view') }}
 UNION ALL
+{% endif %}
+-- Only select from active models during incremental
 SELECT 
     'marinade' as program_name,
     block_timestamp,

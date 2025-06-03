@@ -30,7 +30,7 @@ WITH base AS (
         _log_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__swaps_intermediate_generic') }}
+        {{ ref('silver__swaps_intermediate_generic_view') }}
 
 {% if is_incremental() %}
 WHERE
