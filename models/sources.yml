@@ -120,6 +120,8 @@ sources:
       - name: nft_sales_solanart
       - name: swaps_intermediate_orca
       - name: swaps
+      - name: swaps_intermediate_generic
+      - name: gov_actions_saber
   - name: solana_streamline
     database: solana
     schema: streamline
