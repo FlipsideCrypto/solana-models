@@ -26,7 +26,7 @@
     FROM
         {{ ref('silver__decoded_instructions_combined') }}
     WHERE
-        program_id = 'dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN'
+        program_id in ('dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN', 'cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG')
         AND event_type = 'swap'
         AND succeeded
 
@@ -71,8 +71,14 @@ decoded AS (
         null as source_mint,
         null as destination_mint,
         silver.udf_get_account_pubkey_by_name('output_token_account', decoded_instruction:accounts) as destination_token_account,
-        silver.udf_get_account_pubkey_by_name('quote_vault', decoded_instruction:accounts) as program_destination_token_account,
-        silver.udf_get_account_pubkey_by_name('base_vault', decoded_instruction:accounts) as program_source_token_account,
+        case when program_id = 'dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN' 
+            then silver.udf_get_account_pubkey_by_name('quote_vault', decoded_instruction:accounts) 
+            else silver.udf_get_account_pubkey_by_name('token_a_vault', decoded_instruction:accounts) 
+        end as program_destination_token_account,
+        case when program_id = 'dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN' 
+            then silver.udf_get_account_pubkey_by_name('base_vault', decoded_instruction:accounts) 
+            else silver.udf_get_account_pubkey_by_name('token_b_vault', decoded_instruction:accounts) 
+        end as program_source_token_account,
         _inserted_timestamp
     FROM
         base

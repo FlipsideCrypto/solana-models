@@ -370,7 +370,9 @@ SELECT
     swap_to_amount,
     swap_to_mint,
     program_id,
-    'meteora bonding' as swap_program,
+    case when program_id = 'dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN' then 'meteora bonding'
+        else 'meteora DAMM'
+    end as swap_program,
     swap_index,
     swaps_intermediate_meteora_bonding_id as fact_swaps_id,
     inserted_timestamp,
