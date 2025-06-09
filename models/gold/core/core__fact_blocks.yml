@@ -2,13 +2,20 @@ version: 2
 models:
   - name: core__fact_blocks
     description: Contains general information about each block produced on Solana. 
+    recent_modified_date_filter: &recent_modified_date_filter
+      config:
+        where: modified_timestamp >= current_date - 2
     columns:
-      - name: BLOCK_ID
-        description: "{{ doc('block_id') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
+        data_tests:
+          - not_null:
+              where: block_id > 39824213 and modified_timestamp >= current_date - 2
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: NETWORK
@@ -21,22 +28,17 @@ models:
           - dbt_expectations.expect_column_to_exist
       - name: BLOCK_HEIGHT
         description: heigh of the block
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: BLOCK_HASH
         description: hash of the block
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: PREVIOUS_BLOCK_ID
         description: previous slot value
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: PREVIOUS_BLOCK_HASH
         description: previous block's hash value
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: FACT_BLOCKS_ID
         description: '{{ doc("pk") }}'   
+        data_tests:
+          - not_null: *recent_modified_date_filter
+          - unique: *recent_modified_date_filter   
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
