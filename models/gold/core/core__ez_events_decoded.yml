@@ -2,59 +2,46 @@ version: 2
 models:
   - name: core__ez_events_decoded
     description: Contains each event that occurs on Solana where the instruction has been decoded. A transaction can consist of more than one event and not all events within a transaction will be decoded.
+    recent_modified_date_filter: &recent_modified_date_filter
+      config:
+        where: modified_timestamp >= current_date - 2
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
+        data_tests:
+          - not_null: *recent_modified_date_filter
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: SIGNERS
         description: List of accounts that signed the transaction
-        tests: 
-          - dbt_expectations.expect_column_to_exist
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
-        tests: 
-          - dbt_expectations.expect_column_to_exist
       - name: INDEX
         description: Location of the event within the instructions of a transaction
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: INNER_INDEX
         description: "{{ doc('inner_index') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: EVENT_TYPE
         description: "{{ doc('event_type') }}"
       - name: DECODED_INSTRUCTION
         description: An instruction specifies which program it is calling, which accounts it wants to read or modify, and additional data that serves as auxiliary input to the program
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: DECODED_ACCOUNTS
         description: The accounts object within the decoded instruction
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: DECODED_ARGS
         description: The args object within the decoded instruction
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: DECODING_ERROR
         description: The error if the decoding failed
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: EZ_EVENTS_DECODED_ID
         description: '{{ doc("pk") }}'   
+        data_tests:
+          - not_null: *recent_modified_date_filter
+          - unique: *recent_modified_date_filter    
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
