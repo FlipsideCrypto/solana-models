@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "program_id",
-    tags = ['idls','scheduled_non_core']
+    tags = ['idls']
 ) }}
 
 WITH new_user_idls AS (

@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "program_id",
     merge_exclude_columns = ["inserted_timestamp"],
-    tags = ['scheduled_non_core']
+    tags = ['idls']
 ) }}
 
 WITH submitted_idls AS (
