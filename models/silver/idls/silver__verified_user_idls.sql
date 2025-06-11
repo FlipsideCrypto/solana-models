@@ -2,7 +2,7 @@
 {{ config (
     materialized = "incremental",
     unique_key = "id",
-    tags = ['idls','scheduled_non_core']
+    tags = ['idls']
 ) }}
 
 {% if execute %}
