@@ -28,6 +28,7 @@
             {{ ref('silver__verified_idls') }}
         WHERE   
             program_id <> 'FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH'
+            and is_active
     {% endset %}
     {% set idls_to_decode = run_query(idls_to_decode_query)[0][0] %}
 {% endif %}

@@ -14,8 +14,33 @@
 {% set cutover_block_id = 307103862 %}
 {% set cutover_partition_id = 150215 %}
 
-WITH pre_final AS (
-
+WITH base AS (
+    SELECT
+        block_timestamp,
+        block_id,
+        tx_index,
+        data,
+        _partition_id,
+        _inserted_timestamp,
+        COALESCE(
+            data:transaction:message:instructions[0]:programId::STRING,
+            ''
+        ) AS first_program_id,
+        array_size(data :transaction :message :instructions) as instruction_count
+    FROM
+        {{ ref('bronze__stage_block_txs_2') }} AS t
+    WHERE
+        block_id >= {{ cutover_block_id }}
+        {% if is_incremental() %}
+        AND t._partition_id >= (SELECT max(_partition_id)-1 FROM {{ this }})
+        AND t._partition_id <= (SELECT max(_partition_id) FROM {{ ref('streamline__complete_block_txs_2') }})
+        AND t._inserted_timestamp > (SELECT max(_inserted_timestamp) FROM {{ this }})
+        {% else %}
+        AND t._partition_id < 0 /* keep this here, if we ever do a full refresh this should select no data from streamline 2.0 data */
+        {% endif %}
+        AND t._partition_id >= {{ cutover_partition_id }}
+),
+pre_final AS (
     SELECT
         COALESCE(TO_TIMESTAMP_NTZ(t.value :block_time), b.block_timestamp) AS block_timestamp,
         t.block_id,
@@ -91,26 +116,11 @@ WITH pre_final AS (
         t.tx_index,
         t._partition_id,
         t._inserted_timestamp
-    FROM
-        {{ ref('bronze__stage_block_txs_2') }} AS t
+    FROM base AS t
     WHERE
-        t.block_id >= {{ cutover_block_id }}
+        first_program_id <> 'Vote111111111111111111111111111111111111111'
+        OR instruction_count > 1
         AND tx_id IS NOT NULL
-        AND (
-            COALESCE(t.data :transaction :message :instructions [0] :programId :: STRING,'') <> 'Vote111111111111111111111111111111111111111'
-            OR
-            (
-                array_size(t.data :transaction :message :instructions) > 1
-            )
-        )
-        {% if is_incremental() %}
-        AND t._partition_id >= (SELECT max(_partition_id)-1 FROM {{ this }})
-        AND t._partition_id <= (SELECT max(_partition_id) FROM {{ ref('streamline__complete_block_txs_2') }})
-        AND t._inserted_timestamp > (SELECT max(_inserted_timestamp) FROM {{ this }})
-        {% else %}
-        AND t._partition_id < 0 /* keep this here, if we ever do a full refresh this should select no data from streamline 2.0 data */
-        {% endif %}
-        AND t._partition_id >= {{ cutover_partition_id }}
 ),
 {% if is_incremental() %}
 prev_null_block_timestamp_txs AS (
