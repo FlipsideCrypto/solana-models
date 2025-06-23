@@ -23,6 +23,14 @@ models:
         description: "{{ doc('is_valid') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: IS_ACTIVE
+        description: "If the program has decoded instructions in the last 14 days"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: LAST_ACTIVITY_TIMESTAMP
+        description: "Most recent date that the program has decoded instructions"
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: SUBMITTED_BY
         description: "{{ doc('submitted_by') }}"
         tests:

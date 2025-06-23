@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "program_id",
     merge_exclude_columns = ["inserted_timestamp"],
-    tags = ['scheduled_non_core']
+    tags = ['idls']
 ) }}
 
 WITH submitted_idls AS (
@@ -11,12 +11,14 @@ WITH submitted_idls AS (
         A.program_id,
         A.idl,
         A.idl_hash,
-        A.is_valid,
+        TRUE as is_valid, --all idls from verified_idls are valid
         A.discord_username,
         A._inserted_timestamp,
+        a.is_active,
+        a.last_activity_timestamp,
         b.first_block_id
     FROM
-        {{ ref('silver__verified_user_idls') }} A
+        {{ ref('silver__verified_idls') }} A
         LEFT JOIN {{ ref('streamline__idls_history') }}
         b
         ON A.program_id = b.program_id qualify(ROW_NUMBER() over(PARTITION BY A.program_id
@@ -60,6 +62,8 @@ pre_final AS (
         A.is_valid,
         A.discord_username,
         A._inserted_timestamp,
+        a.is_active,
+        a.last_activity_timestamp,
         A.first_block_id,
     {% if is_incremental() %}
         iff(b.earliest_decoded_block < d.earliest_decoded_block, b.earliest_decoded_block, d.earliest_decoded_block) AS earliest_decoded_block,
@@ -85,6 +89,8 @@ SELECT
     idl,
     idl_hash,
     is_valid,
+    is_active,
+    last_activity_timestamp,
     discord_username as submitted_by,
     _inserted_timestamp as date_submitted,
     first_block_id,

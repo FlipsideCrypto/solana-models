@@ -1,6 +1,6 @@
 {{ config(
     materialized='view',
-    tags = ['scheduled_non_core']
+    tags = ['idls']
   ) 
 }}
 
@@ -9,6 +9,8 @@ SELECT
     idl,
     idl_hash,
     is_valid,
+    is_active,
+    last_activity_timestamp,
     submitted_by,
     date_submitted,
     first_block_id,
