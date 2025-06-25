@@ -379,4 +379,30 @@ SELECT
     modified_timestamp
 FROM
     {{ ref('silver__nft_sales_solsniper_cnft_view') }}
+UNION ALL
+SELECT
+    'tensorswap',
+    'v1' AS marketplace_version,
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    index,
+    inner_index,
+    program_id,
+    purchaser,
+    seller,
+    mint,
+    sales_amount,
+    '{{ SOL_MINT }}' AS currency_address,
+    NULL as tree_authority,
+    NULL as merkle_tree,
+    NULL as leaf_index,
+    FALSE as is_compressed,
+    nft_sales_tensorswap_id AS nft_sales_legacy_combined_id,
+    inserted_timestamp,
+    modified_timestamp
+FROM
+    {{ ref('silver__nft_sales_tensorswap_view') }}
+
 

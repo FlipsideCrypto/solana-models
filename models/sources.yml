@@ -122,6 +122,8 @@ sources:
       - name: swaps
       - name: swaps_intermediate_generic
       - name: gov_actions_saber
+      - name: nft_sales_tensorswap_buysellevent
+      - name: nft_sales_tensorswap
   - name: solana_streamline
     database: solana
     schema: streamline
