@@ -2,11 +2,18 @@ version: 2
 models:
   - name: core__fact_events
     description: Contains each event that occurs on Solana. A transaction can consist of more than one event. 
+    recent_modified_date_filter: &recent_modified_date_filter
+      config:
+        where: modified_timestamp >= current_date - 2
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
+        data_tests:
+          - not_null:
+              where: block_id > 39824213 and modified_timestamp >= current_date - 2
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
         tests:
@@ -42,7 +49,10 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: FACT_EVENTS_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("pk") }}' 
+        data_tests:
+          - not_null: *recent_modified_date_filter
+          - unique: *recent_modified_date_filter      
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
