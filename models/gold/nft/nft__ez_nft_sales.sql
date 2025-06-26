@@ -28,7 +28,6 @@
     {'name': 'hadeswap_decoded', 'marketplace': 'hadeswap','marketplace_version': 'v1'},
     {'name': 'exchange_art', 'marketplace': 'exchange art', 'marketplace_version': 'v1'},
     {'name': 'amm_sell_decoded', 'marketplace': 'magic eden v2', 'marketplace_version': 'v2'},
-    {'name': 'tensorswap', 'marketplace': 'tensorswap', 'marketplace_version': 'v1'},
     {'name': 'tensor_bid', 'marketplace': 'tensorswap', 'marketplace_version': 'v1'},
 ] %}
 
