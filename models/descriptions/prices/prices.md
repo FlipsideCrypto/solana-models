@@ -135,3 +135,9 @@ Lowest price of the recorded hour in USD
 Closing price of the recorded hour in USD
 
 {% enddocs %}
+
+{% docs prices_is_verified %}
+
+A flag indicating if the asset has been verified by the Flipside team.
+
+{% enddocs %}

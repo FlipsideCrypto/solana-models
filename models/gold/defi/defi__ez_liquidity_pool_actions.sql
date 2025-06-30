@@ -118,7 +118,8 @@ token_prices AS (
     SELECT
         HOUR,
         token_address,
-        price
+        price,
+        is_verified
     FROM
         {{ ref('price__ez_prices_hourly') }}
     WHERE
@@ -138,18 +139,22 @@ SELECT
     action_type,
     provider_address,
     token_a_mint,
+    tp_a.is_verified AS token_a_is_verified,
     token_a_symbol,
     token_a_amount,
     (token_a_amount * tp_a.price)::numeric(22,8) AS token_a_amount_usd,
     token_b_mint,
+    tp_b.is_verified AS token_b_is_verified,
     token_b_symbol,
     token_b_amount,
     (token_b_amount * tp_b.price)::numeric(22,8) AS token_b_amount_usd,
     token_c_mint,
+    tp_c.is_verified AS token_c_is_verified,
     token_c_symbol,
     token_c_amount,
     (token_c_amount * tp_c.price)::numeric(22,8) AS token_c_amount_usd,
     token_d_mint,
+    tp_d.is_verified AS token_d_is_verified,
     token_d_symbol,
     token_d_amount,
     (token_d_amount * tp_d.price)::numeric(22,8) AS token_d_amount_usd,

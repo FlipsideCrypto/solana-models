@@ -15,6 +15,7 @@ SELECT
     blockchain_id,
     is_imputed,
     is_deprecated,
+    is_verified,
     provider,
     source,
     _inserted_timestamp,
@@ -23,9 +24,7 @@ SELECT
     complete_token_prices_id,
     _invocation_id
 FROM
-    {{ source(
-        'crosschain_silver',
-        'complete_token_prices'
-    ) }}
+
+    crosschain.silver.complete_token_prices
 WHERE
     blockchain = 'solana'

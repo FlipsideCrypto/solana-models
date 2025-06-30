@@ -29,6 +29,8 @@ models:
         description: The amount of tokens put into the swap converted to USD using the price of the token 
       - name: SWAP_FROM_MINT
         description: Token being sent or swapped from
+      - name: SWAP_FROM_IS_VERIFIED
+        description: '{{ doc("prices_is_verified") }}'
       - name: SWAP_FROM_SYMBOL
         description: The symbol of the token being swapped from
       - name: SWAP_TO_AMOUNT
@@ -37,6 +39,8 @@ models:
         description: The amount of tokens taken out of or received from the swap converted to USD using the price of the token
       - name: SWAP_TO_MINT
         description: Token being received or swapped for 
+      - name: SWAP_TO_IS_VERIFIED
+        description: '{{ doc("prices_is_verified") }}'
       - name: SWAP_TO_SYMBOL
         description: The symbol of the token being swapped to
       - name: PROGRAM_ID

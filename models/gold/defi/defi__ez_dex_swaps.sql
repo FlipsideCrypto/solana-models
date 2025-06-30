@@ -53,7 +53,8 @@ prices AS (
         HOUR,
         token_address,
         symbol,
-        price
+        price,
+        is_verified
     FROM
         {{ ref('price__ez_prices_hourly') }}
     WHERE
@@ -73,6 +74,7 @@ SELECT
     d.program_id,
     d.swapper,
     d.swap_from_mint,
+    p_in.is_verified AS swap_from_is_verified,
     p_in.symbol AS swap_from_symbol,
     d.swap_from_amount,
     ROUND(
@@ -80,6 +82,7 @@ SELECT
         2
     ) AS swap_from_amount_usd,
     d.swap_to_mint,
+    p_out.is_verified AS swap_to_is_verified,
     p_out.symbol AS swap_to_symbol,
     d.swap_to_amount,
     ROUND(
