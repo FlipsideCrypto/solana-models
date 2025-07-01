@@ -60,7 +60,7 @@ prices AS (
             SELECT
                 MIN(DATE_TRUNC('hour', block_timestamp))
             FROM
-                swaps
+                bridge
         )
 
 )
