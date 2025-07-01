@@ -1,0 +1,60 @@
+version: 2
+models:
+  - name: defi__ez_bridge_activity
+    description: '{{ doc("bridge_ez_table_doc") }}'
+    recent_modified_date_filter: &recent_modified_date_filter
+      config:
+        where: modified_timestamp >= current_date - 7
+    tests:
+      - reference_tx_count_comparison:
+          reference_table: 'defi__fact_bridge_activity'
+          id_column: 'tx_id'
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        data_tests:
+          - not_null: *recent_modified_date_filter
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+      - name: SUCCEEDED
+        description: "{{ doc('tx_succeeded') }}" 
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+      - name: PLATFORM
+        description: "{{ doc('bridge_platform') }}"
+      - name: DIRECTION
+        description: "{{ doc('bridge_direction') }}"
+      - name: SYMBOL
+        description: "{{ doc('symbol') }}"
+      - name: TOKEN_IS_VERIFIED
+        description: "{{ doc('prices_is_verified') }}"
+      - name: SOURCE_CHAIN
+        description: "{{ doc('bridge_source_chain') }}"
+      - name: SOURCE_ADDRESS
+        description: "{{ doc('bridge_source_chain_sender') }}"
+      - name: DESTINATION_CHAIN
+        description: "{{ doc('bridge_destination_chain') }}"
+      - name: DESTINATION_ADDRESS
+        description: "{{ doc('bridge_destination_chain_receiver') }}"
+      - name: AMOUNT
+        description: "{{ doc('bridge_amount') }}"
+      - name: AMOUNT_USD
+        description: "{{ doc('bridge_amount_usd') }}"
+      - name: MINT
+        description: "{{ doc('bridge_token_address') }}"
+      - name: SYMBOL
+        description: "{{ doc('bridge_token_symbol') }}"
+      - name: EZ_BRIDGE_ACTIVITY_ID
+        description: '{{ doc("pk") }}'
+        data_tests:
+          - not_null: *recent_modified_date_filter
+          - unique: *recent_modified_date_filter  
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
