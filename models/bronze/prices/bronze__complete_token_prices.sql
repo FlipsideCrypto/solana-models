@@ -24,7 +24,9 @@ SELECT
     complete_token_prices_id,
     _invocation_id
 FROM
-
-    crosschain.silver.complete_token_prices
+    {{ source(
+        'crosschain_silver',
+        'complete_token_prices'
+    ) }}
 WHERE
     blockchain = 'solana'
