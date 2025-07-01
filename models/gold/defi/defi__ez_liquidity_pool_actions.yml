@@ -44,6 +44,8 @@ models:
           - not_null: *recent_date_filter
       - name: TOKEN_A_MINT
         description:  "{{ doc('token_a_mint') }}"
+      - name: TOKEN_A_IS_VERIFIED
+        description: '{{ doc("prices_is_verified") }}'
       - name: TOKEN_A_SYMBOL
         description:  "{{ doc('prices_symbol') }}"
       - name: TOKEN_A_AMOUNT
@@ -53,6 +55,8 @@ models:
           The amount of token A in USD.
       - name: TOKEN_B_MINT
         description:  "{{ doc('token_b_mint') }}"
+      - name: TOKEN_B_IS_VERIFIED
+        description: '{{ doc("prices_is_verified") }}'
       - name: TOKEN_B_SYMBOL
         description:  "{{ doc('prices_symbol') }}"
       - name: TOKEN_B_AMOUNT
@@ -63,6 +67,8 @@ models:
       - name: TOKEN_C_MINT
         description: >
           Address of the mint representing the third token in a liquidity pool pair.
+      - name: TOKEN_C_IS_VERIFIED
+        description: '{{ doc("prices_is_verified") }}'
       - name: TOKEN_C_SYMBOL
         description: "{{ doc('prices_symbol') }}"
       - name: TOKEN_C_AMOUNT
@@ -74,6 +80,8 @@ models:
       - name: TOKEN_D_MINT
         description: >
           Address of the mint representing the fourth token in a liquidity pool pair.
+      - name: TOKEN_D_IS_VERIFIED
+        description: '{{ doc("prices_is_verified") }}'
       - name: TOKEN_D_SYMBOL
         description: "{{ doc('prices_symbol') }}"
       - name: TOKEN_D_AMOUNT
