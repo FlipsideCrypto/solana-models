@@ -1,11 +1,24 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "CONCAT_WS('-', tx_id, event_type, mint)",
-    incremental_strategy = 'delete+insert',
-    incremental_predicates = ['block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from ' ~ generate_tmp_view_name(this) ~ '))'],
+    unique_key = ['mint_actions_id'],
+    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
+    merge_exclude_columns = ["inserted_timestamp"],
+    full_refresh = false,
     tags = ['scheduled_non_core','scheduled_non_core_hourly']
 ) }}
+
+{% if execute %}
+
+    {% if is_incremental() %}
+        {% set query %}
+            SELECT MAX(_inserted_timestamp) AS max_inserted_timestamp
+            FROM {{ this }}
+        {% endset %}
+
+        {% set max_inserted_timestamp = run_query(query).columns[0].values()[0] %}
+    {% endif %}
+{% endif %}
 
 WITH prefinal as (
     SELECT
@@ -42,9 +55,7 @@ WITH prefinal as (
             'initializeNonTransferableMint'
         )
         {% if is_incremental() %}
-            {% if execute %}
-            {{ get_batch_load_logic(this,30,'2023-02-14') }}
-            {% endif %}
+            AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
         {% else %}
             AND _inserted_timestamp::date between '2022-08-12' and '2022-09-05'
         {% endif %}
@@ -83,9 +94,7 @@ WITH prefinal as (
             'initializeNonTransferableMint'
         )
         {% if is_incremental() %}
-            {% if execute %}
-            {{ get_batch_load_logic(this,30,'2023-02-14') }}
-            {% endif %}
+            AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
         {% else %}
             AND _inserted_timestamp::date between '2022-08-12' and '2022-09-05'
         {% endif %}
@@ -119,6 +128,12 @@ SELECT
         ELSE mint_authority
     END AS mint_authority,
     signers,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_id', 'index', 'inner_index', 'mint']
+    ) }} AS mint_actions_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     prefinal
