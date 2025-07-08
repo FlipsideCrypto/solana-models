@@ -49,6 +49,7 @@ all_idls AS (
             ELSE FALSE
         END as is_new_record
     FROM {{ this }}
+    WHERE program_id not in (select program_id from new_user_idls)
     
     UNION ALL
     {% endif %}
