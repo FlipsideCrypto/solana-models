@@ -8,6 +8,4 @@ The unique identifier (signature) for this transaction on the Solana blockchain.
 - Used for joining, referencing, and tracking transaction-level activity.
 - Primary key for transaction-level analytics and lookups.
 
-**Relationships:**
-- Used to join with any other information related to this transaction.
 {% enddocs %}
