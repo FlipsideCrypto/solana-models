@@ -17,7 +17,7 @@ env:
   SCHEMA: "${{ vars.SCHEMA }}"
 
 concurrency:
-  group: ${{ github.workflow }}
+  group: "dbt_run_incremental_core"
 
 jobs:
   run_dbt_jobs:
