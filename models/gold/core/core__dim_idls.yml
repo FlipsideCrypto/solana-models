@@ -44,10 +44,6 @@ models:
         description: "{{ doc('first_block_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
-      - name: EARLIEST_DECODED_BLOCK
-        description: "{{ doc('earliest_decoded_block') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: BACKFILL_STATUS
         description: "{{ doc('backfill_status') }}"
         tests:

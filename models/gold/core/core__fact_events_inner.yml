@@ -3,6 +3,8 @@ models:
   - name: core__fact_events_inner
     description: |-
       Records every event that occurs within inner instructions (Cross-Program Invocations, or CPI) on the Solana blockchain. Each row represents an event triggered by a program calling another program during transaction execution, capturing the full context of nested program interactions. This table includes all inner events observed on Solana mainnet, with detailed indexing to support analysis of deeply nested program flows. It enables granular tracing of protocol and application logic, supporting advanced analytics on composability, protocol integrations, and on-chain automation. Events are uniquely identified by block, transaction, instruction, and inner instruction indices. This model is essential for understanding the complete execution path of complex Solana transactions and supports downstream analytics on program-to-program interactions.
+
+      Use this table when needing to analyze Cross-Program Invocations (CPIs), nested program calls, or the full execution flow of Solana transactions. This table captures inner instructions generated during execution, with detailed indexing for proper ordering. It is best for analytics on composability, protocol integrations, and advanced program tracing.
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7

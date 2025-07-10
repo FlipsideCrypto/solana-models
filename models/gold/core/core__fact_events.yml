@@ -3,6 +3,8 @@ models:
   - name: core__fact_events
     description: |-
       Records every event emitted by on-chain Solana programs during transaction execution. Each row represents a single event, including its type, the program that emitted it, and its position within the transaction. This table covers all events observed on Solana mainnet, including protocol-level and application-level activity. It enables detailed analysis of program behavior, user actions, and protocol interactions at the event level. Events are uniquely identified by block, transaction, and event index. This model is central to understanding the full scope of on-chain activity and supports downstream analytics, including decoded instructions, transfers, and protocol-specific event flows.
+
+      When to use: Use this table when needing to analyze program interactions, instruction execution flow, or track specific program events and methods. This table captures top-level program instructions with event_type and program_id, providing pre-parsed fields for easy analytics. It avoids complex JSON array parsing from fact_transactions and is best for analytics on protocol usage, program calls, and event-level activity.
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

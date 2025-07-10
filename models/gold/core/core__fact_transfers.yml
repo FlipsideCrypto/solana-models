@@ -3,6 +3,8 @@ models:
   - name: core__fact_transfers
     description: |-
       Contains one row per transfer event involving native SOL or SPL tokens on the Solana blockchain. Each row records the details of a single transfer, including block and transaction identifiers, sender and recipient addresses, transferred amount, and token mint. The model includes both SOL and token transfers, supporting analytics on asset movement, user activity, and protocol flows. Data is updated as new blocks are processed, and each row represents a unique transfer event within a transaction.
+
+      Use this table when needing to track SOL or SPL token movements between accounts, analyze payment flows, build wallet transaction histories, or monitor large value transfers. This table provides pre-parsed transfer amounts and direct from/to address columns, making it much simpler than parsing instruction data manually. It is ideal for analytics on asset movement, wallet activity, and payment flows.
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
