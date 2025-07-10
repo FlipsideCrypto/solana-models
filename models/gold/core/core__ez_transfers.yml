@@ -1,0 +1,36 @@
+version: 2
+models:
+  - name: core__ez_transfers
+    description: |-
+      Contains transfer events for Solana and SPL tokens, including pre-parsed transfer amounts, USD value, token symbol, and verification status. This table is best for analytics on asset movement, wallet activity, payment flows, and large value transfers. 
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+      - name: INDEX
+        description: "{{ doc('index') }}"
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
+      - name: TX_FROM
+        description: "{{ doc('tx_from') }}"
+      - name: TX_TO 
+        description: "{{ doc('tx_to') }}"
+      - name: AMOUNT 
+        description: "{{ doc('amount') }}"
+      - name: AMOUNT_USD
+        description: "{{ doc('amount_usd') }}"
+      - name: MINT
+        description: "{{ doc('mint') }}"
+      - name: SYMBOL
+        description: "{{ doc('symbol') }}"
+      - name: TOKEN_IS_VERIFIED
+        description: '{{ doc("prices_is_verified") }}'
+      - name: EZ_TRANSFERS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
