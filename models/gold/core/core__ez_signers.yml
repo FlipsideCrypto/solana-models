@@ -1,42 +1,42 @@
 version: 2
 models:
   - name: core__ez_signers
-    description: A table that contains aggregate information about addresses that have signed transactions.
+    description: Contains one row per unique Solana signer (address that signs transactions), with activity metrics, first/last transaction dates, programs used, and fee totals. This table supports analytics on user and protocol adoption, signer activity, and fee contributions across the Solana blockchain. Data is sourced from transaction signatures and program interactions, enabling segmentation by activity, protocol, and time.
     columns:
       - name: SIGNER
-        description: The address of the user that initiated the transaction
+        description: "{{ doc('signer') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: FIRST_TX_DATE
-        description: The first date that the wallet performed a transaction on.
+        description: "{{ doc('first_tx_date') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: FIRST_PROGRAM_ID
-        description: The ID of the first program this signer interacted with, excluding chain admin programs.
+        description: "{{ doc('first_program_id') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: LAST_TX_DATE
-        description: The date of the most recent transaction the signer has performed.
+        description: "{{ doc('last_tx_date') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: LAST_PROGRAM_ID
-        description: The ID of the last program this signer interacted with, excluding chain admin programs.
+        description: "{{ doc('last_program_id') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: NUM_DAYS_ACTIVE
-        description: A count of the total number of unique days that this signer has performed a transaction.
+        description: "{{ doc('num_days_active') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: NUM_TXS
-        description: The total number of distinct transactions initiated by this signer. 
+        description: "{{ doc('num_txs') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: TOTAL_FEES
-        description: The total amount of fees (in lamports) that the signer has paid on a given day. This field can be null, as only the first signer pays fees in a transaction.
+        description: "{{ doc('total_fees') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: PROGRAMS_USED
-        description: An array containing all program IDs a user interacted with on a given day.
+        description: "{{ doc('programs_used') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: EZ_SIGNERS_ID

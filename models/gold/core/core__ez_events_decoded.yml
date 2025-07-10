@@ -1,7 +1,8 @@
 version: 2
 models:
   - name: core__ez_events_decoded
-    description: Contains each event that occurs on Solana where the instruction has been decoded. A transaction can consist of more than one event and not all events within a transaction will be decoded.
+    description: |-
+      Contains one row per decoded Solana record, mapping detailed program activity, event types, and instruction arguments as recorded on-chain. Includes extracted accounts, arguments, and error information for each decoded record. This model supports protocol usage analysis, event tracking, error monitoring, and attribution of accounts and signers. Data is updated as new records are decoded, enabling flexible analytics on Solana program interactions and protocol activity.
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -16,7 +17,7 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: SIGNERS
-        description: List of accounts that signed the transaction
+        description: "{{ doc('signers') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: SUCCEEDED
@@ -24,7 +25,7 @@ models:
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: INDEX
-        description: Location of the event within the instructions of a transaction
+        description: "{{ doc('index') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: INNER_INDEX
@@ -38,19 +39,19 @@ models:
       - name: EVENT_TYPE
         description: "{{ doc('event_type') }}"
       - name: DECODED_INSTRUCTION
-        description: An instruction specifies which program it is calling, which accounts it wants to read or modify, and additional data that serves as auxiliary input to the program
+        description: "{{ doc('decoded_instruction') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: DECODED_ACCOUNTS
-        description: The accounts object within the decoded instruction
+        description: "{{ doc('decoded_accounts') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: DECODED_ARGS
-        description: The args object within the decoded instruction
+        description: "{{ doc('decoded_args') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: DECODING_ERROR
-        description: The error if the decoding failed
+        description: "{{ doc('decoding_error') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: EZ_EVENTS_DECODED_ID

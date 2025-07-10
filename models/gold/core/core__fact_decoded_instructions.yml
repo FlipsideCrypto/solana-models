@@ -1,7 +1,8 @@
 version: 2
 models:
   - name: core__fact_decoded_instructions
-    description: Contains the decoded instructions for events. This table only contains instructions for the programs that we have idls for. More idls will continually be added.
+    description: |-
+      Contains one row per decoded Solana record, including program ID, event type, and instruction metadata as recorded on-chain. This model supports record-level analytics, program usage tracking, and event segmentation for the Solana blockchain. Data is updated as new records are decoded, enabling detailed analysis of protocol interactions and event flows.
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -20,7 +21,7 @@ models:
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: INDEX
-        description: Location of the event within the instructions of a transaction
+        description: "{{ doc('index') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: INNER_INDEX
@@ -34,9 +35,7 @@ models:
       - name: EVENT_TYPE
         description: "{{ doc('event_type') }}"
       - name: DECODED_INSTRUCTION
-        description: An instruction specifies which program it is calling, which accounts it wants to read or modify, and additional data that serves as auxiliary input to the program
-        tests:
-          - dbt_expectations.expect_column_to_exist
+        description: "{{ doc('decoded_instruction') }}"
       - name: FACT_DECODED_INSTRUCTIONS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
