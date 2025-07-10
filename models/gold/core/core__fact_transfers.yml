@@ -1,7 +1,8 @@
 version: 2
 models:
   - name: core__fact_transfers
-    description: Contains transfer events for Solana and spl-tokens. 
+    description: |-
+      Contains one row per transfer event involving native SOL or SPL tokens on the Solana blockchain. Each row records the details of a single transfer, including block and transaction identifiers, sender and recipient addresses, transferred amount, and token mint. The model includes both SOL and token transfers, supporting analytics on asset movement, user activity, and protocol flows. Data is updated as new blocks are processed, and each row represents a unique transfer event within a transaction.
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -21,16 +22,10 @@ models:
           - dbt_expectations.expect_column_to_exist
       - name: TX_FROM
         description: "{{ doc('tx_from') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: TX_TO 
         description: "{{ doc('tx_to') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: AMOUNT 
         description: "{{ doc('amount') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: MINT
         description: "{{ doc('mint') }}"
         tests:

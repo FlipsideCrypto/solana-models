@@ -1,7 +1,8 @@
 version: 2
 models:
   - name: core__fact_sol_balances
-    description: "{{ doc('sol_balance_table_doc') }}"
+    description: |-
+      Contains one row per account and transaction where a native SOL (Solana) balance changes on the Solana blockchain. This model tracks pre- and post-transaction balances for each account, including the associated block, transaction, and mint information. Balances are adjusted for SOL's 9 decimal places. The table enables analysis of SOL balance changes, account activity, and ownership attribution at the transaction level. Data is updated incrementally as new blocks are processed, and each row represents a unique account-transaction balance change event.
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7

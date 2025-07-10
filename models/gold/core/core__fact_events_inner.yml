@@ -1,7 +1,8 @@
 version: 2
 models:
   - name: core__fact_events_inner
-    description: Contains each event that occurs within the inner instructions of an instruction. These are also known as CPI (Cross-Program Invocations), where a program makes a call to another.
+    description: |-
+      Records every event that occurs within inner instructions (Cross-Program Invocations, or CPI) on the Solana blockchain. Each row represents an event triggered by a program calling another program during transaction execution, capturing the full context of nested program interactions. This table includes all inner events observed on Solana mainnet, with detailed indexing to support analysis of deeply nested program flows. It enables granular tracing of protocol and application logic, supporting advanced analytics on composability, protocol integrations, and on-chain automation. Events are uniquely identified by block, transaction, instruction, and inner instruction indices. This model is essential for understanding the complete execution path of complex Solana transactions and supports downstream analytics on program-to-program interactions.
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7
@@ -48,7 +49,7 @@ models:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: INSTRUCTION_PROGRAM_ID
-        description: "{{ doc('program_id') }}. For the instruction calling this inner instruction."
+        description: "{{ doc('instruction_program_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist  
           - not_null: *recent_date_filter
