@@ -4,31 +4,37 @@ globs: models/descriptions/*,*.yml,models/gold/**/*.sql
 alwaysApply: false
 ---
 # dbt Documentation Standards
-When working with dbt projects, ensure comprehensive documentation that supports LLM-driven analytics workflows. This includes rich table and column descriptions that provide complete context for understanding blockchain data, specifically for the Solana blockchain.
+When working with dbt projects, ensure comprehensive documentation that supports LLM-driven analytics workflows. This includes rich table and column descriptions that provide complete context for understanding blockchain data.
+
 ## Table Documentation Standards
 Every dbt Model must have an accompanying yml file that provides model documentation.
+
 ### Basic YML File Format
 Every dbt model yml file must follow this basic structure:
+
 ```yaml
 version: 2
+
 models:
   - name: [model_name]
-    description: |-
-      [Clear description of what the model contains and its purpose]
+    description: "{{ doc('table_name') }}"
     tests:
       - [appropriate_tests_for_the_model]
+
     columns:
       - name: [COLUMN_NAME]
         description: "{{ doc('column_name')}}"
         tests:
           - [appropriate_tests_for_the_column]
 ```
+
 #### Required Elements:
 - **version: 2** - Must be the first line
 - **models:** - Top-level key containing the model definitions
 - **name:** - The exact name of the dbt model (without .sql extension)
-- **description:** - Clear explanation of the model's purpose and contents
+- **description:** - Reference to markdown documentation using `{{ doc('table_name') }}`
 - **columns:** - List of all columns in the model with their documentation
+
 #### Column Documentation Format:
 ```yaml
 - name: [COLUMN_NAME_IN_UPPERCASE]
@@ -37,69 +43,86 @@ models:
     - [test_name]:
         [test_parameters]
 ```
+
 ### Table Descriptions
-Must clearly explain:
-- What the model is mapping from the Solana blockchain
-- What data it contains and its scope
-- How it relates to other models in the lineage
-- Any important transformations or business logic applied
+Table documentation must include 4 standard elements, formatted in markdown. As the base documentation file is YML, the table description must be written in a dbt documentation markdown file in the `models/descriptions/` directory. The Table YML can then use the jinja doc block to reference it.
+
+The 4 standard categories (designed for LLM client consumption to aid in data model discovery and selection):
+
+1. **Description** (the "what"): What the model is mapping from the blockchain, data scope and coverage, transformations and business logic applied. DO NOT EXPLAIN THE DBT MODEL LINEAGE. This is not important for the use case of LLM-driven blockchain analytics.
+2. **Key Use Cases**: Examples of when this table might be used and for what analysis, specific analytical scenarios and applications
+3. **Important Relationships**: How this table might be used alongside OTHER GOLD LEVEL models, dependencies and connections to other key gold models. For example, a table like logs, events, or receipts may contain information from a larget transactions. To build this description, you SHOULD review the dbt model lineage to understand genuine model relationships. You must convert the model name to a database object, for example `core__fact_blocks.sql` = `core.fact_blocks` = `<schema>__<table_name>.sql`
+4. **Commonly-used Fields**: Fields most important to condicting analytics. Determining these requires an understanding of the data model, what the columns are (via their descriptions) and how those fields aid in analytics. One way an understanding can be inferred is by analyzing curated models (anything that is not a core model in the gold/core/ directory is curated. Core models clean and map basic data objects of the blockchain like blocks, transactions, events, logs, etc. Curated models map specialized areas of activity like defi, nfts, governance, etc.). Blockchain data is often logged to a data table as a json object with a rich mapping of event-based details.
+
 ### Lineage Analysis
 Before writing table descriptions:
 - Read the dbt model SQL to understand the logic
 - Follow upstream dependencies to understand data flow
 - Review source models and transformations
 - Understand the business context and use cases
+- Review the column descriptions to estabish an understanding of the model, as a whole.
+- At the gold level, an ez_ table typically sources data from a fact_ table and this relationship should be documented. Ez_ tables add business logic such as (but not limited to) labels and USD price information
+
 ## Column Documentation Standards
+
 ### Rich Descriptions
 Each column description must include:
 - Clear definition of what the field represents
 - Data type and format expectations
 - Business context and use cases
-- Examples where helpful (especially for Solana-specific concepts)
+- Examples where helpful (especially for blockchain-specific concepts)
 - Relationships to other fields when relevant
 - Any important caveats or limitations
+
 ### Blockchain-Specific Context
-For Solana data:
+For Solana blockchain data:
 - Reference official Solana protocol documentation for technical accuracy
 - Explain Solana-specific concepts (lamports, rent, program accounts, etc.)
 - Provide examples using Solana's conventions (e.g., base58 addresses, slot numbers)
 - Clarify differences from other blockchains when relevant
+
 ### YAML Requirements
 - Column names MUST BE CAPITALIZED in YAML files
 - Use `{{ doc('column_name') }}` references for consistent desciption across models. The doc block must refer to a valid description in `models/descriptions`
 - Include appropriate tests for data quality
-## Documentation Review Process
-### Research Phase
-- Search official protocol documentation for technical concepts
-- Review developer guides and API documentation
-- Understand the blockchain's data structures and conventions
-- Research common use cases and analytics patterns
-### Analysis Phase
-- Read the dbt model SQL to understand transformations
-- Follow model lineage to understand data dependencies
-- Identify business logic and data quality considerations
-- Map columns to their blockchain equivalents
-### Writing Phase
-- Write clear, complete descriptions that stand alone
-- Use consistent terminology and formatting
-- Include examples for complex concepts
-- Ensure descriptions support LLM understanding
-### Quality Check
-- Verify technical accuracy against protocol documentation
-- Ensure descriptions are complete and self-contained
-- Check for consistency across related models
-- Validate that descriptions support common analytics use cases
-## File Organization
-- Store all documentation in `models/descriptions/` directory
-- Use consistent naming: `column_name.md` for individual columns with descriptions wrapped in the appropriate tags: `{% docs column_name %} DESCRIPTION {% enddocs %}`
-- Create table-level documentation in `table_name.md` files
-- Maintain `__overview__.md` for project-level context
+
 ## Examples of Good Documentation
+
+### Table Documentation Example
 ```markdown
-{% docs amount_raw %}
-Unadjusted amount of tokens as it appears on-chain (not decimal adjusted). This is the raw token amount before any decimal precision adjustments are applied. For example, if transferring 1 SOL, the amount_raw would be 1000000000 (1e9) since SOL has 9 decimal places. This field preserves the exact on-chain representation of the token amount for precise calculations and verification.
+{% docs table_transfers %}
+## Description
+This table tracks all token transfers on the <name> blockchain, capturing movements of native tokens and fungible tokens between accounts. The data includes both successful and failed transfers, with complete transaction context and token metadata.
+
+## Key Use Cases
+- Token flow analysis and wallet tracking
+- DeFi protocol volume measurements
+- Cross-chain bridge monitoring
+- Whale movement detection and alerts
+- Token distribution and holder analysis
+
+## Important Relationships
+- Subset of `gold.transactions`
+- Maps events emitted in `gold.events` or `gold.decoded_instructions`
+- Utilizes token price data from `gold.prices` to compute USD columns
+
+## Commonly-used Fields
+- `tx_id`: Essential for linking to transaction details and verification
+- `signers`: Core fields for solana user analysis and network mapping
+- `amount` and `amount_usd`: Critical for value calculations and financial analysis
+- `token_address`: Key for filtering by specific tokens and DeFi analysis
+- `block_timestamp`: Primary field for time-series analysis and trend detection
 {% enddocs %}
 ```
+
+### Column Documentation Example
+```markdown
+{% docs amount_raw %}
+Unadjusted amount of tokens as it appears on-chain (not decimal adjusted). This is the raw token amount before any decimal precision adjustments are applied. For example, if transferring 1 native token, the amount_raw would be 1000000000000000000000000 (1e24) since <this blockchain's native token> has 24 decimal places. This field preserves the exact on-chain representation of the token amount for precise calculations and verification.
+{% enddocs %}
+```
+Important consideration: be sure to research and confirm figures such as decimal places. If unknown DO NOT MAKE UP A NUMBER.
+
 ## Common Patterns to Follow
 - Start with a clear definition
 - Provide context about why the field exists
@@ -107,3 +130,29 @@ Unadjusted amount of tokens as it appears on-chain (not decimal adjusted). This 
 - Explain relationships to other fields
 - Mention any important limitations or considerations
 - Use consistent terminology throughout the project
+
+## Quality Standards
+
+### Completeness
+- Every column must have a clear, detailed description
+- Table descriptions must explain the model's purpose and scope
+- Documentation must be self-contained without requiring external context
+- All business logic and transformations must be explained
+
+### Accuracy
+- Technical details must match official blockchain documentation
+- Data types and formats must be correctly described
+- Examples must use appropriate blockchain conventions
+- Relationships between fields must be accurately described
+
+### Clarity
+- Descriptions must be clear and easy to understand
+- Complex concepts must be explained with examples
+- Terminology must be consistent throughout the project
+- Language must support LLM understanding
+
+### Consistency
+- Use consistent terminology across all models
+- Follow established documentation patterns
+- Maintain consistent formatting and structure
+- Ensure similar fields have similar descriptions
