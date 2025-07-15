@@ -11,10 +11,8 @@ This table contains one row per program interface definition (IDL) on the Solana
 - Enable time-series and event-based analytics on program interfaces
 
 ## Important Relationships
-- Closely related to `core.fact_decoded_instructions` (for decoded program calls), `core.fact_events` (for event context), and `core.fact_events_inner` (for inner/CPI events)
-- Use `core.fact_decoded_instructions` to analyze program calls and usage
-- Use `core.fact_events` and `core.fact_events_inner` for event-level context and protocol interactions
-- Joins with `core.fact_blocks` for block context and `core.fact_transactions` for transaction context
+- Closely related to `core.fact_decoded_instructions` and `core.ez_events_decoded` (for decoded program calls)
+- Use `core.ez_events_decoded` to analyze program calls and usage
 
 ## Commonly-used Fields
 - `program_id`: For program identification and joins

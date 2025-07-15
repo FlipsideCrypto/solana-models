@@ -11,9 +11,9 @@ This table records every event emitted by on-chain Solana programs during transa
 - Downstream analytics for protocol-specific event flows and decoded instructions
 
 ## Important Relationships
-- Closely related to `core.fact_events_inner` (for inner/CPI events), `core.fact_decoded_instructions` (for decoded instruction details), and `core.fact_transfers` (for transfer events)
+- Closely related to `core.fact_events_inner` (for inner/CPI events), `core.ez_events_decoded` (preferred for decoded instruction details), and `core.fact_transfers` (for transfer events)
 - Use `core.fact_events_inner` to analyze Cross-Program Invocations (CPIs) and nested program calls
-- Use `core.fact_decoded_instructions` for detailed instruction and argument analysis (if program is being decoded)
+- Use `core.ez_events_decoded` for detailed instruction and argument analysis (if program is being decoded)
 - Use `core.fact_transfers` for asset movement and transfer analytics
 - Joins with `core.fact_blocks` for block context and `core.fact_transactions` for transaction context
 

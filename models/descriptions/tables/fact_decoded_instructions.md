@@ -1,7 +1,7 @@
 {% docs fact_decoded_instructions %}
 
 ## Description
-This table contains one row per decoded instruction on the Solana blockchain, including program ID, event type, and detailed instruction metadata as recorded on-chain. It only includes decoded data for programs for which we have the IDL (as listed in `core.dim_idls`). It enables record-level analytics, program usage tracking, and event segmentation for the Solana blockchain. Each row represents a decoded instruction, supporting detailed analysis of protocol interactions, program calls, and event flows.
+This table contains one row per decoded instruction on the Solana blockchain, including program ID, event type, and detailed instruction metadata as recorded on-chain. It only includes decoded data for programs for which we have the IDL (as listed in `core.dim_idls`). For most analytics use cases, `core.ez_events_decoded` is preferred, as it contains all the information in this table plus additional extracted fields (such as decoded_accounts, decoded_args, decoding_error) for easier analysis. Each row represents a decoded instruction, supporting detailed analysis of protocol interactions, program calls, and event flows.
 
 ## Key Use Cases
 - Analyze decoded instructions and program calls
@@ -11,7 +11,8 @@ This table contains one row per decoded instruction on the Solana blockchain, in
 - Enable detailed event and instruction-level analytics
 
 ## Important Relationships
-- Closely related to `core.fact_events` (for event context), `core.fact_events_inner` (for inner/CPI events), and `core.fact_transfers` (for transfer events)
+- Closely related to `core.ez_events_decoded` (preferred for most analytics), `core.fact_events` (for event context), `core.fact_events_inner` (for inner/CPI events), and `core.fact_transfers` (for transfer events)
+- Use `core.ez_events_decoded` for most analytics use cases
 - Use `core.fact_events` for event-level context and protocol interactions
 - Use `core.fact_events_inner` for nested program calls and composability analysis
 - Use `core.fact_transfers` for asset movement and transfer analytics

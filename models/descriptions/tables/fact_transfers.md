@@ -11,11 +11,11 @@ This table contains one row per transfer event involving native SOL or SPL token
 - Simplify asset movement analysis compared to parsing raw instructions
 
 ## Important Relationships
-- Closely related to `core.fact_events` (for event context), `core.fact_events_inner` (for inner/CPI events), and `core.fact_decoded_instructions` (for decoded instruction details)
+- Closely related to `core.fact_events` (for event context), `core.fact_events_inner` (for inner/CPI events), and `core.ez_events_decoded` (preferred for decoded instruction details)
 - Use `core.fact_events` for event-level context and protocol interactions
 - Use `core.fact_events_inner` for nested program calls and composability analysis
-- Use `core.fact_decoded_instructions` for detailed instruction and argument analysis (if program is being decoded)
-- Joins with `core.fact_blocks` for block context and `core.fact_transactions` for transaction context
+- Use `core.ez_events_decoded` for detailed instruction and argument analysis (if program is being decoded)
+- Joins with `core.fact_transactions` for transaction context
 
 ## Commonly-used Fields
 - `block_timestamp`: For time-series and transfer sequencing analysis
