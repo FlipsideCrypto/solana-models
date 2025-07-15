@@ -1,8 +1,7 @@
 version: 2
 models:
   - name: core__dim_idls
-    description: |-
-      Contains one row per program interface definition (IDL) on the Solana blockchain. Maps program IDs to their Interface Definition Language (IDL) documents, hashes, validity, activity status, and submission metadata. Supports analytics on program interfaces, upgrades, and developer activity. Data is sourced from silver__idls and updated as new IDLs are submitted or modified.
+    description: "{{ doc('dim_idls') }}"
     columns:
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"

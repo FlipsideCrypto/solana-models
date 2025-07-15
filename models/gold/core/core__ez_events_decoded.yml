@@ -1,8 +1,7 @@
 version: 2
 models:
   - name: core__ez_events_decoded
-    description: |-
-      Contains one row per decoded Solana record, mapping detailed program activity, event types, and instruction arguments as recorded on-chain. Includes extracted accounts, arguments, and error information for each decoded record. This model supports protocol usage analysis, event tracking, error monitoring, and attribution of accounts and signers. Data is updated as new records are decoded, enabling flexible analytics on Solana program interactions and protocol activity.
+    description: "{{ doc('ez_events_decoded') }}"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

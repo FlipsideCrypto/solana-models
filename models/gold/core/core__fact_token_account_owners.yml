@@ -1,8 +1,7 @@
 version: 2
 models:
   - name: core__fact_token_account_owners
-    description: |-
-      Contains one row per token account address, recording the range of blocks during which a given owner controlled the account. This model enables historical tracking of token account ownership on the Solana blockchain, supporting attribution of token balances and transfers to the correct owner at any point in time. Each row represents a unique ownership period for a token account, with start and end block identifiers. Null end_block_id indicates current ownership. Data is updated daily.
+    description: "{{ doc('fact_token_account_owners') }}"
     columns:
       - name: ACCOUNT_ADDRESS
         description: "{{ doc('account_address') }}"

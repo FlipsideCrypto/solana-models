@@ -45,7 +45,7 @@ models:
 ```
 
 ### Table Descriptions
-Table documentation must include 4 standard elements, formatted in markdown. As the base documentation file is YML, the table description must be written in a dbt documentation markdown file in the `models/descriptions/` directory. The Table YML can then use the jinja doc block to reference it.
+Table documentation must include 4 standard elements, formatted in markdown. As the base documentation file is YML, the table description must be written in a dbt documentation markdown file in the `models/descriptions/tables` directory. The Table YML can then use the jinja doc block to reference it.
 
 The 4 standard categories (designed for LLM client consumption to aid in data model discovery and selection):
 

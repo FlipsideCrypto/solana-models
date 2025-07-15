@@ -1,8 +1,7 @@
 version: 2
 models:
   - name: core__fact_token_balances
-    description: |-
-      Contains one row per account and transaction where an SPL token balance changes on the Solana blockchain. This model tracks pre- and post-transaction balances for each token account, including the associated block, transaction, mint, and owner information. Balances are decimal adjusted according to the token's mint. The table enables analysis of token balance changes, account activity, and ownership attribution at the transaction level. Data is updated incrementally as new blocks are processed, and each row represents a unique token account-transaction balance change event.
+    description: "{{ doc('fact_token_balances') }}"
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7

@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__ez_signers
-    description: Contains one row per unique Solana signer (address that signs transactions), with activity metrics, first/last transaction dates, programs used, and fee totals. This table supports analytics on user and protocol adoption, signer activity, and fee contributions across the Solana blockchain. Data is sourced from transaction signatures and program interactions, enabling segmentation by activity, protocol, and time.
+    description: "{{ doc('ez_signers') }}"
     columns:
       - name: SIGNER
         description: "{{ doc('signer') }}"

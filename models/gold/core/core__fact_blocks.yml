@@ -1,8 +1,7 @@
 version: 2
 models:
   - name: core__fact_blocks
-    description: |-
-      Contains one row per block produced on the Solana blockchain, mapping block-level metadata as recorded on-chain. Includes block identifiers, timestamps, hashes, network and chain information, and lineage to previous blocks. This model is sourced from upstream block data and serves as a foundational table for block-level analytics, supporting chain monitoring, block production analysis, and cross-chain integrations. Data is updated as new blocks are processed, and each row represents a unique block with associated metadata and computed fields. See upstream lineage for details on data extraction and transformation.
+    description: "{{ doc('fact_blocks') }}"
     columns:
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"

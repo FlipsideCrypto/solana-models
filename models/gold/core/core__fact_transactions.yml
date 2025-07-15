@@ -1,8 +1,7 @@
 version: 2
 models:
   - name: core__fact_transactions
-    description: |-
-      Contains one row per transaction on the Solana blockchain, mapping high-level transaction data as recorded on-chain. Includes block timestamp, transaction identifiers, account and token balance changes, program instructions, and execution metadata. This model is sourced from silver__transactions and serves as a foundational table for Solana analytics, supporting transaction-level analysis, fee tracking, and program activity monitoring. Data is updated as new blocks are processed, and each row represents a unique transaction with associated metadata and computed fields. See upstream lineage for details on data extraction and transformation.
+    description: "{{ doc('fact_transactions') }}"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

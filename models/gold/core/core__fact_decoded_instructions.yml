@@ -1,8 +1,7 @@
 version: 2
 models:
   - name: core__fact_decoded_instructions
-    description: |-
-      Contains one row per decoded Solana record, including program ID, event type, and instruction metadata as recorded on-chain. This model supports record-level analytics, program usage tracking, and event segmentation for the Solana blockchain. Data is updated as new records are decoded, enabling detailed analysis of protocol interactions and event flows.
+    description: "{{ doc('fact_decoded_instructions') }}"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
