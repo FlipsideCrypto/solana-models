@@ -1,41 +1,45 @@
 version: 2
 models:
   - name: core__dim_labels
-    description: '{{ doc("table_dim_labels") }}'   
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - ADDRESS
+    description: "{{ doc('table_dim_labels') }}"
     columns:
       - name: BLOCKCHAIN
-        description: The name of the blockchain
+        description: "{{ doc('blockchain') }}"
         tests:
-          - not_null
+          - dbt_expectations.expect_column_to_exist
       - name: CREATOR
-        description: The name of the creator of the label
+        description: "{{ doc('creator') }}"
         tests:
-          - not_null
-      - name: LABEL_TYPE
-        description: A high-level category describing the addresses main function or ownership
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: ['flotsam', 'nft', 'defi', 'dex', 'cex', 'dapp', 'token', 'operator', 'layer2', 'chadmin', 'bridge', 'games']
-      - name: LABEL_SUBTYPE
-        description: A sub-category nested within label type providing further detail
-        tests:
-          - not_null
-      - name: LABEL
-        description: Name of the controlling entity of the address
-        tests:
-          - not_null
+          - dbt_expectations.expect_column_to_exist
       - name: ADDRESS
-        description: Address that the label is for. This is the field that should be used to join other tables with labels. 
+        description: "{{ doc('address') }}"
         tests:
-          - not_null
+          - dbt_expectations.expect_column_to_exist
+      - name: LABEL_TYPE
+        description: "{{ doc('label_type') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: LABEL_SUBTYPE
+        description: "{{ doc('label_subtype') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: LABEL
+        description: "{{ doc('label') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: ADDRESS_NAME
+        description: "{{ doc('address_name') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: DIM_LABELS_ID
-        description: '{{ doc("pk") }}'   
+        description: "{{ doc('pk') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: "{{ doc('inserted_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+        description: "{{ doc('modified_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist 

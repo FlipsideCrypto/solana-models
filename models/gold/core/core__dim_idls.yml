@@ -1,14 +1,14 @@
 version: 2
 models:
   - name: core__dim_idls
-    description: The status of Program IDL's submitted for decoding events 
+    description: "{{ doc('dim_idls') }}"
     columns:
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: IDL
-        description: "The complete submitted IDL that defines the program"
+        description: "{{ doc('idl') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: IDL_HASH
@@ -24,11 +24,11 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: IS_ACTIVE
-        description: "If the program has decoded instructions in the last 14 days"
+        description: "{{ doc('is_active') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: LAST_ACTIVITY_TIMESTAMP
-        description: "Most recent date that the program has decoded instructions"
+        description: "{{ doc('last_activity_timestamp') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: SUBMITTED_BY
@@ -48,14 +48,14 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: DIM_IDLS_ID
-        description: "{{ doc('id') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
-      - name: MODIFIED_TIMESTAMP
-        description: "{{ doc('modified_timestamp') }}"
+        description: "{{ doc('pk') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: INSERTED_TIMESTAMP
         description: "{{ doc('inserted_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: MODIFIED_TIMESTAMP
+        description: "{{ doc('modified_timestamp') }}"
         tests:
           - dbt_expectations.expect_column_to_exist

@@ -1,5 +1,11 @@
-{% docs backfill_status%}
+{% docs backfill_status %}
+A status indicator describing whether historical data for this program or IDL has been fully backfilled. Common values: 'complete', 'in_progress', 'not_started'.
 
-Status for the decoding of historical events - complete/in progress/not started
+**Example:**
+- "complete"
+- "in_progress"
+- "not_started"
 
+**Business Context:**
+- Supports data completeness checks, ETL monitoring, and analytics on historical coverage.
 {% enddocs %}

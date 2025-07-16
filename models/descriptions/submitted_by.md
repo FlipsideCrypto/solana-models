@@ -1,5 +1,8 @@
-{% docs submitted_by%}
+{% docs submitted_by %}
+The identifier (e.g., address or username) of the entity or user who submitted the IDL for this program. Used for attribution, auditing, and developer analytics.
 
-The discord username for the individual that submitted the IDL, or 'flipside' if submitted by internal team
+**Example:**
+- "7G8h..."
+- "dev_user_123"
 
 {% enddocs %}

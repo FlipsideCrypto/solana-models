@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__fact_sol_balances
-    description: "{{ doc('sol_balance_table_doc') }}"
+    description: "{{ doc('fact_sol_balances') }}"
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7

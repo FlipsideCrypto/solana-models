@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__fact_blocks
-    description: Contains general information about each block produced on Solana. 
+    description: "{{ doc('fact_blocks') }}"
     columns:
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
@@ -12,32 +12,38 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: NETWORK
-        description: solana network name
+        description: "{{ doc('network') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: CHAIN_ID
-        description: chain identifier, this will always be solana.  Field is used in joins with crosschain tables
+        description: "{{ doc('chain_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: BLOCK_HEIGHT
-        description: heigh of the block
+        description: "{{ doc('block_height') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: BLOCK_HASH
-        description: hash of the block
+        description: "{{ doc('block_hash') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: PREVIOUS_BLOCK_ID
-        description: previous slot value
+        description: "{{ doc('previous_block_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: PREVIOUS_BLOCK_HASH
-        description: previous block's hash value
+        description: "{{ doc('previous_block_hash') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: FACT_BLOCKS_ID
-        description: '{{ doc("pk") }}'   
+        description: "{{ doc('pk') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: "{{ doc('inserted_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+        description: "{{ doc('modified_timestamp') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist 

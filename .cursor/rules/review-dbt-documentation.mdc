@@ -1,0 +1,220 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Review dbt Documentation Process
+
+## Overview
+This document outlines the comprehensive process for reviewing and improving column and table descriptions for gold models in dbt projects. The goal is to provide robust, rich details that improve context for LLM-driven analytics workflows, ensuring that documentation is complete, accurate, and self-contained without requiring external expert files.
+
+## Objectives
+- Create clear, detailed documentation that supports LLM understanding of blockchain data
+- Ensure technical accuracy by referencing official protocol documentation
+- Provide rich context for each table and column to enable effective analytics
+- Maintain consistency across all models and schemas
+- Support automated analytics workflows without requiring expert context files
+
+## Pre-Review Requirements
+
+### 1. Research Phase
+**Blockchain Protocol Documentation**
+- Search and read official developer documentation for the target blockchain ie for Solana: (https://solana.com/docs). Utilize web search to find authentic and accurate developer documentation
+- Review technical specifications, whitepapers, and API documentation
+- Understand Solana's consensus mechanism, data structures (accounts, slots, instructions), and conventions
+- Research common use cases and analytics patterns specific to the blockchain
+- Identify key technical concepts that need explanation (e.g., lamports, rent, program accounts, token standards)
+
+**External Resources to Consult**
+- Official Solana documentation (https://docs.solana.com/)
+- Developer guides and tutorials
+- Technical specifications and whitepapers
+- Community documentation and forums
+- Block explorers and API documentation (e.g., https://explorer.solana.com/ and https://solscan.io/)
+
+### 2. Project Context Analysis
+- Review the `__overview__.md` file and rewrite it per the @dbt-overview-standard rule to create a summary of what this particular blockchain is, unique characteristics, and any other general information about the chain itself
+- Review existing documentation patterns and terminology
+- Understand the data flow and model lineage structure
+
+## Review Process
+
+### Step 1: Model Analysis
+**SQL Logic Review**
+- Read the dbt model SQL file to understand the transformations and business logic
+- Follow upstream dependencies to understand data flow from source to gold layer
+- Review bronze source models, silver staging models, and intermediate transformations
+- Identify any complex joins, aggregations, or business logic that needs explanation
+- Understand the incremental logic and any filtering conditions
+
+**Lineage Analysis**
+- Map the complete data lineage from source to gold model
+- Identify key transformations and their purposes
+- Understand relationships between related models for the sole purpose of generating a robust description
+- Do not include data lineage analysis in the table description
+
+### Step 2: Column Description Review
+**Individual Column Analysis**
+For each column in the model:
+
+1. **Technical Understanding**
+   - Read the SQL to understand how the column is derived
+   - Check upstream models if the column comes from a transformation
+   - Understand the data type and format expectations
+   - Identify any business logic applied to the column
+
+2. **Blockchain Context**
+   - Research the blockchain-specific meaning of the column
+   - Reference official documentation for technical accuracy
+   - Understand how this field relates to blockchain concepts
+   - Identify any blockchain-specific conventions or requirements
+
+3. **Documentation Assessment**
+   - Review existing column description
+   - Evaluate completeness and clarity
+   - Check for missing context or examples
+   - Ensure the description supports LLM understanding
+
+**Required Elements for Column Descriptions**
+- Clear definition of what the field represents
+- Data type and format expectations
+- Business context and use cases
+- Examples where helpful (especially for blockchain-specific concepts)
+- Relationships to other fields when relevant
+- Any important caveats or limitations
+- Blockchain-specific context and conventions
+
+### Step 3: Table Description Review
+**Current State Assessment**
+- Review the updated column descriptions
+- Review existing table description in the YAML file
+- Evaluate completeness and clarity
+- Identify missing context or unclear explanations
+
+**Required Elements for Table Descriptions**
+Table documentation must include 4 standard elements, formatted in markdown. As the base documentation file is YML, the table description must be written in a dbt documentation markdown file in the `models/descriptions/` directory. The Table YML can then use the jinja doc block to reference it.
+
+The 4 standard categories are fully defined in the @dbt-documentation-standards rule. They are:
+
+1. **Description**
+2. **Key Use Cases**
+3. **Important Relationships**
+4. **Commonly-used Fields**
+
+### Step 4: Documentation File Review
+**Individual Documentation Files**
+- Check if each column has a corresponding `.md` file in `models/descriptions/`
+- Review existing documentation for completeness and accuracy
+- Update or create documentation files as needed
+
+**Documentation File Format**
+```markdown
+{% docs column_name %}
+[Rich, detailed description including:
+- Clear definition
+- Data format and examples
+- Business context
+- Blockchain-specific details
+- Relationships to other fields
+- Important considerations]
+{% enddocs %}
+```
+
+### Step 5: YAML File Review
+**YAML Structure Validation**
+- Ensure column names are CAPITALIZED in YAML files
+- Verify all columns reference documentation using `{{ doc('column_name') }}`
+- Check that appropriate tests are included
+- Validate the overall YAML structure
+
+**YAML File Format**
+```yaml
+version: 2
+
+models:
+  - name: [model_name]
+    description: |-
+      [Clear, direct table description]
+    
+    columns:
+      - name: [COLUMN_NAME_IN_UPPERCASE]
+        description: "{{ doc('column_name') }}"
+        tests:
+          - [appropriate_tests]
+```
+
+## Review Checklist
+
+### Table Level
+- [ ] Table documentation is in markdown file in `models/descriptions/` directory
+- [ ] Table YAML references documentation using jinja doc block
+- [ ] **Description** section explains what blockchain data is being modeled
+- [ ] **Key Use Cases** section provides specific analytical scenarios
+- [ ] **Important Relationships** section explains connections to other GOLD models
+- [ ] **Commonly-used Fields** section identifies critical columns and their importance
+- [ ] Documentation is optimized for LLM client consumption
+
+### Column Level
+- [ ] Each column has a comprehensive description
+- [ ] Data types and formats are clearly specified
+- [ ] Business context and use cases are explained
+- [ ] Examples are provided for complex concepts
+- [ ] Relationships to other fields are documented
+- [ ] Important limitations or caveats are noted
+- [ ] Blockchain-specific context is included
+
+### Documentation Files
+- [ ] All columns have corresponding `.md` files
+- [ ] Documentation files contain rich, detailed descriptions
+- [ ] Examples use appropriate blockchain conventions
+- [ ] Technical accuracy is verified against official documentation
+
+### YAML Files
+- [ ] Column names are CAPITALIZED
+- [ ] All columns reference documentation using `{{ doc('column_name') }}`
+- [ ] Appropriate tests are included
+- [ ] YAML structure is valid
+
+## Implementation Guidelines
+
+### Documentation Writing Tips
+- Start with a clear definition of what the field represents
+- Provide context about why the field exists and its importance
+- Include examples for complex concepts, especially blockchain-specific ones
+- Explain relationships to other fields when relevant
+- Mention any important limitations or considerations
+- Use consistent terminology throughout the project
+
+### Blockchain-Specific Considerations
+- Reference official protocol documentation for technical concepts
+- Explain blockchain-specific concepts (lamports, rent, program accounts, etc.)
+- Provide examples using the specific blockchain's conventions
+- Clarify differences from other blockchains when relevant
+- Include information about data freshness and update mechanisms
+
+### LLM Optimization
+- Write descriptions that are complete and self-contained
+- Use clear, structured language that supports automated understanding
+- Include context that helps LLMs understand the data's purpose
+- Provide examples that illustrate common use cases
+- Ensure descriptions support common analytics workflows
+
+## Post-Review Actions
+
+### Validation
+- Verify all documentation is technically accurate
+- Check that descriptions are complete and self-contained
+- Ensure consistency across related models
+- Validate that documentation supports common analytics use cases
+
+### Testing
+- Test documentation by having an LLM attempt to understand the data
+- Verify that descriptions enable effective query generation
+- Check that examples are clear and helpful
+- Ensure documentation supports the intended analytics workflows
+
+### Maintenance
+- Update documentation when models change
+- Review and refresh documentation periodically
+- Maintain consistency as new models are added
+- Keep documentation aligned with blockchain protocol updates

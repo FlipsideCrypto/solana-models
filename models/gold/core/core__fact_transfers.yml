@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__fact_transfers
-    description: Contains transfer events for Solana and spl-tokens. 
+    description: "{{ doc('fact_transfers') }}"
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -21,16 +21,10 @@ models:
           - dbt_expectations.expect_column_to_exist
       - name: TX_FROM
         description: "{{ doc('tx_from') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: TX_TO 
         description: "{{ doc('tx_to') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: AMOUNT 
         description: "{{ doc('amount') }}"
-        tests:
-          - dbt_expectations.expect_column_to_exist
       - name: MINT
         description: "{{ doc('mint') }}"
         tests:

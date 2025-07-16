@@ -1,0 +1,3 @@
+{% docs recent_block_hash %}
+The hash of the most recent block prior to this transaction, as recorded on the Solana blockchain. Used to prevent transaction replay and ensure transaction freshness. This value is a base58-encoded string representing the block hash at the time the transaction was submitted. For more details, see the Solana documentation on transaction structure: https://docs.solana.com/developing/clients/jsonrpc-api#sendtransaction
+{% enddocs %} 
