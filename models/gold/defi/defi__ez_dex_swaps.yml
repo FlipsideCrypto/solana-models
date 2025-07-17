@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: defi__ez_dex_swaps
-    description: A convenience table containing swaps performed on Jupiter (V2, V3), Orca, Raydium, Saber, Bonkswap, Dooar, Phoenix, Meteora, Pumpswap, and Pumpfun swap programs. For Phoenix, we are not capturing swaps where there are separate transactions for placing the order and filling the order. NOTE - Jupiter (V4, V5, V6) aggregator swaps exist in defi.fact_swaps_jupiter_summary, and individual routes are present in defi.fact_swaps_jupiter_inner. This documentation [guide](https://docs.google.com/document/d/1gxU7Q8BNf2w6xsDIczfxxOFMPM0ujQSJTzwGPDkZTVU/edit?tab=t.0) and [video](https://www.loom.com/share/f20d1f54b63342eea6457381be7175a1?sid=589f65ec-505a-446c-b249-19e6a9b9a6fb) explain how Flipside models Solana swaps, why we split the data, and how to use each table effectively.
+    description: "{{ doc('ez_dex_swaps') }}"
     recent_modified_date_filter: &recent_modified_date_filter
       config:
         where: modified_timestamp >= current_date - 7
@@ -22,39 +22,39 @@ models:
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
       - name: SWAPPER
-        description: Address that initiated the swap 
+        description: "{{ doc('swaps_swapper') }}"
       - name: SWAP_FROM_AMOUNT
-        description: Total amount of the token sent in to initiate the swap 
+        description: "{{ doc('swaps_from_amt') }}"
       - name: SWAP_FROM_AMOUNT_USD
-        description: The amount of tokens put into the swap converted to USD using the price of the token 
+        description: "{{ doc('swap_from_amount_usd') }}"
       - name: SWAP_FROM_MINT
-        description: Token being sent or swapped from
+        description: "{{ doc('swaps_from_mint') }}"
       - name: SWAP_FROM_IS_VERIFIED
-        description: '{{ doc("prices_is_verified") }}'
+        description: "{{ doc('prices_is_verified') }}"
       - name: SWAP_FROM_SYMBOL
-        description: The symbol of the token being swapped from
+        description: "{{ doc('swap_from_symbol') }}"
       - name: SWAP_TO_AMOUNT
-        description: Total amount of the token received in the swap
+        description: "{{ doc('swaps_to_amt') }}"
       - name: SWAP_TO_AMOUNT_USD
-        description: The amount of tokens taken out of or received from the swap converted to USD using the price of the token
+        description: "{{ doc('swap_to_amount_usd') }}"
       - name: SWAP_TO_MINT
-        description: Token being received or swapped for 
+        description: "{{ doc('swaps_to_mint') }}"
       - name: SWAP_TO_IS_VERIFIED
-        description: '{{ doc("prices_is_verified") }}'
+        description: "{{ doc('prices_is_verified') }}"
       - name: SWAP_TO_SYMBOL
-        description: The symbol of the token being swapped to
+        description: "{{ doc('swap_to_symbol') }}"
       - name: PROGRAM_ID
         description: "{{ doc('program_id') }}" 
       - name: SWAP_PROGRAM
-        description: name of decentralized exchange used to perform the swap
+        description: "{{ doc('swap_program') }}"
       - name: _LOG_ID
-        description: "Combination of TX_ID and event index"
+        description: "{{ doc('log_id') }}"
       - name: EZ_SWAPS_ID
-        description: '{{ doc("pk") }}'
+        description: "{{ doc('pk') }}"
         data_tests:
           - not_null: *recent_modified_date_filter
           - unique: *recent_modified_date_filter  
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: "{{ doc('inserted_timestamp') }}"   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+        description: "{{ doc('modified_timestamp') }}" 

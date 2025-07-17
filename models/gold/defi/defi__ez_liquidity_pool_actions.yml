@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: defi__ez_liquidity_pool_actions
-    description: Convenience table capturing actions for liquidity pools in Raydium, Orca, and Meteora. This includes deposit and withdrawal events.
+    description: "{{ doc('ez_liquidity_pool_actions') }}"
     recent_date_filter: &recent_date_filter
       config:
         where: >

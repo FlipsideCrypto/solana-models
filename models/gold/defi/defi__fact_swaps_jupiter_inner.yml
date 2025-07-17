@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: defi__fact_swaps_jupiter_inner
-    description: This table contain each intermediate swap that is a part of a Jupiter route. These are the individual steps that are executed by Jupiter to complete a swap. This documentation [guide](https://docs.google.com/document/d/1gxU7Q8BNf2w6xsDIczfxxOFMPM0ujQSJTzwGPDkZTVU/edit?tab=t.0) and [video](https://www.loom.com/share/f20d1f54b63342eea6457381be7175a1?sid=589f65ec-505a-446c-b249-19e6a9b9a6fb) explain how Flipside models Solana swaps, why we split the data, and how to use each table effectively.
+    description: "{{ doc('fact_swaps_jupiter_inner') }}"
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7
@@ -33,11 +33,11 @@ models:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: INNER_INDEX
-        description: "{{ doc('inner_index') }}. This is the inner index of the log event listing the inner swap"
+        description: "{{ doc('inner_index') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: SWAP_INDEX
-        description: "{{ doc('swaps_swap_index') }} as it relates to the top level Jupiter swap instruction"
+        description: "{{ doc('swaps_swap_index') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
@@ -47,12 +47,12 @@ models:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: SWAP_PROGRAM_ID
-        description: "{{ doc('program_id') }}. This is the AMM performing the swap."
+        description: "{{ doc('swap_program_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: AGGREGATOR_PROGRAM_ID
-        description: "{{ doc('program_id') }}. This is the aggregator calling the different AMMs."
+        description: "{{ doc('aggregator_program_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
@@ -62,34 +62,36 @@ models:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: SWAP_FROM_AMOUNT
-        description:  "{{ doc('swaps_from_amt') }}"
+        description: "{{ doc('swaps_from_amt') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: SWAP_FROM_MINT
-        description:  "{{ doc('swaps_from_mint') }}"
+        description: "{{ doc('swaps_from_mint') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: SWAP_TO_AMOUNT
-        description:  "{{ doc('swaps_to_amt') }}"
+        description: "{{ doc('swaps_to_amt') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: SWAP_TO_MINT
-        description:  "{{ doc('swaps_to_mint') }}"
+        description: "{{ doc('swaps_to_mint') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: FACT_SWAPS_JUPITER_INNER_ID
+        description: "{{ doc('pk') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: INSERTED_TIMESTAMP
+        description: "{{ doc('inserted_timestamp') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+        description: "{{ doc('modified_timestamp') }}"
         tests:
           - dbt_expectations.expect_column_to_exist

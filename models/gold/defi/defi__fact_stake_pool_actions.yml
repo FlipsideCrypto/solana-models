@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: defi__fact_stake_pool_actions
-    description: Deposit and withdraw actions with a given stake pool
+    description: "{{ doc('fact_stake_pool_actions') }}"
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7

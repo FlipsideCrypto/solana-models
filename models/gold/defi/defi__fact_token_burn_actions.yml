@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: defi__fact_token_burn_actions
-    description: Contains information on all burn events for tokens.
+    description: "{{ doc('fact_token_burn_actions') }}"
     columns:
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"

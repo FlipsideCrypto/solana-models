@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: defi__fact_token_mint_actions
-    description: Contains information on all mint events for tokens
+    description: "{{ doc('fact_token_mint_actions') }}"
     columns:
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"

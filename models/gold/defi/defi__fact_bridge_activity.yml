@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: defi__fact_bridge_activity
-    description: Table containing bridging actions on Wormhole, DeBridge and Mayan Finance
+    description: "{{ doc('fact_bridge_activity') }}"
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7

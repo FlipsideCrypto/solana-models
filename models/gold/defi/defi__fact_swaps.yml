@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: defi__fact_swaps
-    description: This table contains swaps performed on Jupiter (V2, V3), Orca, Raydium, Saber, Bonkswap, Dooar, Phoenix, Meteora, Pumpswap, and Pumpfun swap programs. For Phoenix, we are not capturing swaps where there are separate transactions for placing the order and filling the order. NOTE - Jupiter (V4, V5, V6) aggregator swaps exist in defi.fact_swaps_jupiter_summary, and individual routes are present in defi.fact_swaps_jupiter_inner. This documentation [guide](https://docs.google.com/document/d/1gxU7Q8BNf2w6xsDIczfxxOFMPM0ujQSJTzwGPDkZTVU/edit?tab=t.0) and [video](https://www.loom.com/share/f20d1f54b63342eea6457381be7175a1?sid=589f65ec-505a-446c-b249-19e6a9b9a6fb) explain how Flipside models Solana swaps, why we split the data, and how to use each table effectively.
+    description: "{{ doc('fact_swaps') }}"
     recent_date_filter: &recent_date_filter
       config:
         where: block_timestamp >= current_date - 7
@@ -50,27 +50,27 @@ models:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: SWAPPER
-        description: Address that initiated the swap 
+        description: "{{ doc('swaps_swapper') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: SWAP_FROM_AMOUNT
-        description: Total amount of the token sent in to initiate the swap 
+        description: "{{ doc('swaps_from_amt') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: SWAP_FROM_MINT
-        description: Token being sent or swapped from
+        description: "{{ doc('swaps_from_mint') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: SWAP_TO_AMOUNT
-        description: Total amount of the token received in the swap
+        description: "{{ doc('swaps_to_amt') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: SWAP_TO_MINT
-        description: Token being received or swapped for 
+        description: "{{ doc('swaps_to_mint') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
@@ -81,24 +81,24 @@ models:
           - not_null: *recent_date_filter
 
       - name: SWAP_PROGRAM
-        description: name of decentralized exchange used to perform the swap
+        description: "{{ doc('swap_program') }}"
         tests:
           - not_null: *recent_date_filter
       - name: _LOG_ID
-        description: "Combination of TX_ID and event index"
+        description: "{{ doc('log_id') }}"
         tests: 
           - not_null: *recent_date_filter
       - name: FACT_SWAPS_ID
-        description: '{{ doc("pk") }}' 
+        description: "{{ doc('pk') }}"
         tests:
           - not_null: *recent_date_filter
           - unique: *recent_date_filter    
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'
+        description: "{{ doc('inserted_timestamp') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter    
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}'
+        description: "{{ doc('modified_timestamp') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
