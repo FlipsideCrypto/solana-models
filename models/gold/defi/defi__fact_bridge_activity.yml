@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: defi__fact_bridge_activity
-    description: Table containing bridging actions on Wormhole, DeBridge and Mayan Finance
+    description: "{{ doc('fact_bridge_activity') }}"
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7
@@ -27,15 +27,15 @@ models:
         data_tests:
           - not_null: *recent_date_filter 
       - name: PLATFORM
-        description: Name of the bridge protocol
+        description: "{{ doc('bridge_platform') }}"
         data_tests:
           - not_null: *recent_date_filter 
       - name: DIRECTION
-        description: Direction of the bridge - either inbound to Solana or outbound from Solana
+        description: "{{ doc('bridge_direction') }}"
         data_tests:
           - not_null: *recent_date_filter 
       - name: USER_ADDRESS
-        description: The address receiving or sending bridged tokens
+        description: "{{ doc('bridge_user_address') }}"
         data_tests:
           - not_null: *recent_date_filter 
       - name: AMOUNT
@@ -47,14 +47,14 @@ models:
         data_tests:
           - not_null: *recent_date_filter 
       - name: FACT_BRIDGE_ACTIVITY_ID
-        description: '{{ doc("pk") }}'  
+        description: "{{ doc('pk') }}"
         data_tests: 
           - unique: *recent_date_filter 
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: "{{ doc('inserted_timestamp') }}"
         data_tests: 
           - not_null: *recent_date_filter 
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+        description: "{{ doc('modified_timestamp') }}"
         data_tests: 
           - not_null

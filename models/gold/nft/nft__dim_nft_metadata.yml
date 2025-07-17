@@ -1,22 +1,22 @@
 version: 2
 models:
   - name: nft__dim_nft_metadata
-    description: Contains NFT metadata sourced from Solscan and Helius API. 
+    description: "{{ doc('dim_nft_metadata') }}" 
     columns:
       - name: MINT
         description: "{{ doc('mint') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: COLLECTION_ID
-        description: "The address of the NFT collection"
+        description: "{{ doc('collection_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: CREATORS
-        description:  "Creators of the NFT and what percentage of royalties they receive"
+        description: "{{ doc('creators') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: AUTHORITY
-        description: "Authority address for the mint. When editions are minted, the authority remains the one from the master NFT"
+        description: "{{ doc('authority') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: IMAGE_URL
@@ -24,11 +24,11 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: NFT_NAME
-        description: "The name of the NFT"
+        description: "{{ doc('nft_name') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: NFT_COLLECTION_NAME
-        description: "The name of the collection provided by Solscan"
+        description: "{{ doc('nft_collection_name') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: METADATA
