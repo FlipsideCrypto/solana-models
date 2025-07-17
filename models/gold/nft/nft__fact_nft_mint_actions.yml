@@ -40,7 +40,7 @@ models:
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: MINT_AUTHORITY
-        description:"{{ doc('mint_authority') }}"
+        description: "{{ doc('mint_authority') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: SIGNERS
