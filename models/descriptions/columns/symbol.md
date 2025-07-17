@@ -1,6 +1,6 @@
 {% docs symbol %}
 
-The symbol of the token involved in the transfer (e.g., SOL, USDC, RAY). Used to identify the asset type in analytics and reporting.
+The symbol of the token involved in the action (e.g., SOL, USDC, RAY). Used to identify the asset type in analytics and reporting.
 
 **Data type:** String
 **Example:**

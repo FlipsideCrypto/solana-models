@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: nft__ez_nft_sales
-    description: A convenience table containing NFT sales across multiple marketplaces, included information on metadata, USD prices and marketplace. Note that USD prices are not available prior to 2021-12-16.
+    description: "{{ doc('ez_nft_sales') }}"
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7
@@ -65,7 +65,7 @@ models:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: NFT_NAME
-        description: "The name of the NFT"
+        description: "{{ doc('nft_name') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: PRICE
@@ -74,17 +74,17 @@ models:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: CURRENCY_ADDRESS
-        description: "Address of token used to pay for the NFT"
+        description: "{{ doc('currency_address') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: CURRENCY_SYMBOL
-        description: "Symbol of token used to pay for the NFT"
+        description: "{{ doc('currency_symbol') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: PRICE_USD
-        description: "Amount paid for NFT in USD"
+        description: "{{ doc('price_usd') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
@@ -94,7 +94,7 @@ models:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: MARKETPLACE_VERSION
-        description: "The version of the NFT marketplace used for the transaction."
+        description: "{{ doc('marketplace_version') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
@@ -122,11 +122,11 @@ models:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: NFT_COLLECTION_NAME
-        description: "The name of the collection provided by Solscan"
+        description: "{{ doc('nft_collection_name') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: COLLECTION_ID
-        description: "The address of the NFT collection"
+        description: "{{ doc('collection_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: METADATA
@@ -138,11 +138,11 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: CREATORS
-        description:  "Creators of the NFT and what percentage of royalties they receive"
+        description:  "{{ doc('creators') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: AUTHORITY
-        description: "Authority address for the mint. When editions are minted, the authority remains the one from the master NFT"
+        description: "{{ doc('authority') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: IMAGE_URL

@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: nft__fact_nft_mints
-    description: An easy table containing information about Solana NFT mints including the purchaser, mint price, and NFT minted. 
+    description: "{{ doc('fact_nft_mints') }}" 
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7
@@ -44,7 +44,7 @@ models:
         data_tests: 
           - not_null: *recent_date_filter 
       - name: IS_COMPRESSED
-        description: "Identifies whether the mint is a compressed NFT mint"
+        description: "{{ doc('is_compressed_nft') }}"
         data_tests: 
           - not_null: *recent_date_filter 
       - name: FACT_NFT_MINTS_ID

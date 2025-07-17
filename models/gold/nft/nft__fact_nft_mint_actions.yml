@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: nft__fact_nft_mint_actions
-    description: Contains information on all mint events for NFTs
+    description: "{{ doc('fact_nft_mint_actions') }}"
     columns:
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
@@ -20,11 +20,11 @@ models:
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: INDEX
-        description: Location of the event within the instructions of a transaction
+        description: "{{ doc('event_index') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: INNER_INDEX
-        description: Location of the event within the inner instructions of a transaction
+        description: "{{ doc('inner_index') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: EVENT_TYPE
@@ -40,7 +40,7 @@ models:
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: MINT_AUTHORITY
-        description: The address of account authorizing the mint
+        description:"{{ doc('mint_authority') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: SIGNERS
