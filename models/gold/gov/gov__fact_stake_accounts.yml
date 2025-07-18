@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: gov__fact_stake_accounts
-    description: "This table contains data for stake accounts by epoch, including the active amount staked, lockup information, and related information."
+    description: "{{ doc('fact_stake_accounts') }}"
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7
@@ -12,70 +12,70 @@ models:
           id_column: 'stake_pubkey'
     columns:
       - name: epoch
-        description: "Epoch when data was captured"
+        description: "{{ doc('epoch') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: stake_pubkey
-        description: "Address of stake account"
+        description: "{{ doc('stake_account') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: vote_pubkey
-        description: "Vote account of the validator this stake is delegated to"
+        description: "{{ doc('vote_pubkey') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: authorized_staker
-        description: "Account responsible for signing stake delegations/deactivativations transactions"
+        description: "{{ doc('authorized_staker') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: authorized_withdrawer
-        description: "Account responsible for signing any stake withdrawal transactions"
+        description: "{{ doc('withdraw_authority') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: lockup
-        description: "Lockup information when tokens can be withdrawn"
+        description: "{{ doc('lockup') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: rent_exempt_reserve
-        description: "Minimum SOL balance that must be maintained for this account to remain rent exempt"
+        description: "{{ doc('rent_exempt_reserve') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: credits_observed
-        description: "Credits observed for the validator"
+        description: "{{ doc('credits_observed') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: activation_epoch
-        description: "Epoch when stake was activated"
+        description: "{{ doc('activation_epoch') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: deactivation_epoch
-        description: "Epoch when stake will be deactivated"
+        description: "{{ doc('deactivation_epoch') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: active_stake
-        description: "Amount staked in SOL"
+        description: "{{ doc('stake_balance') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: warmup_cooldown_rate
-        description: "Rate at which stake can be activated/deactivated"
+        description: "{{ doc('warmup_cooldown_rate') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: type_stake
-        description: "Status of the stake"
+        description: "{{ doc('stake_type') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: program
-        description: "The type of account"
+        description: "{{ doc('program') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: account_sol
-        description: "SOL held in this account"
+        description: "{{ doc('stake_account_sol') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: rent_epoch
-        description: "Epoch at which this account will next owe rent"
+        description: "{{ doc('rent_epoch') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter

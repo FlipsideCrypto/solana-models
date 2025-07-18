@@ -1,14 +1,14 @@
 version: 2
 models:
   - name: gov__fact_proposal_votes
-    description: All governance votes for Realms spaces and Marinade / Saber votes hosted on Tribeca. 
+    description: "{{ doc('fact_proposal_votes') }}" 
     columns:
       - name: GOVERNANCE_PLATFORM
-        description: "platform used for governance space"
+        description: "{{ doc('governance_platform') }}"
         tests:  
           - dbt_expectations.expect_column_to_exist
       - name: PROGRAM_NAME
-        description: "name of solana program"
+        description: "{{ doc('program_name') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: BLOCK_TIMESTAMP
@@ -31,35 +31,35 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: VOTER
-        description: Address voting on the proposal
+        description: "{{ doc('voter') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: VOTER_ACCOUNT
-        description: Account with locked tokens linked to the NFT (determines voting power)
+        description: "{{ doc('voter_account') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: VOTER_NFT
-        description: NFT mint used in this vote on Marinade
+        description: "{{ doc('voter_nft') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: PROPOSAL
-        description: Address representing the proposal being voted on
+        description: "{{ doc('proposal') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: REALMS_ID
-        description: Address representing the voting group within Realms
+        description: "{{ doc('realms_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: VOTE_CHOICE
-        description: The voting option selected by the user on a Realms proposal
+        description: "{{ doc('vote_choice') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: VOTE_RANK
-        description: The order which a user ranks their choices on a ranked vote on Realms
+        description: "{{ doc('vote_rank') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: VOTE_WEIGHT
-        description: Percentage of voting power put towards a voting option on Realms
+        description: "{{ doc('vote_weight') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: FACT_PROPOSAL_VOTES_ID

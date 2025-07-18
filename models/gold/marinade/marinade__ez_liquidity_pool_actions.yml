@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: marinade__ez_liquidity_pool_actions
-    description: Convenience table capturing actions for liquidity pools that use either MSOL or MNDE as one of the liquidity pairs. This includes deposit and withdrawal events.
+    description: "{{ doc('marinade_ez_liquidity_pool_actions') }}"
     recent_date_filter: &recent_date_filter
       config:
         where: >
@@ -53,8 +53,7 @@ models:
         data_tests: 
           - not_null: *recent_date_filter
       - name: TOKEN_A_AMOUNT_USD
-        description: >
-          The amount of token A in USD.
+        description: "{{ doc('token_a_amount_usd') }}"
       - name: TOKEN_B_MINT
         description:  "{{ doc('token_b_mint') }}"
       - name: TOKEN_B_SYMBOL
@@ -62,23 +61,19 @@ models:
       - name: TOKEN_B_AMOUNT
         description:  "{{ doc('token_b_amount') }}"
       - name: TOKEN_B_AMOUNT_USD
-        description: >
-          The amount of token B in USD.
+        description: "{{ doc('token_b_amount_usd') }}"
       - name: POOL_ADDRESS
         description: "{{ doc('liquidity_pool_address') }}"
         data_tests: 
           - not_null: *recent_date_filter
       - name: POOL_NAME
-        description: >
-          Name of the liquidity pool
+        description: "{{ doc('pool_name') }}"
       - name: IS_MSOL_POOL
-        description: >
-          Whether the pool has MSOL as one of the tokens
+        description: "{{ doc('is_msol_pool') }}"
         data_tests: 
           - not_null
       - name: IS_MNDE_POOL
-        description: >
-          Whether the pool has MNDE as one of the tokens
+        description: "{{ doc('is_mnde_pool') }}"
         data_tests: 
           - not_null
       - name: PROGRAM_ID
@@ -86,8 +81,7 @@ models:
         data_tests: 
           - not_null: *recent_date_filter
       - name: PLATFORM
-        description: >
-          Name of the liquidity pool protocol
+        description: "{{ doc('platform') }}"
         data_tests: 
           - not_null
       - name: EZ_LIQUIDITY_POOL_ACTIONS_ID

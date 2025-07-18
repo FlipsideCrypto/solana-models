@@ -1,13 +1,13 @@
 version: 2
 models:
   - name: gov__fact_gov_actions
-    description: All governance votes for Realms spaces and Marinade / Saber votes hosted on Tribeca. 
+    description: "{{ doc('fact_gov_actions') }}" 
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7
     columns:
       - name: PROGRAM_NAME
-        description: "name of solana program"
+        description: "{{ doc('program_name') }}"
         data_tests:
           - not_null: *recent_date_filter 
       - name: BLOCK_TIMESTAMP

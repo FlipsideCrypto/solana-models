@@ -1,13 +1,13 @@
 version: 2
 models:
   - name: gov__fact_proposal_creation
-    description: An EZ view of all proposal creations. Currently, this table is limited to only proposal creations on Realms DAO governance spaces. A space serves as a voting group for an organization, dAPP, or DAO.  
+    description: "{{ doc('fact_proposal_creation') }}"  
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7
     columns:
       - name: GOVERNANCE_PLATFORM
-        description: "platform used for governance space"
+        description: "{{ doc('governance_platform') }}"
         data_tests: 
           - not_null: *recent_date_filter 
       - name: BLOCK_TIMESTAMP
@@ -32,27 +32,27 @@ models:
         data_tests: 
           - not_null: *recent_date_filter 
       - name: REALMS_ID 
-        description: An address that is unique to the space or voting group on Realms. 
+        description: "{{ doc('realms_id') }}" 
         data_tests: 
           - not_null: *recent_date_filter 
       - name: PROPOSAL
-        description: Address representing the proposal being voted on.
+        description: "{{ doc('proposal') }}"
         data_tests: 
           - not_null: *recent_date_filter 
       - name: PROPOSAL_WRITER
-        description: Address of the user who is submitting the proposal for voting. 
+        description: "{{ doc('proposal_writer') }}" 
         data_tests: 
           - not_null: *recent_date_filter 
       - name: PROPOSAL_NAME
-        description: The name of the proposal that is being submitted
+        description: "{{ doc('proposal_name') }}"
         data_tests: 
           - not_null: *recent_date_filter 
       - name: VOTE_TYPE
-        description: The type of voting strategy that will be used for voting on the proposal. 
+        description: "{{ doc('vote_type') }}" 
         data_tests: 
           - not_null: *recent_date_filter 
       - name: VOTE_OPTIONS
-        description: The options that will be available to users who are voting on the proposal 
+        description: "{{ doc('vote_options') }}" 
         data_tests: 
           - not_null: *recent_date_filter 
       - name: FACT_PROPOSAL_CREATION_ID

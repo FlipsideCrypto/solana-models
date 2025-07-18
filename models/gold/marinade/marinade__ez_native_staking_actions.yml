@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: marinade__ez_native_staking_actions
-    description: Table for staking actions for any account that has interacted with Marinade Native Staking at least once
+    description: "{{ doc('marinade_ez_native_staking_actions') }}"
     recent_date_filter: &recent_date_filter
       config:
         where: _inserted_timestamp >= current_date - 7
@@ -59,39 +59,39 @@ models:
         data_tests:
           - not_null: *recent_date_filter
       - name: STAKE_ACTIVE
-        description: Whether the stake account is active.
+        description: "{{ doc('stake_active') }}"
       - name: WITHDRAW_DESTINATION
-        description: The destination wallet address of the withdrawn SOL.
+        description: "{{ doc('withdraw_destination') }}"
       - name: WITHDRAW_AMOUNT
-        description: The amount of SOL withdrawn from the stake account.
+        description: "{{ doc('withdraw_amount') }}"
       - name: PRE_TX_STAKED_BALANCE
-        description: The amount of Solana belonging to the stake account before the transaction.
+        description: "{{ doc('pre_tx_staked_balance') }}"
       - name: PRE_TX_STAKED_BALANCE_USD
-        description: The amount of Solana belonging to the stake account before the transaction in USD.
+        description: "{{ doc('pre_tx_staked_balance_usd') }}"
       - name: POST_TX_STAKED_BALANCE
-        description: The amount of Solana belonging to the stake account after the transaction.
+        description: "{{ doc('post_tx_staked_balance') }}"
       - name: POST_TX_STAKED_BALANCE_USD
-        description: The amount of Solana belonging to the stake account after the transaction in USD.
+        description: "{{ doc('post_tx_staked_balance_usd') }}"
       - name: VOTE_ACCOUNT
-        description: A voting account belonging to the validator. 
+        description: "{{ doc('vote_pubkey') }}" 
       - name: NODE_PUBKEY
-        description: A unique key belonging to the validator node. 
+        description: "{{ doc('node_pubkey') }}" 
       - name: VALIDATOR_RANK
-        description: The rank of the validator by amount of delegated SOL. 
+        description: "{{ doc('validator_rank') }}" 
       - name: COMMISSION
-        description: The percentage of staked earnings given to the validator.
+        description: "{{ doc('commission') }}"
       - name: VALIDATOR_NAME
-        description: The name of the validator.
+        description: "{{ doc('validator_name') }}"
       - name: PROGRAM_ID
-        description: The program id of the native stake program
+        description: "{{ doc('program_id') }}"
         data_tests:
           - not_null: *recent_date_filter
       - name: PLATFORM
-        description: The platform of the staking account either native or marinate native proxy
+        description: "{{ doc('native_staking_platform') }}"
         data_tests:
           - not_null: *recent_date_filter
       - name: IS_USING_MARINADE_NATIVE_STAKING
-        description: Whether the staking action is using Marinade Native Staking
+        description: "{{ doc('is_using_marinade_native_staking') }}"
         data_tests:
           - not_null: *recent_date_filter
       - name: _INSERTED_TIMESTAMP

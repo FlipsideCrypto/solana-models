@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: gov__fact_votes_agg_block
-    description: An aggregate table containing the number of automatic validator voting transactions that occurred during a block. 
+    description: "{{ doc('fact_votes_agg_block') }}" 
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"
@@ -15,7 +15,7 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: NUM_VOTES
-        description: The number of vote events that occurred within the block
+        description: "{{ doc('num_votes') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: FACT_VOTES_AGG_BLOCK_ID

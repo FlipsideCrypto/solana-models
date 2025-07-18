@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: gov__fact_rewards_staking
-    description: Rewards recieved by stake accounts/delegators. These are sent once in the beginning of an epoch, for rewards earned by activity in the previous epoch.
+    description: "{{ doc('fact_rewards_staking') }}"
     columns:
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
@@ -23,7 +23,7 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: STAKE_PUBKEY
-        description: "Address of stake account"
+        description: "{{ doc('stake_account') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: EPOCH_EARNED

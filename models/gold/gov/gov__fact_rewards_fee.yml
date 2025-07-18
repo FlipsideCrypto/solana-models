@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: gov__fact_rewards_fee
-    description: Vote and non-vote fee rewards sent to the leader of a block. The leader receives 1/2 the total fees paid in the block.
+    description: "{{ doc('fact_rewards_fee') }}"
     columns:
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"
@@ -23,7 +23,7 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: PUBKEY
-        description: "The address receiving the fee rewards"
+        description: "{{ doc('reward_recipient_pubkey') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: EPOCH_EARNED

@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: marinade__dim_pools
-    description: Dimensional table containing information on liquidity pools that involve MNDE or MSOL tokens as one of the liquidity pairs.
+    description: "{{ doc('marinade_dim_pools') }}"
     columns:
       - name: POOL_ADDRESS
         description: "{{ doc('liquidity_pool_address') }}"
@@ -9,8 +9,7 @@ models:
           - not_null
           - unique
       - name: POOL_NAME
-        description: >
-          Name of the liquidity pool
+        description: "{{ doc('pool_name') }}"
         data_tests: 
           - not_null:
               config:
@@ -58,13 +57,11 @@ models:
       - name: INITIALIZED_AT_INNER_INDEX
         description: "{{ doc('inner_index') }}"
       - name: IS_MSOL_POOL
-        description: >
-          Whether the pool has MSOL as one of the tokens
+        description: "{{ doc('is_msol_pool') }}"
         data_tests: 
           - not_null
       - name: IS_MNDE_POOL
-        description: >
-          Whether the pool has MNDE as one of the tokens
+        description: "{{ doc('is_mnde_pool') }}"
         data_tests: 
           - not_null
       - name: PROGRAM_ID
@@ -72,8 +69,7 @@ models:
         data_tests: 
           - not_null
       - name: PLATFORM
-        description: >
-          Name of the liquidity pool protocol
+        description: "{{ doc('platform') }}"
         data_tests: 
           - not_null
       - name: DIM_POOLS_ID
