@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: marinade__ez_swaps
-    description: A convenience table containing swaps involving mSOL and MNDE tokens.
+    description: "{{ doc('marinade_ez_swaps') }}"
     recent_date_filter: &recent_date_filter
       config:
         where: block_timestamp >= current_date - 7
@@ -25,44 +25,44 @@ models:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: SWAPPER
-        description: Address that initiated the swap 
+        description: "{{ doc('swapper') }}" 
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: SWAP_FROM_AMOUNT
-        description: Total amount of the token sent in to initiate the swap 
+        description: "{{ doc('swap_from_amount') }}" 
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: SWAP_FROM_MINT
-        description: Token being sent or swapped from
+        description: "{{ doc('swap_from_mint') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: SWAP_FROM_AMOUNT_USD
-        description: The amount of tokens put into the swap converted to USD using the price of the token 
+        description: "{{ doc('swap_from_amount_usd') }}" 
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: SWAP_FROM_SYMBOL
-        description: The symbol of the token being swapped from
+        description: "{{ doc('swap_from_symbol') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: SWAP_TO_AMOUNT
-        description: Total amount of the token received in the swap
+        description: "{{ doc('swap_to_amount') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: SWAP_TO_MINT
-        description: Token being received or swapped for 
+        description: "{{ doc('swap_to_mint') }}" 
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: SWAP_TO_AMOUNT_USD
-        description: The amount of tokens taken out of or received from the swap converted to USD using the price of the token
+        description: "{{ doc('swap_to_amount_usd') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: SWAP_TO_SYMBOL
-        description: The symbol of the token being swapped to
+        description: "{{ doc('swap_to_symbol') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: PROGRAM_ID
@@ -71,7 +71,7 @@ models:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: PLATFORM
-        description: name of decentralized exchange used to perform the swap
+        description: "{{ doc('dex_platform') }}"
         tests:
           - not_null: *recent_date_filter
       - name: MARINADE_EZ_SWAPS_ID

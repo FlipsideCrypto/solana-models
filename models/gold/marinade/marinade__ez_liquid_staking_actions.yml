@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: marinade__ez_liquid_staking_actions
-    description: Convenience table capturing actions related to Marinade liquid staking, including deposits, unstakes, and claims.
+    description: "{{ doc('marinade_ez_liquid_staking_actions') }}"
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -51,35 +51,35 @@ models:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: DEPOSIT_AMOUNT
-        description: "The amount of SOL deposited"
+        description: "{{ doc('deposit_amount') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
           - not_null:
               where: action_type = 'deposit' AND block_timestamp >= current_date - 7
       - name: DEPOSIT_AMOUNT_USD
-        description: "The amount of SOL deposited in USD"
+        description: "{{ doc('deposit_amount_usd') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
           - not_null:
               where: action_type = 'deposit' AND block_timestamp >= current_date - 7
       - name: MSOL_MINTED
-        description: "The amount of mSOL minted"
+        description: "{{ doc('msol_minted') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: MSOL_BURNED
-        description: "The amount of mSOL burned"
+        description: "{{ doc('msol_burned') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
           - not_null:
               where: action_type = 'orderUnstake' AND block_timestamp >= current_date - 7
       - name: CLAIM_AMOUNT
-        description: "The amount of SOL claimed"
+        description: "{{ doc('claim_amount') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
           - not_null:
               where: action_type = 'claim' AND block_timestamp >= current_date - 7
       - name: CLAIM_AMOUNT_USD
-        description: "The amount of SOL claimed in USD"
+        description: "{{ doc('claim_amount_usd') }}"
         tests: 
           - dbt_expectations.expect_column_to_exist
           - not_null:
