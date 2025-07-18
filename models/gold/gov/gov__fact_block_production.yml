@@ -1,30 +1,30 @@
 version: 2
 models:
   - name: gov__fact_block_production
-    description: Block production values for validators by epoch
+    description: "{{ doc('fact_block_production') }}"
     columns:
       - name: EPOCH
-        description: "Epoch when data was captured"
+        description: "{{ doc('epoch') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: NODE_PUBKEY
-        description: "Pubkey for the Solana validator node"
+        description: "{{ doc('node_pubkey') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: NUM_LEADER_SLOTS
-        description: "Number of slots the validator was the leader for in the epoch"
+        description: "{{ doc('num_leader_slots') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: NUM_BLOCKS_PRODUCED
-        description: "Number of blocks the validator produced in the epoch"
+        description: "{{ doc('num_blocks_produced') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: START_SLOT
-        description: "First slot of the epoch"
+        description: "{{ doc('start_slot') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: END_SLOT
-        description: "Final slot of the epoch"
+        description: "{{ doc('end_slot') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: FACT_BLOCK_PRODUCTION_ID

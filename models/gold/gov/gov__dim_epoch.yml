@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: gov__dim_epoch
-    description: "Contains the block range for epochs"
+    description: "{{ doc('dim_epoch') }}"
     columns:
       - name: EPOCH
         description: "{{ doc('epoch') }}"

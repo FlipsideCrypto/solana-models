@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: gov__fact_rewards_rent
-    description: Rent rewards sent to the leader of a block. The amount can be negative when rent is paid instead.
+    description: "{{ doc('fact_rewards_rent') }}"
     columns:
       - name: BLOCK_ID
         description: "{{ doc('block_id') }}"

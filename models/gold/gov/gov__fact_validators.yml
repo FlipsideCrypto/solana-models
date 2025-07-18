@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: gov__fact_validators
-    description: "This table contains validator data by epoch, sourced from the Validators.app API"
+    description: "{{ doc('fact_validators') }}"
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7
@@ -16,104 +16,104 @@ models:
           id_column: 'node_pubkey'
     columns:
       - name: epoch
-        description: "The epoch when data was recorded"
+        description: "{{ doc('epoch') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: node_pubkey
-        description: "Account for the validator node"
+        description: "{{ doc('node_pubkey') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: vote_pubkey
-        description: "vote account for the validator"
+        description: "{{ doc('vote_pubkey') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: active_stake
-        description: "Active stake in SOL delegated to the validator"
+        description: "{{ doc('active_stake') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - null_threshold:
               threshold_percent: 0.99 # api returns null for some validators
               where: modified_timestamp >= current_date - 7
       - name: admin_warning
-        description: "Admin warning for the validator"
+        description: "{{ doc('admin_warning') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: avatar_url
-        description: "URL of avatar image"
+        description: "{{ doc('avatar_url') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: commission
-        description: "% of rewards payout to the vote account"
+        description: "{{ doc('commission') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - null_threshold:
               threshold_percent: 0.99 # api returns null for some validators
               where: modified_timestamp >= current_date - 7
       - name: created_at
-        description: "date when validator was created"
+        description: "{{ doc('created_at') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: data_center_key
-        description: "identifier for the data center"
+        description: "{{ doc('data_center_key') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: data_center_host
-        description: "host for the data center"
+        description: "{{ doc('data_center_host') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: delinquent
-        description: "Status whether the validator is offline/delinquent"
+        description: "{{ doc('delinquent') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - null_threshold:
               threshold_percent: 0.99 # api returns null for some validators
               where: modified_timestamp >= current_date - 7
       - name: details
-        description: "Details for the validator"
+        description: "{{ doc('details') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: epoch_active
-        description: "last epoch when vote account was active"
+        description: "{{ doc('epoch_active') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: epoch_credits
-        description: "Epoch credits for the validator"
+        description: "{{ doc('validator_epoch_credits') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: keybase_id
-        description: "Keybase ID for the validator"
+        description: "{{ doc('keybase_id') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: latitude
-        description: "Latitude coordinates of data center"
+        description: "{{ doc('latitude') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: longitude
-        description: "Longitude coordinates of data center"
+        description: "{{ doc('longitude') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: validator_name
-        description: "Name of the validator"
+        description: "{{ doc('validator_name') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: software_version
-        description: "Solana mainnet version"
+        description: "{{ doc('software_version') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - null_threshold:
               threshold_percent: 0.99 # api returns null for some validators
               where: modified_timestamp >= current_date - 7
       - name: updated_at
-        description: "Last date validator was updated"
+        description: "{{ doc('updated_at') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: www_url
-        description: "url for the validator"
+        description: "{{ doc('www_url') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: FACT_VALIDATORS_ID

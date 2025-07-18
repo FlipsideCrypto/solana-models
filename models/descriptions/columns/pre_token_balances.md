@@ -1,3 +1,10 @@
 {% docs pre_token_balances %}
-An array of SPL token balances for each token account involved in the transaction, before execution. Each entry includes the token account address, mint, and raw amount. Used to track token transfers and verify effects. See: https://spl.solana.com/token
+
+List of pre-transaction token balances for different token accounts. This field captures the token balances of all token accounts involved in the transaction before execution, enabling token balance change analysis.
+
+**Data type:** ARRAY (token balance objects)
+**Business context:** Used to track token balance changes, analyze token movements, and measure token transaction impact.
+**Analytics use cases:** Token balance change analysis, token movement tracking, and token transaction impact measurement.
+**Example:** [{'mint': 'TokenMintAddress', 'amount': 1000}, {'mint': 'AnotherToken', 'amount': 500}]
+
 {% enddocs %} 

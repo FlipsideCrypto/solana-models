@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: gov__ez_staking_lp_actions
-    description: EZ table for staking & LP actions that contains additional information about the validator. 
+    description: "{{ doc('ez_staking_lp_actions') }}" 
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7
@@ -38,47 +38,47 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: SIGNERS
-        description: List of accounts that signed the transaction
+        description: "{{ doc('signers') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: STAKE_AUTHORITY
-        description: The wallet address of the user who initialized the transaction. 
+        description: "{{ doc('stake_authority') }}" 
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: STAKE_ACCOUNT
-        description: An account address containing balances of staked SOL that belongs to the stake authority. 
+        description: "{{ doc('stake_account') }}" 
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: PRE_TX_STAKED_BALANCE
-        description: The amount of Solana belonging to the stake account before the transaction.
+        description: "{{ doc('pre_tx_staked_balance') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: POST_TX_STAKED_BALANCE
-        description: The amount of Solana belonging to the stake account after the transaction.
+        description: "{{ doc('post_tx_staked_balance') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: MOVE_AMOUNT
-        description: The amount of SOL being moved from the stake account.
+        description: "{{ doc('move_amount') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: MOVE_DESTINATION
-        description: The destination wallet address of the moved SOL.
+        description: "{{ doc('move_destination') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: VOTE_ACCOUNT
-        description: A voting account belonging to the validator. 
+        description: "{{ doc('vote_pubkey') }}" 
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: NODE_PUBKEY
-        description: A unique key belonging to the validator node. 
+        description: "{{ doc('node_pubkey') }}" 
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: VALIDATOR_RANK
-        description: The rank of the validator by amount of delegated SOL. 
+        description: "{{ doc('validator_rank') }}" 
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: COMMISSION
-        description: The percentage of staked earnings given to the validator. 
+        description: "{{ doc('commission') }}" 
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: EZ_STAKING_LP_ACTIONS_ID
