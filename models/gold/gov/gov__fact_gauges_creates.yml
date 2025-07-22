@@ -1,10 +1,10 @@
 version: 2
 models:
   - name: gov__fact_gauges_creates
-    description: Creation events for gauges on Marinade and Saber. Gauges allow voting escrows to allocate the rewards of a set of liquidity mining pools. 
+    description: "{{ doc('fact_gauges_creates') }}" 
     columns:
       - name: PROGRAM_NAME
-        description: "name of solana program"
+        description: "{{ doc('program_name') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: BLOCK_TIMESTAMP

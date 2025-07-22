@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: gov__fact_vote_accounts
-    description: "This table contains data for each vote account by epoch, including the validator's public key, voting weight, commission rate, and related information."
+    description: "{{ doc('fact_vote_accounts') }}"
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7
@@ -12,80 +12,80 @@ models:
           id_column: 'vote_pubkey'
     columns:
       - name: epoch
-        description: "Epoch when data was captured"
+        description: "{{ doc('epoch') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: authorized_voter
-        description: "Account responsible for signing vote transactions"
+        description: "{{ doc('authorized_voter') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null:
               where: (modified_timestamp >= current_date - 7) and authorized_withdrawer <> '11111111111111111111111111111111'
       - name: last_epoch_active
-        description: "last epoch when vote account was active"
+        description: "{{ doc('last_epoch_active') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: authorized_withdrawer
-        description: "Account responsible for signing stake withdrawal transactions"
+        description: "{{ doc('authorized_withdrawer') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: commission
-        description: "% of rewards payout to the vote account"
+        description: "{{ doc('commission') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: epoch_credits
-        description: "Credits earned by the end of epochs, containing epoch/credits/previous credits"
+        description: "{{ doc('epoch_credits') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: last_timestamp_slot
-        description: "Last slot voted on"
+        description: "{{ doc('last_timestamp_slot') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: last_timestamp
-        description: "The timestamp when last slot was voted on"
+        description: "{{ doc('last_timestamp') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: node_pubkey
-        description: "pubkey for the Solana validator node"
+        description: "{{ doc('node_pubkey') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: prior_voters
-        description: "Prior voters for the vote account"
+        description: "{{ doc('prior_voters') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: root_slot
-        description: "latest slot confirmed"
+        description: "{{ doc('root_slot') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
       - name: votes
-        description: "Votes during epoch"
+        description: "{{ doc('votes') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: account_sol
-        description: "SOL assigned to this account"
+        description: "{{ doc('account_sol') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: owner
-        description: "Program account that owns the vote account"
+        description: "{{ doc('vote_account_owner') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: rent_epoch
-        description: "Epoch at which this account will next owe rent"
+        description: "{{ doc('rent_epoch') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
       - name: vote_pubkey
-        description: "Public key for the vote account"
+        description: "{{ doc('vote_pubkey') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
