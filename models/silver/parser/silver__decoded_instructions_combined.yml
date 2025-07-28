@@ -89,16 +89,6 @@ models:
                 AND _inserted_timestamp between current_date - 7 AND current_timestamp() - INTERVAL '4 HOUR'
               to_condition: "_inserted_timestamp >= current_date - 7"
           - dbt_utils.relationships_where:
-              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_meteora_liquidity_pool_actions_tx_id
-              to: ref('silver__liquidity_pool_actions_meteora')
-              field: tx_id
-              from_condition: >
-                program_id = 'Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB'
-                AND event_type IN ('addBalanceLiquidity','addImbalanceLiquidity','bootstrapLiquidity','removeBalanceLiquidity','removeLiquiditySingleSide')
-                AND succeeded
-                AND coalesce(decoded_instruction:args:poolTokenAmount::int,decoded_instruction:args:minimumPoolTokenAmount::int,-1) <> 0
-                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
-          - dbt_utils.relationships_where:
               name: dbt_utils_relationships_where_silver__decoded_instructions_combined_meteora_2_liquidity_pool_actions_tx_id
               to: ref('silver__liquidity_pool_actions_meteora_2')
               field: tx_id
@@ -108,16 +98,6 @@ models:
                 AND succeeded
                 AND coalesce(decoded_instruction:args:poolTokenAmount::int,-1) <> 0
                 AND _inserted_timestamp BETWEEN current_date - 7 AND current_timestamp() - INTERVAL '4 HOUR'
-          - dbt_utils.relationships_where:
-              name: dbt_utils_relationships_where_silver__decoded_instructions_combined_meteora_dlmm_liquidity_pool_actions_tx_id
-              to: ref('silver__liquidity_pool_actions_meteora_dlmm')
-              field: tx_id
-              from_condition: >
-                program_id = 'LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo'
-                AND event_type IN ('removeLiquidityByRange','removeLiquidity','removeAllLiquidity','addLiquidityByStrategyOneSide','addLiquidityOneSide','addLiquidity','addLiquidityByWeight','addLiquidityByStrategy')
-                AND succeeded
-                and _inserted_timestamp between current_date - 7 and current_timestamp() - INTERVAL '4 HOUR'
-              to_condition: "_inserted_timestamp >= current_date - 7"
           - dbt_utils.relationships_where:
               name: dbt_utils_relationships_where_silver__decoded_instructions_combined_meteora_dlmm_2_liquidity_pool_actions_tx_id
               to: ref('silver__liquidity_pool_actions_meteora_dlmm_2')

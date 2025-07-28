@@ -5,7 +5,8 @@ but external user should not have perms to select from this view */
 {{
     config(
         materialized = 'view',
-        tags = ['exclude_change_tracking']
+        tags = ['exclude_change_tracking'],
+        enabled = false
     )
 }}
 
