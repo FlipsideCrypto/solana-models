@@ -7,6 +7,7 @@ SELECT
     block_timestamp,
     block_id,
     tx_id,
+    signers,
     index,
     tx_from,
     tx_to,

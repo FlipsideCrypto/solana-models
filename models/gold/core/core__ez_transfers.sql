@@ -7,6 +7,7 @@ SELECT
     a.block_timestamp,
     a.block_id,
     a.tx_id,
+    a.signers[0] AS signer,
     COALESCE(SPLIT_PART(a.INDEX :: text, '.', 1) :: INT, a.INDEX :: INT) AS index,
     NULLIF(SPLIT_PART(a.INDEX :: text, '.', 2), '') :: INT AS inner_index,
     a.tx_from,

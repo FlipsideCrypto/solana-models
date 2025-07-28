@@ -28,6 +28,10 @@ models:
         description: "{{ doc('tx_id') }}"
         tests:
           - not_null: *recent_date_filter
+      - name: SIGNERS
+        description: "{{ doc('signers') }}"
+        tests:
+          - not_null: *recent_date_filter
       - name: SUCCEEDED
         description: "{{ doc('tx_succeeded') }}"
         tests: 
