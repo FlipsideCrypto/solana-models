@@ -10,6 +10,8 @@ models:
         description: "{{ doc('block_id') }}"
       - name: TX_ID
         description: "{{ doc('tx_id') }}"
+      - name: SIGNER
+        description: "{{ doc('signer') }}"
       - name: INDEX
         description: "{{ doc('index') }}"
       - name: INNER_INDEX
