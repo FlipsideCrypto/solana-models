@@ -159,7 +159,7 @@ runtime_version = '3.9'
 handler = 'get_compute_units_total'
 as 
 $$
-def get_compute_units_total(log_messages):
+def get_compute_units_total(instructions):
   def base58_decode(s):
     base58_chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
     base58_map = {c: i for i, c in enumerate(base58_chars)}
