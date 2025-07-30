@@ -28,12 +28,12 @@ WITH base AS (
         ) AS first_program_id,
         array_size(data :transaction :message :instructions) as instruction_count
     FROM
-        {{ ref('bronze__stage_block_txs_2') }} AS t
+        solana.bronze.stage_block_txs_2 AS t
     WHERE
         block_id >= {{ cutover_block_id }}
         {% if is_incremental() %}
         AND t._partition_id >= (SELECT max(_partition_id)-1 FROM {{ this }})
-        AND t._partition_id <= (SELECT max(_partition_id) FROM {{ ref('streamline__complete_block_txs_2') }})
+        AND t._partition_id <= (SELECT max(_partition_id) FROM solana.streamline.complete_block_txs_2)
         AND t._inserted_timestamp > (SELECT max(_inserted_timestamp) FROM {{ this }})
         {% else %}
         AND t._partition_id < 0 /* keep this here, if we ever do a full refresh this should select no data from streamline 2.0 data */
@@ -210,7 +210,7 @@ SELECT
         WHEN block_id > 204777016 THEN compute_units_consumed 
         ELSE silver.udf_get_compute_units_consumed(log_messages, instructions) 
     END AS units_consumed,
-    silver.udf_get_compute_units_total(log_messages, instructions) as units_limit,
+    silver.udf_get_compute_units_total(instructions) as units_limit,
     silver.udf_get_tx_size(account_keys,instructions,version,address_table_lookups,signers) as tx_size,
     version,
     tx_index,
