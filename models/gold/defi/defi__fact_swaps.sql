@@ -382,6 +382,28 @@ FROM
 {% if is_incremental() %}
 WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
+UNION ALL
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    swapper,
+    swap_from_amount,
+    swap_from_mint,
+    swap_to_amount,
+    swap_to_mint,
+    program_id,
+    'pancakeswap' as swap_program,
+    swap_index,
+    swaps_pancakeswap_id as fact_swaps_id,
+    inserted_timestamp,
+    modified_timestamp
+FROM
+    {{ ref('silver__swaps_pancakeswap') }}
+{% if is_incremental() %}
+WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
+{% endif %}
 )
 
 {% if not is_incremental() %}
