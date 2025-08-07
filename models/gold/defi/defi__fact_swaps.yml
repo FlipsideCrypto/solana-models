@@ -26,7 +26,7 @@ models:
             - 'silver__swaps_intermediate_orca_whirlpool'
             - 'silver__swaps_intermediate_orca_token_swap'
             - 'silver__swaps_intermediate_meteora_bonding'
-
+            - 'silver__swaps_pancakeswap'
           id_column: 'tx_id'
     columns:
       - name: BLOCK_TIMESTAMP
