@@ -34,6 +34,7 @@ There is more information on how to use dbt docs in the last section of this doc
 **Core Convenience Tables:**
 - [ez_signers](#!/model/model.solana_models.core__ez_signers)
 - [ez_events_decoded](#!/model/model.solana_models.core__ez_events_decoded)
+- [ez_transfers](#!/model/model.solana_models.core__ez_transfers)
 
 ### DeFi Tables (`Solana`.`DEFI`.`<table_name>`)
 - [ez_dex_swaps](#!/model/model.solana_models.defi__ez_dex_swaps)

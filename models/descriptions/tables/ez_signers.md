@@ -11,10 +11,10 @@ This table contains one row per unique Solana signer (address that signs transac
 - Support analytics on user growth, retention, and protocol usage
 
 ## Important Relationships
-- Closely related to `core.fact_transactions` (for transaction context), `core.fact_events` (for event context), and `core.fact_transfers` (for transfer events)
+- Closely related to `core.fact_transactions` (for transaction context), `core.fact_events` (for event context), and `core.ez_transfers` (for transfer events)
 - Use `core.fact_transactions` to analyze transaction-level activity
 - Use `core.fact_events` for event-level context and protocol interactions
-- Use `core.fact_transfers` for asset movement and transfer analytics
+- Use `core.ez_transfers` for asset movement and transfer analytics
 - Joins with `core.fact_blocks` for block context
 
 ## Commonly-used Fields

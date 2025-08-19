@@ -11,10 +11,10 @@ This table records every event that occurs within inner instructions (Cross-Prog
 - Downstream analytics for protocol-specific event flows and composable DeFi/NFT protocols
 
 ## Important Relationships
-- Closely related to `core.fact_events` (for top-level events), `core.ez_events_decoded` (preferred for decoded instruction details), and `core.fact_transfers` (for transfer events)
+- Closely related to `core.fact_events` (for top-level events), `core.ez_events_decoded` (preferred for decoded instruction details), and `core.ez_transfers` (for transfer events)
 - Use `core.fact_events` for top-level program events and instruction execution
 - Use `core.ez_events_decoded` for detailed instruction and argument analysis (if program is being decoded)
-- Use `core.fact_transfers` for asset movement and transfer analytics
+- Use `core.ez_transfers` for asset movement and transfer analytics
 - Joins with `core.fact_blocks` for block context and `core.fact_transactions` for transaction context
 
 ## Commonly-used Fields
