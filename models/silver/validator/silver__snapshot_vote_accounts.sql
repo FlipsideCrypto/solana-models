@@ -51,10 +51,15 @@ WITH base AS (
         data :account :data :parsed :info :epochCredits :: ARRAY AS epoch_credits,
         data :account :data :parsed :info :lastTimestamp :slot :: NUMBER AS last_timestamp_slot,
         CASE 
+            -- Handle nanosecond timestamps (19+ digits) - convert to seconds by dividing by 1e9
+            WHEN length(data :account :data :parsed :info :lastTimestamp :timestamp) >= 19 THEN 
+                to_timestamp(floor((data :account :data :parsed :info :lastTimestamp :timestamp::bigint) / 1000000000))::timestamp_ntz
+            -- Handle millisecond timestamps (>10 digits) - convert using scale 3
             WHEN length(data :account :data :parsed :info :lastTimestamp :timestamp) > 10 THEN 
-                to_timestamp(data :account :data :parsed :info :lastTimestamp :timestamp::int, 3)::timestamp_ntz -- some are being recorded in unix timestamp milliseconds scale 
+                to_timestamp(data :account :data :parsed :info :lastTimestamp :timestamp::int, 3)::timestamp_ntz
+            -- Handle second timestamps (10 digits or less)
             ELSE 
-                to_timestamp(data :account :data :parsed :info :lastTimestamp :timestamp)::timestamp_ntz -- assume rest are unix timestamp seconds scale
+                to_timestamp(data :account :data :parsed :info :lastTimestamp :timestamp)::timestamp_ntz
         END AS last_timestamp,
         data :account :data :parsed :info :nodePubkey :: STRING AS node_pubkey,
         data :account :data :parsed :info :priorVoters :: ARRAY AS prior_voters,
