@@ -11,10 +11,10 @@ This table contains one row per token account address, recording the range of bl
 - Enable time-series and event-based analytics on token account ownership
 
 ## Important Relationships
-- Closely related to `core.fact_token_balances` (for balance changes), `core.fact_sol_balances` (for SOL balances), and `core.fact_transfers` (for transfer events)
+- Closely related to `core.fact_token_balances` (for balance changes), `core.fact_sol_balances` (for SOL balances), and `core.ez_transfers` (for transfer events)
 - Use `core.fact_token_balances` to analyze token balance changes and account activity
 - Use `core.fact_sol_balances` for SOL balance analytics
-- Use `core.fact_transfers` for asset movement and transfer analytics
+- Use `core.ez_transfers` for asset movement and transfer analytics
 - Joins with `core.fact_blocks` for block context and `core.fact_transactions` for transaction context
 
 ## Commonly-used Fields

@@ -11,11 +11,11 @@ This table contains one row per decoded instruction on the Solana blockchain, in
 - Enable detailed event and instruction-level analytics
 
 ## Important Relationships
-- Closely related to `core.ez_events_decoded` (preferred for most analytics), `core.fact_events` (for event context), `core.fact_events_inner` (for inner/CPI events), and `core.fact_transfers` (for transfer events)
+- Closely related to `core.ez_events_decoded` (preferred for most analytics), `core.fact_events` (for event context), `core.fact_events_inner` (for inner/CPI events), and `core.ez_transfers` (for transfer events)
 - Use `core.ez_events_decoded` for most analytics use cases
 - Use `core.fact_events` for event-level context and protocol interactions
 - Use `core.fact_events_inner` for nested program calls and composability analysis
-- Use `core.fact_transfers` for asset movement and transfer analytics
+- Use `core.ez_transfers` for asset movement and transfer analytics
 - Joins with `core.fact_blocks` for block context and `core.fact_transactions` for transaction context
 
 ## Commonly-used Fields

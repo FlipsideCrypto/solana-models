@@ -1,8 +1,7 @@
 version: 2
 models:
   - name: core__ez_transfers
-    description: |-
-      Contains transfer events for Solana and SPL tokens, including pre-parsed transfer amounts, USD value, token symbol, and verification status. This table is best for analytics on asset movement, wallet activity, payment flows, and large value transfers. 
+    description: "{{ doc('ez_transfers') }}" 
     columns:
       - name: BLOCK_TIMESTAMP
         description: "{{ doc('block_timestamp') }}"

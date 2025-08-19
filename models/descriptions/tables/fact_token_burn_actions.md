@@ -11,9 +11,9 @@ This table contains information on all token burn events on the Solana blockchai
 - Support analytics on token economics and supply dynamics
 
 ## Important Relationships
-- Closely related to `defi.fact_token_mint_actions` (for mint events), `core.fact_transfers` (for token movements), and `core.fact_token_balances` (for balance changes)
+- Closely related to `defi.fact_token_mint_actions` (for mint events), `core.ez_transfers` (for token movements), and `core.fact_token_balances` (for balance changes)
 - Use `defi.fact_token_mint_actions` to analyze token creation and supply increase
-- Use `core.fact_transfers` to track token movements before burning
+- Use `core.ez_transfers` to track token movements before burning
 - Use `core.fact_token_balances` to analyze balance changes from burning
 - Joins with `core.fact_blocks` for block context and `core.fact_transactions` for transaction context
 

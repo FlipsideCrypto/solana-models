@@ -11,10 +11,10 @@ This table contains one row per account and transaction where a native SOL (Sola
 - Enable time-series and event-based analytics on SOL balances
 
 ## Important Relationships
-- Closely related to `core.fact_token_account_owners` (for historical ownership), `core.fact_events` (for event context), and `core.fact_transfers` (for transfer events)
+- Closely related to `core.fact_token_account_owners` (for historical ownership), `core.fact_events` (for event context), and `core.ez_transfers` (for transfer events)
 - Use `core.fact_token_account_owners` to attribute balances to the correct owner
 - Use `core.fact_events` for event-level context and protocol interactions
-- Use `core.fact_transfers` for asset movement and transfer analytics
+- Use `core.ez_transfers` for asset movement and transfer analytics
 - Joins with `core.fact_blocks` for block context and `core.fact_transactions` for transaction context
 
 ## Commonly-used Fields

@@ -11,10 +11,10 @@ This table contains deposit and withdrawal actions with stake pools on the Solan
 - Support analytics on DeFi staking ecosystem growth
 
 ## Important Relationships
-- Closely related to `defi.ez_liquidity_pool_actions` (for liquidity provision), `defi.ez_dex_swaps` (for DEX activity), and `core.fact_transfers` (for token movements)
+- Closely related to `defi.ez_liquidity_pool_actions` (for liquidity provision), `defi.ez_dex_swaps` (for DEX activity), and `core.ez_transfers` (for token movements)
 - Use `defi.ez_liquidity_pool_actions` to analyze liquidity provision in staking-related pools
 - Use `defi.ez_dex_swaps` to track trading of liquid staking tokens
-- Use `core.fact_transfers` to analyze token movements related to staking
+- Use `core.ez_transfers` to analyze token movements related to staking
 - Joins with `core.fact_blocks` for block context and `core.fact_transactions` for transaction context
 
 ## Commonly-used Fields
