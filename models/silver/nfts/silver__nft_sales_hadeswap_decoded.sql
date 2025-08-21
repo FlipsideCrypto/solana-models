@@ -5,7 +5,8 @@
     merge_exclude_columns = ["inserted_timestamp"],
     unique_key = "nft_sales_hadeswap_decoded_id",
     cluster_by = ['block_timestamp::DATE', 'modified_timestamp::DATE'],
-    tags = ['scheduled_non_core']
+    full_refresh = false,
+    enabled = false
 ) }}
 
 {% if execute %}

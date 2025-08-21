@@ -124,6 +124,7 @@ sources:
       - name: gov_actions_saber
       - name: nft_sales_tensorswap_buysellevent
       - name: nft_sales_tensorswap
+      - name: nft_sales_hadeswap_decoded
   - name: solana_streamline
     database: solana
     schema: streamline
