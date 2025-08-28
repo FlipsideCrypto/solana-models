@@ -102,6 +102,7 @@ SELECT
     a.protocol_market,
     a.token_address,
     b.symbol AS token_symbol,
+    b.is_verified AS token_is_verified,
     a.amount_raw,
     a.amount,
     ROUND(

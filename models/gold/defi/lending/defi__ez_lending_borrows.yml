@@ -62,6 +62,8 @@ models:
           - not_null: *recent_date_filter
       - name: TOKEN_SYMBOL
         description: "{{ doc('symbol') }}"
+      - name: TOKEN_IS_VERIFIED
+        description: "{{ doc('prices_is_verified') }}"
       - name: AMOUNT_RAW
         description: "{{ doc('amount_raw') }}"
         tests:

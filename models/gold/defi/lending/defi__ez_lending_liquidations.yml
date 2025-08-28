@@ -64,12 +64,16 @@ models:
           - not_null: *recent_date_filter
       - name: COLLATERAL_TOKEN_SYMBOL
         description: "{{ doc('collateral_token_symbol') }}"
+      - name: COLLATERAL_TOKEN_IS_VERIFIED
+        description: "{{ doc('prices_is_verified') }}"
       - name: DEBT_TOKEN
         description: "{{ doc('lending_debt_token') }}"
         tests:
           - not_null: *recent_date_filter
       - name: DEBT_TOKEN_SYMBOL
         description: "{{ doc('debt_token_symbol') }}"
+      - name: DEBT_TOKEN_IS_VERIFIED
+        description: "{{ doc('prices_is_verified') }}"
       - name: PROTOCOL_MARKET
         description: "{{ doc('protocol_market') }}"
       - name: AMOUNT_RAW
