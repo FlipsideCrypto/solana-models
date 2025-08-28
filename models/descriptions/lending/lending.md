@@ -34,6 +34,15 @@ Unadjusted amount of tokens as it appears on-chain before decimal precision adju
 **Example:** For 1.5 USDC (6 decimals), amount_raw would be 1500000; for 2.0 SOL (9 decimals), amount_raw would be 2000000000
 {% enddocs %}
 
+{% docs depositor %}
+The wallet address of the user who is depositing assets into the lending protocol. This is the lender who supplies liquidity to earn interest and potentially use their deposits as collateral for borrowing.
+
+**Data type:** STRING (base58 Solana address)
+**Business context:** Used to track deposit behavior, analyze liquidity provision patterns, and identify active lenders in the lending ecosystem.
+**Analytics use cases:** Depositor behavior analysis, liquidity tracking, yield farming analysis, and lender user segmentation.
+**Example:** '4Nd1mYw4r...'
+{% enddocs %}
+
 {% docs lending_borrower %}
 The wallet address of the user who is borrowing assets from the lending protocol. This is the recipient of the borrowed funds who becomes responsible for repayment.
 
