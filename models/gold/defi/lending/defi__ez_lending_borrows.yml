@@ -1,0 +1,79 @@
+version: 2
+models:
+  - name: defi__ez_lending_borrows
+    description: "{{ doc('ez_lending_borrows') }}"
+    recent_date_filter: &recent_date_filter
+      config:
+        where: block_timestamp >= current_date - 7
+    recent_modified_date_filter: &recent_modified_date_filter
+      config:
+        where: modified_timestamp >= current_date - 7
+    columns:
+      - name: PLATFORM
+        description: "{{ doc('lending_platform') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: PROTOCOL
+        description: "{{ doc('lending_protocol') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: VERSION
+        description: "{{ doc('version') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        tests:
+          - not_null: *recent_modified_date_filter
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: BLOCK_ID
+        description: "{{ doc('block_id') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: TX_ID
+        description: "{{ doc('tx_id') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: INDEX
+        description: "{{ doc('index') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: INNER_INDEX
+        description: "{{ doc('inner_index') }}"
+      - name: PROGRAM_ID
+        description: "{{ doc('program_id') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: EVENT_TYPE
+        description: "{{ doc('event_type') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: BORROWER
+        description: "{{ doc('lending_borrower') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: PROTOCOL_MARKET
+        description: "{{ doc('protocol_market') }}"
+      - name: TOKEN_ADDRESS
+        description: "{{ doc('mint') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: TOKEN_SYMBOL
+        description: "{{ doc('symbol') }}"
+      - name: AMOUNT_RAW
+        description: "{{ doc('amount_raw') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: AMOUNT
+        description: "{{ doc('amount') }}"
+        tests:
+          - not_null: *recent_date_filter
+      - name: AMOUNT_USD
+        description: "{{ doc('amount_usd') }}"
+      - name: EZ_LENDING_BORROWS_ID
+        description: "{{ doc('pk') }}"
+        tests:
+          - not_null: *recent_date_filter
+          - unique: *recent_date_filter

@@ -1,0 +1,16 @@
+version: 2
+models:
+  - name: defi__ez_lending_deposits
+    description: "{{ doc('ez_lending_deposits') }}"
+    recent_modified_date_filter: &recent_modified_date_filter
+      config:
+        where: modified_timestamp >= current_date - 7
+    columns:
+      - name: BLOCK_TIMESTAMP
+        description: "{{ doc('block_timestamp') }}"
+        data_tests:
+          - not_null: *recent_modified_date_filter
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      
