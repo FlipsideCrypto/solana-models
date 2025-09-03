@@ -41,7 +41,7 @@ select
     lending_kamino_deposits_id as ez_lending_deposits_id
     from {{ ref('silver__lending_kamino_deposits') }}
     {% if is_incremental() %}
-AND
+WHERE
     modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
     UNION ALL
@@ -65,7 +65,7 @@ SELECT
 FROM
     {{ ref('silver__lending_marginfi_deposits') }} a
     {% if is_incremental() %}
-AND
+WHERE
     modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
 ),
