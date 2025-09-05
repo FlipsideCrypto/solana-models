@@ -4,4 +4,4 @@ selectors:
     definition:
       union:
         - method: fqn
-          value: "livequery_models.deploy.core._utils"
+          value: "livequery_base.deploy.core._utils"
