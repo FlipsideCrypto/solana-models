@@ -6,7 +6,8 @@
     cluster_by = ['epoch', 'activation_epoch', 'deactivation_epoch'],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(stake_pubkey, vote_pubkey)'),
-    tags = ['scheduled_non_core_hourly']
+    tags = ['scheduled_non_core_hourly'],
+    full_refresh = false,
   ) 
 }}
 
@@ -51,6 +52,8 @@ WHERE
     {% if is_incremental() %}
     AND modified_timestamp >= '{{ max_modified_timestamp }}'
     {% endif %}
+-- historical data -- tables static and disabled, and manual change needed in rare case where fr is needed
+{# 
 UNION ALL
 SELECT
     epoch_recorded::INT AS epoch,
@@ -104,3 +107,4 @@ SELECT
 FROM
     {{ ref('silver__historical_stake_account') }}
 {% endif %}
+#}

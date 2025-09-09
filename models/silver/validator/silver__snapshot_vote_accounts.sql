@@ -3,12 +3,15 @@
     unique_key = "CONCAT_WS('-', epoch_recorded, vote_pubkey)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['modified_timestamp::DATE'],
-    tags = ['validator']
+    tags = ['validator'],
+    full_refresh = false
 ) }}
 
 {% set cutoff_date = '2024-10-30' %}
 
 WITH base AS (
+-- historical data
+{#
     SELECT
         _inserted_timestamp,
         json_data :account :data :parsed :info :authorizedVoters [0] :authorizedVoter :: STRING AS authorized_voter,
@@ -42,6 +45,7 @@ WITH base AS (
         )
         {% endif %}
     UNION ALL
+#}
     SELECT
         _inserted_timestamp,
         data :account :data :parsed :info :authorizedVoters [0] :authorizedVoter :: STRING AS authorized_voter,
