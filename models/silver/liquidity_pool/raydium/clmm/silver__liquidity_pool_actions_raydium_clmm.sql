@@ -43,7 +43,7 @@
     WHERE
         program_id = 'CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK'
         AND event_type IN (
-            'closePosition',
+            -- 'closePosition', --excluding since there is always a preceding decreaseLiquidity event that removes all liquidity from the position
             'decreaseLiquidity',
             'decreaseLiquidityV2',
             'increaseLiquidity',
@@ -83,13 +83,13 @@ WITH base AS (
         silver.udf_get_account_pubkey_by_name('tokenVault0', accounts) AS pool_token_a_account,
         silver.udf_get_account_pubkey_by_name('tokenVault1', accounts) AS pool_token_b_account,
         CASE
-            WHEN event_type IN ('decreaseLiquidity', 'decreaseLiquidityV2', 'closePosition') THEN
+            WHEN event_type IN ('decreaseLiquidity', 'decreaseLiquidityV2') THEN
                 silver.udf_get_account_pubkey_by_name('recipientTokenAccount0', accounts)
             ELSE
                 silver.udf_get_account_pubkey_by_name('tokenAccount0', accounts)
         END AS token_a_account,
         CASE
-            WHEN event_type IN ('decreaseLiquidity', 'decreaseLiquidityV2', 'closePosition') THEN
+            WHEN event_type IN ('decreaseLiquidity', 'decreaseLiquidityV2') THEN
                 silver.udf_get_account_pubkey_by_name('recipientTokenAccount1', accounts)
             ELSE
                 silver.udf_get_account_pubkey_by_name('tokenAccount1', accounts)
@@ -102,10 +102,7 @@ WITH base AS (
         silver.liquidity_pool_actions_raydium_clmm__intermediate_tmp
     WHERE
         (
-            /* exclude closed positions with less than 6 accountsbecause they are preceeded by a decreaseLiquidity event that removes all liquidity from the position */
-            (event_type = 'closePosition' 
-            AND array_size(accounts) > 6)
-            OR
+
             /* exclude any decreaseLiquidity events that take out 0 tokens from the pool */
             (event_type IN ('decreaseLiquidity', 'decreaseLiquidityV2')
             AND (args:amount0Min::int > 0 OR args:amount1Min::int > 0))
@@ -114,7 +111,7 @@ WITH base AS (
             (event_type = 'openPositionV2'
             AND (args:liquidity::int > 0))
             OR
-            (event_type NOT IN ('closePosition', 'decreaseLiquidity', 'decreaseLiquidityV2', 'openPositionV2'))
+            (event_type NOT IN ('decreaseLiquidity', 'decreaseLiquidityV2', 'openPositionV2'))
         )
 ),
 
@@ -200,7 +197,6 @@ withdraw_transfers AS (
         AND t2.source_token_account = b.pool_token_b_account
     WHERE
         b.event_type IN (
-            'closePosition',
             'decreaseLiquidity',
             'decreaseLiquidityV2'
         )
