@@ -5,6 +5,7 @@
     unique_key = "tx_id",
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     cluster_by = ['block_timestamp::DATE','block_id','_inserted_timestamp::DATE'],
+    pre_hook = "{% if var('run_votes_cleanup', false) %}DELETE FROM {{ this }} WHERE _inserted_timestamp < CURRENT_DATE - INTERVAL '6 months'{% endif %}",
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id)'),
     full_refresh = false,
     tags = ['scheduled_core']
