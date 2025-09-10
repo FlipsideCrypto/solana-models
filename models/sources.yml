@@ -1,12 +1,6 @@
 version: 2
 
 sources:
-  - name: prod
-    database: chainwalkers
-    schema: prod
-    tables:
-      - name: solana_blocks
-      - name: solana_txs
   - name: crosschain
     database: "{{ 'crosschain' if target.database == 'SOLANA' else 'crosschain_dev' }}"
     schema: core
