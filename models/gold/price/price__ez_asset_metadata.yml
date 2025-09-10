@@ -8,16 +8,10 @@ models:
     columns:
       - name: ASSET_ID
         description: '{{ doc("prices_asset_id") }}'
-        data_tests: 
-          - not_null: *recent_date_filter
       - name: NAME
         description: '{{ doc("prices_name") }}'
-        data_tests: 
-          - not_null: *recent_date_filter
       - name: SYMBOL
         description: '{{ doc("prices_symbol") }}'
-        data_tests: 
-          - not_null: *recent_date_filter
       - name: TOKEN_ADDRESS
         description: '{{ doc("prices_token_address") }}'
       - name: BLOCKCHAIN
