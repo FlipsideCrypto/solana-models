@@ -29,4 +29,63 @@ This table contains transfer events for Solana and SPL tokens, including pre-par
 - `token_is_verified`: For filtering to verified/trusted tokens
 - `signer`: For transaction initiator analysis
 
+## Sample Queries
+
+### Daily transfer volume and metrics
+```sql
+SELECT 
+    DATE_TRUNC('day', block_timestamp) AS date,
+    COUNT(*) AS transfer_count,
+    COUNT(DISTINCT tx_from) AS unique_senders,
+    COUNT(DISTINCT tx_to) AS unique_receivers,
+    COUNT(DISTINCT mint) AS unique_tokens,
+    SUM(amount_usd) AS total_volume_usd,
+    AVG(amount_usd) AS avg_transfer_usd,
+    PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY amount_usd) AS median_transfer_usd
+FROM solana.core.ez_transfers
+WHERE block_timestamp >= CURRENT_DATE - 30
+    AND amount_usd > 0
+GROUP BY 1
+ORDER BY 1 DESC;
+```
+
+### Top token transfer routes
+```sql
+SELECT 
+    tx_from,
+    tx_to,
+    symbol,
+    mint,
+    COUNT(*) AS transfer_count,
+    SUM(amount) AS total_amount,
+    SUM(amount_usd) AS total_usd,
+    AVG(amount_usd) AS avg_transfer_usd
+FROM solana.core.ez_transfers
+WHERE block_timestamp >= CURRENT_DATE - 7
+    AND amount_usd IS NOT NULL
+GROUP BY 1, 2, 3, 4
+HAVING total_usd > 10000
+ORDER BY total_usd DESC
+LIMIT 100;
+```
+
+### Token velocity analysis
+```sql
+SELECT 
+    mint,
+    symbol,
+    COUNT(*) AS transfer_count,
+    COUNT(DISTINCT tx_from) AS unique_senders,
+    COUNT(DISTINCT tx_to) AS unique_receivers,
+    SUM(amount_usd) AS total_volume_usd,
+    COUNT(DISTINCT DATE(block_timestamp)) AS active_days,
+    SUM(amount_usd) / NULLIF(COUNT(DISTINCT DATE(block_timestamp)), 0) AS daily_avg_volume_usd
+FROM solana.core.ez_transfers
+WHERE block_timestamp >= CURRENT_DATE - 7
+    AND amount_usd > 0
+GROUP BY 1, 2
+HAVING total_volume_usd > 1000
+ORDER BY total_volume_usd DESC;
+```
+
 {% enddocs %}

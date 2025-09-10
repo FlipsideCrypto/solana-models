@@ -19,52 +19,54 @@ This table provides an enhanced view of DEX swap activity with USD pricing, toke
 
 ## Sample Queries
 
-### Large swaps by size and impact
+### Real swap volume calculation by DEX protocol
 ```sql
--- Large swaps by size and impact
+-- Calculate real swap volume by DEX protocol (includes both direct and Jupiter-routed swaps)
 SELECT 
-    block_timestamp,
-    tx_id,
     swap_program,
-    swapper,
-    swap_from_symbol || ' -> ' || swap_to_symbol AS swap_pair,
-    swap_from_amount,
-    swap_from_amount_usd,
-    swap_to_amount,
-    swap_to_amount_usd,
-    ABS(swap_from_amount_usd - swap_to_amount_usd) / NULLIF(swap_from_amount_usd, 0) * 100 AS slippage_pct
+    COUNT(*) AS total_swaps,
+    COUNT(DISTINCT swapper) AS unique_users,
+    SUM(swap_from_amount_usd) AS total_volume_usd,
+    AVG(swap_from_amount_usd) AS avg_swap_size_usd
 FROM solana.defi.ez_dex_swaps
-WHERE block_timestamp >= CURRENT_DATE - 1
-    AND swap_from_amount_usd > 100000  -- Swaps over $100k
-ORDER BY swap_from_amount_usd DESC
-LIMIT 100;
+WHERE block_timestamp >= CURRENT_DATE - 7
+    AND swap_from_amount_usd IS NOT NULL
+GROUP BY 1
+ORDER BY total_volume_usd DESC;
 ```
 
-### Platform market share by volume
+### Buy/sell volume analysis for a specific token
 ```sql
--- Platform market share by volume
-WITH platform_stats AS (
+-- Get buy/sell volume for JTO token across all DEXes
+WITH sells AS (
     SELECT 
-        swap_program,
-        SUM(swap_from_amount_usd) AS total_volume,
-        COUNT(*) AS total_swaps,
-        COUNT(DISTINCT swapper) AS unique_users,
-        COUNT(DISTINCT program_id) AS unique_programs
+        block_timestamp::date AS dt,
+        SUM(swap_from_amount) AS sum_sells,
+        COUNT(DISTINCT swapper) AS unique_sellers
     FROM solana.defi.ez_dex_swaps
-    WHERE block_timestamp >= CURRENT_DATE - 7
-        AND swap_from_amount_usd IS NOT NULL
+    WHERE swap_from_mint = 'jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL'
+        AND block_timestamp::date BETWEEN '2025-01-01' AND '2025-01-07'
+    GROUP BY 1
+),
+buys AS (
+    SELECT 
+        block_timestamp::date AS dt,
+        SUM(swap_to_amount) AS sum_buys,
+        COUNT(DISTINCT swapper) AS unique_buyers
+    FROM solana.defi.ez_dex_swaps
+    WHERE swap_to_mint = 'jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL'
+        AND block_timestamp::date BETWEEN '2025-01-01' AND '2025-01-07'
     GROUP BY 1
 )
 SELECT 
-    swap_program,
-    total_volume,
-    ROUND(100.0 * total_volume / SUM(total_volume) OVER (), 2) AS market_share_pct,
-    total_swaps,
-    unique_users,
-    unique_programs,
-    total_volume / NULLIF(total_swaps, 0) AS avg_swap_size
-FROM platform_stats
-ORDER BY total_volume DESC;
+    COALESCE(s.dt, b.dt) AS dt,
+    COALESCE(s.sum_sells, 0) AS sell_volume,
+    COALESCE(s.unique_sellers, 0) AS unique_sellers,
+    COALESCE(b.sum_buys, 0) AS buy_volume,
+    COALESCE(b.unique_buyers, 0) AS unique_buyers
+FROM sells s
+FULL OUTER JOIN buys b ON s.dt = b.dt
+ORDER BY dt;
 ```
 
 ### Token pair trading analysis
@@ -88,22 +90,54 @@ ORDER BY total_volume_usd DESC
 LIMIT 50;
 ```
 
-### DEX performance comparison
+### Compare Jupiter-routed vs direct DEX swaps
 ```sql
--- Compare DEX efficiency and user activity
-SELECT 
-    swap_program,
-    COUNT(*) AS total_swaps,
-    COUNT(DISTINCT swapper) AS unique_users,
-    SUM(swap_from_amount_usd) AS volume_usd,
-    AVG(swap_from_amount_usd) AS avg_swap_size,
-    COUNT(*) / COUNT(DISTINCT swapper) AS swaps_per_user,
-    SUM(CASE WHEN swap_from_is_verified AND swap_to_is_verified THEN 1 ELSE 0 END) / COUNT(*) * 100 AS verified_token_pct
-FROM solana.defi.ez_dex_swaps
-WHERE block_timestamp >= CURRENT_DATE - 7
-    AND swap_from_amount_usd IS NOT NULL
-GROUP BY 1
-ORDER BY volume_usd DESC;
+-- Compare volume of Jupiter-routed swaps vs direct DEX swaps for wSOL
+with jupiter_routed_swaps as (
+select 
+tx_id,
+block_timestamp, 
+swap_from_amount 
+from solana.defi.fact_swaps_jupiter_inner
+where swap_from_mint = 'So11111111111111111111111111111111111111112'
+and block_timestamp::date between '2025-05-01' and '2025-05-07')
+,
+ 
+direct_swaps as (
+select 
+tx_id, 
+block_timestamp, 
+swap_from_amount 
+from solana.defi.fact_swaps
+where swap_from_mint = 'So11111111111111111111111111111111111111112'
+and block_timestamp::date between '2025-05-01' and '2025-05-07'
+and tx_id not in (select distinct(tx_id) from jupiter_routed_swaps) -- need to exclude the jupiter related swaps from fact_swaps
+)
+,
+ 
+sum_jupiter as (
+select 
+block_timestamp::date dt, 
+sum(swap_from_amount) as jup_amt
+from jupiter_routed_swaps
+group by 1)
+ 
+,
+sum_direct as (
+select 
+block_timestamp::date dt, 
+sum(swap_from_amount) as direct_amt
+from direct_swaps
+group by 1)
+ 
+Select
+a.dt, 
+a.jup_amt as swap_via_jupiter,
+b.direct_amt as direct_swap, 
+a.jup_amt + b.direct_amt as total_amt
+from sum_jupiter a
+left join sum_direct b
+on a.dt = b.dt;
 ```
 
 {% enddocs %} 
