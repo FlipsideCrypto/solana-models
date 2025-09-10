@@ -7,7 +7,7 @@
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(stake_pubkey, vote_pubkey)'),
     tags = ['scheduled_non_core_hourly'],
-    full_refresh = false,
+    full_refresh = false
   ) 
 }}
 
