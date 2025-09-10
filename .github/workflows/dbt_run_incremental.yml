@@ -41,7 +41,6 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run-operation run_sp_refresh_external_tables_full
           dbt run -s "solana_models,tag:scheduled_core"
 
   notify-failure:

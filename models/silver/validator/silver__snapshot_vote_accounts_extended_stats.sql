@@ -3,12 +3,15 @@
     unique_key = "CONCAT_WS('-', epoch_recorded, vote_pubkey)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['_inserted_timestamp::DATE'],
-    tags = ['validator']
+    tags = ['validator'],
+    full_refresh = false
 ) }}
 
 {% set cutoff_date = '2024-10-30' %}
 
 WITH base AS (
+-- historical data
+ {#
     SELECT
         json_data :status :: STRING AS epoch_status,
         json_data :data :activatedStake :: INT / pow(
@@ -37,6 +40,7 @@ WITH base AS (
         )
         {% endif %}
     UNION ALL
+#}
     SELECT
         status AS epoch_status,
         data :activatedStake :: INT / pow(

@@ -3,13 +3,15 @@
     unique_key = "CONCAT_WS('-', epoch_recorded, node_pubkey)",
     incremental_strategy = 'delete+insert',
     cluster_by = ['modified_timestamp::DATE'],
-    tags = ['validator']
+    tags = ['validator'],
+    full_refresh = false
 ) }}
 
 {% set cutoff_date = "2024-11-04" %}
 
 WITH base AS (
-
+-- historical data
+{# 
     SELECT
         json_data :account :: STRING AS node_pubkey,
         json_data :active_stake :: NUMBER AS active_stake,
@@ -53,6 +55,7 @@ WITH base AS (
         AND _inserted_timestamp > (SELECT max(_inserted_timestamp) FROM {{ this }})
         {% endif %}
     UNION ALL
+#}
     SELECT
         d.value:account::STRING AS node_pubkey,
         d.value:active_stake::NUMBER AS active_stake,

@@ -5,7 +5,8 @@
     cluster_by = ['epoch','last_epoch_active'],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(vote_pubkey, node_pubkey, owner)'),
-    tags = ['scheduled_non_core']
+    tags = ['scheduled_non_core'],
+    full_refresh = false
 ) }}
 
 {% if execute %}
@@ -56,6 +57,8 @@ FROM
 WHERE
     modified_timestamp >= '{{ max_modified_timestamp }}'
 {% endif %}
+-- historical data -- tables static and disabled, and manual change needed in rare case where fr is needed
+{# 
 {% if not is_incremental() %}
 UNION ALL
 SELECT
@@ -83,3 +86,4 @@ SELECT
 FROM
   {{ ref('silver__historical_vote_account') }}
 {% endif %}
+#}
