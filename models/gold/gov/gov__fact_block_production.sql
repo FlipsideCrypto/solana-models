@@ -5,7 +5,8 @@
     cluster_by = ['epoch'],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = enable_search_optimization('{{this.schema}}', '{{this.identifier}}', 'ON EQUALITY(node_pubkey)'),
-    tags = ['scheduled_non_core']
+    tags = ['scheduled_non_core'],
+    full_refresh = false
 ) }}
 
 {% if execute %}
@@ -53,6 +54,8 @@ FROM
 LEFT JOIN
   {{ ref('silver__epoch') }} AS e
   ON bp.epoch = e.epoch
+  -- historical data -- tables static and disabled, and manual change needed in rare case where fr is needed
+{# 
 {% if not is_incremental() %}
 UNION ALL
 SELECT
@@ -70,3 +73,4 @@ SELECT
 FROM
   {{ ref('silver__historical_block_production') }}
 {% endif %}
+#}
