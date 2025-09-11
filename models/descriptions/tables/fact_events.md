@@ -24,4 +24,47 @@ This table records every event emitted by on-chain Solana programs during transa
 - `instruction`, `inner_instruction`: For instruction-level analytics
 - `signers`, `succeeded`: For user attribution and transaction outcome analysis
 
+## Sample Queries
+
+### Event distribution by program with inner instruction metrics
+```sql
+SELECT 
+    DATE_TRUNC('day', block_timestamp) AS date,
+    program_id,
+    COUNT(*) AS event_count,
+    COUNT(DISTINCT tx_id) AS unique_transactions,
+    AVG(ARRAY_SIZE(inner_instruction_events)) AS avg_inner_events,
+    MAX(ARRAY_SIZE(inner_instruction_events)) AS max_inner_events
+FROM solana.core.fact_events
+WHERE block_timestamp >= CURRENT_DATE - 7
+GROUP BY 1, 2
+ORDER BY 1 DESC, 3 DESC;
+```
+
+### Simple event count by program
+```sql
+SELECT 
+    program_id,
+    COUNT(*) AS total_events
+FROM solana.core.fact_events
+WHERE block_timestamp >= CURRENT_DATE - 1
+GROUP BY program_id
+ORDER BY total_events DESC
+LIMIT 20;
+```
+
+### Recent events with basic details
+```sql
+SELECT 
+    block_timestamp,
+    tx_id,
+    program_id,
+    instruction_index,
+    data
+FROM solana.core.fact_events
+WHERE block_timestamp >= CURRENT_TIMESTAMP - INTERVAL '1 hour'
+ORDER BY block_timestamp DESC
+LIMIT 100;
+```
+
 {% enddocs %} 

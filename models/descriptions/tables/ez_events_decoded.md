@@ -23,4 +23,39 @@ This table contains one row per decoded Solana record, mapping detailed program 
 - `decoded_instruction`, `decoded_accounts`, `decoded_args`, `decoding_error`: For detailed event and error analytics
 - `signers`, `succeeded`: For user attribution and transaction outcome analysis
 
+## Sample Queries
+
+### Daily event activity by program
+```sql
+SELECT 
+    DATE_TRUNC('day', block_timestamp) AS date,
+    program_id,
+    COUNT(*) AS event_count,
+    COUNT(DISTINCT tx_id) AS unique_transactions,
+    COUNT(DISTINCT signers[0]::STRING) AS unique_signers,
+    COUNT(DISTINCT event_type) AS unique_event_types
+FROM solana.core.ez_events_decoded
+WHERE block_timestamp >= CURRENT_DATE - 7
+GROUP BY 1, 2
+ORDER BY 1 DESC, 3 DESC;
+```
+
+### Most common event types with decoded data
+```sql
+SELECT 
+    program_id,
+    event_type,
+    decoded_instruction:name::STRING AS instruction_name,
+    COUNT(*) AS occurrences,
+    COUNT(DISTINCT signers[0]::STRING) AS unique_signers
+FROM solana.core.ez_events_decoded
+WHERE block_timestamp >= CURRENT_DATE - 7
+    AND decoded_instruction IS NOT NULL
+GROUP BY 1, 2, 3
+HAVING occurrences > 100
+ORDER BY occurrences DESC;
+```
+
+
+
 {% enddocs %} 

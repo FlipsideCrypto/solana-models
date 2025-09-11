@@ -29,4 +29,44 @@ This table contains comprehensive validator data by epoch, sourced from the Vali
 - `latitude` and `longitude`: Geographic coordinates of data center
 - `software_version`: Solana mainnet version
 
+## Sample Queries
+
+### Top validators by total stake with performance metrics
+```sql
+SELECT 
+    vote_pubkey,
+    validator_name,
+    SUM(active_stake) / pow(10,9) AS total_stake_sol,
+    AVG(commission) AS avg_commission_pct,
+    COUNT(DISTINCT epoch) AS epochs_active,
+    MAX(epoch) AS last_active_epoch,
+    AVG(CASE WHEN delinquent = FALSE THEN 1 ELSE 0 END) * 100 AS uptime_percentage
+FROM solana.gov.fact_validators
+WHERE epoch >= (SELECT MAX(epoch) - 10 FROM solana.gov.fact_validators)
+GROUP BY vote_pubkey, validator_name
+HAVING total_stake_sol > 10000
+ORDER BY total_stake_sol DESC
+LIMIT 50;
+```
+
+
+### Validator geographic distribution and performance
+```sql
+SELECT 
+    data_center_host,
+    data_center_key,
+    COUNT(DISTINCT vote_pubkey) AS validator_count,
+    SUM(active_stake) / pow(10,9) AS total_stake_sol,
+    AVG(commission) AS avg_commission,
+    AVG(CASE WHEN delinquent = FALSE THEN 1 ELSE 0 END) * 100 AS avg_uptime_pct,
+    COUNT(DISTINCT CASE WHEN delinquent = FALSE THEN vote_pubkey END) AS active_validators
+FROM solana.gov.fact_validators
+WHERE epoch = (SELECT MAX(epoch) FROM solana.gov.fact_validators)
+    AND data_center_host IS NOT NULL
+GROUP BY data_center_host, data_center_key
+HAVING validator_count > 1
+ORDER BY total_stake_sol DESC
+LIMIT 50;
+```
+
 {% enddocs %} 

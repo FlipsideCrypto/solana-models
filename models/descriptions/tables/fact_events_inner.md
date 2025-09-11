@@ -24,4 +24,49 @@ This table records every event that occurs within inner instructions (Cross-Prog
 - `instruction`: For instruction-level analytics
 - `signers`, `succeeded`: For user attribution and transaction outcome analysis
 
+## Sample Queries
+
+### Count of inner instructions by program
+```sql
+SELECT 
+    program_id,
+    COUNT(*) AS inner_instruction_count,
+    COUNT(DISTINCT tx_id) AS unique_transactions
+FROM solana.core.fact_events_inner
+WHERE block_timestamp >= CURRENT_DATE - 1
+GROUP BY program_id
+ORDER BY inner_instruction_count DESC
+LIMIT 20;
+```
+
+### Simple inner instruction details
+```sql
+SELECT 
+    block_timestamp,
+    tx_id,
+    program_id,
+    instruction_index,
+    inner_index,
+    instruction
+FROM solana.core.fact_events_inner
+WHERE block_timestamp >= CURRENT_TIMESTAMP - INTERVAL '1 hour'
+ORDER BY block_timestamp DESC, tx_id, instruction_index, inner_index
+LIMIT 100;
+```
+
+### Transactions with nested instructions
+```sql
+SELECT 
+    tx_id,
+    COUNT(*) AS total_inner_instructions,
+    COUNT(DISTINCT program_id) AS programs_called,
+    MAX(inner_index) + 1 AS max_nesting_depth
+FROM solana.core.fact_events_inner
+WHERE block_timestamp >= CURRENT_DATE - 1
+GROUP BY tx_id
+HAVING total_inner_instructions > 1
+ORDER BY total_inner_instructions DESC
+LIMIT 100;
+```
+
 {% enddocs %} 

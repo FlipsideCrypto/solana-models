@@ -27,6 +27,154 @@ This table provides a comprehensive view of cross-chain bridge activity on Solan
 - `mint`, `symbol`, `token_is_verified`: For token and asset analytics
 - `succeeded`: For transaction success analysis
 
+## Sample Queries
+
+### Daily bridge volume by protocol
+```sql
+-- Daily bridge volume by protocol
+SELECT 
+    DATE_TRUNC('day', block_timestamp) AS date,
+    platform,
+    COUNT(DISTINCT tx_id) AS bridge_txns,
+    SUM(amount_usd) AS volume_usd,
+    COUNT(DISTINCT source_address) AS unique_users
+FROM solana.defi.ez_bridge_activity
+WHERE block_timestamp >= CURRENT_DATE - 30
+    AND amount_usd IS NOT NULL
+    AND succeeded = true
+GROUP BY 1, 2
+ORDER BY 1 DESC, 4 DESC;
+```
+
+### Top bridge routes (source to destination chains)
+```sql
+-- Top bridge routes (source to destination chains)
+SELECT 
+    source_chain,
+    destination_chain,
+    platform,
+    COUNT(*) AS transfer_count,
+    SUM(amount_usd) AS total_volume_usd,
+    AVG(amount_usd) AS avg_transfer_usd
+FROM solana.defi.ez_bridge_activity
+WHERE block_timestamp >= CURRENT_DATE - 7
+    AND destination_chain IS NOT NULL
+    AND succeeded = true
+GROUP BY 1, 2, 3
+ORDER BY 5 DESC
+LIMIT 20;
+```
+
+### User bridge activity analysis
+```sql
+-- User bridge activity analysis
+SELECT 
+    source_address,
+    COUNT(DISTINCT DATE_TRUNC('day', block_timestamp)) AS active_days,
+    COUNT(DISTINCT platform) AS protocols_used,
+    COUNT(DISTINCT destination_chain) AS chains_bridged_to,
+    SUM(amount_usd) AS total_bridged_usd,
+    COUNT(*) AS total_transfers
+FROM solana.defi.ez_bridge_activity
+WHERE block_timestamp >= CURRENT_DATE - 30
+    AND amount_usd > 100  -- Filter small transfers
+    AND succeeded = true
+GROUP BY 1
+HAVING COUNT(*) > 5  -- Active bridgers
+ORDER BY 5 DESC
+LIMIT 100;
+```
+
+### Token flow analysis
+```sql
+-- Token flow analysis
+SELECT 
+    symbol,
+    mint AS token_address,
+    source_chain,
+    destination_chain,
+    COUNT(*) AS bridge_count,
+    SUM(amount) AS total_amount,
+    SUM(amount_usd) AS total_volume_usd,
+    AVG(amount_usd) AS avg_transfer_usd
+FROM solana.defi.ez_bridge_activity
+WHERE block_timestamp >= CURRENT_DATE - 7
+    AND symbol IS NOT NULL
+    AND succeeded = true
+GROUP BY 1, 2, 3, 4
+HAVING COUNT(*) > 10
+ORDER BY 7 DESC;
+```
+
+### Bridge protocol comparison
+```sql
+-- Bridge protocol comparison
+WITH protocol_stats AS (
+    SELECT 
+        platform,
+        COUNT(DISTINCT source_address) AS unique_users,
+        COUNT(*) AS total_transfers,
+        AVG(amount_usd) AS avg_transfer_size,
+        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY amount_usd) AS median_transfer_size,
+        SUM(amount_usd) AS total_volume
+    FROM solana.defi.ez_bridge_activity
+    WHERE block_timestamp >= CURRENT_DATE - 30
+        AND amount_usd IS NOT NULL
+        AND succeeded = true
+    GROUP BY 1
+)
+SELECT 
+    platform,
+    unique_users,
+    total_transfers,
+    avg_transfer_size,
+    median_transfer_size,
+    total_volume,
+    total_volume * 100.0 / SUM(total_volume) OVER () AS market_share_pct
+FROM protocol_stats
+ORDER BY total_volume DESC;
+```
+
+### Inbound vs Outbound flow analysis
+```sql
+-- Inbound vs Outbound flow analysis
+SELECT 
+    DATE_TRUNC('day', block_timestamp) AS date,
+    direction,
+    platform,
+    COUNT(*) AS transfer_count,
+    SUM(amount_usd) AS volume_usd,
+    COUNT(DISTINCT source_address) AS unique_users
+FROM solana.defi.ez_bridge_activity
+WHERE block_timestamp >= CURRENT_DATE - 14
+    AND amount_usd IS NOT NULL
+    AND succeeded = true
+GROUP BY 1, 2, 3
+ORDER BY 1 DESC, 5 DESC;
+```
+
+### Large bridge transfers monitoring (whale activity)
+```sql
+-- Large bridge transfers monitoring (whale activity)
+SELECT 
+    block_timestamp,
+    tx_id,
+    platform,
+    direction,
+    source_chain,
+    destination_chain,
+    source_address,
+    destination_address,
+    symbol,
+    amount,
+    amount_usd
+FROM solana.defi.ez_bridge_activity
+WHERE amount_usd >= 100000
+    AND block_timestamp >= CURRENT_DATE - 7
+    AND succeeded = true
+ORDER BY amount_usd DESC;
+```
+
 {% enddocs %}
 
 {% docs bridge_platform %}

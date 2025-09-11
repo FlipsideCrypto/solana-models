@@ -152,6 +152,126 @@ This table captures deposit events across Solana DeFi lending protocols includin
 - `amount`, `amount_usd`: For volume analysis and value-based metrics
 - `protocol_market`: For market-specific utilization and performance analysis
 
+## Sample Queries
+
+### Daily deposit volume by protocol
+```sql
+-- Daily lending deposits by protocol
+SELECT 
+    DATE_TRUNC('day', block_timestamp) AS date,
+    platform,
+    COUNT(DISTINCT tx_id) AS deposit_txns,
+    COUNT(DISTINCT depositor) AS unique_depositors,
+    SUM(amount) AS tokens_deposited,
+    SUM(amount_usd) AS usd_deposited,
+    AVG(amount_usd) AS avg_deposit_size
+FROM solana.defi.ez_lending_deposits
+WHERE block_timestamp >= CURRENT_DATE - 30
+    AND amount_usd IS NOT NULL
+GROUP BY 1, 2
+ORDER BY 1 DESC, 6 DESC;
+```
+
+### Protocol market share analysis
+```sql
+-- Protocol market share analysis
+WITH protocol_totals AS (
+    SELECT 
+        platform,
+        SUM(amount_usd) AS total_usd_deposited,
+        COUNT(DISTINCT depositor) AS unique_depositors,
+        COUNT(*) AS total_deposits
+    FROM solana.defi.ez_lending_deposits
+    WHERE block_timestamp >= CURRENT_DATE - 90
+        AND amount_usd IS NOT NULL
+    GROUP BY platform
+)
+SELECT 
+    platform,
+    total_usd_deposited,
+    total_usd_deposited * 100.0 / SUM(total_usd_deposited) OVER () AS market_share_pct,
+    unique_depositors,
+    total_deposits,
+    total_usd_deposited / total_deposits AS avg_deposit_size
+FROM protocol_totals
+ORDER BY total_usd_deposited DESC;
+```
+
+### Depositor behavior patterns
+```sql
+-- Depositor behavior patterns
+WITH depositor_activity AS (
+    SELECT 
+        depositor,
+        COUNT(DISTINCT platform) AS protocols_used,
+        COUNT(*) AS total_deposits,
+        SUM(amount_usd) AS total_usd_deposited,
+        MIN(block_timestamp) AS first_deposit,
+        MAX(block_timestamp) AS last_deposit,
+        COUNT(DISTINCT DATE_TRUNC('month', block_timestamp)) AS active_months
+    FROM solana.defi.ez_lending_deposits
+    WHERE amount_usd IS NOT NULL
+    GROUP BY depositor
+)
+SELECT 
+    CASE 
+        WHEN total_usd_deposited < 1000 THEN '< $1K'
+        WHEN total_usd_deposited < 10000 THEN '$1K-$10K'
+        WHEN total_usd_deposited < 100000 THEN '$10K-$100K'
+        ELSE '$100K+'
+    END AS depositor_tier,
+    COUNT(*) AS depositor_count,
+    AVG(total_deposits) AS avg_deposits_per_user,
+    AVG(protocols_used) AS avg_protocols_used,
+    SUM(total_usd_deposited) AS tier_total_usd
+FROM depositor_activity
+GROUP BY depositor_tier
+ORDER BY MIN(total_usd_deposited);
+```
+
+### Large deposits monitoring (whale activity)
+```sql
+-- Large deposits monitoring (whale activity)
+SELECT 
+    block_timestamp,
+    tx_id,
+    platform,
+    depositor,
+    token_symbol,
+    amount,
+    amount_usd,
+    protocol_market
+FROM solana.defi.ez_lending_deposits
+WHERE amount_usd >= 100000
+    AND block_timestamp >= CURRENT_DATE - 7
+ORDER BY amount_usd DESC;
+```
+
+### Weekly deposit momentum
+```sql
+-- Weekly deposit momentum
+WITH weekly_deposits AS (
+    SELECT 
+        DATE_TRUNC('week', block_timestamp) AS week,
+        platform,
+        SUM(amount_usd) AS weekly_usd_deposited,
+        COUNT(DISTINCT depositor) AS unique_depositors
+    FROM solana.defi.ez_lending_deposits
+    WHERE block_timestamp >= CURRENT_DATE - 84
+        AND amount_usd IS NOT NULL
+    GROUP BY 1, 2
+)
+SELECT 
+    week,
+    platform,
+    weekly_usd_deposited,
+    LAG(weekly_usd_deposited) OVER (PARTITION BY platform ORDER BY week) AS prev_week_usd,
+    (weekly_usd_deposited / NULLIF(LAG(weekly_usd_deposited) OVER (PARTITION BY platform ORDER BY week), 0) - 1) * 100 AS week_over_week_pct,
+    unique_depositors
+FROM weekly_deposits
+ORDER BY week DESC, weekly_usd_deposited DESC;
+```
+
 {% enddocs %}
 
 {% docs ez_lending_borrows %}
@@ -181,6 +301,124 @@ This table captures borrow events across Solana DeFi lending protocols including
 - `token_address`, `token_symbol`: For asset-specific borrowing demand analysis
 - `amount`, `amount_usd`: For borrowing volume analysis and market size metrics
 - `protocol_market`: For market-specific borrowing rates and utilization tracking
+
+## Sample Queries
+
+### Daily borrowing volume by protocol
+```sql
+-- Daily borrowing volume by protocol
+SELECT 
+    DATE_TRUNC('day', block_timestamp) AS date,
+    platform,
+    COUNT(DISTINCT tx_id) AS borrow_txns,
+    COUNT(DISTINCT borrower) AS unique_borrowers,
+    SUM(amount_usd) AS volume_usd
+FROM solana.defi.ez_lending_borrows
+WHERE block_timestamp >= CURRENT_DATE - 30
+    AND amount_usd IS NOT NULL
+GROUP BY 1, 2
+ORDER BY 1 DESC, 5 DESC;
+```
+
+### Top borrowed assets analysis
+```sql
+-- Top borrowed assets analysis
+SELECT 
+    token_symbol,
+    token_address,
+    COUNT(*) AS borrow_count,
+    SUM(amount) AS total_borrowed,
+    SUM(amount_usd) AS total_borrowed_usd,
+    AVG(amount_usd) AS avg_borrow_size_usd
+FROM solana.defi.ez_lending_borrows
+WHERE block_timestamp >= CURRENT_DATE - 7
+    AND token_symbol IS NOT NULL
+GROUP BY 1, 2
+ORDER BY 5 DESC
+LIMIT 20;
+```
+
+### Wallet specific borrow analysis
+```sql
+-- Wallet Specific Borrow Analysis
+SELECT 
+    b.borrower,
+    b.token_address AS borrowed_token_address,
+    b.token_symbol AS borrowed_token_symbol,
+    DATE_TRUNC('week', b.block_timestamp) AS weekly_block_timestamp,
+    SUM(b.amount) AS total_borrow_amount,
+    SUM(b.amount_usd) AS total_borrow_usd,
+    SUM(r.amount) AS total_repayment_amount,
+    SUM(r.amount_usd) AS total_repayment_usd,
+    SUM(b.amount) - COALESCE(SUM(r.amount), 0) AS net_borrowed_amount,
+    SUM(b.amount_usd) - COALESCE(SUM(r.amount_usd), 0) AS net_borrowed_usd
+FROM 
+    solana.defi.ez_lending_borrows b
+LEFT JOIN solana.defi.ez_lending_repayments r
+    ON b.borrower = r.payer
+    AND b.token_address = r.token_address
+WHERE 
+    b.borrower = LOWER('<user_address>')
+GROUP BY 1, 2, 3, 4
+ORDER BY 4 DESC;
+```
+
+### User borrowing patterns
+```sql
+-- User borrowing patterns
+WITH user_stats AS (
+    SELECT 
+        borrower,
+        COUNT(DISTINCT DATE_TRUNC('day', block_timestamp)) AS active_days,
+        COUNT(DISTINCT platform) AS platforms_used,
+        COUNT(DISTINCT token_address) AS assets_borrowed,
+        SUM(amount_usd) AS total_borrowed_usd,
+        AVG(amount_usd) AS avg_borrow_size
+    FROM solana.defi.ez_lending_borrows
+    WHERE block_timestamp >= CURRENT_DATE - 30
+        AND amount_usd IS NOT NULL
+    GROUP BY 1
+)
+SELECT 
+    CASE 
+        WHEN total_borrowed_usd < 1000 THEN '< $1K'
+        WHEN total_borrowed_usd < 10000 THEN '$1K - $10K'
+        WHEN total_borrowed_usd < 100000 THEN '$10K - $100K'
+        ELSE '> $100K'
+    END AS borrower_tier,
+    COUNT(*) AS user_count,
+    AVG(active_days) AS avg_active_days,
+    AVG(platforms_used) AS avg_platforms,
+    AVG(total_borrowed_usd) AS avg_total_borrowed
+FROM user_stats
+GROUP BY 1
+ORDER BY 5 DESC;
+```
+
+### Protocol market share
+```sql
+-- Protocol market share
+WITH protocol_volume AS (
+    SELECT 
+        platform,
+        SUM(amount_usd) AS total_volume,
+        COUNT(DISTINCT borrower) AS unique_users,
+        COUNT(*) AS transaction_count
+    FROM solana.defi.ez_lending_borrows
+    WHERE block_timestamp >= CURRENT_DATE - 30
+        AND amount_usd IS NOT NULL
+    GROUP BY 1
+)
+SELECT 
+    platform,
+    total_volume,
+    total_volume * 100.0 / SUM(total_volume) OVER () AS market_share_pct,
+    unique_users,
+    transaction_count,
+    total_volume / transaction_count AS avg_borrow_size
+FROM protocol_volume
+ORDER BY total_volume DESC;
+```
 
 {% enddocs %}
 
