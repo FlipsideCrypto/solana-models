@@ -20,7 +20,7 @@ This table contains comprehensive validator data by epoch, sourced from the Vali
 - `epoch`: The epoch when validator data was recorded
 - `node_pubkey`: Account for the validator node
 - `vote_pubkey`: Vote account for the validator
-- `active_stake`: Active stake in SOL delegated to the validator
+- `active_stake`: Active stake in Lamports delegated to the validator. Divide by pow(10,9) to convert to SOL
 - `commission`: Percentage of rewards payout to the vote account
 - `delinquent`: Status whether the validator is offline/delinquent
 - `validator_name`: Name of the validator
