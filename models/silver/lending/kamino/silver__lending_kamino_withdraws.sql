@@ -70,10 +70,39 @@ decoded AS (
             THEN silver.udf_get_account_pubkey_by_name('withdrawAccounts > reserveLiquidityMint', decoded_instruction:accounts)
             ELSE silver.udf_get_account_pubkey_by_name('reserveLiquidityMint', decoded_instruction:accounts)
         END AS token_address,
-        decoded_instruction:args:collateralAmount::int AS amount_raw,
+        CASE 
+            WHEN event_type = 'withdrawObligationCollateralAndRedeemReserveCollateralV2' 
+            THEN silver.udf_get_account_pubkey_by_name('withdrawAccounts > userDestinationLiquidity', decoded_instruction:accounts)
+            ELSE silver.udf_get_account_pubkey_by_name('userDestinationLiquidity', decoded_instruction:accounts)
+        END AS temp_withdraw_destination,
+        CASE 
+            WHEN event_type = 'withdrawObligationCollateralAndRedeemReserveCollateralV2' 
+            THEN silver.udf_get_account_pubkey_by_name('withdrawAccounts > lendingMarketAuthority', decoded_instruction:accounts)
+            ELSE silver.udf_get_account_pubkey_by_name('lendingMarketAuthority', decoded_instruction:accounts)
+        END AS temp_lending_authority,
         _inserted_timestamp
     FROM
         base
+),
+transfers AS (
+    SELECT
+        A.*,
+        COALESCE(SPLIT_PART(INDEX :: text, '.', 1) :: INT, INDEX :: INT) AS index_1,
+        NULLIF(SPLIT_PART(INDEX :: text, '.', 2), '') :: INT AS inner_index_1
+    FROM
+        {{ ref('silver__transfers') }} A
+        INNER JOIN (
+            SELECT
+                DISTINCT tx_id,
+                    block_timestamp::DATE AS block_date
+            FROM
+                decoded
+        ) d
+        ON d.block_date = A.block_timestamp::DATE
+        AND d.tx_id = A.tx_id
+    WHERE
+        A.succeeded
+        AND {{ between_stmts }}
 ),
 token_decimals AS (
     SELECT 
@@ -102,8 +131,8 @@ SELECT
     a.depositor,
     a.protocol_market,
     a.token_address,
-    a.amount_raw,
-    a.amount_raw * POW(10, -b.decimal) AS amount,
+    c.amount * POW(10, b.decimal) as amount_raw,
+    c.amount,
     b.decimal,
     a._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['a.tx_id', 'a.index', 'COALESCE(a.inner_index, -1)']) }} AS lending_kamino_withdraws_id,
@@ -114,3 +143,9 @@ FROM
     decoded a
 LEFT JOIN token_decimals b
     ON a.token_address = b.mint
+LEFT JOIN transfers c
+    ON a.tx_id = c.tx_id
+    AND a.index = c.index_1
+    AND a.temp_withdraw_destination = c.dest_token_account
+    AND a.temp_lending_authority = c.tx_from
+    AND a.token_address = c.mint
