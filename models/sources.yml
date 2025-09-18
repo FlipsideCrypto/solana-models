@@ -7,6 +7,7 @@ sources:
     tables:
       - name: dim_labels
       - name: dim_date_hours
+      - name: dim_dates
   - name: crosschain_public
     database: "{{ 'crosschain' if target.database == 'SOLANA' else 'crosschain_dev' }}"
     schema: bronze_public
