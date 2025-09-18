@@ -53,7 +53,7 @@ jobs:
 
       - name: Run DBT Jobs
         run: |
-          dbt run -s streamline__complete_decoded_logs streamline__complete_decoded_logs_2
+          dbt run -s streamline__complete_decoded_logs_2
       
       - name: Run Real Time Core on minutes 0 and 30 every hour
         run: |
