@@ -21,19 +21,19 @@
   {% if is_incremental() %}
   {% set get_dates_to_load_query %}
   WITH base_blocks AS (
-    SELECT
-      block_id,
-      value,
-      data,
-      error,
-      _inserted_date,
-      _inserted_timestamp
-    FROM
-      {{ ref('bronze__blocks2') }}
-    WHERE
-      _inserted_date >= '{{max_inserted_timestamp}}'::DATE - INTERVAL '1 DAY'
-      AND block_id < {{cutover_block_id}}
-    UNION ALL
+    -- SELECT
+    --   block_id,
+    --   value,
+    --   data,
+    --   error,
+    --   _inserted_date,
+    --   _inserted_timestamp
+    -- FROM
+    --   {{ ref('bronze__blocks2') }}
+    -- WHERE
+    --   _inserted_date >= '{{max_inserted_timestamp}}'::DATE - INTERVAL '1 DAY'
+    --   AND block_id < {{cutover_block_id}}
+    -- UNION ALL
     SELECT
       block_id,
       value,
@@ -69,30 +69,30 @@ This CTE (pre_final) combines data from two sources:
 2. New data using streamline 2.0 raw data from 'bronze__streamline_blocks_2' for blocks after and including the cutover_block_id
 */
 WITH pre_final AS (
-  SELECT
-    value:block_id::INTEGER AS block_id,
-    to_timestamp_ntz(data:blockTime) AS block_timestamp,
-    'mainnet' AS network,
-    'solana' AS chain_id,
-    data:blockHeight AS block_height,
-    data:blockhash::STRING AS block_hash,
-    data:parentSlot AS previous_block_id,
-    data:previousBlockhash::STRING AS previous_block_hash,
-    _inserted_date,
-    _inserted_timestamp
-  FROM
-    {{ ref('bronze__blocks2') }}
-  WHERE
-    block_id < {{cutover_block_id}}
-    AND block_id IS NOT NULL
-    AND error IS NULL
-    {% if is_incremental() %}
-    AND _inserted_date = '{{ load_date }}'
-    AND _inserted_timestamp >= '{{ load_timestamp }}'
-    {% else %}
-    AND _inserted_date = '2022-08-12'
-    {% endif %}
-  UNION ALL
+--   SELECT
+--     value:block_id::INTEGER AS block_id,
+--     to_timestamp_ntz(data:blockTime) AS block_timestamp,
+--     'mainnet' AS network,
+--     'solana' AS chain_id,
+--     data:blockHeight AS block_height,
+--     data:blockhash::STRING AS block_hash,
+--     data:parentSlot AS previous_block_id,
+--     data:previousBlockhash::STRING AS previous_block_hash,
+--     _inserted_date,
+--     _inserted_timestamp
+--   FROM
+--     {{ ref('bronze__blocks2') }}
+--   WHERE
+--     block_id < {{cutover_block_id}}
+--     AND block_id IS NOT NULL
+--     AND error IS NULL
+--     {% if is_incremental() %}
+--     AND _inserted_date = '{{ load_date }}'
+--     AND _inserted_timestamp >= '{{ load_timestamp }}'
+--     {% else %}
+--     AND _inserted_date = '2022-08-12'
+--     {% endif %}
+--   UNION ALL
   SELECT
     block_id,
     to_timestamp_ntz(data:result:blockTime) AS block_timestamp,
