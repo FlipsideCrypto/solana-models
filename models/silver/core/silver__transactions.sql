@@ -41,55 +41,55 @@ WITH base AS (
         AND t._partition_id >= {{ cutover_partition_id }}
 ),
 pre_final AS (
-    SELECT
-        COALESCE(TO_TIMESTAMP_NTZ(t.value :block_time), b.block_timestamp) AS block_timestamp,
-        t.block_id,
-        t.tx_id,
-        t.data :transaction :message :recentBlockhash :: STRING AS recent_block_hash,
-        t.data :meta :fee :: NUMBER AS fee,
-        CASE
-            WHEN IS_NULL_VALUE(
-                t.data :meta :err
-            ) THEN TRUE
-            ELSE FALSE
-        END AS succeeded,
-        t.data :transaction :message :accountKeys :: ARRAY AS account_keys,
-        t.data :meta :preBalances :: ARRAY AS pre_balances,
-        t.data :meta :postBalances :: ARRAY AS post_balances,
-        t.data :meta :preTokenBalances :: ARRAY AS pre_token_balances,
-        t.data :meta :postTokenBalances :: ARRAY AS post_token_balances,
-        t.data :transaction :message :instructions :: ARRAY AS instructions,
-        t.data :meta :innerInstructions :: ARRAY AS inner_instructions,
-        t.data :meta :logMessages :: ARRAY AS log_messages,
-        t.data:transaction:message:addressTableLookups::array as address_table_lookups,
-        t.data :meta :computeUnitsConsumed :: NUMBER as compute_units_consumed,
-        t.data :version :: STRING as version,
-        NULL AS tx_index,
-        t._partition_id,
-        t._inserted_timestamp
-    FROM
-        {{ ref('bronze__transactions2') }} AS t
-        LEFT OUTER JOIN {{ ref('silver__blocks') }} AS b
-        ON b.block_id = t.block_id
-    WHERE
-        t.block_id < {{cutover_block_id}}
-        AND tx_id IS NOT NULL
-        AND (
-            COALESCE(t.data :transaction :message :instructions [0] :programId :: STRING,'') <> 'Vote111111111111111111111111111111111111111'
-            OR
-            (
-                array_size(t.data :transaction :message :instructions) > 1
-            )
-        )
-        {% if is_incremental() %}
-        AND _partition_id >= (SELECT max(_partition_id)-1 FROM {{ this }})
-        AND _partition_id <= (SELECT max(_partition_id) FROM {{ source('solana_streamline','complete_block_txs') }})
-        AND t._inserted_timestamp > (SELECT max(_inserted_timestamp) FROM {{ this }})
-        {% else %}
-        AND _partition_id IN (1,2)
-        {% endif %}
-        AND _partition_id < {{cutover_partition_id}}
-    UNION ALL
+    -- SELECT
+    --     COALESCE(TO_TIMESTAMP_NTZ(t.value :block_time), b.block_timestamp) AS block_timestamp,
+    --     t.block_id,
+    --     t.tx_id,
+    --     t.data :transaction :message :recentBlockhash :: STRING AS recent_block_hash,
+    --     t.data :meta :fee :: NUMBER AS fee,
+    --     CASE
+    --         WHEN IS_NULL_VALUE(
+    --             t.data :meta :err
+    --         ) THEN TRUE
+    --         ELSE FALSE
+    --     END AS succeeded,
+    --     t.data :transaction :message :accountKeys :: ARRAY AS account_keys,
+    --     t.data :meta :preBalances :: ARRAY AS pre_balances,
+    --     t.data :meta :postBalances :: ARRAY AS post_balances,
+    --     t.data :meta :preTokenBalances :: ARRAY AS pre_token_balances,
+    --     t.data :meta :postTokenBalances :: ARRAY AS post_token_balances,
+    --     t.data :transaction :message :instructions :: ARRAY AS instructions,
+    --     t.data :meta :innerInstructions :: ARRAY AS inner_instructions,
+    --     t.data :meta :logMessages :: ARRAY AS log_messages,
+    --     t.data:transaction:message:addressTableLookups::array as address_table_lookups,
+    --     t.data :meta :computeUnitsConsumed :: NUMBER as compute_units_consumed,
+    --     t.data :version :: STRING as version,
+    --     NULL AS tx_index,
+    --     t._partition_id,
+    --     t._inserted_timestamp
+    -- FROM
+    --     {{ ref('bronze__transactions2') }} AS t
+    --     LEFT OUTER JOIN {{ ref('silver__blocks') }} AS b
+    --     ON b.block_id = t.block_id
+    -- WHERE
+    --     t.block_id < {{cutover_block_id}}
+    --     AND tx_id IS NOT NULL
+    --     AND (
+    --         COALESCE(t.data :transaction :message :instructions [0] :programId :: STRING,'') <> 'Vote111111111111111111111111111111111111111'
+    --         OR
+    --         (
+    --             array_size(t.data :transaction :message :instructions) > 1
+    --         )
+    --     )
+    --     {% if is_incremental() %}
+    --     AND _partition_id >= (SELECT max(_partition_id)-1 FROM {{ this }})
+    --     AND _partition_id <= (SELECT max(_partition_id) FROM {{ source('solana_streamline','complete_block_txs') }})
+    --     AND t._inserted_timestamp > (SELECT max(_inserted_timestamp) FROM {{ this }})
+    --     {% else %}
+    --     AND _partition_id IN (1,2)
+    --     {% endif %}
+    --     AND _partition_id < {{cutover_partition_id}}
+    -- UNION ALL
     SELECT
         t.block_timestamp,
         t.block_id,
