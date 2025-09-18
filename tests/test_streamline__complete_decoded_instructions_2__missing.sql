@@ -1,6 +1,6 @@
 {{
     config(
-        tags=["test_hourly"]
+        tags=["test_hourly_deprecated"]
     )
 }}
 
