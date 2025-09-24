@@ -1,4 +1,4 @@
-{% docs fact_daily_balances %}
+{% docs fact_token_daily_balances %}
 
 ## Description
 This table provides daily snapshots of token balances for each account and mint combination on the Solana blockchain. It creates a complete time series by forward-filling the most recent balance when there's no activity on a given day, ensuring every account-mint combination has a balance record for each day since their first balance change. When multiple balance updates occur within a day, only the last balance is retained, providing a consistent end-of-day view.

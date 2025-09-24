@@ -1,7 +1,7 @@
 version: 2
 models:
-  - name: core__fact_daily_balances
-    description: "{{ doc('fact_daily_balances') }}"
+  - name: core__fact_token_daily_balances
+    description: "{{ doc('fact_token_daily_balances') }}"
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7
