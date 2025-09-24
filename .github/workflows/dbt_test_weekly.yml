@@ -42,7 +42,7 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -s models/silver/core/silver__votes.sql --vars '{"run_votes_cleanup": true}'
+          dbt run -s models/silver/core/silver__votes.sql --vars '{"run_votes_cleanup": True}'
           dbt test -s "solana_models,tag:test_weekly"
 
   notify-failure:
