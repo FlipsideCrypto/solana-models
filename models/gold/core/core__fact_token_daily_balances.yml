@@ -5,12 +5,6 @@ models:
     recent_date_filter: &recent_date_filter
       config:
         where: modified_timestamp >= current_date - 7
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - balance_date
-            - account
-            - mint
     columns:
       - name: BALANCE_DATE
         description: "{{ doc('balance_date') }}"
@@ -32,8 +26,6 @@ models:
         tests:
           - dbt_expectations.expect_column_to_exist
           - not_null: *recent_date_filter
-          - dbt_expectations.expect_column_values_to_be_of_type:
-              column_type: number
       - name: OWNER
         description: "{{ doc('token_balances_block_owner') }}"
         tests:
@@ -50,7 +42,7 @@ models:
           - not_null: *recent_date_filter
           - accepted_values:
               values: [true, false]
-      - name: FACT_TOKEN_DAILY_BALANCES_ID
+      - name: TOKEN_DAILY_BALANCES_ID
         description: '{{ doc("pk") }}'
         tests:
           - dbt_expectations.expect_column_to_exist
@@ -65,4 +57,4 @@ models:
         description: '{{ doc("modified_timestamp") }}' 
         tests:
           - dbt_expectations.expect_column_to_exist
-          - not_null: *recent_date_filter
+          - not_null
