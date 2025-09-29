@@ -26,7 +26,7 @@ AND date_day > (
     FROM
         {{ this }}
 )
--- Limit to next 30 days for backfill batching
+-- Limit to next 60 days for backfill batching
 AND date_day <= (
     SELECT
         LEAST(
