@@ -45,7 +45,7 @@ numbered AS (
 grouped AS (
     SELECT
         mint,
-        FLOOR((row_num - 1) / 400) + 1 AS group_num,
+        FLOOR((row_num - 1) / 350) + 1 AS group_num,
         _inserted_timestamp
     FROM
         numbered
