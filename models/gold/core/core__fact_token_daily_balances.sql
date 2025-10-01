@@ -5,7 +5,7 @@
     cluster_by = ['balance_date'],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(account, mint)'),
-    tags = ['daily']
+    tags = ['daily_balances']
 ) }}
 
 WITH date_spine AS (

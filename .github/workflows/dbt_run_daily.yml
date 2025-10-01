@@ -3,8 +3,8 @@ run-name: dbt_run_scheduled_daily
 
 on:
   schedule:
-    # Runs 00:35 daily (see https://crontab.guru)
-    - cron: '35 0 * * *'
+    # Runs 01:35 daily (see https://crontab.guru)
+    - cron: '35 1 * * *'
     
 env:
   DBT_PROFILES_DIR: "${{ vars.DBT_PROFILES_DIR }}"
@@ -46,6 +46,7 @@ jobs:
           dbt run -s models/silver/validator/silver__snapshot_validators_app_data.sql models/silver/validator/silver__snapshot_vote_accounts.sql models/silver/validator/silver__snapshot_vote_accounts_extended_stats.sql
           dbt run -s "solana_models,tag:nft_api"
           dbt run -s "solana_models,tag:daily"
+          dbt run -s "solana_models,tag:daily_balances"
 
   notify-failure:
     needs: [run_dbt_jobs]

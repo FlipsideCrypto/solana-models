@@ -5,7 +5,7 @@
     cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = enable_search_optimization('{{this.schema}}','{{this.identifier}}','ON EQUALITY(tx_id, account_address, fact_token_balances_id)'),
-    tags = ['scheduled_non_core']
+    tags = ['scheduled_non_core','daily_balances']
 ) }}
 
 SELECT

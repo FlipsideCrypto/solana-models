@@ -4,7 +4,7 @@
     incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
     cluster_by = ['block_timestamp::DATE','_inserted_timestamp::DATE'],
     full_refresh = false,
-    tags = ['scheduled_non_core'],
+    tags = ['scheduled_non_core','daily_balances'],
 ) }}
 
 with base_events as (
