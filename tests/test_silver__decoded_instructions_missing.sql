@@ -8,9 +8,9 @@ SELECT
     )
 FROM
     {% if target.database == 'SOLANA' %}
-        solana.streamline.complete_decoded_instructions_2
+        solana.streamline.complete_decoded_instructions_3
     {% else %}
-        solana_dev.streamline.complete_decoded_instructions_2
+        solana_dev.streamline.complete_decoded_instructions_3
     {% endif %}
     
 WHERE
