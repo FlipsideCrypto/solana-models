@@ -5,7 +5,7 @@
     cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
     full_refresh = false,
     merge_exclude_columns = ["inserted_timestamp"],
-    tags = ['scheduled_non_core']
+    tags = ['scheduled_non_core','daily_balances']
 ) }}
 
 WITH balances AS (
