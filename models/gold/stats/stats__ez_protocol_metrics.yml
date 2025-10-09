@@ -1,0 +1,47 @@
+version: 2
+models:
+  - name: stats__ez_protocol_metrics
+    description: 'Daily aggregated protocol-level metrics for Solana blockchain including user activity, transaction counts, and token flow data. Combines protocol interaction data with Flipside scoring to distinguish between total activity and quality user activity (Flipside score >= 4). Metrics track inflows, outflows, and user engagement at the protocol level.'
+    
+    columns:
+      - name: day_
+        description: 'The date in YYYY-MM-DD format - all stats are aggregated at the daily level'
+        
+      - name: protocol
+        description: 'Protocol names including versioning information (e.g. Uniswap v2, v3, etc.). Note: protocol names may not always match protocol names in other tables like dex_volume'
+        
+      - name: n_users
+        description: 'Number of unique addresses submitting a transaction that interacts with any protocol contract. Same address can be counted across different protocols, but never more than once within a single protocol'
+        
+      - name: n_quality_users
+        description: 'Number of unique quality addresses with Flipside score >= 4 submitting a transaction that interacts with any protocol contract. Same address can be counted across different protocols, but never more than once within a single protocol'
+        
+      - name: n_transactions
+        description: 'Number of unique transactions that emit 1 or more events from any protocol contract. Same transaction can be counted across different protocols, but never more than once within a single protocol'
+        
+      - name: n_quality_transactions
+        description: 'Number of unique transactions by addresses with Flipside score >= 4 that emit 1 or more events from any protocol contract. Same transaction can be counted across different protocols, but never more than once within a single protocol'
+        
+      - name: usd_inflows
+        description: 'USD value of tokens sent INTO this protocol from all other addresses/protocols/contracts (excludes transfers within the same protocol)'
+        
+      - name: usd_outflows
+        description: 'USD value of tokens sent FROM this protocol to all other addresses/protocols/contracts (excludes transfers within the same protocol)'
+        
+      - name: net_usd_inflow
+        description: 'USD inflows minus outflows. Note: Price effects may cause net USD and token-level net changes to differ in direction (rare but possible with large, fast price changes)'
+        
+      - name: gross_usd_volume
+        description: 'Total USD volume calculated as inflows plus outflows'
+        
+      - name: quality_usd_inflows
+        description: 'USD value of token inflows from quality addresses with Flipside score >= 4'
+        
+      - name: quality_usd_outflows
+        description: 'USD value of token outflows to quality addresses with Flipside score >= 4'
+        
+      - name: quality_net_usd
+        description: 'Quality USD inflows minus quality USD outflows. Price effects may apply similar to net_usd_inflow'
+        
+      - name: quality_gross_usd
+        description: 'Total quality USD volume calculated as quality inflows plus quality outflows'
