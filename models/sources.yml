@@ -8,6 +8,11 @@ sources:
       - name: dim_labels
       - name: dim_date_hours
       - name: dim_dates
+  - name: crosschain_chain_stats
+    database: "{{ 'crosschain' if target.database == 'SOLANA' else 'crosschain_dev' }}"
+    schema: chain_stats
+    tables:
+      - name: ez_solana_protocol_metrics
   - name: crosschain_public
     database: "{{ 'crosschain' if target.database == 'SOLANA' else 'crosschain_dev' }}"
     schema: bronze_public
