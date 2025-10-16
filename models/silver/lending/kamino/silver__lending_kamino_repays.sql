@@ -92,10 +92,44 @@ CASE
     WHEN event_type = 'flashRepayReserveLiquidity'
     THEN silver.udf_get_account_pubkey_by_name('reserveLiquidityMint', decoded_instruction:accounts)
 END AS token_address,
-        decoded_instruction:args:liquidityAmount::int AS amount_raw,
+CASE 
+    WHEN event_type = 'repayObligationLiquidityV2' 
+    THEN silver.udf_get_account_pubkey_by_name('repayAccounts > userSourceLiquidity', decoded_instruction:accounts)
+
+    else silver.udf_get_account_pubkey_by_name('userSourceLiquidity', decoded_instruction:accounts)
+    
+END AS source_token_account,
+
+CASE 
+    WHEN event_type = 'repayObligationLiquidityV2' 
+    THEN silver.udf_get_account_pubkey_by_name('repayAccounts > reserveDestinationLiquidity', decoded_instruction:accounts)
+
+    else silver.udf_get_account_pubkey_by_name('reserveDestinationLiquidity', decoded_instruction:accounts)
+    
+END AS dest_token_account,
         _inserted_timestamp
     FROM
         base
+),
+transfers AS (
+    SELECT
+        A.*,
+        COALESCE(SPLIT_PART(INDEX :: text, '.', 1) :: INT, INDEX :: INT) AS index_1,
+        NULLIF(SPLIT_PART(INDEX :: text, '.', 2), '') :: INT AS inner_index_1
+    FROM
+        {{ ref('silver__transfers') }} A
+        INNER JOIN (
+            SELECT
+                DISTINCT tx_id,
+                    block_timestamp::DATE AS block_date
+            FROM
+                decoded
+        ) d
+        ON d.block_date = A.block_timestamp::DATE
+        AND d.tx_id = A.tx_id
+    WHERE
+        A.succeeded
+        and {{ between_stmts }}
 ),
 token_decimals AS (
     SELECT 
@@ -125,8 +159,8 @@ SELECT
     a.borrower,
     a.protocol_market,
     a.token_address,
-    a.amount_raw,
-    a.amount_raw * POW(10, -b.decimal) AS amount,
+    t.amount * POW(10, b.decimal) as amount_raw,
+    t.amount as amount,
     b.decimal,
     a._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['a.tx_id', 'a.index', 'COALESCE(a.inner_index, -1)']) }} AS lending_kamino_repays_id,
@@ -135,5 +169,11 @@ SELECT
     '{{ invocation_id }}' AS invocation_id
 FROM
     decoded a
+left join transfers t
+    ON A.tx_id = t.tx_id
+    AND A.index = t.index_1
+    AND A.borrower = t.tx_from
+    AND A.source_token_account = t.source_token_account
+    AND A.dest_token_account = t.dest_token_account
 LEFT JOIN token_decimals b
     ON a.token_address = b.mint
