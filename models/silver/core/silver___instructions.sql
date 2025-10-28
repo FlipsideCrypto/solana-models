@@ -49,3 +49,4 @@ WHERE
 WHERE
     t.block_id between 105368 and 1000000
 {% endif %}
+and t.succeeded

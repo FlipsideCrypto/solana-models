@@ -102,6 +102,7 @@ WHERE
 WHERE
     t.block_timestamp :: DATE >= '2022-04-01'
 {% endif %}
+and t.succeeded
 ),
 C AS (
     SELECT

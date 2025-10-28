@@ -39,6 +39,7 @@ buy_txs AS (
   WHERE
     block_timestamp :: DATE >= '2022-09-22'
     AND l.value :: STRING = 'Program log: Instruction: BuyNftFromPair'
+    and t.succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -72,6 +73,7 @@ buys AS (
     block_timestamp :: DATE >= '2022-09-22'
     AND i.value :programId :: STRING = 'hadeK9DLv9eA7ya5KCTqSvSvRZeJC3JgD5a9Y3CNbvu'
     AND i.value :accounts [2] :: STRING = signers [0] :: string
+    and t.succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -127,6 +129,7 @@ lp_txs AS (
   WHERE
     block_timestamp :: DATE >= '2022-09-22'
     AND l.value :: STRING LIKE 'Program log: Instruction: SellNftToLiquidityPair'
+    and t.succeeded
 
 {% if is_incremental() %}
 AND t._inserted_timestamp >= (
@@ -159,6 +162,7 @@ lp_buys AS (
     block_timestamp :: DATE >= '2022-09-22'
     AND i.value :accounts [3] :: STRING = signers [0] :: string
     and i.value:programId::string = 'hadeK9DLv9eA7ya5KCTqSvSvRZeJC3JgD5a9Y3CNbvu'
+    and t.succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

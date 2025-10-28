@@ -88,6 +88,7 @@ base_t AS (
         {% else %}
         _inserted_timestamp BETWEEN '2022-08-12' AND '2023-01-01'
         {% endif %}
+        AND succeeded
 )
 
 SELECT

@@ -49,3 +49,4 @@ WHERE
 WHERE
     t.block_id between 39824111 and 43824111
 {% endif %}
+and t.succeeded

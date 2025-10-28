@@ -150,6 +150,7 @@ WHERE
 WHERE
     block_id between 105368 and 1000000
 {% endif %}
+and succeeded
 )
 SELECT
     e.block_id,

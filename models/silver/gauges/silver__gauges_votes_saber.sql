@@ -66,6 +66,7 @@ tx_logs AS (
             l.value :: STRING LIKE 'Program log: Instruction:%'
             OR l.value :: STRING LIKE 'Program log: power:%'
         )
+        and t.succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

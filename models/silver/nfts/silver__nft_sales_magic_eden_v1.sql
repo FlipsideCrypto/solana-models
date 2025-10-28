@@ -39,6 +39,7 @@ WITH sales_inner_instructions AS (
     AND ARRAY_SIZE(
       inner_instruction :instructions
     ) > 2
+    and t.succeeded
 
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',

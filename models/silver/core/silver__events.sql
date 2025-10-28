@@ -55,6 +55,7 @@ AND (
         i.block_id BETWEEN 105368
         AND 1000000
 {% endif %}
+and i.succeeded
 ),
 base_ii AS (
     SELECT
@@ -156,3 +157,4 @@ WHERE
     t.block_id BETWEEN 105368
     AND 1000000
 {% endif %}
+and t.succeeded
