@@ -46,6 +46,13 @@ WITH base AS (
         json_data :vote_account :: STRING AS vote_pubkey,
         json_data :vote_distance_score :: NUMBER AS vote_distance_score,
         json_data :www_url :: STRING AS www_url,
+        NULL as is_dz,
+        NULL as is_jito,
+        NULL as jito_commission,
+        NULL as stake_pools_list,
+        NULL as software_client,
+        NULL as software_client_id,
+        NULL as ip,
         _inserted_timestamp
     FROM
         {{ ref('bronze__validators_app_api') }}
@@ -90,6 +97,13 @@ WITH base AS (
         d.value:vote_account :: STRING AS vote_pubkey,
         d.value:vote_distance_score :: NUMBER AS vote_distance_score,
         d.value:www_url :: STRING AS www_url,
+        d.value:is_dz::boolean as is_dz,
+        d.value:jito::boolean as is_jito,
+        d.value:jito_commission::number as jito_commission,
+        d.value:stake_pools_list::array as stake_pools_list,
+        d.value:software_client::string as software_client,
+        d.value:software_client_id::string as software_client_id,
+        d.value:ip::string as ip,
         _inserted_timestamp
     FROM
         {{ ref('bronze__streamline_validators_list_2')}}

@@ -116,6 +116,34 @@ models:
         description: "{{ doc('www_url') }}"
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: is_dz
+        description: "{{ doc('is_dz') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: is_jito
+        description: "{{ doc('is_jito') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: jito_commission
+        description: "{{ doc('jito_commission') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: stake_pools_list
+        description: "{{ doc('stake_pools_list') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: software_client
+        description: "{{ doc('software_client') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: software_client_id
+        description: "{{ doc('software_client_id') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: ip
+        description: "{{ doc('ip') }}"
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: FACT_VALIDATORS_ID
         description: '{{ doc("pk") }}'
         tests:

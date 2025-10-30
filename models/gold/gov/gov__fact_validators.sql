@@ -42,6 +42,13 @@ SELECT
   software_version,
   updated_at,
   www_url,
+  is_dz,
+  is_jito,
+  jito_commission,
+  stake_pools_list,
+  software_client,
+  software_client_id,
+  ip,
   COALESCE (
     snapshot_validators_app_data_id,
     {{ dbt_utils.generate_surrogate_key(
@@ -88,6 +95,13 @@ SELECT
   software_version,
   updated_at,
   www_url,
+  NULL as is_dz,
+  NULL as is_jito,
+  NULL as jito_commission,
+  NULL as stake_pools_list,
+  NULL as software_client,
+  NULL as software_client_id,
+  NULL as ip,
   {{ dbt_utils.generate_surrogate_key(
     ['epoch', 'node_pubkey']
   ) }} AS fact_validators_id,
