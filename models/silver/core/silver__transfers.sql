@@ -43,7 +43,7 @@ WITH base_transfers_i AS (
         'transferWithSeed',
         'transferCheckedWithFee'
     )
-
+    AND succeeded
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
     "false"
@@ -94,7 +94,7 @@ AND
         'transferWithSeed',
         'transferCheckedWithFee'
         )
-
+    AND succeeded
 {% if is_incremental() and env_var(
     'DBT_IS_BATCH_LOAD',
     "false"
@@ -187,6 +187,7 @@ WHERE _inserted_timestamp >= '{{ max_inserted_timestamp }}'
 WHERE
     block_id between 4260184 and 5260184
 {% endif %}
+AND succeeded
 ),
 base_sol_account_keys AS (
     SELECT
@@ -217,6 +218,7 @@ base_sol_account_keys AS (
     WHERE
         block_id between 4260184 and 5260184
     {% endif %}
+AND succeeded
 ),
 spl_transfers AS (
     SELECT

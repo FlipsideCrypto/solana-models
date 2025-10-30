@@ -28,7 +28,7 @@ WITH bgum_mints AS (
       succeeded
     )
   WHERE
-    succeeded
+    txs.succeeded
     AND program_id = 'BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY'
     AND 
       (
@@ -85,7 +85,7 @@ FROM
     succeeded
   )
 WHERE
-  succeeded
+  txs.succeeded
   AND program_id IN ('1atrmQs3eq1N2FEYWu6tyTXbCjP4uQwExpjtnhXtS8h','F9SixdqdmEBP5kprp2gZPZNeMmfHJRCTMFjN22dx3akf') -- lazy_transactions
   AND f.value :programId = 'BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY' -- bubblegum
 

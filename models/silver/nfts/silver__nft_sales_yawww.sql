@@ -53,7 +53,7 @@ WITH base_table AS (
             l.value :: STRING ILIKE 'Program log: Instruction: Accept bid'
             OR l.value :: STRING ILIKE 'Program log: Instruction: Buy listed item'
         )
-
+    AND t.succeeded
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (
     SELECT

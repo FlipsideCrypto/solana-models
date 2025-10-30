@@ -52,6 +52,7 @@ WHERE
     l.value :: STRING LIKE 'Program log: Instruction: Bid on listing'
     AND i.index = 3
     AND i.value :parsed :type :: STRING = 'transfer'
+    AND t.succeeded
     
 
 {% if is_incremental() %}

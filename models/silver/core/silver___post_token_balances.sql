@@ -64,3 +64,4 @@ WHERE
     t.block_timestamp :: DATE BETWEEN '2021-01-30'
     AND '2021-02-27' -- first month with token data in txs
 {% endif %}
+and succeeded

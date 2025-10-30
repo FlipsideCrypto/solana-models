@@ -83,6 +83,7 @@ WITH txs AS (
         {{ ref('silver__transactions') }}
     WHERE
         {{ between_stmts }}
+    AND succeeded
 )
 SELECT
     t.block_timestamp,

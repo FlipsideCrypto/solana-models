@@ -48,6 +48,7 @@ base_balances AS (
         ) e
         ON e.b_date = t.block_timestamp :: DATE
         AND e.tx_id = t.tx_id
+        and t.succeeded
 
 {% if is_incremental() %}
 WHERE

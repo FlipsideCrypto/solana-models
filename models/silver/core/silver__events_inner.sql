@@ -29,7 +29,7 @@ WITH pre_final AS (
         e,
         TABLE(FLATTEN(inner_instruction :instructions)) ii
     WHERE
-        1 = 1
+        e.succeeded
 
 {% if is_incremental() %}
 {% if execute %}

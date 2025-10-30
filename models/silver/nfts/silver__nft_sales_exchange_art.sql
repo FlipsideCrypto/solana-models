@@ -149,6 +149,7 @@ redeems AS (
     WHERE
         program_id = 'exAuvFHqXXbiLrM4ce9m1icwuSyXytRnfBkajukDFuB'
         AND l.value :: STRING = 'Program log: processing AuctionInstruction::Redeem'
+        AND t.succeeded
 
 {% if is_incremental() %}
 AND e._inserted_timestamp >= (

@@ -62,6 +62,7 @@ b AS (
         LEFT OUTER JOIN TABLE(FLATTEN(t.log_messages)) l
     WHERE
         t.block_timestamp :: DATE >= '2022-05-17'
+        and t.succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
