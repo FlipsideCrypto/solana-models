@@ -129,5 +129,6 @@ LEFT JOIN transfers b
     AND a.signer_token_account = b.source_token_account
     AND a.bank_liquidity_vault = b.dest_token_account
     AND a.index = b.index_1
+    and coalesce(a.inner_index,-1) < b.inner_index_1
 LEFT JOIN token_decimals c
     ON b.mint = c.mint
