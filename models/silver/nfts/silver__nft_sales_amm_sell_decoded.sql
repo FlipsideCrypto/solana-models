@@ -191,7 +191,7 @@ mev2_sales AS(
     FROM
         base_decoded
     WHERE
-        COALESCE(signers[1],signers[0])::STRING = 'NTYeYJ1wr4bpM5xo6zx5En44SvJFAd35zTxxNoERYqd'
+        signers[0]::STRING = 'NTYeYJ1wr4bpM5xo6zx5En44SvJFAd35zTxxNoERYqd' OR signers[1]::STRING = 'NTYeYJ1wr4bpM5xo6zx5En44SvJFAd35zTxxNoERYqd'
 ),
 coral_cube_nft_sale_amount AS (
     SELECT
