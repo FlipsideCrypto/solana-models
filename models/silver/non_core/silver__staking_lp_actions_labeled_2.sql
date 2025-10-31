@@ -16,6 +16,7 @@ WITH base_staking_lp_actions AS (
     WHERE 
         block_timestamp::date >= current_date - 1
     {% endif %}
+    and succeeded
 ),
 
 {% if is_incremental() %}
