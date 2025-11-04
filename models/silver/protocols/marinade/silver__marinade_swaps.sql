@@ -232,34 +232,6 @@ SELECT
     swap_to_mint,
     program_id,
     _inserted_timestamp,
-     swaps_intermediate_saber_id as marinade_swaps_id,
-    inserted_timestamp,
-    modified_timestamp,
-    '{{ invocation_id }}' AS invocation_id
-FROM
-    {{ ref('silver__swaps_intermediate_saber') }}
-WHERE
-    (swap_from_mint IN ('{{ MNDE_MINT }}', '{{ MSOL_MINT }}') OR swap_to_mint IN ('{{ MNDE_MINT }}', '{{ MSOL_MINT }}'))
-    AND succeeded
-    {% if is_incremental() %}
-    AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
-    {% endif %}
-UNION ALL
-SELECT
-    block_timestamp,
-    block_id,
-    tx_id,
-    succeeded,
-    index,
-    inner_index,
-    swap_index,
-    swapper,
-    swap_from_amount,
-    swap_from_mint,
-    swap_to_amount,
-    swap_to_mint,
-    program_id,
-    _inserted_timestamp,
     swaps_pumpswap_id as marinade_swaps_id,
     inserted_timestamp,
     modified_timestamp,
@@ -384,3 +356,31 @@ WHERE
     {% if is_incremental() %}
     AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
     {% endif %}
+
+{% if not is_incremental() %}
+-- Only select from the deprecated model during the initial FR
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    index,
+    inner_index,
+    swap_index,
+    swapper,
+    swap_from_amount,
+    swap_from_mint,
+    swap_to_amount,
+    swap_to_mint,
+    program_id,
+    _inserted_timestamp,
+     swaps_intermediate_saber_id as marinade_swaps_id,
+    inserted_timestamp,
+    modified_timestamp,
+    '{{ invocation_id }}' AS invocation_id
+FROM
+    {{ ref('silver__swaps_intermediate_saber_view') }}
+WHERE
+    (swap_from_mint IN ('{{ MNDE_MINT }}', '{{ MSOL_MINT }}') OR swap_to_mint IN ('{{ MNDE_MINT }}', '{{ MSOL_MINT }}'))
+    AND succeeded
+{% endif %}

@@ -120,6 +120,8 @@ sources:
       - name: nft_sales_tensorswap_buysellevent
       - name: nft_sales_tensorswap
       - name: nft_sales_hadeswap_decoded
+      - name: swaps_intermediate_saber
+      - name: liquidity_pool_actions_saber
   - name: solana_streamline
     database: solana
     schema: streamline

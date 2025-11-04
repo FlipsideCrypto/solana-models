@@ -348,28 +348,6 @@ SELECT
     swap_to_amount,
     swap_to_mint,
     program_id,
-    'Saber Stable Swap' as swap_program,
-    swap_index,
-    swaps_intermediate_saber_id as fact_swaps_id,
-    inserted_timestamp,
-    modified_timestamp
-FROM
-    {{ ref('silver__swaps_intermediate_saber') }}
-{% if is_incremental() %}
-WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
-{% endif %}
-UNION ALL
-SELECT
-    block_timestamp,
-    block_id,
-    tx_id,
-    succeeded,
-    swapper,
-    swap_from_amount,
-    swap_from_mint,
-    swap_to_amount,
-    swap_to_mint,
-    program_id,
     case when program_id = 'dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN' then 'meteora bonding'
         else 'meteora DAMM'
     end as swap_program,
@@ -454,6 +432,25 @@ FROM
     l
     ON s.program_id = l.address
 union all
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    swapper,
+    swap_from_amount,
+    swap_from_mint,
+    swap_to_amount,
+    swap_to_mint,
+    program_id,
+    'Saber Stable Swap' as swap_program,
+    concat_ws('-',tx_id,swap_index,swap_program) as _log_id,
+    swaps_intermediate_saber_id as fact_swaps_id,
+    inserted_timestamp,
+    modified_timestamp
+FROM
+    {{ ref('silver__swaps_intermediate_saber_view') }}
+UNION ALL
 {% endif %}
 
 select 
