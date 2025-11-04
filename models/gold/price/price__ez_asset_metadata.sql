@@ -29,6 +29,8 @@ SELECT
     blockchain,
     FALSE AS is_native,
     is_deprecated,
+    is_verified,
+    is_verified_modified_timestamp,
     inserted_timestamp,
     modified_timestamp,
     complete_token_asset_metadata_id AS ez_asset_metadata_id
@@ -48,6 +50,8 @@ SELECT
     blockchain,
     TRUE AS is_native,
     is_deprecated,
+    TRUE as is_verified,
+    NULL as is_verified_modified_timestamp,
     inserted_timestamp,
     modified_timestamp,
     complete_native_asset_metadata_id AS ez_asset_metadata_id
