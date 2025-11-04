@@ -29,7 +29,7 @@ models:
         data_tests: 
           - not_null: *recent_date_filter
       - name: IS_VERIFIED
-        description: '{{ doc("prices_is_native") }}'
+        description: '{{ doc("prices_is_verified") }}'
       - name: EZ_ASSET_METADATA_ID
         description: '{{ doc("pk") }}'   
         data_tests: 
