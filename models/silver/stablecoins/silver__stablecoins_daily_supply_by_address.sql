@@ -1,4 +1,3 @@
--- depends_on: {{ ref('silver__decoded_instructions_combined') }}
 
 {{ config(
     materialized = 'incremental',
@@ -14,7 +13,6 @@
 
 
 WITH verified_stablecoins AS (
-
     SELECT
         token_address,
         decimals,
@@ -27,25 +25,27 @@ WITH verified_stablecoins AS (
         -- AND 
         token_address IS NOT NULL
 ),
-lp_token_addresses as (
-select distinct(token_a_account) as token_address from solana.silver.liquidity_pools a
-inner join verified_stablecoins b
-on a.token_a_mint = b.token_address
-where pool_address = '2EXiumdi14E9b8Fy62QcA5Uh6WdHS2b38wtSxp72Mibj'
-union all
-select distinct(token_b_account) as token_address from solana.silver.liquidity_pools a
-inner join verified_stablecoins b
-on a.token_b_mint = b.token_address
-where pool_address = '2EXiumdi14E9b8Fy62QcA5Uh6WdHS2b38wtSxp72Mibj'
-)
--- select * from lp_pool_token_addreses
-,
-bridge_vaults as (
-        SELECT vault_token_address as token_address
-    FROM solana_dev.silver.stablecoin_bridge_vault_seed
-    )
-,
-balance_base as (
+
+lp_token_addresses AS (
+    SELECT DISTINCT token_a_account AS token_address 
+    FROM {{ ref('silver__liquidity_pools') }} a
+    INNER JOIN verified_stablecoins b
+        ON a.token_a_mint = b.token_address
+    
+    UNION ALL
+    
+    SELECT DISTINCT token_b_account AS token_address 
+    FROM {{ ref('silver__liquidity_pools') }} a
+    INNER JOIN verified_stablecoins b
+        ON a.token_b_mint = b.token_address
+),
+
+bridge_vaults AS (
+    SELECT vault_token_address AS token_address
+    FROM {{ ref('silver__stablecoin_bridge_vault_seed') }}
+),
+
+balance_base AS (
     SELECT
         balance_date,
         account,
@@ -53,34 +53,39 @@ balance_base as (
         amount,
         owner
     FROM {{ ref('core__fact_token_daily_balances') }} a
-        INNER JOIN verified_stablecoins b on a.mint = b.token_address
-    where balance_date = '2025-10-29'
+    INNER JOIN verified_stablecoins b 
+        ON a.mint = b.token_address
+    WHERE balance_date = '2025-10-29'
     -- {% if is_incremental() %}
-    -- where balance_date >= (
+    -- WHERE balance_date >= (
     --     SELECT
     --         MAX(balance_date)
     --     FROM
     --         {{ this }}
     -- )
     -- {% endif %}
-
 )
-select 
-        balance_date,
-        account,
-        mint,
-        amount,
-        owner,
-    CASE WHEN b.token_address IS NOT NULL THEN amount ELSE 0 END AS dex_balance,
-    CASE WHEN c.token_address IS NOT NULL THEN amount ELSE 0 END AS bridge_balance,
-        {{ dbt_utils.generate_surrogate_key(['balance_date','account','mint']) }} AS stablecoins_daily_supply_by_address_id,
-        SYSDATE() AS inserted_timestamp,
-        SYSDATE() AS modified_timestamp,
-        '{{ invocation_id }}' AS _invocation_id
-    from balance_base a
-    left join lp_token_addresses b
-    on a.account = b.token_address
-    left join bridge_vaults c
-    on a.account = c.token_address
 
-
+SELECT 
+    balance_date,
+    account,
+    mint,
+    amount,
+    owner,
+    CASE 
+        WHEN b.token_address IS NOT NULL THEN amount 
+        ELSE 0 
+    END AS dex_balance,
+    CASE 
+        WHEN c.token_address IS NOT NULL THEN amount 
+        ELSE 0 
+    END AS bridge_balance,
+    {{ dbt_utils.generate_surrogate_key(['balance_date','account','mint']) }} AS stablecoins_daily_supply_by_address_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
+FROM balance_base a
+LEFT JOIN lp_token_addresses b
+    ON a.account = b.token_address
+LEFT JOIN bridge_vaults c
+    ON a.account = c.token_address

@@ -1,4 +1,3 @@
--- depends_on: {{ ref('silver__decoded_instructions_combined') }}
 
 {{ config(
     materialized = 'incremental',
@@ -19,8 +18,8 @@ WITH verified_stablecoins AS (
     FROM
         {{ ref('defi__dim_stablecoins') }}
     WHERE
-        -- is_verified
-        -- AND 
+        is_verified
+        AND 
         token_address IS NOT NULL
 )
 SELECT
