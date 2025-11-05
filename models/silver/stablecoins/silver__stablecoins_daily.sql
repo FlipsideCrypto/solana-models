@@ -3,9 +3,9 @@
 {{ config(
     materialized = 'incremental',
     unique_key = ['stablecoins_daily_supply_by_mint_id'],
-    incremental_predicates = ["dynamic_range_predicate", "block_date"],
+    incremental_predicates = ["dynamic_range_predicate", "balance_date"],
     merge_exclude_columns = ["inserted_timestamp"],
-    cluster_by = ['block_date','modified_timestamp::DATE'],
+    cluster_by = ['balance_date','modified_timestamp::DATE'],
     tags = ['scheduled_non_core']
 ) }}
 
@@ -26,10 +26,12 @@ WITH verified_stablecoins AS (
 )
 
     SELECT
-        balance_date as block_date,
+        balance_date,
+        account,
         mint,
-        sum(amount) as supply,
-        {{ dbt_utils.generate_surrogate_key(['block_date','mint']) }} AS stablecoins_daily_supply_by_mint_id,
+        amount,
+        owner,
+        {{ dbt_utils.generate_surrogate_key(['balance_date','account','mint']) }} AS stablecoins_daily_supply_by_address_id,
         SYSDATE() AS inserted_timestamp,
         SYSDATE() AS modified_timestamp,
         '{{ invocation_id }}' AS _invocation_id
@@ -44,6 +46,6 @@ WITH verified_stablecoins AS (
     --         {{ this }}
     -- )
     -- {% endif %}
-    group by 1,2
+
 
 

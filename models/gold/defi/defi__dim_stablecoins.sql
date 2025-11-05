@@ -35,8 +35,9 @@ FROM
     m
     ON s.token_address = m.token_address
     AND s.blockchain = m.blockchain
--- WHERE
---     m.is_verified --verified stablecoins only
+WHERE
+    m.is_verified --verified stablecoins only
+    and m.blockchain = 'solana'
 
 {% if is_incremental() %}
 AND s.modified_timestamp > (
@@ -48,37 +49,7 @@ AND s.modified_timestamp > (
 {% endif %}
 ),
 
--- manual_stablecoins AS (
--- SELECT
---     s.contract_address,
---     UPPER(
---         m.symbol
---     ) AS symbol,
---     m.name,
---     m.decimals,
---     m.is_verified,
---     m.is_verified_modified_timestamp,
---     SYSDATE() AS inserted_timestamp,
---     SYSDATE() AS modified_timestamp,
---     id placeholder
--- FROM
---     seed placeholder
---     s
---     INNER JOIN {{ ref('price__ez_asset_metadata') }}
---     m
---     ON s.contract_address = m.token_address
---     AND s.blockchain = m.blockchain
--- WHERE
---     m.is_verified --verified stablecoins only
--- {% if is_incremental() %}
--- AND s.contract_address NOT IN (
---     SELECT
---         contract_address
---     FROM
---         {{ this }}
--- )
--- {% endif %}
--- ),
+
 all_stablecoins AS (
     SELECT * FROM crosschain_stablecoins
     -- UNION ALL
