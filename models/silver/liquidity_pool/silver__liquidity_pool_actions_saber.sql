@@ -3,7 +3,8 @@
     unique_key = ["block_id","tx_id","action_index"],
     merge_predicates = ["DBT_INTERNAL_DEST.block_timestamp::date >= LEAST(current_date-7,(select min(block_timestamp)::date from {{ this }}__dbt_tmp))"],
     cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
-    tags = ['scheduled_non_core']
+    full_refresh = false,
+    enabled = false,
 ) }}
 
 WITH base_events AS(
