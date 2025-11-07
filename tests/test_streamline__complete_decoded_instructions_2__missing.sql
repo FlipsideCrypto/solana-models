@@ -1,6 +1,7 @@
 {{
     config(
         tags=["test_hourly_deprecated"]
+        ,enabled = false
     )
 }}
 
