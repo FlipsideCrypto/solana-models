@@ -79,6 +79,7 @@ reconcile_with_mapping AS (
         s.* exclude(withdraw_authority),
         CASE
             WHEN s.withdraw_authority IS NULL 
+            or w.withdraw_authority <> s.withdraw_authority
             THEN w.withdraw_authority
             ELSE s.withdraw_authority
         END AS withdraw_authority
