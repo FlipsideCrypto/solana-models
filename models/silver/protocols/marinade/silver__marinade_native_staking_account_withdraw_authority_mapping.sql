@@ -29,7 +29,7 @@ WITH marinade_native_stakers AS (
         withdraw_authority,
         stake_authority
     FROM {{ ref('silver__staking_lp_actions_labeled_2') }}
-    WHERE event_type IN ('split_destination', 'initialize','initializeChecked','authorize')--,'authorizeChecked')
+    WHERE event_type IN ('split_destination', 'initialize','initializeChecked','authorize')
 ),
 filtered_base AS (
     -- Get only the first/oldest record for each stake account (when it was created)
@@ -54,7 +54,7 @@ filtered_base AS (
         ) = 1
 ),
 stake_lineage AS (
-    -- Base case: Start with all Marinade stake accounts
+  
     SELECT
         f.stake_account,
         f.parent_stake_account,
@@ -99,8 +99,6 @@ root_parents AS (
     ) = 1
 ),
 accounts_with_mapped_authority AS (
-    -- Map each account to its root parent's withdraw_authority
-    -- Only include accounts where withdraw_authority differs from Marinade's
     SELECT
         stake_account,
         root_withdraw_authority AS withdraw_authority,
