@@ -7,6 +7,7 @@ models:
             - TX_ID
             - INDEX
             - INNER_INDEX
+            - SWAP_INDEX
           where: block_timestamp::date > current_date - 30
       - compare_model_subset:
           name: silver__swaps_inner_intermediate_jupiterv6_business_logic_test
@@ -65,9 +66,7 @@ models:
         tests: 
           - not_null: *recent_date_filter
       - name: SWAP_PROGRAM_ID
-        description: "{{ doc('program_id') }}. This is the AMM performing the swap."
-        tests: 
-          - not_null: *recent_date_filter
+        description: "{{ doc('program_id') }}. This is the AMM performing the swap. This will be NULL for new _v2 events introduced in Jupiter in Sept. 2025."
       - name: AGGREGATOR_PROGRAM_ID
         description: "{{ doc('program_id') }}. This is the aggregator calling the different AMMs."
         tests: 

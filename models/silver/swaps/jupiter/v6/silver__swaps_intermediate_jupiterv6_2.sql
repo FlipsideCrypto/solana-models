@@ -25,7 +25,7 @@
                 {{ ref('silver__decoded_instructions_combined') }} d
             WHERE
                 program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
-                AND event_type IN ('exactOutRoute','sharedAccountsExactOutRoute','sharedAccountsRoute','routeWithTokenLedger','route','sharedAccountsRouteWithTokenLedger', 'exact_out_route', 'shared_accounts_exact_out_route', 'shared_accounts_route', 'route_with_token_ledger', 'shared_accounts_route_with_token_ledger')
+                AND event_type IN ('exactOutRoute','sharedAccountsExactOutRoute','sharedAccountsRoute','routeWithTokenLedger','route','sharedAccountsRouteWithTokenLedger', 'exact_out_route', 'shared_accounts_exact_out_route', 'shared_accounts_route', 'route_with_token_ledger', 'shared_accounts_route_with_token_ledger', 'route_v2', 'shared_accounts_route_v2', 'shared_accounts_exact_out_route_v2', 'exact_out_route_v2')
                 AND succeeded
                 {% if is_incremental() %}
                 AND _inserted_timestamp >= (
@@ -63,7 +63,7 @@
             table(flatten(decoded_instruction:args:routePlan)) p
         WHERE
             program_id = 'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
-            AND event_type IN ('exactOutRoute','sharedAccountsExactOutRoute','sharedAccountsRoute','routeWithTokenLedger','route','sharedAccountsRouteWithTokenLedger', 'exact_out_route', 'shared_accounts_exact_out_route', 'shared_accounts_route', 'route_with_token_ledger', 'shared_accounts_route_with_token_ledger')
+            AND event_type IN ('exactOutRoute','sharedAccountsExactOutRoute','sharedAccountsRoute','routeWithTokenLedger','route','sharedAccountsRouteWithTokenLedger', 'exact_out_route', 'shared_accounts_exact_out_route', 'shared_accounts_route', 'route_with_token_ledger', 'shared_accounts_route_with_token_ledger', 'route_v2', 'shared_accounts_route_v2', 'shared_accounts_exact_out_route_v2', 'exact_out_route_v2')
             AND succeeded
             AND block_timestamp >= (
                 SELECT
