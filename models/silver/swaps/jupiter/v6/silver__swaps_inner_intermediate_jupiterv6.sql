@@ -165,17 +165,9 @@ WITH base AS (
     FROM
         silver.swaps_inner_intermediate_jupiterv6__intermediate_tmp
     QUALIFY
-        CASE 
-            WHEN event_type = 'SwapsEvent' THEN
-                -- For SwapsEvent records, we need to include swap_event_index in the partition
-                -- because flattening creates multiple rows with the same (tx_id, index, inner_index)
-                -- but different swap_event_index values (0, 1, 2, etc.) representing each individual swap
-                row_number() OVER (PARTITION BY tx_id, index, coalesce(inner_index,-1), coalesce(swap_event_index, 0) ORDER BY _inserted_timestamp DESC) = 1
-            ELSE
-                -- For SwapEvent records, we use the original logic since each record represents a single swap
-                -- and we only need to deduplicate on (tx_id, index, inner_index)
-                row_number() OVER (PARTITION BY tx_id, index, coalesce(inner_index,-1) ORDER BY _inserted_timestamp DESC) = 1
-        END
+        -- For SwapsEvent, partition includes swap_event_index to handle multiple swaps in one event.
+        -- For SwapEvent, swap_event_index is 0 and doesn't alter the original partitioning logic.
+        row_number() OVER (PARTITION BY tx_id, index, coalesce(inner_index,-1), coalesce(swap_event_index, 0) ORDER BY _inserted_timestamp DESC) = 1
 ),
 swappers AS (
     SELECT
@@ -237,9 +229,9 @@ pre_final AS (
         b._inserted_timestamp,
         CASE 
             WHEN b.event_type = 'SwapsEvent' THEN 
-                {{ dbt_utils.generate_surrogate_key(['b.tx_id','b.index','b.inner_index','coalesce(b.swap_event_index, 0)']) }}
+                {{ dbt_utils.generate_surrogate_key(['b.tx_id','b.index','coalesce(b.inner_index, -1)','coalesce(b.swap_event_index, 0)']) }}
             ELSE 
-                {{ dbt_utils.generate_surrogate_key(['b.tx_id','b.index','b.inner_index']) }}
+                {{ dbt_utils.generate_surrogate_key(['b.tx_id','b.index','coalesce(b.inner_index, -1)']) }}
         END as swaps_inner_intermediate_jupiterv6_id,
         sysdate() as inserted_timestamp,
         sysdate() as modified_timestamp,
