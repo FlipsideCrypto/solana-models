@@ -13,7 +13,16 @@
     {% set base_query %}
     CREATE OR REPLACE TEMPORARY TABLE silver.marinade_liquid_staking_actions__intermediate_tmp AS
     SELECT
-        *
+        block_id,
+        block_timestamp,
+        tx_id,
+        index,
+        inner_index,
+        signers[0]::STRING AS signer,
+        program_id,
+        decoded_instruction,
+        event_type,
+        _inserted_timestamp
     FROM
         {{ ref('silver__decoded_instructions_combined') }}
     WHERE
@@ -100,6 +109,7 @@ deposits AS (
         a.tx_id,
         a.index,
         a.inner_index,
+        a.signer,
         a.event_type AS action_type,
         CASE 
             WHEN a.event_type = 'deposit' THEN silver.udf_get_account_pubkey_by_name('transferFrom', decoded_instruction:accounts)
@@ -134,6 +144,7 @@ order_unstakes AS (
         tx_id,
         index,
         inner_index,
+        signer,
         event_type AS action_type,
         silver.udf_get_account_pubkey_by_name('burnMsolAuthority', decoded_instruction:accounts) AS provider_address,
         (decoded_instruction:args:msolAmount::int) * pow(10, -9) AS msol_burned,
@@ -151,6 +162,7 @@ claims AS (
         a.tx_id,
         a.index,
         a.inner_index,
+        a.signer,
         a.event_type AS action_type,
         silver.udf_get_account_pubkey_by_name('transferSolTo', a.decoded_instruction:accounts) AS provider_address,
         b.amount AS claim_amount,
@@ -175,6 +187,7 @@ SELECT
     tx_id,
     index,
     inner_index,
+    signer,
     action_type,
     provider_address,
     deposit_amount,
@@ -196,6 +209,7 @@ SELECT
     tx_id,
     index,
     inner_index,
+    signer,
     action_type,
     provider_address,
     NULL AS deposit_amount,
@@ -217,6 +231,7 @@ SELECT
     tx_id,
     index,
     inner_index,
+    signer,
     action_type,
     provider_address,
     NULL AS deposit_amount,
