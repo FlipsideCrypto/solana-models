@@ -254,6 +254,7 @@ spl_transfers AS (
             decimal_adj
         ) AS amount,
         COALESCE(
+            e.instruction :parsed :info :mint :: STRING,
             p.mint,
             p2.mint,
             p3.mint,
