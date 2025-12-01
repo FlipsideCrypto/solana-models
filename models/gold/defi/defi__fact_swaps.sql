@@ -280,28 +280,6 @@ SELECT
     to_amt AS swap_to_amount,
     to_mint AS swap_to_mint,
     program_id,
-    'lifinity swap v2' as swap_program,
-    swap_index,
-    swaps_intermediate_lifinity_id as fact_swaps_id,
-    inserted_timestamp,
-    modified_timestamp
-FROM
-    {{ ref('silver__swaps_intermediate_lifinity') }}
-{% if is_incremental() %}
-WHERE modified_timestamp >= '{{ max_modified_timestamp }}'
-{% endif %}
-UNION ALL
-SELECT
-    block_timestamp,
-    block_id,
-    tx_id,
-    succeeded,
-    swapper,
-    from_amt AS swap_from_amount,
-    from_mint AS swap_from_mint,
-    to_amt AS swap_to_amount,
-    to_mint AS swap_to_mint,
-    program_id,
     'orca whirlpool program' as swap_program,
     swap_index,
     swaps_intermediate_orca_whirlpool_id as fact_swaps_id,
@@ -451,6 +429,24 @@ SELECT
 FROM
     {{ ref('silver__swaps_intermediate_saber_view') }}
 UNION ALL
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    swapper,
+    from_amt AS swap_from_amount,
+    from_mint AS swap_from_mint,
+    to_amt AS swap_to_amount,
+    to_mint AS swap_to_mint,
+    program_id,
+    'lifinity swap v2' as swap_program,
+    swap_index,
+    swaps_intermediate_lifinity_id as fact_swaps_id,
+    inserted_timestamp,
+    modified_timestamp
+FROM
+    {{ ref('silver__swaps_intermediate_lifinity_view') }}
 {% endif %}
 
 select 
