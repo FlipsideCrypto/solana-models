@@ -155,40 +155,70 @@ token_prices AS (
                 reconcile_with_window
         )
         AND token_address = 'So11111111111111111111111111111111111111112'
+),
+memo AS (
+    SELECT
+        a.block_timestamp,
+        a.tx_id,
+        a.program_id,
+        a.instruction,
+        a._inserted_timestamp
+    FROM
+        {{ ref('silver__events') }} a
+        INNER JOIN (
+            SELECT
+                DISTINCT tx_id,
+                block_timestamp::DATE AS block_date
+            FROM
+                reconcile_with_window
+        ) d
+            ON d.tx_id = a.tx_id
+            AND d.block_date = a.block_timestamp::DATE
+    WHERE
+        a.block_timestamp::DATE IN (
+            SELECT DISTINCT block_timestamp::DATE
+            FROM reconcile_with_window
+        )
+        AND a.program_id = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'
 )
 SELECT 
-    block_id,
-    block_timestamp,
-    tx_id,
-    index,
-    inner_index,
-    succeeded,
-    event_type,
-    withdraw_authority AS provider_address,
-    stake_account,
-    stake_active,
-    stake_authority,
-    pre_tx_staked_balance / pow(10,9) AS pre_tx_staked_balance,
-    ((pre_tx_staked_balance / pow(10,9)) * tp.price)::numeric(38,2) AS pre_tx_staked_balance_usd,
-    post_tx_staked_balance / pow(10,9) AS post_tx_staked_balance,
-    ((post_tx_staked_balance / pow(10,9)) * tp.price)::numeric(38,2) AS post_tx_staked_balance_usd,
-    withdraw_destination,
-    withdraw_amount / pow(10,9) AS withdraw_amount,
-    validator_name,
-    vote_account,
-    node_pubkey,
-    validator_rank,
+    a.block_id,
+    a.block_timestamp,
+    a.tx_id,
+    a.index,
+    a.inner_index,
+    a.succeeded,
+    a.event_type,
+    a.withdraw_authority AS provider_address,
+    a.stake_account,
+    a.stake_active,
+    a.stake_authority,
+    a.pre_tx_staked_balance / pow(10,9) AS pre_tx_staked_balance,
+    ((a.pre_tx_staked_balance / pow(10,9)) * tp.price)::numeric(38,2) AS pre_tx_staked_balance_usd,
+    a.post_tx_staked_balance / pow(10,9) AS post_tx_staked_balance,
+    ((a.post_tx_staked_balance / pow(10,9)) * tp.price)::numeric(38,2) AS post_tx_staked_balance_usd,
+    a.withdraw_destination,
+    a.withdraw_amount / pow(10,9) AS withdraw_amount,
+    a.validator_name,
+    a.vote_account,
+    a.node_pubkey,
+    a.validator_rank,
     'Stake11111111111111111111111111111111111111' AS program_id,
-    iff(stake_authority IN ('stWirqFCf2Uts1JBL1Jsd3r6VBWhgnpdPxCTe1MFjrq', 'ex9CfkBZZd6Nv9XdnoDmmB45ymbu4arXVk7g5pWnt3N','STNi1NHDUi6Hvibvonawgze8fM83PFLeJhuGMEXyGps', 'stRcP4kVnCNubspkcP3BXEthPfZFEriQBqSczDDwmYH'), 'marinade native proxy', 'native') AS platform,
+    iff(a.stake_authority IN ('stWirqFCf2Uts1JBL1Jsd3r6VBWhgnpdPxCTe1MFjrq', 'ex9CfkBZZd6Nv9XdnoDmmB45ymbu4arXVk7g5pWnt3N','STNi1NHDUi6Hvibvonawgze8fM83PFLeJhuGMEXyGps', 'stRcP4kVnCNubspkcP3BXEthPfZFEriQBqSczDDwmYH'), 'marinade native proxy', 'native') AS platform,
     (platform = 'marinade native proxy') AS is_using_marinade_native_staking,
-    _inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(['tx_id','index','inner_index','event_type']) }} AS marinade_native_ez_staking_actions_id,
+    m.instruction:parsed as memo,
+    a._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(['a.tx_id','a.index','a.inner_index','a.event_type']) }} AS marinade_native_ez_staking_actions_id,
     sysdate() AS inserted_timestamp,
     sysdate() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM 
-    reconcile_with_window
+    reconcile_with_window AS a
 LEFT JOIN
     token_prices AS tp
-    ON date_trunc('hour', reconcile_with_window.block_timestamp) = tp.HOUR
+    ON date_trunc('hour', a.block_timestamp) = tp.HOUR
+LEFT JOIN
+    memo AS m
+    ON a.tx_id = m.tx_id
+
 
