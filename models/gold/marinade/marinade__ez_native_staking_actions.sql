@@ -22,7 +22,7 @@ WITH marinade_native_stakers AS (
         {{ ref('silver__staking_lp_actions_labeled_2') }}
     WHERE
         /* include older stake authority(ex9CfkBZZd6Nv9XdnoDmmB45ymbu4arXVk7g5pWnt3N) used by marinade native staking */
-        stake_authority IN ('stWirqFCf2Uts1JBL1Jsd3r6VBWhgnpdPxCTe1MFjrq', 'ex9CfkBZZd6Nv9XdnoDmmB45ymbu4arXVk7g5pWnt3N','STNi1NHDUi6Hvibvonawgze8fM83PFLeJhuGMEXyGps')
+        stake_authority IN ('stWirqFCf2Uts1JBL1Jsd3r6VBWhgnpdPxCTe1MFjrq', 'ex9CfkBZZd6Nv9XdnoDmmB45ymbu4arXVk7g5pWnt3N','STNi1NHDUi6Hvibvonawgze8fM83PFLeJhuGMEXyGps','stRcP4kVnCNubspkcP3BXEthPfZFEriQBqSczDDwmYH')
         AND succeeded
 ),
 withdraw_authority_from_snapshot_tmp AS (
@@ -59,7 +59,7 @@ reconcile_withdraw_authority_with_snapshot AS (
     SELECT 
         s.* exclude(withdraw_authority),
         CASE
-            WHEN s.withdraw_authority IN ('stWirqFCf2Uts1JBL1Jsd3r6VBWhgnpdPxCTe1MFjrq', 'ex9CfkBZZd6Nv9XdnoDmmB45ymbu4arXVk7g5pWnt3N','STNi1NHDUi6Hvibvonawgze8fM83PFLeJhuGMEXyGps')
+            WHEN s.withdraw_authority IN ('stWirqFCf2Uts1JBL1Jsd3r6VBWhgnpdPxCTe1MFjrq', 'ex9CfkBZZd6Nv9XdnoDmmB45ymbu4arXVk7g5pWnt3N','STNi1NHDUi6Hvibvonawgze8fM83PFLeJhuGMEXyGps','stRcP4kVnCNubspkcP3BXEthPfZFEriQBqSczDDwmYH')
             THEN w.withdraw_authority
             ELSE s.withdraw_authority
         END AS withdraw_authority
@@ -179,7 +179,7 @@ SELECT
     node_pubkey,
     validator_rank,
     'Stake11111111111111111111111111111111111111' AS program_id,
-    iff(stake_authority IN ('stWirqFCf2Uts1JBL1Jsd3r6VBWhgnpdPxCTe1MFjrq', 'ex9CfkBZZd6Nv9XdnoDmmB45ymbu4arXVk7g5pWnt3N','STNi1NHDUi6Hvibvonawgze8fM83PFLeJhuGMEXyGps'), 'marinade native proxy', 'native') AS platform,
+    iff(stake_authority IN ('stWirqFCf2Uts1JBL1Jsd3r6VBWhgnpdPxCTe1MFjrq', 'ex9CfkBZZd6Nv9XdnoDmmB45ymbu4arXVk7g5pWnt3N','STNi1NHDUi6Hvibvonawgze8fM83PFLeJhuGMEXyGps', 'stRcP4kVnCNubspkcP3BXEthPfZFEriQBqSczDDwmYH'), 'marinade native proxy', 'native') AS platform,
     (platform = 'marinade native proxy') AS is_using_marinade_native_staking,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['tx_id','index','inner_index','event_type']) }} AS marinade_native_ez_staking_actions_id,
