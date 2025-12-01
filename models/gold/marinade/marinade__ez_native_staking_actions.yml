@@ -94,6 +94,8 @@ models:
         description: "{{ doc('is_using_marinade_native_staking') }}"
         data_tests:
           - not_null: *recent_date_filter
+      - name: memo
+        description: "{{ doc('memo_marinade') }}"
       - name: _INSERTED_TIMESTAMP
         description: "{{ doc('_inserted_timestamp') }}"
         data_tests: 
