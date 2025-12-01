@@ -20,6 +20,9 @@ models:
         tests:
           - accepted_values:
               values: [0, 1, 2]
+              config:
+                error_if: ">2"
+                where: "_inserted_timestamp >= current_date - 7"
       - name: CALL_SUCCEEDED
         description: "Whether the call was successful"
       - name: STATUS_CODE
