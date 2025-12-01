@@ -121,6 +121,7 @@ sources:
       - name: nft_sales_tensorswap
       - name: nft_sales_hadeswap_decoded
       - name: swaps_intermediate_saber
+      - name: swaps_intermediate_lifinity
   - name: solana_streamline
     database: solana
     schema: streamline
