@@ -206,7 +206,7 @@ SELECT
     'Stake11111111111111111111111111111111111111' AS program_id,
     iff(a.stake_authority IN ('stWirqFCf2Uts1JBL1Jsd3r6VBWhgnpdPxCTe1MFjrq', 'ex9CfkBZZd6Nv9XdnoDmmB45ymbu4arXVk7g5pWnt3N','STNi1NHDUi6Hvibvonawgze8fM83PFLeJhuGMEXyGps', 'stRcP4kVnCNubspkcP3BXEthPfZFEriQBqSczDDwmYH'), 'marinade native proxy', 'native') AS platform,
     (platform = 'marinade native proxy') AS is_using_marinade_native_staking,
-    m.instruction:parsed as memo,
+    try_parse_json(m.instruction:parsed) as memo,
     a._inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['a.tx_id','a.index','a.inner_index','a.event_type']) }} AS marinade_native_ez_staking_actions_id,
     sysdate() AS inserted_timestamp,
