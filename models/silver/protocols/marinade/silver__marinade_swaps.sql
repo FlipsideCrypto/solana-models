@@ -260,34 +260,6 @@ SELECT
     to_mint AS swap_to_mint,
     program_id,
     _inserted_timestamp,
-    swaps_intermediate_lifinity_id as marinade_swaps_id,
-    inserted_timestamp,
-    modified_timestamp,
-    '{{ invocation_id }}' AS invocation_id
-FROM
-    {{ ref('silver__swaps_intermediate_lifinity') }}
-WHERE
-    (swap_from_mint IN ('{{ MNDE_MINT }}', '{{ MSOL_MINT }}') OR swap_to_mint IN ('{{ MNDE_MINT }}', '{{ MSOL_MINT }}'))
-    AND succeeded
-    {% if is_incremental() %}
-    AND _inserted_timestamp >= '{{ max_inserted_timestamp }}'
-    {% endif %}
-UNION ALL
-SELECT
-    block_timestamp,
-    block_id,
-    tx_id,
-    succeeded,
-    index,
-    inner_index,
-    swap_index,
-    swapper,
-    from_amt AS swap_from_amount,
-    from_mint AS swap_from_mint,
-    to_amt AS swap_to_amount,
-    to_mint AS swap_to_mint,
-    program_id,
-    _inserted_timestamp,
     swaps_intermediate_orca_whirlpool_id as marinade_swaps_id,
     inserted_timestamp,
     modified_timestamp,
@@ -380,6 +352,31 @@ SELECT
     '{{ invocation_id }}' AS invocation_id
 FROM
     {{ ref('silver__swaps_intermediate_saber_view') }}
+WHERE
+    (swap_from_mint IN ('{{ MNDE_MINT }}', '{{ MSOL_MINT }}') OR swap_to_mint IN ('{{ MNDE_MINT }}', '{{ MSOL_MINT }}'))
+    AND succeeded
+UNION ALL
+SELECT
+    block_timestamp,
+    block_id,
+    tx_id,
+    succeeded,
+    index,
+    inner_index,
+    swap_index,
+    swapper,
+    from_amt AS swap_from_amount,
+    from_mint AS swap_from_mint,
+    to_amt AS swap_to_amount,
+    to_mint AS swap_to_mint,
+    program_id,
+    _inserted_timestamp,
+    swaps_intermediate_lifinity_id as marinade_swaps_id,
+    inserted_timestamp,
+    modified_timestamp,
+    '{{ invocation_id }}' AS invocation_id
+FROM
+    {{ ref('silver__swaps_intermediate_lifinity_view') }}
 WHERE
     (swap_from_mint IN ('{{ MNDE_MINT }}', '{{ MSOL_MINT }}') OR swap_to_mint IN ('{{ MNDE_MINT }}', '{{ MSOL_MINT }}'))
     AND succeeded
