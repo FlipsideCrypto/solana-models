@@ -26,6 +26,8 @@ sources:
       - name: complete_provider_prices
       - name: complete_native_asset_metadata
       - name: complete_native_prices
+      - name: tokens_stablecoins
+
   - name: crosschain_bronze
     database: "{{ 'crosschain' if target.database == 'SOLANA' else 'crosschain_dev' }}"
     schema: bronze
