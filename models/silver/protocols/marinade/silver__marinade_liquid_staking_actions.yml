@@ -53,7 +53,7 @@ models:
         description: "The amount of mSOL burned"
         tests: 
           - not_null:
-              where: action_type = 'orderUnstake' AND _inserted_timestamp >= current_date - 7
+              where: action_type in ('orderUnstake','withdrawStakeAccount') AND _inserted_timestamp >= current_date - 7
       - name: CLAIM_AMOUNT
         description: "The amount of SOL claimed"
         tests: 
