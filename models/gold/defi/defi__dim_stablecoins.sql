@@ -5,7 +5,7 @@
     unique_key = 'token_address',
     persist_docs ={ "relation": true,
     "columns": true },
-    tags = ['scheduled_non_core']
+    tags = ['daily']
 ) }}
 
 -- todo: add is_verified to asset_metadata tables
@@ -20,11 +20,10 @@ SELECT
         m.name
     ) AS NAME,
     m.decimals,
-    -- m.is_verified,
-    -- m.is_verified_modified_timestamp,
-    SYSDATE() AS inserted_timestamp,
-    SYSDATE() AS modified_timestamp,
-    {{ dbt_utils.generate_surrogate_key(['s.token_address']) }} AS dim_stablecoins_id
+    m.is_verified,
+    m.is_verified_modified_timestamp
+
+
 FROM
     {{ source(
         'crosschain_silver',
@@ -37,7 +36,7 @@ FROM
     AND s.blockchain = m.blockchain
 WHERE
     m.is_verified --verified stablecoins only
-    and m.blockchain = 'solana'
+    and s.blockchain = 'solana'
 
 {% if is_incremental() %}
 AND s.modified_timestamp > (
@@ -47,23 +46,18 @@ AND s.modified_timestamp > (
         {{ this }}
 )
 {% endif %}
-),
-
-
-all_stablecoins AS (
-    SELECT * FROM crosschain_stablecoins
-    -- UNION ALL
-    -- SELECT * FROM manual_stablecoins
 )
+
 SELECT 
     token_address,
     symbol,
     name,
+    CONCAT(symbol,': ',name) AS label,
     decimals,
-    -- is_verified,
-    -- is_verified_modified_timestamp,
-    inserted_timestamp,
-    modified_timestamp,
-    dim_stablecoins_id
+    is_verified,
+    is_verified_modified_timestamp,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    {{ dbt_utils.generate_surrogate_key(['token_address']) }} AS dim_stablecoins_id
 FROM
-    all_stablecoins
+    crosschain_stablecoins

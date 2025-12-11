@@ -19,8 +19,7 @@ WITH verified_stablecoins AS (
         {{ ref('defi__dim_stablecoins') }}
     WHERE
         is_verified
-        AND 
-        token_address IS NOT NULL
+        and token_address IS NOT NULL
 )
 SELECT
     block_id,
@@ -31,10 +30,9 @@ SELECT
     inner_index,
     'Burn' as event_name,
     mint,
-    burn_amount as amount,
-    burn_authority as authority,
+    burn_amount as amount_raw,
+    burn_amount / pow(10,decimal) as amount,
     token_account,
-    signers,
     decimal,
      _inserted_timestamp,
      token_burn_actions_id as stablecoins_mint_burn_id,
@@ -45,7 +43,8 @@ FROM
     {{ ref('silver__token_burn_actions') }} A
         INNER JOIN verified_stablecoins b
         ON A.mint = b.token_address
-    where a.block_timestamp::date = '2025-10-29'
+    where a.block_timestamp::date = '2025-12-09'
+    and succeeded
 -- {% if is_incremental() %}
 -- WHERE
 --     _inserted_timestamp >= (
@@ -54,6 +53,7 @@ FROM
 --         FROM
 --             {{ this }}
 --     )
+
 {% endif %}
 union all
 SELECT
@@ -65,10 +65,9 @@ SELECT
     inner_index,
     'Mint' as event_name,
     mint,
-    mint_amount as amount,
-    mint_authority as authority,
+    mint_amount as amount_raw,
+    mint_amount / pow(10,decimal) as amount,
     token_account,
-    signers,
     decimal,
      _inserted_timestamp,
      token_mint_actions_id as stablecoins_mint_burn_id,
@@ -79,7 +78,8 @@ FROM
     {{ ref('silver__token_mint_actions') }} A
         INNER JOIN verified_stablecoins b
         ON A.mint = b.token_address
-    where a.block_timestamp::date = '2025-10-29'
+    where a.block_timestamp::date = '2025-12-09'
+    and succeeded
 -- {% if is_incremental() %}
 -- WHERE
 --     _inserted_timestamp >= (
