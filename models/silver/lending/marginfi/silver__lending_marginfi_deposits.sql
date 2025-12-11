@@ -114,6 +114,7 @@ SELECT
     a.bank,
     a.depositor,
     b.mint AS token_address,
+    a.bank_liquidity_vault,
     a.amount_raw,
     b.amount,
     c.decimal,

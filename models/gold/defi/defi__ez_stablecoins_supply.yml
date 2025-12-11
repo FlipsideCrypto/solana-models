@@ -1,0 +1,44 @@
+version: 2
+models:
+  - name: defi__ez_stablecoins_supply
+    description: '{{ doc("ez_stablecoins_supply_table_doc") }}'
+
+    columns:
+      - name: BLOCK_DATE
+        description: '{{ doc("ez_stablecoins_supply_block_date") }}'
+      - name: TOKEN_ADDRESS
+        description: '{{ doc("ez_stablecoins_supply_token_address") }}'
+      - name: SYMBOL
+        description: '{{ doc("ez_stablecoins_supply_symbol") }}'
+      - name: NAME
+        description: '{{ doc("ez_stablecoins_supply_name") }}'
+      - name: LABEL
+        description: '{{ doc("ez_stablecoins_supply_label") }}'
+      - name: DECIMALS
+        description: '{{ doc("ez_stablecoins_supply_decimals") }}'
+      - name: TOTAL_SUPPLY
+        description: '{{ doc("ez_stablecoins_supply_total_supply") }}'
+      - name: TOTAL_HOLDERS
+        description: '{{ doc("ez_stablecoins_supply_total_holders") }}'
+      - name: AMOUNT_MINTED
+        description: '{{ doc("ez_stablecoins_supply_amount_minted") }}'
+      - name: AMOUNT_BURNED
+        description: '{{ doc("ez_stablecoins_supply_amount_burned") }}'
+      - name: AMOUNT_TRANSFERRED
+        description: '{{ doc("ez_stablecoins_supply_amount_transferred") }}'
+      - name: AMOUNT_IN_CEX
+        description: '{{ doc("ez_stablecoins_supply_amount_in_cex") }}'
+      - name: AMOUNT_IN_BRIDGES
+        description: '{{ doc("ez_stablecoins_supply_amount_in_bridges") }}'
+      - name: AMOUNT_IN_DEX_LIQUIDITY_POOLS
+        description: '{{ doc("ez_stablecoins_supply_amount_in_dex_liquidity_pools") }}'
+      - name: AMOUNT_IN_LENDING_POOLS
+        description: '{{ doc("ez_stablecoins_supply_amount_in_lending_pools") }}'
+      - name: AMOUNT_IN_CONTRACTS
+        description: '{{ doc("ez_stablecoins_supply_amount_in_contracts") }}'
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+      - name: EZ_STABLECOINS_SUPPLY_ID
+        description: '{{ doc("pk") }}'
