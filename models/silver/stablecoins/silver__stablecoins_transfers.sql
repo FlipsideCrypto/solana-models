@@ -1,11 +1,10 @@
 
 {{ config(
     materialized = 'incremental',
+    incremental_strategy = 'delete+insert',
     unique_key = ['stablecoins_transfers_id'],
-    incremental_predicates = ["dynamic_range_predicate", "block_timestamp::date"],
-    merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_timestamp::DATE','modified_timestamp::DATE'],
-    tags = ['scheduled_non_core']
+    tags = ['daily']
 ) }}
 
 
@@ -53,20 +52,15 @@ newly_verified_transfers AS (
         tx_from,
         tx_to,
         mint,
-        amount
+        amount,
+        _inserted_timestamp
     FROM
         {{ ref('silver__transfers') }} a
-        INNER JOIN verified_stablecoins b on a.mint = b.token_address
+        INNER JOIN newly_verified_stablecoins b on a.mint = b.token_address
     WHERE
-        block_timestamp::date >= (
-            SELECT
-                MIN(block_date)
-            FROM
-                {{ ref('silver__stablecoins_daily_supply_by_address') }}
-        )
+        block_timestamp::date >= '2025-06-01'
 ),
 {% endif %}
-
 
 
 transfers AS (
@@ -78,20 +72,36 @@ transfers AS (
         tx_from,
         tx_to,
         mint,
-        amount
+        amount,
+        _inserted_timestamp
     FROM
         {{ ref('silver__transfers') }} a
         INNER JOIN verified_stablecoins b on a.mint = b.token_address
-    where block_timestamp::date = '2025-12-09'
-        
-    -- WHERE
-    --     block_timestamp::date >= (
-    --         SELECT
-    --             MIN(block_date)
-    --         FROM
-    --             solana_dev.silver.stablecoins_daily_supply_by_address
-    --     )
+    WHERE
+        block_timestamp::date >= '2025-06-01'
 
+{% if is_incremental() %}
+AND modified_timestamp > (
+    SELECT
+        MAX(modified_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+all_transfers AS (
+    SELECT
+        *
+    FROM
+        transfers
+
+{% if is_incremental()%}
+UNION
+SELECT
+    *
+FROM
+    newly_verified_transfers
+{% endif %}
 )
 SELECT
     block_timestamp,
@@ -102,9 +112,10 @@ SELECT
     tx_to,
     mint,
     amount,
+    _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['tx_id', 'index']) }} AS stablecoins_transfers_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    transfers
+    all_transfers

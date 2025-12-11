@@ -1,11 +1,10 @@
 
 {{ config(
     materialized = 'incremental',
+    incremental_strategy = 'delete+insert',
     unique_key = ['stablecoins_daily_supply_by_address_id'],
-    incremental_predicates = ["dynamic_range_predicate", "block_date"],
-    merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_date','modified_timestamp::DATE'],
-    tags = ['scheduled_non_core']
+    tags = ['daily']
 ) }}
 
 
@@ -18,9 +17,48 @@ WITH verified_stablecoins AS (
     FROM
         {{ ref('defi__dim_stablecoins') }}
     WHERE
-        is_verified
-        and token_address IS NOT NULL
+        token_address IS NOT NULL
 ),
+
+{% if is_incremental() %}
+newly_verified_stablecoins AS (
+    SELECT
+        token_address,
+        decimals,
+        symbol,
+        NAME
+    FROM
+        {{ ref('defi__dim_stablecoins') }}
+    WHERE
+        IFNULL(
+            is_verified_modified_timestamp,
+            '1970-01-01' :: TIMESTAMP
+        ) > DATEADD(
+            'day',
+            -8,
+            (
+                SELECT
+                    MAX(modified_timestamp) :: DATE
+                FROM
+                    {{ this }}
+            )
+        )
+),
+
+newly_verified_balances AS (
+    SELECT
+        balance_date as block_date,
+        account,
+        mint,
+        amount,
+        owner
+    FROM {{ ref('core__fact_token_daily_balances') }} a
+    INNER JOIN newly_verified_stablecoins b 
+        ON a.mint = b.token_address
+    WHERE balance_date >= '2025-06-01'
+
+),
+{% endif %}
 
 balance_base AS (
     SELECT
@@ -32,15 +70,24 @@ balance_base AS (
     FROM {{ ref('core__fact_token_daily_balances') }} a
     INNER JOIN verified_stablecoins b 
         ON a.mint = b.token_address
-    WHERE block_date = '2025-12-09'
-    -- {% if is_incremental() %}
-    -- WHERE block_date >= (
-    --     SELECT
-    --         MAX(block_date)
-    --     FROM
-    --         {{ this }}
-    -- )
-    -- {% endif %}
+    WHERE balance_date >= '2025-06-01'
+{% if is_incremental() %}
+and a.modified_timestamp > (
+    SELECT
+        MAX(modified_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+
+all_balances AS (
+    SELECT * FROM balance_base
+    
+    {% if is_incremental() %}
+    UNION ALL
+    SELECT * FROM newly_verified_balances
+    {% endif %}
 ),
 
 lp_token_accounts AS (
@@ -68,8 +115,7 @@ lending_pool_accounts AS (
     {{ ref('silver__lending_marginfi_deposits') }} a
     INNER JOIN verified_stablecoins b
         ON a.token_address = b.token_address
-    where a.block_timestamp::date = '2025-12-09'
-        
+    where a.block_timestamp::date >= '2025-06-01'
     
     UNION ALL
     
@@ -77,14 +123,14 @@ lending_pool_accounts AS (
     FROM {{ ref('silver__lending_kamino_deposits') }} a
     INNER JOIN verified_stablecoins b
         ON a.token_address = b.token_address
-    where a.block_timestamp::date = '2025-12-09'
+    where a.block_timestamp::date >= '2025-06-01'
 ),
 cex_list AS (
     SELECT
         DISTINCT address,
         'cex' AS contract_type
     FROM
-        solana.core.dim_labels
+        {{ ref('core__dim_labels') }}
     WHERE
         label_type = 'cex'
 )
@@ -115,7 +161,7 @@ SELECT
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
-FROM balance_base a
+FROM all_balances a
 LEFT JOIN lp_token_accounts b
     ON a.account = b.token_account
 LEFT JOIN bridge_vaults_accounts c
@@ -123,4 +169,4 @@ LEFT JOIN bridge_vaults_accounts c
 LEFT JOIN lending_pool_accounts d
     ON a.account = d.token_account
 left join cex_list e
-on a.owner = e.address
+    on a.owner = e.address

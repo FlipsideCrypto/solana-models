@@ -8,7 +8,6 @@
     tags = ['daily']
 ) }}
 
--- todo: add is_verified to asset_metadata tables
 
 
 WITH crosschain_stablecoins AS (
@@ -22,8 +21,6 @@ SELECT
     m.decimals,
     m.is_verified,
     m.is_verified_modified_timestamp
-
-
 FROM
     {{ source(
         'crosschain_silver',

@@ -1,0 +1,49 @@
+version: 2
+models:
+  - name: silver__stablecoins_daily_supply_by_address
+    recent_date_filter: &recent_date_filter
+      config:
+        where: modified_timestamp >= current_date - 7
+    columns:
+      - name: BLOCK_DATE
+        tests:
+          - not_null: *recent_date_filter
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: ACCOUNT
+        tests:
+          - not_null: *recent_date_filter
+      - name: MINT
+        tests:
+          - not_null: *recent_date_filter
+      - name: AMOUNT
+        tests:
+          - not_null: *recent_date_filter
+      - name: OWNER
+        tests:
+          - not_null: *recent_date_filter
+      - name: DEX_BALANCE
+        tests:
+          - not_null: *recent_date_filter
+      - name: BRIDGE_BALANCE
+        tests:
+          - not_null: *recent_date_filter
+      - name: LENDING_POOL_BALANCE
+        tests:
+          - not_null: *recent_date_filter
+      - name: CEX_BALANCE
+        tests:
+          - not_null: *recent_date_filter
+      - name: MODIFIED_TIMESTAMP
+        tests:
+          - not_null:
+                where: block_date >= current_date - 7
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: STABLECOINS_DAILY_SUPPLY_BY_ADDRESS_ID
+        description: '{{ doc("pk") }}'   
+        tests: 
+          - unique: *recent_date_filter
+          - not_null: *recent_date_filter

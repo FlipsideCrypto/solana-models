@@ -1,14 +1,36 @@
 
 {{ config(
     materialized = 'incremental',
+    incremental_strategy = 'delete+insert',
     unique_key = ['stablecoins_daily_supply_id'],
-    incremental_predicates = ["dynamic_range_predicate", "block_date"],
-    merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = ['block_date','modified_timestamp::DATE'],
-    tags = ['scheduled_non_core']
+    tags = ['daily']
 ) }}
 
-WITH stablecoin_metadata AS (
+WITH 
+
+{% if is_incremental() %}
+max_ts AS (
+    SELECT MAX(modified_timestamp) AS max_modified_timestamp
+    FROM {{ this }}
+),
+incremental_dates AS (
+    -- Get all distinct dates that have been updated in any source table
+    SELECT DISTINCT block_date
+    FROM {{ ref('silver__stablecoins_daily_supply_by_address') }}
+    WHERE modified_timestamp > (SELECT max_modified_timestamp FROM max_ts)
+    UNION
+    SELECT DISTINCT block_timestamp::DATE AS block_date
+    FROM {{ ref('silver__stablecoins_mint_burn') }}
+    WHERE modified_timestamp > (SELECT max_modified_timestamp FROM max_ts)
+    UNION
+    SELECT DISTINCT block_timestamp::DATE AS block_date
+    FROM {{ ref('silver__stablecoins_transfers') }}
+    WHERE modified_timestamp > (SELECT max_modified_timestamp FROM max_ts)
+),
+{% endif %}
+
+stablecoin_metadata AS (
     SELECT
         token_address,
         symbol,
@@ -32,12 +54,15 @@ daily_balances AS (
         COUNT(DISTINCT owner) AS total_holders
     FROM {{ ref('silver__stablecoins_daily_supply_by_address') }}
     
-    {% if is_incremental() %}
-    WHERE block_date >= (
-        SELECT MAX(block_date)
-        FROM {{ this }}
+{% if is_incremental() %}
+WHERE
+    block_date IN (
+        SELECT
+            block_date
+        FROM
+            incremental_dates
     )
-    {% endif %}
+{% endif %}
     
     GROUP BY block_date, mint
 ),
@@ -51,12 +76,15 @@ daily_mint_burn AS (
         SUM(CASE WHEN event_name = 'Burn' THEN amount ELSE 0 END) AS amount_burned
     FROM {{ ref('silver__stablecoins_mint_burn') }}
     
-    {% if is_incremental() %}
-    WHERE block_timestamp::DATE >= (
-        SELECT MAX(block_date)
-        FROM {{ this }}
+{% if is_incremental() %}
+WHERE
+    block_timestamp::DATE IN (
+        SELECT
+            block_date
+        FROM
+            incremental_dates
     )
-    {% endif %}
+{% endif %}
     
     GROUP BY block_timestamp::DATE, mint
 ),
@@ -69,12 +97,15 @@ daily_transfers AS (
         SUM(amount) AS amount_transferred
     FROM {{ ref('silver__stablecoins_transfers') }}
     
-    {% if is_incremental() %}
-    WHERE block_timestamp::DATE >= (
-        SELECT MAX(block_date)
-        FROM {{ this }}
+{% if is_incremental() %}
+WHERE
+    block_timestamp::DATE IN (
+        SELECT
+            block_date
+        FROM
+            incremental_dates
     )
-    {% endif %}
+{% endif %}
     
     GROUP BY block_timestamp::DATE, mint
 ),
@@ -82,29 +113,29 @@ daily_transfers AS (
 -- Combine all metrics
 combined_metrics AS (
     SELECT
-        COALESCE(db.block_date, dmb.block_date, dt.block_date) AS block_date,
-        COALESCE(db.mint, dmb.mint, dt.mint) AS mint,
-        COALESCE(db.total_supply, 0) AS total_supply,
-        COALESCE(db.amount_in_cex, 0) AS amount_in_cex,
-        COALESCE(db.amount_in_bridges, 0) AS amount_in_bridges,
-        COALESCE(db.amount_in_dex_liquidity_pools, 0) AS amount_in_dex_liquidity_pools,
-        COALESCE(db.amount_in_lending_pools, 0) AS amount_in_lending_pools,
-        COALESCE(db.total_holders, 0) AS total_holders,
+        db.block_date,
+        db.mint,
+        db.total_supply,
+        db.amount_in_cex,
+        db.amount_in_bridges,
+        db.amount_in_dex_liquidity_pools,
+        db.amount_in_lending_pools,
+        db.total_holders,
         COALESCE(dmb.amount_minted, 0) AS amount_minted,
         COALESCE(dmb.amount_burned, 0) AS amount_burned,
         COALESCE(dt.amount_transferred, 0) AS amount_transferred
     FROM daily_balances db
-    FULL OUTER JOIN daily_mint_burn dmb
+    LEFT JOIN daily_mint_burn dmb
         ON db.block_date = dmb.block_date 
         AND db.mint = dmb.mint
-    FULL OUTER JOIN daily_transfers dt
-        ON COALESCE(db.block_date, dmb.block_date) = dt.block_date
-        AND COALESCE(db.mint, dmb.mint) = dt.mint
+    LEFT JOIN daily_transfers dt
+        ON db.block_date = dt.block_date
+        AND db.mint = dt.mint
 )
 
 SELECT
     cm.block_date,
-    cm.mint,
+    cm.mint as token_address,
     sm.symbol,
     sm.name,
     sm.label,
