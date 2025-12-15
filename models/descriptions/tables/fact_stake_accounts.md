@@ -3,6 +3,8 @@
 ## Description
 This table tracks stake accounts on the Solana blockchain, capturing stake delegation, activation, deactivation, and balance changes. Stake accounts represent delegated SOL that contributes to network security and validator voting power, enabling comprehensive staking analytics and delegation pattern analysis.
 
+**Important Note on Active Stake**: To determine if a stake account is actively contributing to consensus during a specific epoch, the stake must satisfy: `activation_epoch < epoch` AND `deactivation_epoch > epoch`. Stakes that don't meet these conditions are either not yet active or in the process of deactivating.
+
 ## Key Use Cases
 - Track stake delegation patterns and validator selection
 - Analyze stake account lifecycle and balance changes
@@ -22,8 +24,8 @@ This table tracks stake accounts on the Solana blockchain, capturing stake deleg
 - `vote_pubkey`: Vote account that stake is delegated to (validator identification)
 - `authorized_staker`: Address with staking authority over the account
 - `authorized_withdrawer`: Address with withdrawal authority over the account
-- `active_stake`: Current active stake amount in SOL
-- `activation_epoch`, `deactivation_epoch`: Epochs when stake becomes active/inactive
+- `active_stake`: Current active stake amount in SOL (note: this field shows the delegated amount, but actual active participation requires `activation_epoch < epoch` AND `deactivation_epoch > epoch`)
+- `activation_epoch`, `deactivation_epoch`: Epochs when stake becomes active/inactive - use these to filter for truly active stakes during a specific epoch
 - `type_stake`: Stake account type and status
 - `account_sol`: Total SOL balance in the stake account
 - `lockup`: Lockup configuration and restrictions
@@ -40,6 +42,8 @@ SELECT
 FROM solana.gov.fact_stake_accounts
 WHERE epoch = (SELECT MAX(epoch) FROM solana.gov.fact_stake_accounts)
     AND active_stake > 0
+    AND activation_epoch < epoch
+    AND deactivation_epoch > epoch
 GROUP BY authorized_staker
 HAVING total_active_stake_sol > 100
 ORDER BY total_active_stake_sol DESC
@@ -75,6 +79,8 @@ FROM solana.gov.fact_stake_accounts
 WHERE epoch = (SELECT MAX(epoch) FROM solana.gov.fact_stake_accounts)
     AND vote_pubkey IS NOT NULL
     AND active_stake > 0
+    AND activation_epoch < epoch
+    AND deactivation_epoch > epoch
 GROUP BY vote_pubkey
 HAVING total_delegated_sol > 1000
 ORDER BY total_delegated_sol DESC
@@ -98,7 +104,9 @@ SELECT
     END AS status
 FROM solana.gov.fact_stake_accounts
 WHERE epoch = (SELECT MAX(epoch) FROM solana.gov.fact_stake_accounts)
-    AND active_stake  >= 10000  -- 10K+ SOL stakes
+    AND active_stake >= 10000  -- 10K+ SOL stakes
+    AND activation_epoch < epoch
+    AND deactivation_epoch > epoch
 ORDER BY active_stake DESC
 LIMIT 100;
 ```
