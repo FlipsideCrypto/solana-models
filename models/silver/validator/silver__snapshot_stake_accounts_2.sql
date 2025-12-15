@@ -27,6 +27,7 @@ responses_flattened AS (
     SELECT
         group_num,
         invocation_id,
+        data:result:context:slot::number as slot_recorded,
         r.value::variant AS account_info,
         r.index,
         _partition_by_created_date,
@@ -53,6 +54,7 @@ stake_program_accounts AS (
     SELECT
         a.account_address,
         a.index,
+        r.slot_recorded,
         r.account_info,
         a.group_num,
         a.invocation_id,
@@ -70,6 +72,7 @@ stake_program_accounts AS (
 parsed_account_info AS (
     SELECT
         account_address AS stake_pubkey,
+        slot_recorded,
         account_info:data:parsed:info:meta:authorized:staker::string AS authorized_staker,
         account_info:data:parsed:info:meta:authorized:withdrawer::string AS authorized_withdrawer,
         account_info:data:parsed:info:meta:lockup::object AS lockup,
@@ -93,11 +96,40 @@ parsed_account_info AS (
 ),
 epochs_recorded AS (
     SELECT
-        invocation_id,
-        max(activation_epoch) AS max_epoch
+        distinct(a.slot_recorded),
+        b.epoch
     FROM
-        parsed_account_info
-    GROUP BY 1
+        parsed_account_info a
+    left join {{ ref('silver__epoch') }} b
+    on a.slot_recorded between b.start_block and b.end_block
+),
+
+-- Find the earliest _inserted_timestamp (rounded to hour) for each epoch
+earliest_ingestion_per_epoch AS (
+    SELECT
+        e.epoch,
+        MIN(DATE_TRUNC('hour', a._inserted_timestamp)) AS earliest_ingestion_hour
+    FROM
+        parsed_account_info a
+    LEFT JOIN epochs_recorded e
+        ON a.slot_recorded = e.slot_recorded
+    WHERE e.epoch IS NOT NULL
+    GROUP BY e.epoch
+),
+
+-- Filter to only include records from the earliest ingestion hour per epoch
+filtered_account_info AS (
+    SELECT
+        a.*,
+        e.epoch
+    FROM
+        parsed_account_info a
+    LEFT JOIN epochs_recorded e
+        ON a.slot_recorded = e.slot_recorded
+    INNER JOIN earliest_ingestion_per_epoch ei
+        ON e.epoch = ei.epoch
+        AND DATE_TRUNC('hour', a._inserted_timestamp) = ei.earliest_ingestion_hour
+    WHERE e.epoch IS NOT NULL
 ),
 pre_final AS (
     SELECT
@@ -116,13 +148,11 @@ pre_final AS (
         program,
         account_sol,
         rent_epoch,
-        e.max_epoch AS epoch_recorded,
-        _inserted_timestamp,
+        epoch AS epoch_recorded,
+        slot_recorded,
+        _inserted_timestamp
     FROM
-        parsed_account_info
-    LEFT JOIN
-        epochs_recorded e
-        USING(invocation_id)
+        filtered_account_info
 )
 SELECT
     *,
