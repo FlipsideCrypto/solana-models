@@ -39,7 +39,7 @@ SELECT
     total_supply,
     amount_in_dex_liquidity_pools,
     amount_in_lending_pools
-FROM <blockchain_name>.defi.ez_stablecoins_supply
+FROM solana.defi.ez_stablecoins_supply
 WHERE block_date = CURRENT_DATE - 1
 ORDER BY total_supply DESC;
 

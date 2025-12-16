@@ -32,6 +32,10 @@ models:
         description: '{{ doc("dim_stablecoins_is_verified") }}'
         tests:
           - not_null
+      - name: IS_VERIFIED_MODIFIED_TIMESTAMP
+        description: '{{ doc("dim_stablecoins_is_verified_modified_timestamp") }}'
+        tests:
+          - not_null
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}' 
       - name: MODIFIED_TIMESTAMP

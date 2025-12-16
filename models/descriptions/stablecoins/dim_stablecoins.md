@@ -52,7 +52,7 @@ SELECT
     label,
     decimals
 FROM solana.defi.dim_stablecoins
-WHERE contract_address = LOWER('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
+WHERE token_address = LOWER('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
 ```
 
 {% enddocs %}
@@ -100,6 +100,14 @@ Example: 6
 {% docs dim_stablecoins_is_verified %}
 
 Indicates whether the stablecoin is verified by the Flipside team.
+
+Example: true
+
+{% enddocs %}
+
+{% docs dim_stablecoins_is_verified_modified_timestamp %}
+
+Indicates when the stablecoin was verified by the Flipside team.
 
 Example: true
 
