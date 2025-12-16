@@ -75,6 +75,11 @@ decoded AS (
             THEN silver.udf_get_account_pubkey_by_name('depositAccounts > reserveLiquidityMint', decoded_instruction:accounts)
             ELSE silver.udf_get_account_pubkey_by_name('reserveLiquidityMint', decoded_instruction:accounts)
         END AS token_address,
+        CASE 
+            WHEN event_type = 'depositReserveLiquidityAndObligationCollateralV2' 
+            THEN silver.udf_get_account_pubkey_by_name('depositAccounts > reserveLiquiditySupply', decoded_instruction:accounts)
+            ELSE silver.udf_get_account_pubkey_by_name('reserveLiquiditySupply', decoded_instruction:accounts)
+        END AS liquidity_supply_vault,
         decoded_instruction:args:liquidityAmount::INT AS amount_raw,
         _inserted_timestamp
     FROM
@@ -107,6 +112,7 @@ SELECT
     a.depositor,
     a.protocol_market,
     a.token_address,
+    a.liquidity_supply_vault,
     a.amount_raw,
     a.amount_raw * POW(10, -b.decimal) AS amount,
     b.decimal,

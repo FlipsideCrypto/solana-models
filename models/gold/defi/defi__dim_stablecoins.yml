@@ -1,0 +1,44 @@
+version: 2
+models:
+  - name: defi__dim_stablecoins
+    description: '{{ doc("dim_stablecoins_table_doc") }}'
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - dim_stablecoins_id
+
+    columns:
+      - name: TOKEN_ADDRESS
+        description: '{{ doc("dim_stablecoins_token_address") }}'
+        tests:
+          - not_null
+      - name: SYMBOL
+        description: '{{ doc("dim_stablecoins_symbol") }}'
+        tests:
+          - not_null
+      - name: NAME
+        description: '{{ doc("dim_stablecoins_name") }}'
+        tests:
+          - not_null
+      - name: LABEL
+        description: '{{ doc("dim_stablecoins_label") }}'
+        tests:
+          - not_null
+      - name: DECIMALS
+        description: '{{ doc("dim_stablecoins_decimals") }}'
+        tests:
+          - not_null
+      - name: IS_VERIFIED
+        description: '{{ doc("dim_stablecoins_is_verified") }}'
+        tests:
+          - not_null
+      - name: IS_VERIFIED_MODIFIED_TIMESTAMP
+        description: '{{ doc("dim_stablecoins_is_verified_modified_timestamp") }}'
+        tests:
+          - not_null
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}' 
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}'
+      - name: DIM_STABLECOINS_ID
+        description: '{{ doc("pk") }}'
