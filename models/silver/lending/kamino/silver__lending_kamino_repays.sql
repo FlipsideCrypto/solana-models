@@ -177,3 +177,4 @@ left join transfers t
     AND A.dest_token_account = t.dest_token_account
 LEFT JOIN token_decimals b
     ON a.token_address = b.mint
+where t.amount is not null
