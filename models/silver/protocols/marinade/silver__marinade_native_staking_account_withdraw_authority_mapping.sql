@@ -17,8 +17,9 @@ WITH marinade_native_stakers AS (
         {{ ref('silver__staking_lp_actions_labeled_2') }}
     WHERE
         stake_authority IN ('stWirqFCf2Uts1JBL1Jsd3r6VBWhgnpdPxCTe1MFjrq', 'ex9CfkBZZd6Nv9XdnoDmmB45ymbu4arXVk7g5pWnt3N','STNi1NHDUi6Hvibvonawgze8fM83PFLeJhuGMEXyGps')
-    ),
-    base_accounts AS (
+),
+
+base_accounts AS (
     -- Pre-filter to get latest record for each stake account before recursion
     -- This avoids window functions in the recursive CTE
     SELECT
@@ -54,12 +55,10 @@ filtered_base AS (
         ) = 1
 ),
 stake_lineage AS (
-  
+    -- Base case: Start with all accounts but limit fields to reduce memory
     SELECT
         f.stake_account,
         f.parent_stake_account,
-        f.block_timestamp,
-        f.event_type,
         f.withdraw_authority,
         0 AS depth,
         f.stake_account AS original_account,
@@ -68,12 +67,10 @@ stake_lineage AS (
 
     UNION ALL
 
-    -- Recursive case: Traverse up to parent accounts
+    -- Recursive case: Traverse up to parent accounts with memory optimizations
     SELECT
         f.stake_account,
         f.parent_stake_account,
-        f.block_timestamp,
-        f.event_type,
         f.withdraw_authority,
         l.depth + 1 AS depth,
         l.original_account,
@@ -82,7 +79,7 @@ stake_lineage AS (
     INNER JOIN filtered_base f
         ON l.parent_stake_account = f.stake_account
     WHERE l.parent_stake_account IS NOT NULL
-        AND l.depth < 200  -- Safety limit to prevent infinite loops
+        AND l.depth < 150  -- Reasonable recursion limit for memory efficiency
 ),
 root_parents AS (
     -- For each original account, find its deepest parent
