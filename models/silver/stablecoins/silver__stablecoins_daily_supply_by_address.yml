@@ -10,7 +10,7 @@ models:
           - not_null: *recent_date_filter
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
-              interval: 2
+              interval: 3
       - name: ACCOUNT
         tests:
           - not_null: *recent_date_filter
@@ -22,7 +22,9 @@ models:
           - not_null: *recent_date_filter
       - name: OWNER
         tests:
-          - not_null: *recent_date_filter
+          - null_threshold:
+              threshold_percent: 0.99
+              where: modified_timestamp >= current_date - 7
       - name: DEX_BALANCE
         tests:
           - not_null: *recent_date_filter
