@@ -4,7 +4,11 @@ on:
   push:
     branches:
       - "main"
-
+    inputs:
+      resource_id:
+        description: 'DDS resource ID to refresh (defaults to repository name if not provided)'
+        required: false
+        type: string
 
 env:
   USE_VARS: "${{ vars.USE_VARS }}"
@@ -33,20 +37,18 @@ jobs:
 
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: "${{ vars.PYTHON_VERSION }}"
           cache: "pip"
 
       - name: install dependencies
         run: |
           pip install -r requirements.txt
           dbt deps
-      
-      - name: refresh ddl for datashare
-        run: |
-          cnt=$(dbt ls -m fsc_utils.datashare._datashare___create_gold | wc -l ); if [ $cnt -eq 1 ]; then dbt run -m fsc_utils.datashare._datashare___create_gold; fi; 
+
       - name: checkout docs branch
         run: |
           git checkout -B docs origin/main
+          
       - name: generate dbt docs
         run: |
           dbt ls -t prod
@@ -74,6 +76,17 @@ jobs:
         run: |
           git push -f --set-upstream origin docs
 
+  refresh-dds-cache:
+    needs: [run_dbt_jobs]
+    if: success()
+    uses: FlipsideCrypto/analytics-workflow-templates/.github/workflows/refresh_dds.yml@main
+    with:
+      resource_id: ${{ inputs.resource_id }}
+      api_url: ${{ github.ref == 'refs/heads/main' && 'https://dds-api.fsc-data-platform.io' || 'https://dds-api.fsc-data-platform-stg.io' }}
+      force_refresh: true
+    secrets:
+      DDS_API_KEY: ${{ github.ref == 'refs/heads/main' && secrets.DDS_PROD_API_KEY || secrets.DDS_STG_API_KEY }}
+      
   notify-failure:
     needs: [run_dbt_jobs]
     if: failure()
