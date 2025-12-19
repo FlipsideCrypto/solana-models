@@ -170,3 +170,7 @@ LEFT JOIN lending_pool_accounts d
     ON a.account = d.token_account
 left join cex_list e
     on a.owner = e.address
+QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY block_date, account, mint
+    ORDER BY modified_timestamp DESC
+) = 1
